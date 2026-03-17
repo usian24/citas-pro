@@ -181,7 +181,7 @@ exports.handler = async (event) => {
 
   try {
     await resend.emails.send({
-      from: 'Citas Pro <hola@citaspro.app>',
+      from: 'Citas Pro <onboarding@resend.dev>',
       to: [to],
       subject: template.subject,
       html: template.html
