@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5"/>
+  <meta name="theme-color" content="#07090F"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://api.qrserver.com; img-src 'self' data: blob: https://api.qrserver.com; connect-src 'self' https://api.qrserver.com;">
+  <meta name="referrer" content="no-referrer"/>
+  <title>Citas Pro — Barberías, Peluquerías &amp; Uñas</title>
+  <link rel="icon" href="assets/img/favicon.ico" type="image/x-icon"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="assets/css/styles.css"/>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     PANTALLA 0 — PORTAL PRINCIPAL (lo que ve todo el mundo)
+════════════════════════════════════════════════════════════ -->
+
+<div class="scr on" id="s-portal" style="min-height:100vh;background:#07090F;flex-direction:column;align-items:center;padding:0 0 60px;position:relative">
+
+  <!-- Glow de fondo decorativo -->
+  <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:280px;background:radial-gradient(ellipse at 50% 0%,rgba(74,127,212,.16),transparent 70%);pointer-events:none;z-index:0"></div>
+
+  <!-- Botón 3 puntitos — acceso oculto al Super Admin -->
+  <div style="position:absolute;top:18px;right:18px;z-index:20">
+    <button id="dots-btn" aria-label="Panel Admin" style="width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all .2s">
+      <span style="width:4px;height:4px;background:rgba(255,255,255,.45);border-radius:50%;display:block;pointer-events:none"></span>
+      <span style="width:4px;height:4px;background:rgba(255,255,255,.45);border-radius:50%;display:block;pointer-events:none"></span>
+      <span style="width:4px;height:4px;background:rgba(255,255,255,.45);border-radius:50%;display:block;pointer-events:none"></span>
+    </button>
+  </div>
+
+  <!-- Hero: logo + título + subtítulo -->
+  <div style="display:flex;flex-direction:column;align-items:center;padding-top:80px;margin-bottom:36px;text-align:center;width:100%;z-index:1">
+    <div class="fu" style="width:100px;height:100px;border-radius:28px;background:linear-gradient(145deg,#5B8FE8,#3060D4);display:flex;align-items:center;justify-content:center;margin-bottom:22px;animation:glow 4s ease infinite">
+      <svg width="56" height="56" viewBox="0 0 46 46" fill="none">
+        <rect x="7" y="12" width="32" height="26" rx="5" fill="rgba(255,255,255,.15)"/>
+        <rect x="7" y="12" width="32" height="26" rx="5" stroke="rgba(255,255,255,.5)" stroke-width="1.8"/>
+        <rect x="7" y="12" width="32" height="10" rx="5" fill="rgba(255,255,255,.22)"/>
+        <line x1="16" y1="7" x2="16" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="30" y1="7" x2="30" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M15.5 28 L21 33.5 L30.5 22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <h1 class="fu d1" style="font-size:52px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#fff 25%,#7EB8FF 65%,#4A7FD4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:10px">CITAS PRO</h1>
+    <p class="fu d2" style="font-size:11px;font-weight:700;color:#5B8FE8;letter-spacing:3.5px;text-transform:uppercase;margin-bottom:12px">APP PARA BARBERÍAS Y PELUQUERÍAS</p>
+    <p class="fu d3" style="font-size:15px;color:var(--t2);max-width:300px;line-height:1.65">La app más completa para gestionar tu barbería o peluquería.</p>
+  </div>
+
+  <!-- Botones CTA principales -->
+  <div class="fu d3" style="width:100%;max-width:380px;padding:0 22px;display:flex;flex-direction:column;gap:12px;margin-bottom:24px;z-index:1">
+    <button class="btn btn-blue" id="btn-crear" style="font-size:16px;font-weight:800;padding:18px">🏪 Crear cuenta de empresa</button>
+    <button class="btn btn-dark" id="btn-login" style="font-size:15px">Iniciar sesión</button>
+  </div>
+
+  <!-- Banner 1 mes gratis -->
+  <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;margin-bottom:20px;z-index:1">
+    <div style="background:rgba(74,127,212,.1);border:1.5px solid rgba(74,127,212,.25);border-radius:24px;padding:18px 20px;display:flex;align-items:center;gap:16px">
+      <div style="width:54px;height:54px;border-radius:18px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;animation:float 4s ease infinite">🎁</div>
+      <div>
+        <div style="font-size:16px;font-weight:800;margin-bottom:4px">¡1 MES GRATIS!</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.5">Únete hoy y prueba Citas Pro gratis.<br>Después solo <strong style="color:var(--blue3)">10€/mes</strong> — sin permanencia.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pills de características -->
+  <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;z-index:1">
+    <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:var(--rpill);padding:8px 16px;font-size:12px;font-weight:700;color:#22C55E">✅ Incluye IVA</div>
+    <div style="background:rgba(74,127,212,.1);border:1px solid rgba(74,127,212,.2);border-radius:var(--rpill);padding:8px 16px;font-size:12px;font-weight:700;color:var(--blue3)">👥 Equipo ilimitado</div>
+    <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:var(--rpill);padding:8px 16px;font-size:12px;font-weight:700;color:#F59E0B">🔒 Sin permanencia</div>
+    <div style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:var(--rpill);padding:8px 16px;font-size:12px;font-weight:700;color:var(--purple)">📅 Reservas 24/7</div>
+  </div>
+
+  <!-- Lista de features -->
+  <div class="fu d5" style="width:100%;max-width:380px;padding:0 22px;display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:28px;z-index:1">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2)"><span style="width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;display:inline-block"></span>Dashboard financiero</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2)"><span style="width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;display:inline-block"></span>Multi-país</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2)"><span style="width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;display:inline-block"></span>Link de reservas propio</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2)"><span style="width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;display:inline-block"></span>Fotos de servicios</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2)"><span style="width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;display:inline-block"></span>Calendario visual</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2)"><span style="width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;display:inline-block"></span>Horario configurable</div>
+  </div>
+
+  <!-- WhatsApp soporte -->
+  <div class="fu d6" style="width:100%;max-width:380px;padding:0 22px;z-index:1">
+    <a href="https://wa.me/34611200984?text=Hola%2C%20necesito%20ayuda%20con%20Citas%20Pro" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(37,211,102,.18),rgba(18,140,126,.1));border:1px solid rgba(37,211,102,.2);border-radius:22px;padding:16px 20px">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:800;color:#fff">Soporte por WhatsApp</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:1px">¿Dudas? Respondemos en minutos</div>
+      </div>
+      <span style="color:rgba(255,255,255,.3);font-size:20px">›</span>
+    </a>
+  </div>
+
+</div>
+<!-- FIN PANTALLA 0 — PORTAL PRINCIPAL -->
+
+
+<!-- ════════════════════════════════════════════════════════
+     PANTALLA 1 — SUPER ADMIN (solo Versa)
+════════════════════════════════════════════════════════════ -->
+<div class="scr" id="s-admin">
+
+  <!-- 1A · Login del super admin -->
+  <div id="adm-login" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 22px;background:#07090F;position:relative">
+    <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:500px;height:220px;background:radial-gradient(ellipse at 50% 0%,rgba(74,127,212,.13),transparent 70%);pointer-events:none"></div>
+    <div style="width:78px;height:78px;border-radius:24px;background:linear-gradient(145deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;margin-bottom:16px;animation:glow 4s ease infinite;z-index:1">
+      <svg width="40" height="40" viewBox="0 0 46 46" fill="none"><rect x="7" y="12" width="32" height="26" rx="5" fill="rgba(255,255,255,.15)"/><rect x="7" y="12" width="32" height="26" rx="5" stroke="rgba(255,255,255,.45)" stroke-width="1.8"/><path d="M15.5 27 L20.5 32.5 L30.5 21" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+    </div>
+    <div style="font-size:32px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#fff,#7EB8FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;z-index:1">CITAS PRO</div>
+    <div class="pill-blue" style="margin-bottom:28px;z-index:1">SUPER ADMINISTRADOR</div>
+    <div style="background:var(--card2);border:1px solid rgba(255,255,255,.1);border-radius:var(--r4);padding:28px;width:100%;max-width:380px;z-index:1">
+      <div class="field"><label>Email de administrador</label><input class="inp" id="adm-email" type="email" placeholder="tu@email.com" autocomplete="email"/></div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Contraseña</label>
+        <div style="position:relative">
+          <input class="inp" id="adm-pass" type="password" placeholder="••••••••" style="padding-right:50px" autocomplete="current-password"/>
+          <button id="adm-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--muted)">👁</button>
+        </div>
+      </div>
+      <div id="adm-err" class="err-box"></div>
+      <button class="btn btn-blue" id="adm-login-btn" style="margin-bottom:10px">Acceder al panel</button>
+      <button class="btn btn-ghost" id="adm-back-btn">← Volver al inicio</button>
+    </div>
+    <div style="margin-top:16px;font-size:11px;color:var(--muted);z-index:1">© 2025 Citas Pro · Acceso exclusivo del creador</div>
+  </div>
+
+  <!-- 1B · Panel del super admin (tras login) -->
+  <div id="adm-panel" style="display:none">
+
+    <!-- Topbar admin -->
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:14px">👑</div>
+        <div>
+          <div style="font-size:14px;font-weight:800">Citas Pro</div>
+          <div style="font-size:10px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Super Admin · Versa</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:7px;align-items:center">
+        <div style="position:relative">
+          <button id="adm-notif-btn" style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer">🔔</button>
+          <div class="notif-dot" id="notif-dot"></div>
+        </div>
+        <button class="btn btn-dark btn-sm btn-icon" id="adm-home-btn">🏠</button>
+        <button class="btn btn-ghost btn-sm" style="width:auto" id="adm-out-btn">Salir</button>
+      </div>
+    </div>
+
+    <!-- Tabs admin -->
+    <div class="tabs">
+      <div class="tab on" id="at-dashboard"      onclick="admTab('dashboard')">📊 Dashboard</div>
+      <div class="tab"    id="at-negocios"        onclick="admTab('negocios')">🏪 Negocios <span id="neg-badge" style="background:var(--blue);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:2px">0</span></div>
+      <div class="tab"    id="at-suscripciones"   onclick="admTab('suscripciones')">💳 Suscripciones</div>
+      <div class="tab"    id="at-ingresos"        onclick="admTab('ingresos')">💰 Ingresos</div>
+      <div class="tab"    id="at-notificaciones"  onclick="admTab('notificaciones')">🔔 Alertas</div>
+      <div class="tab"    id="at-config"          onclick="admTab('config')">⚙️ Config</div>
+    </div>
+
+    <div style="padding:14px 14px 80px">
+
+      <!-- Tab: Dashboard -->
+      <div class="pane on" id="ap-dashboard">
+        <div style="background:rgba(74,127,212,.1);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
+          <div style="font-size:28px;animation:float 4s ease infinite">👑</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:800">Bienvenida, Versa</div>
+            <div style="font-size:12px;color:var(--t2);margin-top:2px" id="adm-date">Panel exclusivo · Citas Pro SaaS</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:var(--muted)">App v8</div>
+            <div style="font-size:12px;font-weight:700;color:var(--blue3)">citaspro.app</div>
+          </div>
+        </div>
+        <div class="stats2">
+          <div class="sbox"><div class="slbl">Negocios</div><div class="snum" style="color:var(--blue)" id="ds-total">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px" id="ds-sub">0 activos</div></div>
+          <div class="sbox"><div class="slbl">MRR</div><div class="snum" style="color:var(--green)" id="ds-mrr">0€</div><div style="font-size:11px;color:var(--muted);margin-top:4px">por mes</div></div>
+          <div class="sbox"><div class="slbl">En prueba</div><div class="snum" style="color:var(--gold)" id="ds-trial">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">potenciales</div></div>
+          <div class="sbox"><div class="slbl">Citas totales</div><div class="snum" style="color:var(--blue)" id="ds-appts">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">gestionadas</div></div>
+          <div class="sbox"><div class="slbl">ARR anual</div><div class="snum" style="color:var(--green);font-size:20px" id="ds-arr">0€</div><div style="font-size:11px;color:var(--muted);margin-top:4px">proyección</div></div>
+          <div class="sbox"><div class="slbl">Países</div><div class="snum" style="color:var(--blue)" id="ds-countries">0</div><div style="font-size:14px;margin-top:4px" id="ds-flags"></div></div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="sec-hdr"><span class="sec-ttl">📈 Crecimiento MRR</span><span style="font-size:11px;color:var(--muted)">Últimos 6 meses</span></div>
+          <div class="chart" id="ds-chart"></div>
+          <div style="display:flex;gap:4px;margin-top:6px" id="ds-months"></div>
+        </div>
+        <div class="sec-hdr"><span class="sec-ttl">🏪 Negocios recientes</span></div>
+        <div id="ds-recent"></div>
+      </div>
+
+      <!-- Tab: Negocios -->
+      <div class="pane" id="ap-negocios">
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <div class="search-bar" style="flex:1;min-width:180px">
+            <span>🔍</span>
+            <input id="biz-search" placeholder="Buscar negocio..." oninput="renderBizListAdmin(filterBiz())"/>
+          </div>
+          <select class="inp" id="biz-filter" style="width:auto;min-width:130px;padding:11px 14px;border-radius:16px" onchange="renderBizListAdmin(filterBiz())">
+            <option value="all">Todos</option>
+            <option value="active">✅ Activos</option>
+            <option value="trial">🎁 Prueba</option>
+            <option value="expired">❌ Vencidos</option>
+          </select>
+        </div>
+        <div id="adm-biz-list"></div>
+      </div>
+
+      <!-- Tab: Suscripciones -->
+      <div class="pane" id="ap-suscripciones">
+        <div id="adm-subs"></div>
+      </div>
+
+      <!-- Tab: Ingresos -->
+      <div class="pane" id="ap-ingresos">
+        <div class="stats2" style="margin-bottom:16px">
+          <div class="sbox"><div class="slbl">MRR actual</div><div class="snum" style="color:var(--green)" id="rev-m">0€</div></div>
+          <div class="sbox"><div class="slbl">ARR estimado</div><div class="snum" style="color:var(--blue)" id="rev-y">0€</div></div>
+          <div class="sbox"><div class="slbl">En 6 meses</div><div class="snum" style="color:var(--gold);font-size:18px" id="rev-p6">0€</div></div>
+          <div class="sbox"><div class="slbl">En 12 meses</div><div class="snum" style="color:var(--purple);font-size:18px" id="rev-p12">0€</div></div>
+        </div>
+        <div class="card">
+          <div class="sec-hdr"><span class="sec-ttl">📊 Proyección</span></div>
+          <div id="adm-proj"></div>
+        </div>
+      </div>
+
+      <!-- Tab: Notificaciones/Alertas -->
+      <div class="pane" id="ap-notificaciones">
+        <div id="adm-notif-list"></div>
+      </div>
+
+      <!-- Tab: Configuración -->
+      <div class="pane" id="ap-config">
+        <div class="card" style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">⚙️ Configuración</div>
+          <div class="toggle-wrap">
+            <div><div style="font-weight:600">Notificaciones por email</div><div style="font-size:12px;color:var(--muted)">Alertas de nuevos registros</div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="toggle-wrap">
+            <div><div style="font-weight:600">Modo mantenimiento</div><div style="font-size:12px;color:var(--muted)">Ocultar app a nuevos usuarios</div></div>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="toggle-wrap">
+            <div><div style="font-weight:600">Extensión automática prueba</div><div style="font-size:12px;color:var(--muted)">Extender 7 días sin actividad</div></div>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">🔐 Cambiar contraseña</div>
+          <div class="field"><label>Nueva contraseña</label><input class="inp" id="cfg-pass1" type="password" placeholder="Mínimo 8 caracteres"/></div>
+          <div class="field"><label>Confirmar</label><input class="inp" id="cfg-pass2" type="password" placeholder="Repetir contraseña"/></div>
+          <div id="cfg-pass-err" class="err-box"></div>
+          <button class="btn btn-blue" id="cfg-pass-btn">Actualizar contraseña</button>
+        </div>
+        <button class="btn btn-ghost" id="cfg-save-btn">Guardar configuración</button>
+      </div>
+
+    </div>
+  </div>
+  <!-- FIN 1B Panel super admin -->
+
+</div>
+<!-- FIN PANTALLA 1 — SUPER ADMIN -->
+
+
+<!-- ════════════════════════════════════════════════════════
+     PANTALLA 2 — PANEL NEGOCIO (dueños de barbería)
+════════════════════════════════════════════════════════════ -->
+<div class="scr" id="s-biz">
+
+  <!-- 2A · Wizard de registro (7 pasos) -->
+  <div id="biz-reg" style="min-height:100vh;padding:32px 22px;max-width:460px;margin:0 auto">
+
+    <!-- Paso 0: Bienvenida registro -->
+    <div class="reg-step on" id="rs-0" style="text-align:center;padding-top:24px">
+      <div style="width:84px;height:84px;border-radius:26px;background:linear-gradient(145deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 20px;animation:glow 4s ease infinite">✂️</div>
+      <div style="font-size:28px;font-weight:900;margin-bottom:10px">¡Registra tu negocio!</div>
+      <div style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:30px;max-width:300px;margin-left:auto;margin-right:auto">Configura tu barbería, peluquería o salón de uñas en menos de 3 minutos.</div>
+      <button class="btn btn-blue" id="reg-start-btn" style="margin-bottom:12px">🚀 Comenzar registro</button>
+      <button class="btn btn-ghost" id="login-toggle-btn" style="font-size:14px">¿Ya tienes cuenta? Iniciar sesión</button>
+    </div>
+
+    <!-- Paso 1: Tipo de negocio -->
+    <div class="reg-step" id="rs-1">
+      <div class="progbar"><div class="progfill" style="width:16%"></div></div>
+      <button class="btn btn-ghost btn-sm btn-icon" id="back-1" style="margin-bottom:22px;border-radius:50%">←</button>
+      <div style="font-size:24px;font-weight:900;margin-bottom:8px">Tipo de negocio</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:20px">Selecciona el que más se parece</div>
+      <div class="tgrid2">
+        <div class="typbtn" id="type-barberia"><div style="font-size:30px">💈</div><div style="font-size:12px;font-weight:700">Barbería</div></div>
+        <div class="typbtn" id="type-peluqueria"><div style="font-size:30px">✂️</div><div style="font-size:12px;font-weight:700">Peluquería</div></div>
+        <div class="typbtn" id="type-unias"><div style="font-size:30px">💅</div><div style="font-size:12px;font-weight:700">Uñas</div></div>
+        <div class="typbtn" id="type-salon"><div style="font-size:30px">💇</div><div style="font-size:12px;font-weight:700">Salón</div></div>
+        <div class="typbtn" id="type-spa"><div style="font-size:30px">💆</div><div style="font-size:12px;font-weight:700">Spa</div></div>
+        <div class="typbtn" id="type-estetica"><div style="font-size:30px">🪮</div><div style="font-size:12px;font-weight:700">Estética</div></div>
+      </div>
+      <button class="btn btn-blue" id="next-1">Continuar →</button>
+    </div>
+
+    <!-- Paso 2: Datos del negocio -->
+    <div class="reg-step" id="rs-2">
+      <div class="progbar"><div class="progfill" style="width:33%"></div></div>
+      <button class="btn btn-ghost btn-sm btn-icon" id="back-2" style="margin-bottom:22px;border-radius:50%">←</button>
+      <div style="font-size:24px;font-weight:900;margin-bottom:6px">Datos del negocio</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Esta info aparecerá en tu perfil público</div>
+      <div class="field"><label>Nombre del negocio *</label><input class="inp" id="br-bizname" placeholder="Ej: La 40 Barber Shop" maxlength="80" autocomplete="organization"/></div>
+      <div class="field"><label>Tu nombre</label><input class="inp" id="br-owner" placeholder="Ej: Versa Aguilar" maxlength="60" autocomplete="name"/></div>
+      <div class="field"><label>Teléfono / WhatsApp</label><input class="inp" id="br-phone" type="tel" placeholder="+34 600 000 000" maxlength="20" autocomplete="tel"/></div>
+      <div class="field"><label>Email *</label><input class="inp" id="br-email" type="email" placeholder="tu@email.com" maxlength="100" autocomplete="email"/></div>
+      <div class="field" style="margin-bottom:20px">
+        <label>Contraseña * (mín. 6 caracteres)</label>
+        <div style="position:relative">
+          <input class="inp" id="br-pass" type="password" placeholder="Crea tu contraseña" style="padding-right:50px" maxlength="100" autocomplete="new-password"/>
+          <button id="br-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--muted)">👁</button>
+        </div>
+        <div id="pass-strength" class="pass-bar"></div>
+        <div id="pass-strength-lbl" style="font-size:11px;color:var(--muted);margin-top:5px"></div>
+      </div>
+      <button class="btn btn-blue" id="next-2">Continuar →</button>
+    </div>
+
+    <!-- Paso 3: Ubicación -->
+    <div class="reg-step" id="rs-3">
+      <div class="progbar"><div class="progfill" style="width:50%"></div></div>
+      <button class="btn btn-ghost btn-sm btn-icon" id="back-3" style="margin-bottom:22px;border-radius:50%">←</button>
+      <div style="font-size:24px;font-weight:900;margin-bottom:6px">¿Dónde estás?</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Ubicación de tu negocio</div>
+      <div class="field"><label>Dirección</label><input class="inp" id="br-addr" placeholder="Calle, número..." maxlength="100" autocomplete="street-address"/></div>
+      <div class="field"><label>Ciudad</label><input class="inp" id="br-city" placeholder="Ej: Tortosa" maxlength="60" autocomplete="address-level2"/></div>
+      <div class="field">
+        <label>País</label>
+        <select class="inp" id="br-country" autocomplete="country">
+          <option value="ES">🇪🇸 España</option>
+          <option value="CO">🇨🇴 Colombia</option>
+          <option value="MX">🇲🇽 México</option>
+          <option value="AR">🇦🇷 Argentina</option>
+          <option value="DE">🇩🇪 Alemania</option>
+          <option value="NL">🇳🇱 Holanda</option>
+          <option value="FR">🇫🇷 Francia</option>
+          <option value="CL">🇨🇱 Chile</option>
+          <option value="PE">🇵🇪 Perú</option>
+          <option value="US">🇺🇸 Estados Unidos</option>
+          <option value="DO">🇩🇴 Rep. Dominicana</option>
+          <option value="VE">🇻🇪 Venezuela</option>
+          <option value="EC">🇪🇨 Ecuador</option>
+          <option value="BR">🇧🇷 Brasil</option>
+        </select>
+      </div>
+      <button class="btn btn-blue" id="next-3">Continuar →</button>
+    </div>
+
+    <!-- Paso 4: Tamaño del equipo -->
+    <div class="reg-step" id="rs-4">
+      <div class="progbar"><div class="progfill" style="width:66%"></div></div>
+      <button class="btn btn-ghost btn-sm btn-icon" id="back-4" style="margin-bottom:22px;border-radius:50%">←</button>
+      <div style="font-size:24px;font-weight:900;margin-bottom:6px">¿Cuántos son en tu equipo?</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Tamaño de tu equipo</div>
+      <div class="szopt" id="sz-1"><span style="font-size:24px">👤</span><div><div style="font-weight:700">Solo yo</div><div style="font-size:12px;color:var(--muted)">Trabajo independiente</div></div></div>
+      <div class="szopt" id="sz-24"><span style="font-size:24px">👥</span><div><div style="font-weight:700">2 a 4 personas</div><div style="font-size:12px;color:var(--muted)">Equipo pequeño</div></div></div>
+      <div class="szopt" id="sz-59"><span style="font-size:24px">🏪</span><div><div style="font-weight:700">5 a 9 personas</div><div style="font-size:12px;color:var(--muted)">Negocio establecido</div></div></div>
+      <div class="szopt" id="sz-10"><span style="font-size:24px">🏢</span><div><div style="font-weight:700">10 o más</div><div style="font-size:12px;color:var(--muted)">Gran establecimiento</div></div></div>
+      <button class="btn btn-blue" id="next-4" style="margin-top:12px">Continuar →</button>
+    </div>
+
+    <!-- Paso 5: Fotos -->
+    <div class="reg-step" id="rs-5">
+      <div class="progbar"><div class="progfill" style="width:75%"></div></div>
+      <button class="btn btn-ghost btn-sm btn-icon" id="back-5" style="margin-bottom:22px;border-radius:50%">←</button>
+      <div style="font-size:24px;font-weight:900;margin-bottom:6px">Foto de tu negocio</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Los clientes las ven al reservar</div>
+      <div style="margin-bottom:18px">
+        <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Logo o foto principal</div>
+        <div id="logo-preview" style="width:90px;height:90px;border-radius:24px;background:rgba(74,127,212,.08);border:2px dashed rgba(74,127,212,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:28px;overflow:hidden;transition:all .2s" onclick="document.getElementById('logo-input').click()">
+          📷<div style="font-size:10px;color:var(--muted);margin-top:4px">Subir logo</div>
+        </div>
+        <input type="file" id="logo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Fotos de servicios / trabajos</div>
+        <div class="tip-box">💡 Añade fotos de tus mejores cortes. <strong>Aumentan las reservas hasta 3x.</strong></div>
+        <div class="img-gallery" id="service-photos-reg">
+          <div class="img-thumb add-btn" onclick="document.getElementById('svc-photo-input').click()">＋</div>
+        </div>
+        <input type="file" id="svc-photo-input" accept="image/jpeg,image/png,image/webp" multiple style="display:none"/>
+      </div>
+      <button class="btn btn-blue" id="next-5" style="margin-top:10px">Continuar →</button>
+      <button class="btn btn-ghost" id="skip-5" style="margin-top:10px;font-size:13px">Saltar por ahora →</button>
+    </div>
+
+    <!-- Paso 6: Servicios -->
+    <div class="reg-step" id="rs-6">
+      <div class="progbar"><div class="progfill" style="width:88%"></div></div>
+      <button class="btn btn-ghost btn-sm btn-icon" id="back-6" style="margin-bottom:22px;border-radius:50%">←</button>
+      <div style="font-size:24px;font-weight:900;margin-bottom:6px">Tus servicios</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Añade al menos 1 servicio con precio</div>
+      <div id="reg-svc-list"></div>
+      <button class="btn btn-dark" id="add-reg-svc" style="margin-bottom:12px">＋ Añadir servicio</button>
+      <button class="btn btn-blue" id="next-6">Continuar →</button>
+    </div>
+
+    <!-- Paso 7: Bienvenida + link de reservas -->
+    <div class="reg-step" id="rs-7" style="text-align:center;padding-top:24px">
+      <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#22C55E,#16A34A);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 20px;animation:popIn .5s ease">🎉</div>
+      <div style="font-size:26px;font-weight:900;margin-bottom:8px">¡Bienvenido a Citas Pro!</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.8">Tu negocio está registrado.<br>Tienes <strong style="color:var(--blue3)">1 mes gratis</strong> para probarlo todo.<br>Después solo 10€/mes.</div>
+      <div class="link-box" style="margin-bottom:22px;text-align:left">
+        <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🔗 Tu link de reservas</div>
+        <div style="font-size:13px;color:var(--blue3);font-weight:700;word-break:break-all;margin-bottom:12px" id="biz-link-display">citaspro.app/b/...</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-dark btn-sm" style="flex:1" id="copy-link-reg">📋 Copiar</button>
+          <a id="wa-share-link" href="#" target="_blank" rel="noopener noreferrer" style="flex:1">
+            <button class="btn btn-green btn-sm" style="width:100%">💬 Compartir</button>
+          </a>
+        </div>
+      </div>
+      <button class="btn btn-blue" id="enter-panel-btn" style="font-size:16px;padding:18px">🚀 Entrar a mi panel</button>
+    </div>
+
+  </div>
+  <!-- FIN 2A Wizard registro -->
+
+  <!-- 2B · Panel del negocio (tras login/registro) -->
+  <div id="biz-panel" style="display:none">
+
+    <!-- Topbar negocio -->
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="biz-hdr-av" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0">B</div>
+        <div>
+          <div style="font-size:14px;font-weight:800" id="biz-hdr-nm">Mi Negocio</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase" id="biz-hdr-plan">🎁 Prueba gratis</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-dark btn-sm btn-icon" id="biz-home-btn">🏠</button>
+        <button class="btn btn-ghost btn-sm" style="width:auto" id="biz-out-btn">Salir</button>
+      </div>
+    </div>
+
+    <!-- Nav negocio -->
+    <div class="bnav">
+      <div class="bn on" id="bn-home"      onclick="bizTab('home')">🏠 Inicio</div>
+      <div class="bn"    id="bn-agenda"    onclick="bizTab('agenda')">📅 Agenda</div>
+      <div class="bn"    id="bn-equipo"    onclick="bizTab('equipo')">👥 Equipo</div>
+      <div class="bn"    id="bn-servicios" onclick="bizTab('servicios')">✂️ Servicios</div>
+      <div class="bn"    id="bn-galeria"   onclick="bizTab('galeria')">📸 Galería</div>
+      <div class="bn"    id="bn-finanzas"  onclick="bizTab('finanzas')">💰 Finanzas</div>
+      <div class="bn"    id="bn-horario"   onclick="bizTab('horario')">⏰ Horario</div>
+      <div class="bn"    id="bn-perfil"    onclick="bizTab('perfil')">⚙️ Perfil</div>
+    </div>
+
+    <div style="padding:14px 14px 90px">
+
+      <!-- Tab: Inicio/Home -->
+      <div class="pane on" id="bp-home">
+        <div style="font-size:20px;font-weight:900;margin-bottom:14px" id="biz-greeting">Bienvenido 👋</div>
+        <div class="stats2">
+          <div class="sbox"><div class="slbl">Citas hoy</div><div class="snum" style="color:var(--blue)" id="bh-today">0</div></div>
+          <div class="sbox"><div class="slbl">Ingresos hoy</div><div class="snum" style="color:var(--green)" id="bh-rev">0€</div></div>
+          <div class="sbox"><div class="slbl">Esta semana</div><div class="snum" style="color:var(--blue)" id="bh-week">0</div></div>
+          <div class="sbox"><div class="slbl">Este mes</div><div class="snum" style="color:var(--gold)" id="bh-month">0€</div></div>
+        </div>
+        <div class="link-box" style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🔗 Tu link de reservas</div>
+          <div style="font-size:13px;color:var(--t2);word-break:break-all;margin-bottom:10px" id="biz-link-show"></div>
+          <div style="display:flex;gap:7px">
+            <button class="btn btn-dark btn-sm" style="flex:1" id="copy-link-btn">📋 Copiar</button>
+            <button class="btn btn-blue btn-sm" style="flex:1" id="view-portal-btn">👁 Ver portal</button>
+            <button class="btn btn-dark btn-sm btn-icon" id="qr-btn" title="Ver QR">◻️</button>
+            <a id="wa-share-home" href="#" target="_blank" rel="noopener noreferrer">
+              <button class="btn btn-green btn-sm btn-icon">💬</button>
+            </a>
+          </div>
+        </div>
+        <div class="sec-hdr">
+          <span class="sec-ttl">📅 Citas de hoy</span>
+          <button class="btn btn-dark btn-sm" style="width:auto" id="new-appt-btn">＋ Nueva</button>
+        </div>
+        <div id="bh-appts"></div>
+      </div>
+
+      <!-- Tab: Agenda (calendario + lista) -->
+      <div class="pane" id="bp-agenda">
+        <div class="sec-hdr">
+          <span class="sec-ttl">📅 Agenda</span>
+          <button class="btn btn-blue btn-sm" style="width:auto" id="new-appt-btn2">＋ Nueva cita</button>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <button onclick="prevMonth()" style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--rpill);padding:7px 14px;color:var(--t2);cursor:pointer;font-size:14px">‹</button>
+            <span style="font-size:14px;font-weight:700" id="cal-title"></span>
+            <button onclick="nextMonth()" style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--rpill);padding:7px 14px;color:var(--t2);cursor:pointer;font-size:14px">›</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px">
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">D</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">L</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">M</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">X</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">J</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">V</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">S</div>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div id="agenda-day-label" style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px"></div>
+        <div id="biz-agenda-list"></div>
+      </div>
+
+      <!-- Tab: Equipo -->
+      <div class="pane" id="bp-equipo">
+        <div class="sec-hdr">
+          <span class="sec-ttl">👥 Mi equipo</span>
+          <button class="btn btn-blue btn-sm" style="width:auto" id="add-barber-btn">＋ Añadir</button>
+        </div>
+        <div id="biz-barbers-list"></div>
+      </div>
+
+      <!-- Tab: Servicios -->
+      <div class="pane" id="bp-servicios">
+        <div class="sec-hdr">
+          <span class="sec-ttl">✂️ Servicios y precios</span>
+          <button class="btn btn-blue btn-sm" style="width:auto" id="add-svc-btn">＋ Añadir</button>
+        </div>
+        <div id="biz-svcs-list"></div>
+      </div>
+
+      <!-- Tab: Galería -->
+      <div class="pane" id="bp-galeria">
+        <div class="sec-hdr">
+          <span class="sec-ttl">📸 Galería</span>
+          <button class="btn btn-dark btn-sm" style="width:auto" id="add-gallery-btn">＋ Foto</button>
+        </div>
+        <div class="tip-box">💡 Los clientes ven estas fotos al reservar. <strong>¡Muestra tus mejores trabajos!</strong></div>
+        <div class="img-gallery" id="biz-gallery"></div>
+        <input type="file" id="gallery-input" accept="image/jpeg,image/png,image/webp" multiple style="display:none"/>
+      </div>
+
+      <!-- Tab: Finanzas -->
+      <div class="pane" id="bp-finanzas">
+        <div class="sec-hdr"><span class="sec-ttl">💰 Finanzas</span></div>
+        <div class="stats2">
+          <div class="sbox"><div class="slbl">Ingresos mes</div><div class="snum" style="color:var(--green)" id="fin-ing">0€</div></div>
+          <div class="sbox"><div class="slbl">Clientes únicos</div><div class="snum" style="color:var(--blue)" id="fin-clients">0</div></div>
+          <div class="sbox"><div class="slbl">Servicio top</div><div class="snum" style="font-size:14px;color:var(--gold)" id="fin-top-svc">—</div></div>
+          <div class="sbox"><div class="slbl">Ticket medio</div><div class="snum" style="font-size:18px;color:var(--purple)" id="fin-ticket">0€</div></div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="sec-hdr"><span class="sec-ttl">📊 Ingresos por mes</span></div>
+          <div class="chart" id="fin-chart" style="height:70px"></div>
+          <div style="display:flex;gap:4px;margin-top:6px" id="fin-months"></div>
+        </div>
+        <div class="sec-hdr"><span class="sec-ttl">Historial</span></div>
+        <div id="biz-appts-fin"></div>
+      </div>
+
+      <!-- Tab: Horario -->
+      <div class="pane" id="bp-horario">
+        <div class="sec-hdr"><span class="sec-ttl">⏰ Horario de trabajo</span></div>
+        <div class="tip-box">⚠️ Los clientes solo podrán reservar en tus horas disponibles.</div>
+        <div id="horario-days"></div>
+        <button class="btn btn-blue" id="save-horario-btn" style="margin-top:14px">Guardar horario</button>
+      </div>
+
+      <!-- Tab: Perfil del negocio -->
+      <div class="pane" id="bp-perfil">
+        <div class="sec-hdr"><span class="sec-ttl">⚙️ Mi perfil</span></div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Información del negocio</div>
+          <div class="field"><label>Nombre negocio</label><input class="inp" id="pf-nm" maxlength="80"/></div>
+          <div class="field"><label>Dirección</label><input class="inp" id="pf-addr" maxlength="100"/></div>
+          <div class="field"><label>Teléfono / WhatsApp</label><input class="inp" id="pf-phone" type="tel" maxlength="20"/></div>
+          <div class="field"><label>Instagram (opcional)</label><input class="inp" id="pf-insta" placeholder="@tunegocio" maxlength="50"/></div>
+          <div class="field"><label>Descripción</label><textarea class="inp" id="pf-desc" rows="3" placeholder="Describe tu negocio..." maxlength="300" style="resize:vertical"></textarea></div>
+          <button class="btn btn-blue" id="save-profile-btn">Guardar cambios</button>
+        </div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">💳 Mi suscripción</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div>
+              <div style="font-weight:700;margin-bottom:3px">Plan Citas Pro</div>
+              <div style="font-size:12px;color:var(--muted)" id="pf-plan-status">Cargando...</div>
+            </div>
+            <span id="pf-plan-badge"></span>
+          </div>
+          <div style="font-size:24px;font-weight:900;color:var(--blue3);margin-bottom:6px">10€<span style="font-size:13px;font-weight:500;color:var(--t2)">/mes · IVA incl.</span></div>
+        </div>
+        <a href="https://wa.me/34611200984?text=Necesito%20ayuda%20con%20Citas%20Pro" target="_blank" rel="noopener noreferrer">
+          <button class="btn btn-green">💬 Soporte por WhatsApp</button>
+        </a>
+      </div>
+
+    </div>
+  </div>
+  <!-- FIN 2B Panel negocio -->
+
+</div>
+<!-- FIN PANTALLA 2 — PANEL NEGOCIO -->
+
+
+<!-- ════════════════════════════════════════════════════════
+     PANTALLA 3 — PORTAL CLIENTES (acceso por link o QR)
+════════════════════════════════════════════════════════════ -->
+<div class="scr" id="s-client">
+  <div style="max-width:500px;margin:0 auto;padding-bottom:60px">
+
+    <!-- Hero del negocio (logo, nombre, dirección) -->
+    <div id="cl-hero" style="background:linear-gradient(160deg,rgba(74,127,212,.12),transparent 60%);border-bottom:1px solid var(--b);padding:24px 20px 20px;position:relative">
+      <button id="cl-back-btn" style="position:absolute;top:16px;left:16px;background:rgba(0,0,0,.3);border:none;border-radius:var(--rpill);padding:8px 14px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600">← Inicio</button>
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:8px">
+        <div id="ch-av" style="width:80px;height:80px;border-radius:22px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff;overflow:hidden;margin-bottom:12px;box-shadow:0 4px 20px rgba(74,127,212,.3)"></div>
+        <div style="font-size:22px;font-weight:900;margin-bottom:4px" id="ch-nm">Negocio</div>
+        <div style="font-size:13px;color:var(--t2);margin-bottom:6px" id="ch-meta"></div>
+        <div class="stars" style="font-size:14px">★★★★★</div>
+      </div>
+    </div>
+
+    <!-- Barra de progreso de los 4 pasos -->
+    <div style="display:flex;gap:0;background:var(--bg3)">
+      <div id="bk-p1" style="height:4px;flex:1;background:var(--blue);transition:all .4s"></div>
+      <div id="bk-p2" style="height:4px;flex:1;background:var(--b);transition:all .4s"></div>
+      <div id="bk-p3" style="height:4px;flex:1;background:var(--b);transition:all .4s"></div>
+      <div id="bk-p4" style="height:4px;flex:1;background:var(--b);transition:all .4s"></div>
+    </div>
+    <div style="display:flex;background:var(--bg3);border-bottom:1px solid var(--b);padding:8px 0">
+      <div id="bk-lbl1" style="flex:1;text-align:center;font-size:10px;font-weight:700;color:var(--blue)">MIS DATOS</div>
+      <div id="bk-lbl2" style="flex:1;text-align:center;font-size:10px;font-weight:700;color:var(--muted)">SERVICIO</div>
+      <div id="bk-lbl3" style="flex:1;text-align:center;font-size:10px;font-weight:700;color:var(--muted)">FECHA/HORA</div>
+      <div id="bk-lbl4" style="flex:1;text-align:center;font-size:10px;font-weight:700;color:var(--muted)">CONFIRMAR</div>
+    </div>
+
+    <!-- Paso 1: Datos del cliente -->
+    <div class="bstep on" id="cs-1" style="padding:24px 20px">
+      <div style="font-size:22px;font-weight:900;margin-bottom:6px">¡Bienvenido! 👋</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.6">Ingresa tus datos para reservar tu cita.</div>
+      <div class="field"><label>👤 Tu nombre *</label><input class="inp" id="cl-name" placeholder="Nombre completo" maxlength="60" autocomplete="name"/></div>
+      <div class="field"><label>📱 Teléfono / WhatsApp *</label><input class="inp" id="cl-phone" type="tel" placeholder="+34 600 000 000" maxlength="20" autocomplete="tel"/></div>
+      <div class="field" style="margin-bottom:24px">
+        <label>📧 Email <span style="color:var(--muted);font-weight:400;font-size:11px">(opcional)</span></label>
+        <input class="inp" id="cl-email" type="email" placeholder="tu@email.com" maxlength="100" autocomplete="email"/>
+      </div>
+      <div id="cl-err1" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px;padding:12px 14px;background:rgba(239,68,68,.07);border-radius:14px;border:1px solid rgba(239,68,68,.15)"></div>
+      <button class="btn btn-blue" id="cs1-next" style="font-size:16px;padding:18px">Continuar →</button>
+    </div>
+
+    <!-- Paso 2: Elegir servicio -->
+    <div class="bstep" id="cs-2" style="padding:20px">
+      <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige tu servicio</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:18px">Selecciona el servicio que deseas</div>
+      <div id="cl-svc-list"></div>
+      <div id="cl-err2" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px;padding:12px 14px;background:rgba(239,68,68,.07);border-radius:14px;border:1px solid rgba(239,68,68,.15)"></div>
+      <button class="btn btn-blue" id="cs2-next" style="font-size:16px;padding:18px;margin-bottom:10px">Continuar →</button>
+      <button class="btn btn-ghost" id="cs2-back" style="font-size:13px">← Atrás</button>
+    </div>
+
+    <!-- Paso 3: Elegir fecha y hora -->
+    <div class="bstep" id="cs-3" style="padding:20px">
+      <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige fecha y hora</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:18px">Selecciona el día y la hora disponible</div>
+      <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">📅 Fecha</div>
+      <div class="drow" id="cl-dates"></div>
+      <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">⏰ Hora disponible</div>
+      <div id="cl-time-available" style="font-size:12px;color:var(--green);margin-bottom:10px;font-weight:600"></div>
+      <div class="tgrid" id="cl-times"></div>
+      <div id="cl-err3" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px;padding:12px 14px;background:rgba(239,68,68,.07);border-radius:14px;border:1px solid rgba(239,68,68,.15)"></div>
+      <button class="btn btn-blue" id="cs3-next" style="font-size:16px;padding:18px;margin-bottom:10px">Continuar →</button>
+      <button class="btn btn-ghost" id="cs3-back" style="font-size:13px">← Atrás</button>
+    </div>
+
+    <!-- Paso 4: Confirmar reserva -->
+    <div class="bstep" id="cs-4" style="padding:20px">
+      <div style="font-size:20px;font-weight:900;margin-bottom:4px">Confirma tu cita</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:18px">Revisa los detalles antes de confirmar</div>
+      <div class="card" style="margin-bottom:20px" id="cl-summary"></div>
+      <button class="btn btn-blue" id="cs4-confirm" style="font-size:16px;padding:18px;font-weight:800">✅ Confirmar mi cita</button>
+      <button class="btn btn-ghost" id="cs4-back" style="margin-top:10px;font-size:13px">← Atrás</button>
+    </div>
+
+    <!-- Paso 5: Confirmación exitosa -->
+    <div class="bstep" id="cs-5">
+      <div style="display:flex;flex-direction:column;align-items:center;min-height:60vh;padding:50px 20px;text-align:center">
+        <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#22C55E,#16A34A);display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:20px;animation:popIn .5s ease;box-shadow:0 0 50px rgba(34,197,94,.35)">✅</div>
+        <div style="font-size:24px;font-weight:900;margin-bottom:8px">¡Cita confirmada!</div>
+        <div style="font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.7" id="cl-confirm-txt"></div>
+        <div class="card" style="width:100%;margin-bottom:20px;text-align:left" id="cl-confirm-card"></div>
+        <a id="cl-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="width:100%;display:block;margin-bottom:12px">
+          <button class="btn btn-green" style="font-size:15px;padding:17px">💬 Guardar cita en WhatsApp</button>
+        </a>
+        <button class="btn btn-ghost" id="cl-reset-btn">Hacer otra reserva</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- FIN PANTALLA 3 — PORTAL CLIENTES -->
+
+
+<!-- ════════════════════════════════════════════════════════
+     MODALES — Todos al mismo nivel del body
+════════════════════════════════════════════════════════════ -->
+
+<!-- Modal 1: Crear cuenta (2 pasos) -->
+<div class="ov" id="ov-registro">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div id="rm-step1">
+      <div class="mhdr">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.8px;margin-bottom:4px">PASO 1 DE 2</div>
+          <span class="mttl">Crear cuenta de empresa</span>
+        </div>
+        <div class="xbtn" id="rm-close1">×</div>
+      </div>
+      <div style="height:3px;background:rgba(74,127,212,.12);border-radius:2px;margin-bottom:20px;overflow:hidden"><div style="width:50%;height:100%;background:linear-gradient(90deg,var(--blue),var(--blue3));border-radius:2px"></div></div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:18px;line-height:1.6">Gestiona tu barbería, peluquería o salón de uñas con Citas Pro.</div>
+      <div class="field"><label>📧 Correo electrónico *</label><input class="inp" id="rm-email" type="email" placeholder="tu@empresa.com" maxlength="100" autocomplete="email"/></div>
+      <div class="field"><label>📱 Teléfono / WhatsApp *</label><input class="inp" id="rm-phone" type="tel" placeholder="+34 600 000 000" maxlength="20" autocomplete="tel"/></div>
+      <div class="field">
+        <label>🔒 Contraseña * (mín. 6 caracteres)</label>
+        <div style="position:relative">
+          <input class="inp" id="rm-pass" type="password" placeholder="Crea tu contraseña" maxlength="100" style="padding-right:50px" autocomplete="new-password"/>
+          <button id="rm-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--muted)">👁</button>
+        </div>
+        <div id="rm-pass-bar" class="pass-bar"></div>
+        <div id="rm-pass-lbl" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
+      </div>
+      <div class="field"><label>🔒 Confirmar contraseña *</label><input class="inp" id="rm-pass2" type="password" placeholder="Repite tu contraseña" maxlength="100" autocomplete="new-password"/></div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:18px">
+        <input type="checkbox" id="rm-terms" style="width:18px;height:18px;margin-top:3px;accent-color:var(--blue);flex-shrink:0;cursor:pointer"/>
+        <label for="rm-terms" style="font-size:12px;color:var(--t2);line-height:1.6;cursor:pointer">Acepto los <strong style="color:var(--blue3)">Términos y Condiciones</strong> y la <strong style="color:var(--blue3)">Política de Privacidad</strong> de Citas Pro</label>
+      </div>
+      <div id="rm-err1" class="err-box"></div>
+      <button class="btn btn-blue" id="rm-btn-next" style="margin-bottom:12px">Continuar → Verificar email</button>
+      <div class="divider-text">o</div>
+      <div style="text-align:center;font-size:13px;color:var(--t2)">¿Ya tienes cuenta? <span id="rm-go-login" style="color:var(--blue3);font-weight:700;cursor:pointer">Iniciar sesión</span></div>
+    </div>
+    <div id="rm-step2" style="display:none">
+      <div class="mhdr">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.8px;margin-bottom:4px">PASO 2 DE 2</div>
+          <span class="mttl">Verificar tu email</span>
+        </div>
+        <div class="xbtn" id="rm-close2">×</div>
+      </div>
+      <div style="height:3px;background:rgba(74,127,212,.12);border-radius:2px;margin-bottom:20px;overflow:hidden"><div style="width:100%;height:100%;background:linear-gradient(90deg,var(--blue),var(--blue3));border-radius:2px"></div></div>
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:72px;height:72px;border-radius:22px;background:rgba(74,127,212,.12);border:2px solid rgba(74,127,212,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px">📧</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:8px">Código enviado</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.6" id="rm-email-confirm">Enviamos un código de 6 dígitos a tu correo.<br><span style="font-size:12px;color:var(--muted)">Revisa también la carpeta de spam.</span></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px" id="rm-code-row">
+        <input class="inp code-box" id="rc0" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+        <input class="inp code-box" id="rc1" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+        <input class="inp code-box" id="rc2" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+        <input class="inp code-box" id="rc3" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+        <input class="inp code-box" id="rc4" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+        <input class="inp code-box" id="rc5" maxlength="1" inputmode="numeric" pattern="[0-9]"/>
+      </div>
+      <div id="rm-err2" class="err-box"></div>
+      <button class="btn btn-blue" id="rm-btn-verify" style="margin-bottom:14px">✅ Verificar y crear cuenta</button>
+      <div style="text-align:center">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">¿No recibiste el código?</div>
+        <button id="rm-btn-resend" style="background:none;border:none;color:var(--blue3);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">🔄 Reenviar código</button>
+        <div id="rm-resend-timer" style="font-size:12px;color:var(--muted);margin-top:4px;display:none"></div>
+        <div style="margin-top:14px"><button id="rm-btn-back" style="background:none;border:none;color:var(--t2);font-size:13px;cursor:pointer;font-family:var(--font)">← Cambiar email</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2: Iniciar sesión -->
+<div class="ov" id="ov-login">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl">Iniciar sesión</span><div class="xbtn" id="login-close">×</div></div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.6">Accede a tu panel de gestión de Citas Pro.</div>
+    <div class="field"><label>📧 Correo electrónico</label><input class="inp" id="li-email" type="email" placeholder="tu@email.com" maxlength="100" autocomplete="email"/></div>
+    <div class="field" style="margin-bottom:8px">
+      <label>🔒 Contraseña</label>
+      <div style="position:relative">
+        <input class="inp" id="li-pass" type="password" placeholder="Tu contraseña" maxlength="100" style="padding-right:50px" autocomplete="current-password"/>
+        <button id="li-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--muted)">👁</button>
+      </div>
+    </div>
+    <div style="text-align:right;margin-bottom:16px"><span id="li-forgot" style="font-size:12px;color:var(--blue3);font-weight:600;cursor:pointer">¿Olvidaste tu contraseña?</span></div>
+    <div id="li-err" class="err-box"></div>
+    <button class="btn btn-blue" id="li-btn-login" style="margin-bottom:12px">Entrar a mi panel →</button>
+    <div class="divider-text">o</div>
+    <button class="btn btn-dark" id="li-go-register">🏪 Crear cuenta de empresa</button>
+    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">Al iniciar sesión aceptas nuestros Términos y Condiciones</div>
+  </div>
+</div>
+
+<!-- Modal 3: Recuperar contraseña -->
+<div class="ov" id="ov-forgot">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl">Recuperar contraseña</span><div class="xbtn" id="forgot-close">×</div></div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:40px;margin-bottom:10px">🔑</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6">Introduce tu email y te enviaremos instrucciones para resetear tu contraseña.</div>
+    </div>
+    <div class="field"><label>📧 Tu correo electrónico</label><input class="inp" id="fp-email" type="email" placeholder="tu@email.com" maxlength="100" autocomplete="email"/></div>
+    <div id="fp-err" class="err-box"></div>
+    <div id="fp-success" style="display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center">
+      <div style="font-size:20px;margin-bottom:6px">✅</div>
+      <div style="font-size:13px;color:#22C55E;font-weight:600">¡Listo! Revisa tu correo.</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:4px">Hemos enviado las instrucciones a tu email.</div>
+    </div>
+    <button class="btn btn-blue" id="fp-btn-send" style="margin-bottom:10px">Enviar instrucciones</button>
+    <button class="btn btn-ghost" id="fp-btn-back">← Volver al inicio de sesión</button>
+  </div>
+</div>
+
+<!-- Modal 4: Admin 3 puntitos (acceso oculto) -->
+<div class="ov" id="ov-admin">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhdr">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.8px;margin-bottom:4px">ACCESO EXCLUSIVO</div>
+        <span class="mttl">Panel de administración</span>
+      </div>
+      <div class="xbtn" id="dots-close">×</div>
+    </div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px">👑</div>
+      <div style="font-size:13px;color:var(--muted)">Solo para el creador de Citas Pro</div>
+    </div>
+    <div class="field"><label>Email</label><input class="inp" id="dots-email" type="email" placeholder="tu@email.com" autocomplete="email"/></div>
+    <div class="field">
+      <label>Contraseña</label>
+      <div style="position:relative">
+        <input class="inp" id="dots-pass" type="password" placeholder="••••••••" style="padding-right:50px" autocomplete="current-password"/>
+        <button id="dots-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--muted)">👁</button>
+      </div>
+    </div>
+    <div id="dots-err" class="err-box"></div>
+    <button class="btn btn-blue" id="dots-login-btn" style="margin-bottom:10px">Acceder →</button>
+    <button class="btn btn-ghost" id="dots-cancel-btn">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal 5: Servicio (añadir/editar) -->
+<div class="ov bot" id="ov-svc">
+  <div class="mbot" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl" id="svc-ttl">Añadir servicio</span><div class="xbtn" id="close-svc">×</div></div>
+    <div class="field"><label>Nombre *</label><input class="inp" id="sv-name" placeholder="Ej: Corte de cabello" maxlength="60"/></div>
+    <div style="display:flex;gap:10px">
+      <div class="field" style="flex:1"><label>Precio (€) *</label><input class="inp" id="sv-price" type="number" placeholder="12" min="0" max="9999" step="0.5"/></div>
+      <div class="field" style="flex:1"><label>Duración (min)</label><input class="inp" id="sv-dur" type="number" placeholder="30" min="5" max="480" step="5"/></div>
+    </div>
+    <div class="field"><label>Descripción</label><input class="inp" id="sv-desc" placeholder="Breve descripción..." maxlength="150"/></div>
+    <div class="field">
+      <label>Foto (opcional)</label>
+      <div id="sv-photo-preview" class="photo-upload" onclick="document.getElementById('sv-photo-input').click()">
+        <div style="font-size:28px;margin-bottom:6px">📷</div>
+        <div style="font-size:13px;color:var(--muted)">Añadir foto</div>
+      </div>
+      <input type="file" id="sv-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+    </div>
+    <button class="btn btn-blue" id="save-svc-btn">Guardar servicio</button>
+  </div>
+</div>
+
+<!-- Modal 6: Profesional (añadir/editar) -->
+<div class="ov bot" id="ov-barber">
+  <div class="mbot" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl" id="bar-ttl">Añadir profesional</span><div class="xbtn" id="close-bar">×</div></div>
+    <div class="field"><label>Nombre *</label><input class="inp" id="bar-name" placeholder="Nombre del profesional" maxlength="60"/></div>
+    <div class="field"><label>Especialidad</label><input class="inp" id="bar-spec" placeholder="Ej: Cortes clásicos, barba..." maxlength="80"/></div>
+    <div class="field"><label>Teléfono</label><input class="inp" id="bar-phone" type="tel" placeholder="+34..." maxlength="20"/></div>
+    <div class="field">
+      <label>Foto (opcional)</label>
+      <div id="bar-photo-preview" class="photo-upload" onclick="document.getElementById('bar-photo-input').click()">
+        <div style="font-size:28px;margin-bottom:6px">👤</div>
+        <div style="font-size:13px;color:var(--muted)">Añadir foto</div>
+      </div>
+      <input type="file" id="bar-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+    </div>
+    <button class="btn btn-blue" id="save-bar-btn">Guardar profesional</button>
+  </div>
+</div>
+
+<!-- Modal 7: Nueva cita (manual) -->
+<div class="ov bot" id="ov-appt">
+  <div class="mbot" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl">Nueva cita</span><div class="xbtn" id="close-appt">×</div></div>
+    <div class="field"><label>Cliente *</label><input class="inp" id="ap-name" placeholder="Nombre del cliente" maxlength="60"/></div>
+    <div class="field"><label>Teléfono</label><input class="inp" id="ap-phone" type="tel" placeholder="+34..." maxlength="20"/></div>
+    <div style="display:flex;gap:10px">
+      <div class="field" style="flex:1"><label>Fecha</label><input class="inp" id="ap-date" type="date"/></div>
+      <div class="field" style="flex:1"><label>Hora</label><input class="inp" id="ap-time" type="time"/></div>
+    </div>
+    <div class="field"><label>Servicio</label><select class="inp" id="ap-svc"></select></div>
+    <div class="field"><label>Profesional</label><select class="inp" id="ap-bar"></select></div>
+    <div class="field">
+      <label>Estado</label>
+      <select class="inp" id="ap-status">
+        <option value="confirmed">✅ Confirmada</option>
+        <option value="pending">⏳ Pendiente</option>
+        <option value="completed">✓ Completada</option>
+        <option value="cancelled">✗ Cancelada</option>
+      </select>
+    </div>
+    <div class="field"><label>Notas (opcional)</label><input class="inp" id="ap-notes" placeholder="Notas internas..." maxlength="200"/></div>
+    <button class="btn btn-blue" id="save-appt-btn">Guardar cita</button>
+  </div>
+</div>
+
+<!-- Modal 8: Detalle de cita -->
+<div class="ov bot" id="ov-appt-detail">
+  <div class="mbot" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl">Detalles de cita</span><div class="xbtn" onclick="closeOv('ov-appt-detail')">×</div></div>
+    <div id="appt-detail-content"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-green btn-sm" style="flex:1" id="appt-complete-btn">✓ Completada</button>
+      <button class="btn btn-red btn-sm"   style="flex:1" id="appt-cancel-btn">✗ Cancelar</button>
+      <a id="appt-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex:1">
+        <button class="btn btn-green btn-sm" style="width:100%">💬 WA</button>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 9: Notificaciones admin -->
+<div class="ov bot" id="ov-notif">
+  <div class="mbot" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl">🔔 Notificaciones</span><div class="xbtn" id="close-notif">×</div></div>
+    <div id="notif-content"></div>
+  </div>
+</div>
+
+<!-- Modal 10: Perfil del negocio (vista admin) -->
+<div class="ov bot" id="ov-biz-profile">
+  <div class="mbot" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl">Perfil del negocio</span><div class="xbtn" id="close-biz-profile">×</div></div>
+    <div id="adm-biz-profile"></div>
+  </div>
+</div>
+
+<!-- Modal 11: QR y enlace del negocio -->
+<div class="ov" id="ov-qr">
+  <div class="modal" onclick="event.stopPropagation()" style="text-align:center">
+    <div class="mhdr">
+      <span class="mttl">📱 Enlace y QR de reservas</span>
+      <div class="xbtn" onclick="closeOv('ov-qr')">×</div>
+    </div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.6">Comparte este enlace o QR con tus clientes para que puedan reservar directamente.</div>
+    <div id="qr-container" style="display:flex;justify-content:center;margin-bottom:18px">
+      <div id="qr-code" style="background:#fff;padding:16px;border-radius:16px;display:inline-block"></div>
+    </div>
+    <div style="background:var(--bblue);border:1.5px solid rgba(74,127,212,.2);border-radius:16px;padding:14px;margin-bottom:16px">
+      <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🔗 Tu enlace único</div>
+      <div style="font-size:14px;color:var(--blue3);font-weight:700;word-break:break-all" id="qr-link-text">citaspro.app/b/...</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-blue btn-sm" style="flex:1" id="qr-copy-btn">📋 Copiar enlace</button>
+      <a id="qr-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex:1">
+        <button class="btn btn-green btn-sm" style="width:100%">💬 Compartir WA</button>
+      </a>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn btn-dark btn-sm" id="qr-download-btn">⬇️ Descargar QR</button>
+    </div>
+  </div>
+</div>
+<!-- FIN MODALES -->
+
+
+<!-- ════════════════════════════════════════════════════════
+     SCRIPTS — Siempre al final del body, en este orden
+════════════════════════════════════════════════════════════ -->
+<script src="assets/js/db.js"></script>
+<script src="assets/js/admin.js"></script>
+<script src="assets/js/biz.js"></script>
+<script src="assets/js/booking.js"></script>
+<script src="assets/js/app.js"></script>
+
+</body>
+</html>

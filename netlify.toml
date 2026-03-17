@@ -1,0 +1,25 @@
+# ══════════════════════════════════════
+#   CITAS PRO — Configuración Netlify
+# ══════════════════════════════════════
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# Redirige todas las rutas al index.html (SPA)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[functions]
+  node_bundler = "esbuild"
+
+# Headers de seguridad
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    X-XSS-Protection = "1; mode=block"

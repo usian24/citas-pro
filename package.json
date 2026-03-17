@@ -1,0 +1,13 @@
+{
+  "name": "citaspro",
+  "version": "1.0.0",
+  "description": "App SaaS de gestión de citas para barberías y peluquerías",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "resend": "^3.2.0",
+    "stripe": "^14.21.0"
+  }
+}
