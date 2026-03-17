@@ -349,14 +349,14 @@ function finalizeBizReg() {
   var slug = (REG.name || 'negocio').toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').slice(0, 20) + '-' + Date.now().toString(36);
   var biz = { id: slug, name: REG.name, owner: REG.owner, email: REG.email, pass: REG.pass, phone: REG.phone, addr: REG.addr, city: REG.city, country: REG.country, type: REG.type, teamSize: REG.teamSize, joinDate: new Date().toISOString().split('T')[0], plan: 'trial', desc: '', logo: REG.logo || '', photos: REG.photos || [], insta: '', horario: DEFAULT_HORARIO.map(function(h) { return Object.assign({}, h); }), barbers: [{ id: 1, name: REG.owner || 'Yo', spec: REG.type || 'Profesional', photo: '' }], services: REG.services, appointments: [] };
   DB.businesses.push(biz); DB.currentBiz = slug; saveDB();
-  T('biz-link-display', 'citaspro.app/b/' + slug);
+  T('biz-link-display', 'citas-pro.netlify.app/b/' + slug);
   T('neg-badge', DB.businesses.length);
-  var waLink = G('wa-share-link'); if (waLink) waLink.href = 'https://wa.me/?text=' + encodeURIComponent('📅 Reserva tu cita en ' + REG.name + ' → citaspro.app/b/' + slug);
+  var waLink = G('wa-share-link'); if (waLink) waLink.href = 'https://wa.me/?text=' + encodeURIComponent('📅 Reserva tu cita en ' + REG.name + ' → citas-pro.netlify.app/b/' + slug);
   checkNotifications();
 }
 
 function completeBizReg() { CUR = DB.businesses.filter(function(b) { return b.id === DB.currentBiz; })[0]; if (CUR) showBizPanel(); else showRegStep(0); }
-function copyLink() { var link = 'citaspro.app/b/' + (CUR ? CUR.id : DB.currentBiz || 'mi-negocio'); try { navigator.clipboard.writeText('https://' + link); } catch(e) {} toast('📋 Link copiado', '#4A7FD4'); }
+function copyLink() { var link = 'citas-pro.netlify.app/b/' + (CUR ? CUR.id : DB.currentBiz || 'mi-negocio'); try { navigator.clipboard.writeText('https://' + link); } catch(e) {} toast('📋 Link copiado', '#4A7FD4'); }
 
 function initBizPanel() {
   if (!CUR) return;
@@ -378,7 +378,7 @@ function initBizPanel() {
   T('bh-rev',   money(todayA.reduce(function(s, a) { return s + (a.price || 0); }, 0)));
   T('bh-week',  weekA.length);
   T('bh-month', money(monthA.reduce(function(s, a) { return s + (a.price || 0); }, 0)));
-  var link = 'citaspro.app/b/' + CUR.id;
+  var link = 'citas-pro.netlify.app/b/' + CUR.id;
   T('biz-link-show', link);
   var wah = G('wa-share-home'); if (wah) wah.href = 'https://wa.me/?text=' + encodeURIComponent('📅 Reserva tu cita en ' + CUR.name + ' → https://' + link);
   renderTodayAppts(todayA); renderBizBarbers(); renderBizServices(); renderGallery(); renderBizFinances(); renderHorario(); renderCalendar(); initAgenda();

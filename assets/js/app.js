@@ -16,7 +16,7 @@ function generateQR(text, containerId) {
 
 function openQRModal() {
   if (!CUR) return;
-  var link = 'https://citaspro.app/b/' + CUR.id;
+  var link = 'https://citas-pro.netlify.app/b/' + CUR.id; /* ← CAMBIADO */
   var el = G('qr-link-text'); if (el) el.textContent = link;
   generateQR(link, 'qr-code');
   var wa = G('qr-wa-btn'); if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent('📅 Reserva tu cita en ' + CUR.name + ' → ' + link);
@@ -44,12 +44,10 @@ function checkLinkAccess() {
 window.onload = function() {
   DB = loadDB(); initREG(); initCSEL();
 
-  /* Cerrar overlays al click en fondo */
   document.querySelectorAll('.ov').forEach(function(o) {
     o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('on'); });
   });
 
-  /* Portal principal */
   on('dots-btn', 'click', function() {
     var em = G('dots-email'), ps = G('dots-pass');
     if (em) em.value = ''; if (ps) ps.value = '';
@@ -59,7 +57,6 @@ window.onload = function() {
   on('btn-crear', 'click', function() { openRegModal(); });
   on('btn-login', 'click', function() { openLoginModal(); });
 
-  /* Modal registro */
   on('rm-close1',    'click', function() { closeOv('ov-registro'); });
   on('rm-close2',    'click', function() { closeOv('ov-registro'); });
   on('rm-btn-next',  'click', rmGoStep2);
@@ -82,7 +79,6 @@ window.onload = function() {
     if (digits.length >= 4) { e.preventDefault(); [0,1,2,3,4,5].forEach(function(i) { var b = G('rc' + i); if (b) b.value = digits[i] || ''; }); if (digits.length === 6) setTimeout(rmVerify, 300); }
   });
 
-  /* Modal login */
   on('login-close',    'click', function() { closeOv('ov-login'); });
   on('li-btn-login',   'click', doLogin);
   on('li-pass',  'keydown', function(e) { if (e.key === 'Enter') doLogin(); });
@@ -90,18 +86,15 @@ window.onload = function() {
   on('li-forgot',      'click', openForgotModal);
   on('li-go-register', 'click', function() { closeOv('ov-login'); openRegModal(); });
 
-  /* Modal forgot */
   on('forgot-close', 'click', function() { closeOv('ov-forgot'); });
   on('fp-btn-send',  'click', doForgot);
   on('fp-email', 'keydown', function(e) { if (e.key === 'Enter') doForgot(); });
   on('fp-btn-back',  'click', function() { closeOv('ov-forgot'); openLoginModal(); });
 
-  /* Modal admin 3 puntitos */
   on('dots-cancel-btn', 'click', function() { closeOv('ov-admin'); });
   on('dots-login-btn',  'click', dotsLogin);
   on('dots-pass', 'keydown', function(e) { if (e.key === 'Enter') dotsLogin(); });
 
-  /* Admin panel */
   on('adm-login-btn', 'click', doAdminLogin);
   on('adm-pass', 'keydown', function(e) { if (e.key === 'Enter') doAdminLogin(); });
   on('adm-back-btn',  'click', function() { goTo('s-portal'); });
@@ -118,7 +111,6 @@ window.onload = function() {
   on('close-notif',       'click', function() { closeOv('ov-notif'); });
   on('close-biz-profile', 'click', function() { closeOv('ov-biz-profile'); });
 
-  /* Biz registro */
   on('reg-start-btn',    'click', function() { bizRegStep(1); });
   on('login-toggle-btn', 'click', function() { goTo('s-portal'); openLoginModal(); });
   on('back-1','click',function(){bizRegStep(0);}); on('back-2','click',function(){bizRegStep(1);}); on('back-3','click',function(){bizRegStep(2);});
@@ -132,7 +124,6 @@ window.onload = function() {
   [['barberia','Barbería'],['peluqueria','Peluquería'],['unias','Uñas'],['salon','Salón'],['spa','Spa'],['estetica','Estética']].forEach(function(t) { on('type-' + t[0], 'click', function() { selType('type-' + t[0], t[1]); }); });
   [['sz-1','1'],['sz-24','2-4'],['sz-59','5-9'],['sz-10','10+']].forEach(function(s) { on(s[0], 'click', function() { selSize(s[0], s[1]); }); });
 
-  /* Biz panel */
   on('biz-home-btn',  'click', function() { goTo('s-portal'); });
   on('biz-out-btn',   'click', bizLogout);
   on('copy-link-btn', 'click', copyLink);
@@ -144,12 +135,10 @@ window.onload = function() {
   on('save-horario-btn','click', function() { if (CUR) { saveDB(); toast('✅ Horario guardado', '#4A7FD4'); } });
   on('add-gallery-btn', 'click', function() { var gi = G('gallery-input'); if (gi) gi.click(); });
 
-  /* Modales negocio */
   on('close-svc',  'click', function() { closeOv('ov-svc'); });    on('save-svc-btn', 'click', saveSvc);
   on('close-bar',  'click', function() { closeOv('ov-barber'); }); on('save-bar-btn', 'click', saveBarber);
   on('close-appt', 'click', function() { closeOv('ov-appt'); });   on('save-appt-btn','click', saveAppt);
 
-  /* Cliente */
   on('cl-back-btn', 'click', function() { goTo('s-portal'); });
   on('cs1-next',    'click', function() { clStep(2); });
   on('cs2-next',    'click', function() { clStep(3); });
@@ -160,21 +149,18 @@ window.onload = function() {
   on('cs4-back',    'click', function() { clGoStep(3); });
   on('cl-reset-btn','click', resetBooking);
 
-  /* Fotos */
   setupPhotoUpload();
 
-  /* Eye toggles */
   toggleEye('adm-pass',  'adm-pass-eye');
   toggleEye('dots-pass', 'dots-pass-eye');
   toggleEye('br-pass',   'br-pass-eye');
   toggleEye('rm-pass',   'rm-pass-eye');
   toggleEye('li-pass',   'li-pass-eye');
 
-  /* QR */
   on('qr-btn',      'click', openQRModal);
   on('qr-copy-btn', 'click', function() {
     if (!CUR) return;
-    try { navigator.clipboard.writeText('https://citaspro.app/b/' + CUR.id); } catch(e) {}
+    try { navigator.clipboard.writeText('https://citas-pro.netlify.app/b/' + CUR.id); } catch(e) {} /* ← CAMBIADO */
     toast('📋 Enlace copiado', '#4A7FD4');
   });
   on('qr-download-btn', 'click', function() {
@@ -182,7 +168,6 @@ window.onload = function() {
     var a = document.createElement('a'); a.href = img.src; a.download = 'QR-' + ((CUR && CUR.name) || 'citaspro') + '.png'; a.click();
   });
 
-  /* Globals para inline HTML */
   window.admTab         = admTab;
   window.bizTab         = bizTab;
   window.openBizProfile = openBizProfile;
@@ -205,7 +190,6 @@ window.onload = function() {
   window.openQRModal    = openQRModal;
   window.REG            = REG;
 
-  /* Arranque */
   if (DB.admin && DB.admin.auth) { goTo('s-admin'); showAdminPanel(); }
   else if (DB.currentBiz) { goBiz(); }
   else if (!checkLinkAccess()) { goTo('s-portal'); }
