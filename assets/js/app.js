@@ -37,6 +37,28 @@ function checkLinkAccess() {
   }
   return false;
 }
+function toggleCountryDropdown() {
+  var dd = G('br-country-dropdown');
+  if (!dd) return;
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+function selectCountry(code, label) {
+  var input   = G('br-country');
+  var display = G('br-country-label');
+  var dd      = G('br-country-dropdown');
+  if (input)   input.value         = code;
+  if (display) display.textContent = label;
+  if (dd)      dd.style.display    = 'none';
+}
+
+document.addEventListener('click', function(e) {
+  var wrapper = G('country-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    var dd = G('br-country-dropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
 
 /* ══════════════════════════
    INIT — window.onload

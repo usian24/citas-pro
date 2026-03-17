@@ -325,34 +325,41 @@
     </div>
 
     <!-- Paso 3: Ubicación -->
-    <div class="reg-step" id="rs-3">
-      <div class="progbar"><div class="progfill" style="width:50%"></div></div>
-      <button class="btn btn-ghost btn-sm btn-icon" id="back-3" style="margin-bottom:22px;border-radius:50%">←</button>
-      <div style="font-size:24px;font-weight:900;margin-bottom:6px">¿Dónde estás?</div>
-      <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Ubicación de tu negocio</div>
-      <div class="field"><label>Dirección</label><input class="inp" id="br-addr" placeholder="Calle, número..." maxlength="100" autocomplete="street-address"/></div>
-      <div class="field"><label>Ciudad</label><input class="inp" id="br-city" placeholder="Ej: Tortosa" maxlength="60" autocomplete="address-level2"/></div>
-      <div class="field">
-        <label>País</label>
-        <select class="inp" id="br-country" autocomplete="country">
-          <option value="ES">🇪🇸 España</option>
-          <option value="CO">🇨🇴 Colombia</option>
-          <option value="MX">🇲🇽 México</option>
-          <option value="AR">🇦🇷 Argentina</option>
-          <option value="DE">🇩🇪 Alemania</option>
-          <option value="NL">🇳🇱 Holanda</option>
-          <option value="FR">🇫🇷 Francia</option>
-          <option value="CL">🇨🇱 Chile</option>
-          <option value="PE">🇵🇪 Perú</option>
-          <option value="US">🇺🇸 Estados Unidos</option>
-          <option value="DO">🇩🇴 Rep. Dominicana</option>
-          <option value="VE">🇻🇪 Venezuela</option>
-          <option value="EC">🇪🇨 Ecuador</option>
-          <option value="BR">🇧🇷 Brasil</option>
-        </select>
+<div class="reg-step" id="rs-3">
+  <div class="progbar"><div class="progfill" style="width:50%"></div></div>
+  <button class="btn btn-ghost btn-sm btn-icon" id="back-3" style="margin-bottom:22px;border-radius:50%">←</button>
+  <div style="font-size:24px;font-weight:900;margin-bottom:6px">¿Dónde estás?</div>
+  <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Ubicación de tu negocio</div>
+  <div class="field"><label>Dirección</label><input class="inp" id="br-addr" placeholder="Calle, número..." maxlength="100" autocomplete="street-address"/></div>
+  <div class="field"><label>Ciudad</label><input class="inp" id="br-city" placeholder="Ej: Tortosa" maxlength="60" autocomplete="address-level2"/></div>
+  <div class="field">
+    <label>País</label>
+    <div style="position:relative" id="country-wrapper">
+      <div id="br-country-display" onclick="toggleCountryDropdown()" style="width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:16px 18px;font-size:15px;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-family:var(--font);font-weight:500">
+        <span id="br-country-label">🇪🇸 España</span>
+        <span style="color:var(--muted);font-size:12px">▼</span>
       </div>
-      <button class="btn btn-blue" id="next-3">Continuar →</button>
+      <input type="hidden" id="br-country" value="ES"/>
+      <div id="br-country-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card2);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;z-index:999;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.4);max-height:280px;overflow-y:auto">
+        <div onclick="selectCountry('ES','🇪🇸 España')"         style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇪🇸 España</div>
+        <div onclick="selectCountry('CO','🇨🇴 Colombia')"       style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇨🇴 Colombia</div>
+        <div onclick="selectCountry('MX','🇲🇽 México')"         style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇲🇽 México</div>
+        <div onclick="selectCountry('AR','🇦🇷 Argentina')"      style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇦🇷 Argentina</div>
+        <div onclick="selectCountry('DE','🇩🇪 Alemania')"       style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇩🇪 Alemania</div>
+        <div onclick="selectCountry('NL','🇳🇱 Holanda')"        style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇳🇱 Holanda</div>
+        <div onclick="selectCountry('FR','🇫🇷 Francia')"        style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇫🇷 Francia</div>
+        <div onclick="selectCountry('CL','🇨🇱 Chile')"          style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇨🇱 Chile</div>
+        <div onclick="selectCountry('PE','🇵🇪 Perú')"           style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇵🇪 Perú</div>
+        <div onclick="selectCountry('US','🇺🇸 Estados Unidos')"  style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇺🇸 Estados Unidos</div>
+        <div onclick="selectCountry('DO','🇩🇴 Rep. Dominicana')" style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇩🇴 Rep. Dominicana</div>
+        <div onclick="selectCountry('VE','🇻🇪 Venezuela')"      style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇻🇪 Venezuela</div>
+        <div onclick="selectCountry('EC','🇪🇨 Ecuador')"        style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇪🇨 Ecuador</div>
+        <div onclick="selectCountry('BR','🇧🇷 Brasil')"         style="padding:13px 18px;cursor:pointer;font-size:15px;transition:background .15s" onmouseover="this.style.background='rgba(74,127,212,.12)'" onmouseout="this.style.background='transparent'">🇧🇷 Brasil</div>
+      </div>
     </div>
+  </div>
+  <button class="btn btn-blue" id="next-3">Continuar</button>
+</div>
 
     <!-- Paso 4: Tamaño del equipo -->
     <div class="reg-step" id="rs-4">
