@@ -1,22 +1,22 @@
-# 🏪 CITAS PRO
+# CITAS PRO
 
 App SaaS de gestión de citas para barberías, peluquerías y salones.
 Modelo de negocio: **10€/mes por negocio** · 1 mes gratis al registrarse.
 
 ---
 
-## 🔐 Credenciales de acceso
+##  Credenciales de acceso
 
 | Panel | Email | Contraseña |
 |-------|-------|------------|
 | Super Admin | virche70021261@gmail.com | Versa70021261*# |
 | Demo negocio | versa@la40.com | la40 |
 
-> ⚠️ Cambia la contraseña del Super Admin antes de lanzar en producción.
+>  Cambia la contraseña del Super Admin antes de lanzar en producción.
 
 ---
 
-## 📁 Estructura del proyecto
+##  Estructura del proyecto
 ```
 citas_pro/
 ├── index.html                        ← App completa (4 pantallas + 11 modales)
@@ -46,7 +46,7 @@ citas_pro/
 
 ---
 
-## 🚀 Deploy en Netlify
+##  Deploy en Netlify
 
 ### Paso 1 — Subir a GitHub
 ```bash
@@ -77,7 +77,7 @@ En Site settings → Environment variables → añadir:
 
 ---
 
-## 💰 Costes estimados
+##  Costes estimados
 
 | Servicio | Plan | Coste |
 |----------|------|-------|
@@ -104,7 +104,7 @@ Plantillas disponibles en `send-email.js`:
 
 ---
 
-## 💳 Integración de pagos (Stripe)
+##  Integración de pagos (Stripe)
 
 Flujo preparado en las funciones de Netlify:
 
@@ -114,15 +114,15 @@ Flujo preparado en las funciones de Netlify:
 4. Si cancela, el webhook lo desactiva
 
 **Tarjetas de prueba Stripe:**
-- ✅ Pago exitoso: `4242 4242 4242 4242`
-- ❌ Pago fallido: `4000 0000 0000 0002`
+-  Pago exitoso: `4242 4242 4242 4242`
+-  Pago fallido: `4000 0000 0000 0002`
 
 ---
 
-## 🗺️ Hoja de ruta
+##  Hoja de ruta
 
-- [x] App funcional con localStorage
-- [x] Super Admin con dashboard
+-  App funcional con localStorage
+-  Super Admin con dashboard
 - [x] Panel completo del negocio
 - [x] Portal de reservas para clientes
 - [x] Sistema QR y link de reservas
