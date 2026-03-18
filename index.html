@@ -50,7 +50,7 @@
 
   <!-- Botones CTA principales -->
   <div class="fu d3" style="width:100%;max-width:380px;padding:0 22px;display:flex;flex-direction:column;gap:12px;margin-bottom:24px;z-index:1">
-    <button class="btn btn-blue" id="btn-crear" style="font-size:16px;font-weight:800;padding:18px">🏪 Crear cuenta de empresa</button>
+    <button class="btn btn-blue" id="btn-crear" style="font-size:16px;font-weight:800;padding:18px">Crear cuenta de empresa</button>
     <button class="btn btn-dark" id="btn-login" style="font-size:15px">Iniciar sesión</button>
   </div>
 
@@ -100,7 +100,7 @@
 
 
 <!-- ════════════════════════════════════════════════════════
-     PANTALLA 1 — SUPER ADMIN (solo Versa)
+     PANTALLA 1 — SUPER ADMIN 
 ════════════════════════════════════════════════════════════ -->
 <div class="scr" id="s-admin">
 
@@ -165,9 +165,9 @@
       <!-- Tab: Dashboard -->
       <div class="pane on" id="ap-dashboard">
         <div style="background:rgba(74,127,212,.1);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
-          <div style="font-size:28px;animation:float 4s ease infinite">👑</div>
+          <div style="font-size:28px;animation:float 4s ease infinite"></div>
           <div style="flex:1">
-            <div style="font-size:15px;font-weight:800">Bienvenida, Versa</div>
+            <div style="font-size:15px;font-weight:800">Bienvenido</div>
             <div style="font-size:12px;color:var(--t2);margin-top:2px" id="adm-date">Panel exclusivo · Citas Pro SaaS</div>
           </div>
           <div style="text-align:right">
@@ -361,18 +361,30 @@
   <button class="btn btn-blue" id="next-3">Continuar</button>
 </div>
 
-    <!-- Paso 4: Tamaño del equipo -->
-    <div class="reg-step" id="rs-4">
-      <div class="progbar"><div class="progfill" style="width:66%"></div></div>
-      <button class="btn btn-ghost btn-sm btn-icon" id="back-4" style="margin-bottom:22px;border-radius:50%">←</button>
-      <div style="font-size:24px;font-weight:900;margin-bottom:6px">¿Cuántos son en tu equipo?</div>
-      <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Tamaño de tu equipo</div>
-      <div class="szopt" id="sz-1"><span style="font-size:24px">👤</span><div><div style="font-weight:700">Solo yo</div><div style="font-size:12px;color:var(--muted)">Trabajo independiente</div></div></div>
-      <div class="szopt" id="sz-24"><span style="font-size:24px">👥</span><div><div style="font-weight:700">2 a 4 personas</div><div style="font-size:12px;color:var(--muted)">Equipo pequeño</div></div></div>
-      <div class="szopt" id="sz-59"><span style="font-size:24px">🏪</span><div><div style="font-weight:700">5 a 9 personas</div><div style="font-size:12px;color:var(--muted)">Negocio establecido</div></div></div>
-      <div class="szopt" id="sz-10"><span style="font-size:24px">🏢</span><div><div style="font-weight:700">10 o más</div><div style="font-size:12px;color:var(--muted)">Gran establecimiento</div></div></div>
-      <button class="btn btn-blue" id="next-4" style="margin-top:12px">Continuar →</button>
-    </div>
+<!-- Paso 4: Tamaño del equipo -->
+<div class="reg-step" id="rs-4">
+  <div class="progbar"><div class="progfill" style="width:66%"></div></div>
+  <button class="btn btn-ghost btn-sm btn-icon" id="back-4" style="margin-bottom:22px;border-radius:50%">←</button>
+  <div style="font-size:24px;font-weight:900;margin-bottom:6px">¿Cuántos son en tu equipo?</div>
+  <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Tamaño de tu equipo</div>
+  <div class="szopt" id="sz-1">
+    <span style="font-size:24px">👤</span>
+    <div style="flex:1;text-align:center"><div style="font-weight:700">Solo yo</div><div style="font-size:12px;color:var(--muted)">Trabajo independiente</div></div>
+  </div>
+  <div class="szopt" id="sz-24">
+    <span style="font-size:24px">👥</span>
+    <div style="flex:1;text-align:center"><div style="font-weight:700">2 a 4 personas</div><div style="font-size:12px;color:var(--muted)">Equipo pequeño</div></div>
+  </div>
+  <div class="szopt" id="sz-59">
+    <span style="font-size:24px">🏪</span>
+    <div style="flex:1;text-align:center"><div style="font-weight:700">5 a 9 personas</div><div style="font-size:12px;color:var(--muted)">Negocio establecido</div></div>
+  </div>
+  <div class="szopt" id="sz-10">
+    <span style="font-size:24px">🏢</span>
+    <div style="flex:1;text-align:center"><div style="font-weight:700">10 o más</div><div style="font-size:12px;color:var(--muted)">Gran establecimiento</div></div>
+  </div>
+  <button class="btn btn-blue" id="next-4" style="margin-top:12px">Continuar →</button>
+</div>
 
     <!-- Paso 5: Fotos -->
     <div class="reg-step" id="rs-5">
@@ -383,7 +395,7 @@
       <div style="margin-bottom:18px">
         <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Logo o foto principal</div>
         <div id="logo-preview" style="width:90px;height:90px;border-radius:24px;background:rgba(74,127,212,.08);border:2px dashed rgba(74,127,212,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:28px;overflow:hidden;transition:all .2s" onclick="document.getElementById('logo-input').click()">
-          📷<div style="font-size:10px;color:var(--muted);margin-top:4px">Subir logo</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">Subir logo</div>
         </div>
         <input type="file" id="logo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
       </div>
@@ -419,9 +431,9 @@
         <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🔗 Tu link de reservas</div>
         <div style="font-size:13px;color:var(--blue3);font-weight:700;word-break:break-all;margin-bottom:12px" id="biz-link-display">citaspro.app/b/...</div>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-dark btn-sm" style="flex:1" id="copy-link-reg">📋 Copiar</button>
+          <button class="btn btn-dark btn-sm" style="flex:1" id="copy-link-reg">Copiar</button>
           <a id="wa-share-link" href="#" target="_blank" rel="noopener noreferrer" style="flex:1">
-            <button class="btn btn-green btn-sm" style="width:100%">💬 Compartir</button>
+            <button class="btn btn-green btn-sm" style="width:100%">Compartir</button>
           </a>
         </div>
       </div>
@@ -444,7 +456,7 @@
         </div>
       </div>
       <div style="display:flex;gap:7px">
-        <button class="btn btn-dark btn-sm btn-icon" id="biz-home-btn">🏠</button>
+        <button class="btn btn-dark btn-sm btn-icon" id="biz-home-btn"></button>
         <button class="btn btn-ghost btn-sm" style="width:auto" id="biz-out-btn">Salir</button>
       </div>
     </div>
@@ -465,7 +477,7 @@
 
       <!-- Tab: Inicio/Home -->
       <div class="pane on" id="bp-home">
-        <div style="font-size:20px;font-weight:900;margin-bottom:14px" id="biz-greeting">Bienvenido 👋</div>
+        <div style="font-size:20px;font-weight:900;margin-bottom:14px" id="biz-greeting">Bienvenido</div>
         <div class="stats2">
           <div class="sbox"><div class="slbl">Citas hoy</div><div class="snum" style="color:var(--blue)" id="bh-today">0</div></div>
           <div class="sbox"><div class="slbl">Ingresos hoy</div><div class="snum" style="color:var(--green)" id="bh-rev">0€</div></div>
@@ -476,8 +488,8 @@
           <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🔗 Tu link de reservas</div>
           <div style="font-size:13px;color:var(--t2);word-break:break-all;margin-bottom:10px" id="biz-link-show"></div>
           <div style="display:flex;gap:7px">
-            <button class="btn btn-dark btn-sm" style="flex:1" id="copy-link-btn">📋 Copiar</button>
-            <button class="btn btn-blue btn-sm" style="flex:1" id="view-portal-btn">👁 Ver portal</button>
+            <button class="btn btn-dark btn-sm" style="flex:1" id="copy-link-btn">Copiar</button>
+            <button class="btn btn-blue btn-sm" style="flex:1" id="view-portal-btn">Ver portal</button>
             <button class="btn btn-dark btn-sm btn-icon" id="qr-btn" title="Ver QR">◻️</button>
             <a id="wa-share-home" href="#" target="_blank" rel="noopener noreferrer">
               <button class="btn btn-green btn-sm btn-icon">💬</button>
@@ -575,7 +587,7 @@
 
       <!-- Tab: Perfil del negocio -->
       <div class="pane" id="bp-perfil">
-        <div class="sec-hdr"><span class="sec-ttl">⚙️ Mi perfil</span></div>
+        <div class="sec-hdr"><span class="sec-ttl">Mi perfil</span></div>
         <div class="card" style="margin-bottom:12px">
           <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Información del negocio</div>
           <div class="field"><label>Nombre negocio</label><input class="inp" id="pf-nm" maxlength="80"/></div>

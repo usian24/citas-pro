@@ -77,7 +77,7 @@ function rmVerify() {
   }
   if (_rmTimer) clearInterval(_rmTimer);
   closeOv('ov-registro');
-  toast('✅ Email verificado correctamente', '#22C55E');
+  toast('Email verificado correctamente', '#22C55E');
   setTimeout(function() {
     goBiz();
     setTimeout(function() {
@@ -361,7 +361,7 @@ function copyLink() { var link = 'citas-pro.netlify.app/b/' + (CUR ? CUR.id : DB
 function initBizPanel() {
   if (!CUR) return;
   var hr = new Date().getHours(), g = hr < 12 ? 'Buenos días' : hr < 18 ? 'Buenas tardes' : 'Buenas noches';
-  T('biz-greeting', g + ' ' + (CUR.owner || '').split(' ')[0] + ' 👋');
+  T('biz-greeting', g + ' ' + (CUR.owner || '').split(' ')[0] + ' ');
   T('biz-hdr-nm', CUR.name);
   var planEl = G('biz-hdr-plan');
   if (planEl) { planEl.textContent = CUR.plan === 'active' ? '✅ Plan activo' : CUR.plan === 'trial' ? '🎁 Prueba gratis' : '❌ Suscripción vencida'; planEl.style.color = CUR.plan === 'active' ? 'var(--green)' : CUR.plan === 'trial' ? 'var(--gold)' : 'var(--red)'; }
@@ -581,7 +581,7 @@ function saveAppt() {
   if (!svcRaw) { toast('Selecciona un servicio', '#EF4444'); return; }
   var parts = svcRaw.split(','); if (!CUR) return; if (!CUR.appointments) CUR.appointments = [];
   CUR.appointments.push({ id: Date.now(), client: name, phone: phone, email: '', svc: parts[0], barber: barber, date: date, time: time, price: safeNum(parts[1], 0), status: status, notes: notes });
-  saveDB(); closeOv('ov-appt'); renderTodayAppts(); initAgenda(); renderBizFinances(); initBizPanel(); toast('✅ Cita guardada', '#22C55E');
+  saveDB(); closeOv('ov-appt'); renderTodayAppts(); initAgenda(); renderBizFinances(); initBizPanel(); toast(' Cita guardada', '#22C55E');
 }
 
 function saveBizProfile() {
