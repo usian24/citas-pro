@@ -15,7 +15,7 @@ function dotsLogin() {
     DB.admin.auth = true; saveDB();
     hideErr('dots-err'); closeOv('ov-admin');
     goTo('s-admin'); showAdminPanel();
-    toast('✅ Bienvenida, Versa 👑', '#2855C8');
+    toast(' Bienvenida, Versa ', '#2855C8');
   } else {
     showErr('dots-err', 'Credenciales incorrectas.');
     var p = G('dots-pass'); if (p) { p.value = ''; p.focus(); }
@@ -121,7 +121,7 @@ function renderDash() {
 }
 
 function planTag(plan) {
-  var m = { active:{ c:'#22C55E', l:'✅ Activo' }, trial:{ c:'#F59E0B', l:'🎁 Prueba' }, expired:{ c:'#EF4444', l:'❌ Vencido' } };
+  var m = { active:{ c:'#22C55E', l:' Activo' }, trial:{ c:'#F59E0B', l:' Prueba' }, expired:{ c:'#EF4444', l:' Vencido' } };
   var x = m[plan] || { c:'#475569', l:'—' };
   return '<span style="background:' + x.c + '22;color:' + x.c + ';border:1px solid ' + x.c + '44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + x.l + '</span>';
 }
@@ -150,7 +150,7 @@ function openBizProfile(bizId) {
     '<div style="display:flex;align-items:center;gap:14px;background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px;margin-bottom:16px">'
     + '<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0">' + av + '</div>'
     + '<div style="flex:1"><div style="font-size:18px;font-weight:800">' + san(b.name) + '</div>'
-    + '<div style="font-size:12px;color:var(--t2);margin-top:4px;line-height:2">👤 ' + san(b.owner) + '<br>📱 ' + san(b.phone || '—') + '<br>📧 ' + san(b.email || '—') + '<br>📍 ' + san((b.addr || '') + ' ' + (b.city || '')) + '<br>🏷️ ' + san(b.type || '—') + '</div>'
+    + '<div style="font-size:12px;color:var(--t2);margin-top:4px;line-height:2"> ' + san(b.owner) + '<br> ' + san(b.phone || '—') + '<br> ' + san(b.email || '—') + '<br> ' + san((b.addr || '') + ' ' + (b.city || '')) + '<br> ' + san(b.type || '—') + '</div>'
     + '<div style="margin-top:8px">' + planTag(b.plan) + '</div></div></div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
     + '<div class="sbox"><div class="slbl">Profesionales</div><div class="snum" style="color:var(--blue)">' + (b.barbers ? b.barbers.length : 0) + '</div></div>'
@@ -162,9 +162,9 @@ function openBizProfile(bizId) {
     + '<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">🔗 citaspro.app/b/' + sanitizeText(b.id) + '</span>'
     + '<button onclick="copyText(\'citaspro.app/b/' + sanitizeText(b.id) + '\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
-    + '<button onclick="extendTrial(\'' + sanitizeText(b.id) + '\')" class="btn btn-dark btn-sm" style="flex:1">⏰ Extender prueba</button>'
-    + '<button onclick="activateBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-green btn-sm" style="flex:1">✅ Activar</button>'
-    + '<button onclick="suspendBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-red btn-sm" style="flex:1">❌ Suspender</button></div>'
+    + '<button onclick="extendTrial(\'' + sanitizeText(b.id) + '\')" class="btn btn-dark btn-sm" style="flex:1"> Extender prueba</button>'
+    + '<button onclick="activateBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-green btn-sm" style="flex:1"> Activar</button>'
+    + '<button onclick="suspendBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-red btn-sm" style="flex:1"> Suspender</button></div>'
   );
   openOv('ov-biz-profile');
 }
@@ -215,7 +215,7 @@ function renderNotifications() {
   H('notif-content', notifs.length
     ? notifs.map(function(n) {
         return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openBizProfile(\'' + sanitizeText(n.biz) + '\')">'
-          + '<div style="width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:' + n.color + '22">' + ({ trial:'⏰', expired:'❌', new:'🆕' }[n.type] || '🔔') + '</div>'
+          + '<div style="width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:' + n.color + '22">' + ({ trial:'', expired:'', new:'🆕' }[n.type] || '🔔') + '</div>'
           + '<div style="flex:1"><div style="font-size:13px;font-weight:600">' + san(n.msg) + '</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Toca para ver detalles</div></div>'
           + '<span style="color:var(--muted);font-size:16px">›</span></div>';
       }).join('')
@@ -224,20 +224,20 @@ function renderNotifications() {
 
 function extendTrial(id) {
   var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
-  if (b) { b.plan = 'trial'; saveDB(); toast('⏰ Prueba extendida', '#F59E0B'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); }
+  if (b) { b.plan = 'trial'; saveDB(); toast('Prueba extendida', '#F59E0B'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); }
 }
 
 function activateBiz(id) {
   var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
-  if (b) { b.plan = 'active'; saveDB(); toast('✅ Negocio activado', '#22C55E'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); }
+  if (b) { b.plan = 'active'; saveDB(); toast('Negocio activado', '#22C55E'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); }
 }
 
 function suspendBiz(id) {
   var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
-  if (b) { b.plan = 'expired'; saveDB(); toast('❌ Negocio suspendido', '#EF4444'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); }
+  if (b) { b.plan = 'expired'; saveDB(); toast('Negocio suspendido', '#EF4444'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); }
 }
 
 function copyText(txt) {
   try { navigator.clipboard.writeText(txt); } catch(e) {}
-  toast('📋 Copiado', '#4A7FD4');
+  toast('Copiado', '#4A7FD4');
 }
