@@ -125,8 +125,8 @@ function rmGoStep2(){
     body:JSON.stringify({type:'verification',to:email,data:{code:_rmCode}})
   }).catch(function(e){console.error('Email verificación:',e);});
 
-  console.log('%c📧 Código: '+_rmCode,'background:#141824;color:#7EB8FF;font-size:15px;font-weight:bold;padding:8px 14px;border-radius:8px;border-left:4px solid #4A7FD4');
-  toast('📧 Código enviado a '+email,'#4A7FD4');
+  console.log('%cCódigo: '+_rmCode,'background:#141824;color:#7EB8FF;font-size:15px;font-weight:bold;padding:8px 14px;border-radius:8px;border-left:4px solid #4A7FD4');
+  toast('Código enviado a '+email,'#4A7FD4');
   var conf=G('rm-email-confirm');
   if(conf)conf.innerHTML='Enviamos un código de 6 dígitos a <strong style="color:var(--text)">'+san(email)+'</strong>.<br><span style="font-size:12px;color:var(--muted)">Revisa también la carpeta de spam.</span>';
   var s1=G('rm-step1'),s2=G('rm-step2');
@@ -152,7 +152,7 @@ function rmVerify(){
   }
   if(_rmTimer)clearInterval(_rmTimer);
   closeOv('ov-registro');
-  toast('✅ Email verificado correctamente','#22C55E');
+  toast('Email verificado correctamente','#22C55E');
   setTimeout(function(){
     goBiz();
     setTimeout(function(){
@@ -172,8 +172,8 @@ function rmResend(){
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({type:'verification',to:_rmData.email,data:{code:_rmCode}})
   }).catch(function(e){console.error('Email reenvío:',e);});
-  console.log('%c📧 Nuevo código: '+_rmCode,'background:#141824;color:#7EB8FF;font-size:15px;font-weight:bold;padding:8px 14px;border-radius:8px;border-left:4px solid #4A7FD4');
-  toast('📧 Nuevo código enviado a '+_rmData.email,'#4A7FD4');
+  console.log('%cNuevo código: '+_rmCode,'background:#141824;color:#7EB8FF;font-size:15px;font-weight:bold;padding:8px 14px;border-radius:8px;border-left:4px solid #4A7FD4');
+  toast('Nuevo código enviado a '+_rmData.email,'#4A7FD4');
   [0,1,2,3,4,5].forEach(function(i){var b=G('rc'+i);if(b)b.value='';});
   hideErr('rm-err2');
   startResendTimer(60);
@@ -232,7 +232,7 @@ function doLogin(){
     if(biz.plan==='expired'){showErr('li-err','Tu suscripción ha vencido. Contacta con soporte por WhatsApp.');return;}
     DB.currentBiz=biz.id;saveDB();
     closeOv('ov-login');
-    toast('✅ Bienvenido/a '+san(biz.owner||biz.name),'#22C55E');
+    toast('Bienvenido/a '+san(biz.owner||biz.name),'#22C55E');
     setTimeout(function(){goBiz();},300);
   } else {
     showErr('li-err','Email o contraseña incorrectos. Verifica tus datos e inténtalo de nuevo.');
@@ -260,8 +260,8 @@ function doForgot(){
   if(!exists){showErr('fp-err','No encontramos una cuenta con ese correo. Verifica el email o crea una cuenta nueva.');return;}
   var suc=G('fp-success');if(suc)suc.style.display='block';
   var btn=G('fp-btn-send');if(btn)btn.style.display='none';
-  toast('📧 Instrucciones enviadas a '+email,'#4A7FD4');
-  console.log('%c🔑 Recuperación para: '+email,'background:#141824;color:#7EB8FF;font-size:14px;padding:8px 14px;border-radius:8px');
+  toast('Instrucciones enviadas a '+email,'#4A7FD4');
+  console.log('%cRecuperación para: '+email,'background:#141824;color:#7EB8FF;font-size:14px;padding:8px 14px;border-radius:8px');
 }
 
 /* ══════════════════════════
@@ -278,7 +278,7 @@ function dotsLogin(){
     resetRateLimit(key);DB.admin.auth=true;saveDB();
     hideErr('dots-err');closeOv('ov-admin');
     goTo('s-admin');showAdminPanel();
-    toast('✅ Bienvenida, Versa 👑','#2855C8');
+    toast('biembenido','#2855C8');
   } else {
     showErr('dots-err','Credenciales incorrectas.');
     var p=G('dots-pass');if(p){p.value='';p.focus();}
@@ -335,7 +335,7 @@ function renderDash(){
   H('ds-recent',recent.map(bizCardH).join(''));
 }
 
-function planTag(plan){var m={active:{c:'#22C55E',l:'✅ Activo'},trial:{c:'#F59E0B',l:'🎁 Prueba'},expired:{c:'#EF4444',l:'❌ Vencido'}};var x=m[plan]||{c:'#475569',l:'—'};return'<span style="background:'+x.c+'22;color:'+x.c+';border:1px solid '+x.c+'44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">'+x.l+'</span>';}
+function planTag(plan){var m={active:{c:'#22C55E',l:' Activo'},trial:{c:'#F59E0B',l:' Prueba'},expired:{c:'#EF4444',l:' Vencido'}};var x=m[plan]||{c:'#475569',l:'—'};return'<span style="background:'+x.c+'22;color:'+x.c+';border:1px solid '+x.c+'44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">'+x.l+'</span>';}
 
 function bizCardH(b){
   var rev=(b.appointments||[]).reduce(function(s,a){return s+(a.price||0);},0);
@@ -361,7 +361,7 @@ function openBizProfile(bizId){
     '<div style="display:flex;align-items:center;gap:14px;background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px;margin-bottom:16px">'
     +'<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0">'+av+'</div>'
     +'<div style="flex:1"><div style="font-size:18px;font-weight:800">'+san(b.name)+'</div>'
-    +'<div style="font-size:12px;color:var(--t2);margin-top:4px;line-height:2">👤 '+san(b.owner)+'<br>📱 '+san(b.phone||'—')+'<br>📧 '+san(b.email||'—')+'<br>📍 '+san((b.addr||'')+' '+(b.city||''))+'<br>🏷️ '+san(b.type||'—')+'</div>'
+    +'<div style="font-size:12px;color:var(--t2);margin-top:4px;line-height:2"> '+san(b.owner)+'<br> '+san(b.phone||'—')+'<br> '+san(b.email||'—')+'<br> '+san((b.addr||'')+' '+(b.city||''))+'<br> '+san(b.type||'—')+'</div>'
     +'<div style="margin-top:8px">'+planTag(b.plan)+'</div></div></div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
     +'<div class="sbox"><div class="slbl">Profesionales</div><div class="snum" style="color:var(--blue)">'+(b.barbers?b.barbers.length:0)+'</div></div>'
@@ -373,9 +373,9 @@ function openBizProfile(bizId){
     +'<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">🔗 citas-pro.netlify.app/b/'+sanitizeText(b.id)+'</span>'
     +'<button onclick="copyText(\'https://citas-pro.netlify.app/b/'+sanitizeText(b.id)+'\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-    +'<button onclick="extendTrial(\''+sanitizeText(b.id)+'\')" class="btn btn-dark btn-sm" style="flex:1">⏰ Extender prueba</button>'
-    +'<button onclick="activateBiz(\''+sanitizeText(b.id)+'\')" class="btn btn-green btn-sm" style="flex:1">✅ Activar</button>'
-    +'<button onclick="suspendBiz(\''+sanitizeText(b.id)+'\')" class="btn btn-red btn-sm" style="flex:1">❌ Suspender</button></div>'
+    +'<button onclick="extendTrial(\''+sanitizeText(b.id)+'\')" class="btn btn-dark btn-sm" style="flex:1">Extender prueba</button>'
+    +'<button onclick="activateBiz(\''+sanitizeText(b.id)+'\')" class="btn btn-green btn-sm" style="flex:1">Activar</button>'
+    +'<button onclick="suspendBiz(\''+sanitizeText(b.id)+'\')" class="btn btn-red btn-sm" style="flex:1">Suspender</button></div>'
   );
   openOv('ov-biz-profile');
 }
@@ -475,7 +475,7 @@ function saveSvc(){
     else REG.services.push({id:Date.now(),name:name,price:price,dur:dur,desc:desc,photo:photo||''});
     renderRegSvcs();
   }
-  editSvc=null;window._svcPhoto=null;closeOv('ov-svc');toast('✅ Servicio guardado','#4A7FD4');
+  editSvc=null;window._svcPhoto=null;closeOv('ov-svc');toast('Servicio guardado','#4A7FD4');
 }
 
 function renderRegSvcs(){H('reg-svc-list',(REG.services||[]).map(function(s){var thumb=s.photo?'<img src="'+sanitizeImageDataURL(s.photo)+'" style="width:42px;height:42px;border-radius:11px;object-fit:cover;flex-shrink:0" alt="Servicio">':'<div style="width:42px;height:42px;border-radius:11px;background:var(--bblue);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">✂️</div>';return'<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:8px">'+thumb+'<div style="flex:1"><div style="font-weight:700;font-size:14px">'+san(s.name)+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+s.dur+'min</div></div><span style="font-weight:700;color:var(--blue);font-size:14px">'+money(s.price)+'</span><button data-id="'+sanitizeText(s.id)+'" class="del-rs" style="font-size:15px;cursor:pointer;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:6px;color:var(--red)">🗑</button></div>';}).join(''));document.querySelectorAll('.del-rs').forEach(function(b){b.addEventListener('click',function(){var id=b.getAttribute('data-id');REG.services=REG.services.filter(function(s){return String(s.id)!==id;});renderRegSvcs();});});}
@@ -491,14 +491,14 @@ function finalizeBizReg(){
   checkNotifications();
 }
 function completeBizReg(){CUR=DB.businesses.filter(function(b){return b.id===DB.currentBiz;})[0];if(CUR)showBizPanel();else showRegStep(0);}
-function copyLink(){var link='citas-pro.netlify.app/b/'+(CUR?CUR.id:DB.currentBiz||'mi-negocio');try{navigator.clipboard.writeText('https://'+link);}catch(e){}toast('📋 Link copiado','#4A7FD4');}
+function copyLink(){var link='citas-pro.netlify.app/b/'+(CUR?CUR.id:DB.currentBiz||'mi-negocio');try{navigator.clipboard.writeText('https://'+link);}catch(e){}toast('Link copiado','#4A7FD4');}
 
 function initBizPanel(){
   if(!CUR)return;
   var hr=new Date().getHours(),g=hr<12?'Buenos días':hr<18?'Buenas tardes':'Buenas noches';
-  T('biz-greeting',g+' '+(CUR.owner||'').split(' ')[0]+' 👋');
+  T('biz-greeting',g+' '+(CUR.owner||'').split(' ')[0]+'');
   T('biz-hdr-nm',CUR.name);
-  var planEl=G('biz-hdr-plan');if(planEl){planEl.textContent=CUR.plan==='active'?'✅ Plan activo':CUR.plan==='trial'?'🎁 Prueba gratis':'❌ Suscripción vencida';planEl.style.color=CUR.plan==='active'?'var(--green)':CUR.plan==='trial'?'var(--gold)':'var(--red)';}
+  var planEl=G('biz-hdr-plan');if(planEl){planEl.textContent=CUR.plan==='active'?'Plan activo':CUR.plan==='trial'?'Prueba gratis':'Suscripción vencida';planEl.style.color=CUR.plan==='active'?'var(--green)':CUR.plan==='trial'?'var(--gold)':'var(--red)';}
   var av=G('biz-hdr-av');if(av){if(CUR.logo){av.innerHTML='<img src="'+sanitizeImageDataURL(CUR.logo)+'" style="width:100%;height:100%;object-fit:cover" alt="Logo">';}else{av.textContent=(CUR.name||'?').charAt(0).toUpperCase();}}
   var today=new Date().toISOString().split('T')[0];
   var appts=CUR.appointments||[];
@@ -511,7 +511,7 @@ function initBizPanel(){
   T('bh-week',weekA.length);T('bh-month',money(monthA.reduce(function(s,a){return s+(a.price||0);},0)));
   var link='citas-pro.netlify.app/b/'+CUR.id;
   T('biz-link-show',link);
-  var wah=G('wa-share-home');if(wah)wah.href='https://wa.me/?text='+encodeURIComponent('📅 Reserva tu cita en '+CUR.name+' → https://'+link);
+  var wah=G('wa-share-home');if(wah)wah.href='https://wa.me/?text='+encodeURIComponent('Reserva tu cita en '+CUR.name+' → https://'+link);
   renderTodayAppts(todayA);renderBizBarbers();renderBizServices();renderGallery();renderBizFinances();renderHorario();renderCalendar();initAgenda();
   var pf=G('pf-nm');if(pf)pf.value=CUR.name||'';var pa=G('pf-addr');if(pa)pa.value=CUR.addr||'';var pp=G('pf-phone');if(pp)pp.value=CUR.phone||'';var pi=G('pf-insta');if(pi)pi.value=CUR.insta||'';var pd=G('pf-desc');if(pd)pd.value=CUR.desc||'';
   var ps=G('pf-plan-status');if(ps)ps.textContent=CUR.plan==='active'?'Plan activo · Próxima factura el día 1':CUR.plan==='trial'?'En período de prueba gratuito':'Suscripción vencida — contacta soporte';
@@ -535,23 +535,23 @@ function openApptDetail(id){
     +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
     +'<div class="appt-avatar" style="width:52px;height:52px;font-size:20px">'+san((a.client||'?').split(' ').map(function(n){return n[0]||'';}).slice(0,2).join('').toUpperCase())+'</div>'
     +'<div><div style="font-size:18px;font-weight:900">'+san(a.client)+'</div>'
-    +(a.phone?'<div style="font-size:14px;color:var(--blue3);margin-top:3px;font-weight:600">📱 '+san(a.phone)+'</div>':'')
-    +(a.email?'<div style="font-size:13px;color:var(--t2);margin-top:2px">📧 '+san(a.email)+'</div>':'')
+    +(a.phone?'<div style="font-size:14px;color:var(--blue3);margin-top:3px;font-weight:600">'+san(a.phone)+'</div>':'')
+    +(a.email?'<div style="font-size:13px;color:var(--t2);margin-top:2px">'+san(a.email)+'</div>':'')
     +'</div></div></div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
-    +'<div class="sbox"><div class="slbl">📅 Fecha</div><div style="font-size:14px;font-weight:700">'+san(a.date)+'</div></div>'
-    +'<div class="sbox"><div class="slbl">⏰ Hora</div><div style="font-size:18px;font-weight:900;color:var(--blue)">'+san(a.time)+'</div></div>'
-    +'<div class="sbox"><div class="slbl">✂️ Servicio</div><div style="font-size:13px;font-weight:700">'+san(a.svc)+'</div></div>'
-    +'<div class="sbox"><div class="slbl">💰 Total</div><div style="font-size:18px;font-weight:900;color:var(--green)">'+money(a.price)+'</div></div>'
+    +'<div class="sbox"><div class="slbl">Fecha</div><div style="font-size:14px;font-weight:700">'+san(a.date)+'</div></div>'
+    +'<div class="sbox"><div class="slbl">Hora</div><div style="font-size:18px;font-weight:900;color:var(--blue)">'+san(a.time)+'</div></div>'
+    +'<div class="sbox"><div class="slbl">Servicio</div><div style="font-size:13px;font-weight:700">'+san(a.svc)+'</div></div>'
+    +'<div class="sbox"><div class="slbl">Total</div><div style="font-size:18px;font-weight:900;color:var(--green)">'+money(a.price)+'</div></div>'
     +'</div>'
   );
-  var waBtn=G('appt-wa-btn');if(waBtn&&a.phone)waBtn.href='https://wa.me/'+a.phone.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+a.client+', te recordamos tu cita en '+CUR.name+' el '+a.date+' a las '+a.time+'. ✂️');
+  var waBtn=G('appt-wa-btn');if(waBtn&&a.phone)waBtn.href='https://wa.me/'+a.phone.replace(/\D/g,'')+'?text='+encodeURIComponent('Hola '+a.client+', te recordamos tu cita en '+CUR.name+' el '+a.date+' a las '+a.time+'.');
   var cb=G('appt-complete-btn');if(cb)cb.onclick=function(){updateApptStatus(id,'completed');};
   var ca=G('appt-cancel-btn');if(ca)ca.onclick=function(){updateApptStatus(id,'cancelled');};
   openOv('ov-appt-detail');
 }
 
-function updateApptStatus(id,status){if(!CUR)return;CUR.appointments.forEach(function(a){if(String(a.id)===String(id))a.status=status;});saveDB();closeOv('ov-appt-detail');renderTodayAppts();initAgenda();renderBizFinances();toast(status==='completed'?'✅ Cita completada':'✗ Cita cancelada',status==='completed'?'#22C55E':'#EF4444');}
+function updateApptStatus(id,status){if(!CUR)return;CUR.appointments.forEach(function(a){if(String(a.id)===String(id))a.status=status;});saveDB();closeOv('ov-appt-detail');renderTodayAppts();initAgenda();renderBizFinances();toast(status==='completed'?'Cita completada':'✗ Cita cancelada',status==='completed'?'#22C55E':'#EF4444');}
 
 function bizTab(tab){var tabs=['home','agenda','equipo','servicios','galeria','finanzas','horario','perfil'];for(var i=0;i<tabs.length;i++){var t=tabs[i];var pa=G('bp-'+t),bt=G('bn-'+t);if(pa)pa.classList[t===tab?'add':'remove']('on');if(bt)bt.classList[t===tab?'add':'remove']('on');}if(tab==='agenda'){DB=loadDB();CUR=DB.currentBiz?DB.businesses.filter(function(b){return b.id===DB.currentBiz;})[0]:CUR;initAgenda();}if(tab==='home'){DB=loadDB();CUR=DB.currentBiz?DB.businesses.filter(function(b){return b.id===DB.currentBiz;})[0]:CUR;renderTodayAppts();}}
 
@@ -636,10 +636,10 @@ function saveAppt(){
   if(!name){toast('Nombre del cliente requerido','#EF4444');return;}if(!date||!time){toast('Fecha y hora requeridas','#EF4444');return;}if(!svcRaw){toast('Selecciona un servicio','#EF4444');return;}
   var parts=svcRaw.split(',');if(!CUR)return;if(!CUR.appointments)CUR.appointments=[];
   CUR.appointments.push({id:Date.now(),client:name,phone:phone,email:'',svc:parts[0],barber:barber,date:date,time:time,price:safeNum(parts[1],0),status:status,notes:notes});
-  saveDB();closeOv('ov-appt');renderTodayAppts();initAgenda();renderBizFinances();initBizPanel();toast('✅ Cita guardada','#22C55E');
+  saveDB();closeOv('ov-appt');renderTodayAppts();initAgenda();renderBizFinances();initBizPanel();toast('Cita guardada con exito','#22C55E');
 }
 
-function saveBizProfile(){if(!CUR)return;var nm=sanitizeText(V('pf-nm')),addr=sanitizeText(V('pf-addr')),phone=sanitizeText(V('pf-phone')),insta=sanitizeText(V('pf-insta')),desc=sanitizeText(V('pf-desc'));if(!nm){toast('El nombre no puede estar vacío','#EF4444');return;}CUR.name=nm;CUR.addr=addr;CUR.phone=phone;CUR.insta=insta;CUR.desc=desc.slice(0,300);saveDB();initBizPanel();toast('✅ Perfil guardado','#4A7FD4');}
+function saveBizProfile(){if(!CUR)return;var nm=sanitizeText(V('pf-nm')),addr=sanitizeText(V('pf-addr')),phone=sanitizeText(V('pf-phone')),insta=sanitizeText(V('pf-insta')),desc=sanitizeText(V('pf-desc'));if(!nm){toast('El nombre no puede estar vacío','#EF4444');return;}CUR.name=nm;CUR.addr=addr;CUR.phone=phone;CUR.insta=insta;CUR.desc=desc.slice(0,300);saveDB();initBizPanel();toast('Perfil guardado','#4A7FD4');}
 
 /* ══════════════════════════
    PORTAL CLIENTES
@@ -652,7 +652,7 @@ function loadBizDirect(bizId){
   var av=G('ch-av');
   if(av){if(b.logo)av.innerHTML='<img src="'+sanitizeImageDataURL(b.logo)+'" style="width:100%;height:100%;object-fit:cover" alt="Logo">';else av.textContent=(b.name||'?').charAt(0);}
   T('ch-nm',b.name);
-  T('ch-meta','📍 '+sanitizeText((b.addr||'')+' '+(b.city||''))+' · '+sanitizeText(b.type||'Negocio'));
+  T('ch-meta',''+sanitizeText((b.addr||'')+' '+(b.city||''))+' · '+sanitizeText(b.type||'Negocio'));
   H('cl-svc-list',(b.services||[]).map(function(s){
     var thumb=s.photo?'<img src="'+sanitizeImageDataURL(s.photo)+'" style="width:50px;height:50px;border-radius:12px;object-fit:cover;flex-shrink:0" alt="Servicio">':'<div style="width:50px;height:50px;border-radius:12px;background:var(--bblue);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">✂️</div>';
     return'<div class="svcitem" data-sn="'+san(s.name)+'" data-sp="'+s.price+'" data-dur="'+s.dur+'">'
@@ -769,7 +769,7 @@ function buildTimes(bizId){
   var availEl=G('cl-time-available');
   if(availEl)availEl.textContent=times.length?(available>0?available+' horarios disponibles':'Sin horarios disponibles este día'):'';
   if(!times.length){
-    H('cl-times','<div style="text-align:center;padding:24px;color:var(--muted);background:var(--card);border-radius:var(--r);border:1px solid var(--b)"><div style="font-size:24px;margin-bottom:8px">😴</div><div>Cerrado este día</div></div>');
+    H('cl-times','<div style="text-align:center;padding:24px;color:var(--muted);background:var(--card);border-radius:var(--r);border:1px solid var(--b)"><div style="font-size:24px;margin-bottom:8px"></div><div>Cerrado este día</div></div>');
     return;
   }
   H('cl-times',times.map(function(t){
@@ -788,13 +788,13 @@ function buildSummary(){
   var biz=DB.businesses.filter(function(b){return b.id===CSEL.bizId;})[0];
   H('cl-summary',
     '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Resumen de tu reserva</div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">👤 Cliente</span><span style="font-size:13px;font-weight:700">'+san(CSEL.clientName||'')+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">📱 Teléfono</span><span style="font-size:13px;font-weight:700">'+san(CSEL.clientPhone||'')+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">🏪 Negocio</span><span style="font-size:13px;font-weight:700">'+san(biz?biz.name:'')+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">✂️ Servicio</span><span style="font-size:13px;font-weight:700">'+san(CSEL.svc||'')+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">📅 Fecha</span><span style="font-size:13px;font-weight:700">'+sanitizeText(CSEL.date||'—')+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">⏰ Hora</span><span style="font-size:13px;font-weight:700">'+sanitizeText(CSEL.time||'—')+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0"><span style="font-size:15px;font-weight:800">💰 Total</span><span style="font-weight:900;font-size:22px;color:var(--blue)">'+money(CSEL.svcPrice)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Cliente</span><span style="font-size:13px;font-weight:700">'+san(CSEL.clientName||'')+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Teléfono</span><span style="font-size:13px;font-weight:700">'+san(CSEL.clientPhone||'')+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Negocio</span><span style="font-size:13px;font-weight:700">'+san(biz?biz.name:'')+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Servicio</span><span style="font-size:13px;font-weight:700">'+san(CSEL.svc||'')+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Fecha</span><span style="font-size:13px;font-weight:700">'+sanitizeText(CSEL.date||'—')+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Hora</span><span style="font-size:13px;font-weight:700">'+sanitizeText(CSEL.time||'—')+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0"><span style="font-size:15px;font-weight:800">Total</span><span style="font-weight:900;font-size:22px;color:var(--blue)">'+money(CSEL.svcPrice)+'</span></div>'
   );
 }
 
@@ -878,7 +878,7 @@ function openQRModal(){
   var link='https://citas-pro.netlify.app/b/'+CUR.id;
   var el=G('qr-link-text');if(el)el.textContent=link;
   generateQR(link,'qr-code');
-  var wa=G('qr-wa-btn');if(wa)wa.href='https://wa.me/?text='+encodeURIComponent('📅 Reserva tu cita en '+CUR.name+' → '+link);
+  var wa=G('qr-wa-btn');if(wa)wa.href='https://wa.me/?text='+encodeURIComponent('Reserva tu cita en '+CUR.name+' → '+link);
   openOv('ov-qr');
 }
 
@@ -968,12 +968,12 @@ window.onload=function(){
   on('adm-home-btn','click',function(){goTo('s-portal');});
   on('adm-out-btn','click',doAdminLogout);
   on('adm-notif-btn','click',function(){renderNotifications();openOv('ov-notif');});
-  on('cfg-save-btn','click',function(){toast('✅ Configuración guardada','#4A7FD4');});
+  on('cfg-save-btn','click',function(){toast('Configuración guardada','#4A7FD4');});
   on('cfg-pass-btn','click',function(){
     var p1=V('cfg-pass1'),p2=V('cfg-pass2');
     if(!p1||p1!==p2){showErr('cfg-pass-err','Las contraseñas no coinciden.');return;}
     if(p1.length<8){showErr('cfg-pass-err','Mínimo 8 caracteres.');return;}
-    hideErr('cfg-pass-err');toast('✅ Contraseña actualizada','#4A7FD4');
+    hideErr('cfg-pass-err');toast('Contraseña actualizada','#4A7FD4');
   });
   on('close-notif','click',function(){closeOv('ov-notif');});
   on('close-biz-profile','click',function(){closeOv('ov-biz-profile');});
@@ -999,7 +999,7 @@ window.onload=function(){
   on('add-barber-btn','click',function(){openBarberModal(null);});
   on('add-svc-btn','click',function(){openSvcModal(null);});
   on('save-profile-btn','click',saveBizProfile);
-  on('save-horario-btn','click',function(){if(CUR){saveDB();toast('✅ Horario guardado','#4A7FD4');}});
+  on('save-horario-btn','click',function(){if(CUR){saveDB();toast('Horario guardado','#4A7FD4');}});
   on('add-gallery-btn','click',function(){var gi=G('gallery-input');if(gi)gi.click();});
 
   on('close-svc','click',function(){closeOv('ov-svc');});on('save-svc-btn','click',saveSvc);
@@ -1028,7 +1028,7 @@ window.onload=function(){
   on('qr-copy-btn','click',function(){
     if(!CUR)return;
     try{navigator.clipboard.writeText('https://citas-pro.netlify.app/b/'+CUR.id);}catch(e){}
-    toast('📋 Enlace copiado','#4A7FD4');
+    toast('Enlace copiado','#4A7FD4');
   });
   on('qr-download-btn','click',function(){
     var img=G('qr-code')?G('qr-code').querySelector('img'):null;if(!img)return;
