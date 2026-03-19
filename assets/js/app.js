@@ -35,7 +35,7 @@ function generateQR(text, containerId) {
 
 function openQRModal() {
   if (!CUR) return;
-  var link = 'https://citas-pro.netlify.app/b/' + CUR.id;
+  var link = 'https://citas-pro.netlify.app/#b/' + CUR.id;
   var el = G('qr-link-text'); if (el) el.textContent = link;
   generateQR(link, 'qr-code');
   var wa = G('qr-wa-btn'); if (wa) wa.href = 'https://wa.me/?text='+encodeURIComponent('Reserva tu cita en '+CUR.name+' → '+link);
@@ -395,7 +395,7 @@ window.onload = function() {
   on('qr-btn','click',     openQRModal);
   on('qr-copy-btn','click',function(){
     if(!CUR)return;
-    try{navigator.clipboard.writeText('https://citas-pro.netlify.app/b/'+CUR.id);}catch(e){}
+    try{navigator.clipboard.writeText('https://citas-pro.netlify.app/#b/'+CUR.id);}catch(e){}
     toast('Enlace copiado','#4A7FD4');
   });
   on('qr-download-btn','click',function(){

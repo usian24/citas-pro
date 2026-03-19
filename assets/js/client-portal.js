@@ -357,8 +357,8 @@ function confirmBooking() {
         + 'Servicio: ' + CSEL.svc + '\n'
         + 'Fecha: ' + CSEL.date + ' a las ' + CSEL.time + '\n'
         + 'Total: ' + money(CSEL.svcPrice) + '\n\n'
-        + 'Para modificar o cancelar tu cita visita:\n'
-        + 'https://citas-pro.netlify.app/b/' + biz.id + '#manage/' + token
+        + 'Para cancelar tu cita visita:\n'
+        + 'https://citas-pro.netlify.app/#manage/' + token
       );
 
   CSEL.bookingToken = token;

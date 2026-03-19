@@ -192,7 +192,10 @@ function updateRmPassStrength(pass) {
 function setupPhotoUpload() {
   function handleImg(inputId, onLoad) {
     var el = G(inputId); if (!el) return;
-    el.addEventListener('change', function(e) {
+    /* Eliminar listeners anteriores clonando el elemento */
+    var fresh = el.cloneNode(true);
+    el.parentNode.replaceChild(fresh, el);
+    fresh.addEventListener('change', function(e) {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
       var r = new FileReader();
@@ -202,7 +205,9 @@ function setupPhotoUpload() {
   }
   function handleImgs(inputId, onLoad) {
     var el = G(inputId); if (!el) return;
-    el.addEventListener('change', function(e) {
+    var fresh = el.cloneNode(true);
+    el.parentNode.replaceChild(fresh, el);
+    fresh.addEventListener('change', function(e) {
       Array.from(e.target.files).forEach(function(f) {
         if (!validImageType(f)) return;
         var r = new FileReader();
@@ -211,11 +216,38 @@ function setupPhotoUpload() {
       });
     });
   }
-  handleImg('logo-input', function(d) { REG.logo = d; var p = G('logo-preview'); if (p) { p.style.backgroundImage = 'url(' + d + ')'; p.style.backgroundSize = 'cover'; p.style.backgroundPosition = 'center'; p.innerHTML = ''; } });
-  handleImgs('svc-photo-input', function(d) { if (REG.photos.length >= 12) { toast('Máximo 12 fotos', '#EF4444'); return; } REG.photos.push(d); renderRegPhotos(); });
-  handleImgs('gallery-input', function(d) { if (CUR) { if (!CUR.photos) CUR.photos = []; if (CUR.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; } CUR.photos.push(d); saveDB(); renderGallery(); } });
-  handleImg('bar-photo-input', function(d) { window._barPhoto = d; var p = G('bar-photo-preview'); if (p) p.innerHTML = '<img src="' + d + '" class="photo-preview" alt="Foto"/>'; });
-  handleImg('sv-photo-input',  function(d) { window._svcPhoto = d; var p = G('sv-photo-preview');  if (p) p.innerHTML = '<img src="' + d + '" class="photo-preview" alt="Foto"/>'; });
+
+  handleImg('logo-input', function(d) {
+    if (!REG) return;
+    REG.logo = d;
+    var p = G('logo-preview');
+    if (p) { p.style.backgroundImage='url('+d+')'; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.innerHTML=''; }
+  });
+
+  handleImgs('svc-photo-input', function(d) {
+    if (!REG) return;
+    if (REG.photos.length >= 12) { toast('Máximo 12 fotos', '#EF4444'); return; }
+    REG.photos.push(d); renderRegPhotos();
+  });
+
+  handleImgs('gallery-input', function(d) {
+    if (!CUR) return;
+    if (!CUR.photos) CUR.photos = [];
+    if (CUR.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; }
+    CUR.photos.push(d); saveDB(); renderGallery();
+  });
+
+  handleImg('bar-photo-input', function(d) {
+    window._barPhoto = d;
+    var p = G('bar-photo-preview');
+    if (p) p.innerHTML = '<img src="'+d+'" class="photo-preview" alt="Foto"/>';
+  });
+
+  handleImg('sv-photo-input', function(d) {
+    window._svcPhoto = d;
+    var p = G('sv-photo-preview');
+    if (p) p.innerHTML = '<img src="'+d+'" class="photo-preview" alt="Foto"/>';
+  });
 }
 
 function renderRegPhotos() {
@@ -299,7 +331,7 @@ function finalizeBizReg() {
     appointments: []
   };
   DB.businesses.push(biz); DB.currentBiz=slug; DB.currentWorker=null; saveDB();
-  T('biz-link-display','citas-pro.netlify.app/b/'+slug);
+  T('biz-link-display','citas-pro.netlify.app/#b/'+slug);
   T('neg-badge', DB.businesses.length);
   var waLink=G('wa-share-link');
   if (waLink) waLink.href='https://wa.me/?text='+encodeURIComponent('Reserva tu cita en '+REG.name+' → https://citas-pro.netlify.app/b/'+slug);
@@ -307,7 +339,12 @@ function finalizeBizReg() {
 }
 
 function completeBizReg() { CUR=DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0]; if(CUR) showBizPanel(); else showRegStep(0); }
-function copyLink() { var link='citas-pro.netlify.app/b/'+(CUR?CUR.id:DB.currentBiz||'mi-negocio'); try{ navigator.clipboard.writeText('https://'+link); }catch(e){} toast('Enlace copiado','#4A7FD4'); }
+function copyLink() {
+  var link = 'https://citas-pro.netlify.app/#b/' + (CUR ? CUR.id : DB.currentBiz || 'mi-negocio');
+  try { navigator.clipboard.writeText(link); } catch(e) {}
+  toast('Enlace copiado', '#4A7FD4');
+}
+
 
 /* ══════════════════════════
    INIT PANEL DUEÑO
@@ -348,10 +385,10 @@ function initBizPanel() {
   T('bh-week',  weekA.length);
   T('bh-month', money(monthA.reduce(function(s,a){ return s+(a.price||0); },0)));
 
-  var link='citas-pro.netlify.app/b/'+CUR.id;
+  var link = 'citas-pro.netlify.app/#b/' + CUR.id;
   T('biz-link-show', link);
-  var wah=G('wa-share-home');
-  if (wah) wah.href='https://wa.me/?text='+encodeURIComponent('Reserva tu cita en '+CUR.name+' → https://'+link);
+  var wah = G('wa-share-home');
+  if (wah) wah.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita en ' + CUR.name + ' → https://' + link);
 
   renderTodayAppts(todayA);
   renderBizWorkers();
