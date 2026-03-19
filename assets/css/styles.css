@@ -224,3 +224,245 @@ select.inp option {
   background: var(--card);
   color: var(--text);
 }
+/* ══════════════════════════
+   MODO DÍA / NOCHE
+══════════════════════════ */
+
+/* MODO OSCURO — valores por defecto (ya los tienes) */
+:root,
+[data-theme="dark"] {
+  --bg:    #07090F;
+  --bg2:   #0D1018;
+  --bg3:   #111520;
+  --card:  #111827;
+  --card2: #161D2E;
+  --b:     rgba(255,255,255,.08);
+  --text:  #F0F4FF;
+  --t2:    #8B9BB4;
+  --muted: #4A5568;
+  --blue:  #4A7FD4;
+  --blue3: #7EB8FF;
+  --bblue: rgba(74,127,212,.1);
+  --green: #22C55E;
+  --red:   #EF4444;
+  --gold:  #F59E0B;
+  --purple:#A78BFA;
+  --r:     20px;
+  --r4:    28px;
+  --rpill: 100px;
+  --font:  'Inter', sans-serif;
+}
+
+/* MODO CLARO */
+[data-theme="light"] {
+  --bg:    #F0F4FF;
+  --bg2:   #E8EDF8;
+  --bg3:   #DDE4F2;
+  --card:  #FFFFFF;
+  --card2: #F5F8FF;
+  --b:     rgba(0,0,0,.08);
+  --text:  #0D1018;
+  --t2:    #4A5568;
+  --muted: #8B9BB4;
+  --blue:  #2F6CC4;
+  --blue3: #1A4FA0;
+  --bblue: rgba(47,108,196,.1);
+  --green: #16A34A;
+  --red:   #DC2626;
+  --gold:  #D97706;
+  --purple:#7C3AED;
+}
+
+/* Forzar colores de fondo en modo claro */
+[data-theme="light"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-theme="light"] .scr {
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-theme="light"] #s-portal {
+  background: #EEF2FF !important;
+}
+
+[data-theme="light"] .modal,
+[data-theme="light"] .mbot {
+  background: var(--card);
+  border-color: var(--b);
+  color: var(--text);
+}
+
+[data-theme="light"] .inp {
+  background: rgba(0,0,0,.04);
+  border-color: rgba(0,0,0,.12);
+  color: var(--text);
+}
+
+[data-theme="light"] .inp::placeholder {
+  color: var(--muted);
+}
+
+[data-theme="light"] .topbar {
+  background: rgba(255,255,255,.95);
+  border-bottom-color: var(--b);
+}
+
+[data-theme="light"] .bnav {
+  background: rgba(255,255,255,.95);
+  border-top-color: var(--b);
+}
+
+[data-theme="light"] .bn {
+  color: var(--t2);
+}
+
+[data-theme="light"] .bn.on {
+  color: var(--blue);
+}
+
+[data-theme="light"] .card,
+[data-theme="light"] .sbox,
+[data-theme="light"] .link-box {
+  background: var(--card);
+  border-color: var(--b);
+}
+
+[data-theme="light"] .tabs {
+  background: var(--card);
+  border-bottom-color: var(--b);
+}
+
+[data-theme="light"] .tab {
+  color: var(--t2);
+}
+
+[data-theme="light"] .tab.on {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+
+[data-theme="light"] .appt-row {
+  background: var(--card);
+  border-color: var(--b);
+}
+
+[data-theme="light"] .typbtn {
+  background: var(--card);
+  border-color: var(--b);
+  color: var(--text);
+}
+
+[data-theme="light"] .szopt {
+  background: var(--card);
+  border-color: var(--b);
+  color: var(--text);
+}
+
+[data-theme="light"] .svcitem {
+  background: var(--card);
+  border-color: var(--b);
+}
+
+[data-theme="light"] .worker-card {
+  background: var(--card);
+  border-color: var(--b);
+  color: var(--text);
+}
+
+[data-theme="light"] .dateopt {
+  background: var(--card);
+  border-color: var(--b);
+  color: var(--text);
+}
+
+[data-theme="light"] .dateopt.sel {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+
+[data-theme="light"] .topt {
+  background: var(--card);
+  border-color: var(--b);
+  color: var(--text);
+}
+
+[data-theme="light"] .topt.sel {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+
+[data-theme="light"] .tip-box {
+  background: rgba(47,108,196,.07);
+  border-color: rgba(47,108,196,.2);
+  color: var(--t2);
+}
+
+[data-theme="light"] .err-box {
+  background: rgba(220,38,38,.07);
+  border-color: rgba(220,38,38,.2);
+  color: var(--red);
+}
+
+[data-theme="light"] .pill-blue {
+  background: rgba(47,108,196,.12);
+  color: var(--blue);
+}
+
+[data-theme="light"] .toggle {
+  background: var(--b);
+}
+
+[data-theme="light"] .toggle.on {
+  background: var(--blue);
+}
+
+[data-theme="light"] .toggle-wrap {
+  border-bottom-color: var(--b);
+}
+
+[data-theme="light"] .search-bar {
+  background: var(--card);
+  border-color: var(--b);
+  color: var(--text);
+}
+
+[data-theme="light"] .search-bar input {
+  color: var(--text);
+  background: transparent;
+}
+
+[data-theme="light"] select.inp option {
+  background: var(--card);
+  color: var(--text);
+}
+
+[data-theme="light"] .img-thumb {
+  border-color: var(--b);
+}
+
+[data-theme="light"] .progbar {
+  background: var(--b);
+}
+
+[data-theme="light"] .pass-bar {
+  background: var(--b);
+}
+
+[data-theme="light"] .reg-step,
+[data-theme="light"] #biz-reg,
+[data-theme="light"] #adm-login {
+  background: var(--bg);
+}
+
+[data-theme="light"] .ov {
+  background: rgba(0,0,0,.4);
+}
+
+[data-theme="light"] .cpt {
+  box-shadow: 0 8px 32px rgba(0,0,0,.2);
+}
