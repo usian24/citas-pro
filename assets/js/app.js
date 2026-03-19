@@ -235,6 +235,7 @@ window.onload = function() {
   /* Cerrar overlays al click en fondo */
   document.querySelectorAll('.ov').forEach(function(o){
     o.addEventListener('click', function(e){ if(e.target===o) o.classList.remove('on'); });
+    
   });
 
   /* Cerrar dropdown país al click fuera */
@@ -444,4 +445,8 @@ window.onload = function() {
   else if(DB.currentWorker)     { goWorker(); }
   else if(DB.currentBiz)        { goBiz(); }
   else if(!checkLinkAccess())   { goTo('s-portal'); }
+  /* Escuchar cambios de hash en tiempo real */
+window.addEventListener('hashchange', function() {
+  checkLinkAccess();
+});
 };

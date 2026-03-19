@@ -17,6 +17,10 @@
 function loadBizDirect(bizId) {
   var biz = getBizById(bizId);
   if (!biz) { toast('Negocio no encontrado', '#EF4444'); return; }
+   /* Limpiar sesiones activas para modo cliente */
+  DB.currentBiz    = null;
+  DB.currentWorker = null;
+  
   initCSEL();
   CSEL.bizId = bizId;
   goTo('s-client');
@@ -463,8 +467,14 @@ function checkLinkAccess() {
   if (hash && hash.indexOf('#b/') === 0) {
     var bizId = hash.slice(3);
     if (bizId) {
+      DB = loadDB(); /* Recargar DB por si acaso */
       var biz = getBizById(bizId);
-      if (biz) { setTimeout(function(){ loadBizDirect(bizId); }, 100); return true; }
+      if (biz) {
+        loadBizDirect(bizId);
+        return true;
+      } else {
+        toast('Negocio no encontrado', '#EF4444');
+      }
     }
   }
   return false;
