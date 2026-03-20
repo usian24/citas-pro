@@ -122,6 +122,27 @@ exports.handler = async (event) => {
         </div>
       `
     },
+    // 6. Aviso de cita cancelada por el cliente
+    booking_cancel: {
+      subject: `Cita cancelada: ${data.clientName}`,
+      html: `
+        <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;background:#07090F;color:#F1F5F9;padding:40px 32px;border-radius:20px">
+          <div style="margin-bottom:24px">
+            <div style="font-size:28px;font-weight:900;letter-spacing:3px;color:#4A7FD4">CITAS PRO</div>
+          </div>
+          <h2 style="font-size:20px;font-weight:800;color:#EF4444;margin-bottom:6px">Cita cancelada ❌</h2>
+          <p style="color:#94A3B8;margin-bottom:24px">El cliente ha cancelado su reserva desde el portal.</p>
+          <div style="background:#141824;border-radius:16px;padding:24px;margin-bottom:24px;border-left:4px solid #EF4444">
+            <div style="padding:10px 0;border-bottom:1px solid #1E2A40"><span style="color:#94A3B8;font-size:13px">👤 Cliente</span><br><strong style="font-size:16px">${data.clientName}</strong></div>
+            <div style="padding:10px 0;border-bottom:1px solid #1E2A40"><span style="color:#94A3B8;font-size:13px">✂️ Servicio cancelado</span><br><strong>${data.service}</strong></div>
+            <div style="padding:10px 0"><span style="color:#94A3B8;font-size:13px">📅 Fecha y hora liberada</span><br><strong style="font-size:18px;color:#EF4444">${data.date} · ${data.time}</strong></div>
+          </div>
+          <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1E2A40;text-align:center;font-size:11px;color:#475569">
+            © 2026 Citas Pro · <a href="https://citaspro.app" style="color:#4A7FD4;text-decoration:none">citaspro.app</a>
+          </div>
+        </div>
+      `
+    },
 
     // 4. Recuperación de contraseña
     password_reset: {
