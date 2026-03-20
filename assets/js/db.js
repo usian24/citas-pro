@@ -1,10 +1,5 @@
 'use strict';
-// import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-// Inicializamos Supabase para el Frontend
-const supabaseUrl = 'https://fcbbquvuffpmudvwqgbg.supabase.co';
-const supabaseKey = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF';
-export const supabase = createClient(supabaseUrl, supabaseKey);
 /* ══════════════════════════
    SECURITY
 ══════════════════════════ */
@@ -162,8 +157,29 @@ function loadDB() {
 
 function saveDB() {
   try {
-    if (DB && typeof DB === 'object') localStorage.setItem(DBKEY, JSON.stringify(DB));
-  } catch(e) { toast('Almacenamiento lleno', '#EF4444'); }
+    if (DB && typeof DB === 'object') {
+      // 1. Guardado rápido local (para que la app no se sienta lenta)
+      localStorage.setItem(DBKEY, JSON.stringify(DB));
+
+      // 2. Guardado en la nube (Supabase)
+      if (CUR) {
+        // Buscamos el negocio actual en la DB local para mandarlo fresco
+        var negocioFresco = DB.businesses.filter(function(b){ return b.id === CUR.id; })[0];
+        
+        if (negocioFresco) {
+          fetch('/.netlify/functions/update-biz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(negocioFresco)
+          }).catch(function(err) {
+            console.error('Error guardando en la nube:', err);
+          });
+        }
+      }
+    }
+  } catch(e) { 
+    toast('Almacenamiento lleno', '#EF4444'); 
+  }
 }
 
 /* ══════════════════════════
