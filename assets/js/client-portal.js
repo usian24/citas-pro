@@ -20,7 +20,7 @@ function loadBizDirect(bizId) {
    /* Limpiar sesiones activas para modo cliente */
   DB.currentBiz    = null;
   DB.currentWorker = null;
-  
+
   initCSEL();
   CSEL.bizId = bizId;
   goTo('s-client');
@@ -304,7 +304,14 @@ function confirmBooking() {
 
   if (!worker.appointments) worker.appointments=[];
   worker.appointments.push(appt);
-  saveDB();
+  saveDB(); // Guarda localmente
+
+  /* NUEVO: Guardado forzado en Supabase para el cliente */
+  fetch('/.netlify/functions/update-biz', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(biz)
+  }).catch(function(e){ console.error('Error sincronizando cita en la nube:', e); });
 
   /* Notificación interna al trabajador */
   notifyWorker(biz.id, worker.id, 'new_booking',
@@ -354,16 +361,17 @@ function confirmBooking() {
 
   /* Botón WhatsApp al cliente */
   var wa = G('cl-wa-btn');
-  if (wa) wa.href = 'https://wa.me/' + phone.replace(/\D/g,'') + '?text='
-    + encodeURIComponent(
-        '¡Cita confirmada en ' + biz.name + '!\n'
+  if (wa) {
+    var waMsg = '¡Cita confirmada en ' + biz.name + '!\n'
         + 'Profesional: ' + worker.name + '\n'
         + 'Servicio: ' + CSEL.svc + '\n'
         + 'Fecha: ' + CSEL.date + ' a las ' + CSEL.time + '\n'
         + 'Total: ' + money(CSEL.svcPrice) + '\n\n'
-        + 'Para cancelar tu cita visita:\n'
-        + 'https://citas-pro.netlify.app/#manage/' + token
-      );
+        + 'Para gestionar o cancelar tu cita visita:\n'
+        + 'https://citas-po.netlify.app/#manage/' + token; // Actualizado a tu URL real
+    
+    wa.href = 'https://wa.me/' + phone.replace(/\D/g,'') + '?text=' + encodeURIComponent(waMsg);
+  }
 
   CSEL.bookingToken = token;
   clGoStep(6);
@@ -427,6 +435,13 @@ function cancelApptByToken(token) {
 
   found.appt.status = 'cancelled';
   saveDB();
+
+  /* NUEVO: Guardar cancelación en Supabase directamente */
+  fetch('/.netlify/functions/update-biz', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(found.biz)
+  }).catch(function(e){ console.error('Error cancelando cita en la nube:', e); });
 
   /* Notificar al trabajador */
   notifyWorker(found.biz.id, found.worker.id, 'booking_cancel',
