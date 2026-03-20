@@ -472,25 +472,69 @@ window.onload = async function() {
   /* ═════════════════════════════════════
      ARRANQUE CONECTADO A LA NUBE
   ═════════════════════════════════════ */
-  let hash = window.location.hash;
-  let targetBizId = null;
+  (async function startup() {
+  const hash = window.location.hash;
 
-  // Detectar si necesitamos cargar una barbería por la URL o sesión
-  if (hash.startsWith('#b/')) {
-    targetBizId = hash.split('/')[1];
-  } else if (DB.currentBiz) {
-    targetBizId = typeof DB.currentBiz === 'string' ? DB.currentBiz : DB.currentBiz.id;
-  } else if (DB.currentWorker && DB.currentWorker.bizId) {
-    targetBizId = DB.currentWorker.bizId;
-  }
-
-  // Si hay una barbería objetivo, la bajamos de Supabase antes de arrancar la vista
-  if (targetBizId) {
-    const cloudBiz = await fetchBizFromCloud(targetBizId);
-    if (cloudBiz) {
-      syncBizToLocal(cloudBiz);
+  // 1. REGLA DE ORO: Si la URL es de cliente (#b/), va al Portal del Cliente. PUNTO.
+  if (hash && hash.startsWith('#b/')) {
+    const targetBizId = hash.split('/')[1];
+    
+    if (targetBizId) {
+      console.log('Modo Cliente Detectado para:', targetBizId);
+      
+      // Intentamos cargar de la nube para tener lo más fresco (servicios, precios, etc.)
+      try {
+        const cloudBiz = await fetchBizFromCloud(targetBizId);
+        if (cloudBiz) {
+          syncBizToLocal(cloudBiz);
+          // Pequeño hack: nos aseguramos de que no haya currentWorker/currentBiz locales
+          // que confundan a la UI al cargar el portal.
+          DB.currentWorker = null; 
+          saveDB(); 
+          loadBizDirect(targetBizId); // Función en client-portal.js
+          return; // DETENEMOS EL ARRANQUE AQUÍ. Ya estamos donde queríamos.
+        } else {
+          toast('La barbería no existe en la nube.', '#EF4444');
+        }
+      } catch (e) {
+        console.error('Error en arranque de cliente:', e);
+        // Si falla la nube, intentamos carga local si existe como plan B
+        if (getBizById(targetBizId)) {
+          loadBizDirect(targetBizId);
+          return;
+        }
+      }
     }
+    
+    // Si algo falló con el ID del hash, limpiamos el hash y vamos al portal general
+    window.location.hash = '';
+    goTo('s-portal');
+    return;
   }
+
+  // 2. Si NO es link de cliente, revisamos accesos especiales (#manage, #reset)
+  if (checkLinkAccess()) {
+    return; // Si checkLinkAccess maneja la ruta, detenemos el arranque.
+  }
+
+  // 3. LÓGICA DE PANELS (Solo si no es ruta de cliente o acceso especial)
+  // Nota: goBiz(), goWorker(), etc., internamente ya redirigen a la sección correcta.
+  if (DB.admin && DB.admin.auth) {
+    goTo('s-admin');
+    showAdminPanel();
+  } else if (DB.currentWorker) {
+    // goWorker() debe internamente limpiar la UI y mostrar el panel del trabajador
+    if (typeof goWorker === 'function') goWorker();
+    else goTo('s-portal'); // Fallback por seguridad
+  } else if (DB.currentBiz) {
+    // goBiz() debe internamente limpiar la UI y mostrar el panel del dueño
+    if (typeof goBiz === 'function') goBiz();
+    else goTo('s-portal'); // Fallback por seguridad
+  } else {
+    // 4. Si no hay absolutamente nada, al Portal de Bienvenida
+    goTo('s-portal');
+  }
+})();
 
   // Lógica original de navegación
   if (DB.admin && DB.admin.auth) { 
