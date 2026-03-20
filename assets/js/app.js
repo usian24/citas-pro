@@ -226,16 +226,44 @@ function deleteBiz(id) {
 function copyText(txt){ try{navigator.clipboard.writeText(txt);}catch(e){} toast('Copiado','#4A7FD4'); }
 
 /* ══════════════════════════
+   FUNCIONES DE NUBE (NUEVAS)
+══════════════════════════ */
+async function fetchBizFromCloud(bizId) {
+  try {
+    // Llamamos a tu función segura en Netlify
+    const response = await fetch('/.netlify/functions/get-biz?id=' + bizId);
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+  } catch (err) {
+    console.error('Error obteniendo datos de la nube:', err);
+  }
+  return null;
+}
+
+function syncBizToLocal(cloudData) {
+  // Reemplaza o agrega el negocio en la memoria local para que la app lo encuentre
+  let index = DB.businesses.findIndex(b => b.id === cloudData.id);
+  if (index >= 0) {
+    DB.businesses[index] = cloudData;
+  } else {
+    DB.businesses.push(cloudData);
+  }
+  CUR = cloudData; // Actualizamos la variable global
+}
+
+/* ══════════════════════════
    WINDOW.ONLOAD
 ══════════════════════════ */
-window.onload = function() {
+// NOTA: Agregamos la palabra 'async' aquí
+window.onload = async function() {
   DB = loadDB(); initREG(); initCSEL();
   initTheme();
 
   /* Cerrar overlays al click en fondo */
   document.querySelectorAll('.ov').forEach(function(o){
     o.addEventListener('click', function(e){ if(e.target===o) o.classList.remove('on'); });
-    
   });
 
   /* Cerrar dropdown país al click fuera */
@@ -440,13 +468,49 @@ window.onload = function() {
   window.confirmCancel     = confirmCancel;
   window.REG               = REG;
 
-  /* Arranque */
-  if(DB.admin && DB.admin.auth) { goTo('s-admin'); showAdminPanel(); }
-  else if(DB.currentWorker)     { goWorker(); }
-  else if(DB.currentBiz)        { goBiz(); }
-  else if(!checkLinkAccess())   { goTo('s-portal'); }
-  /* Escuchar cambios de hash en tiempo real */
-window.addEventListener('hashchange', function() {
-  checkLinkAccess();
-});
+
+  /* ═════════════════════════════════════
+     ARRANQUE CONECTADO A LA NUBE
+  ═════════════════════════════════════ */
+  let hash = window.location.hash;
+  let targetBizId = null;
+
+  // Detectar si necesitamos cargar una barbería por la URL o sesión
+  if (hash.startsWith('#b/')) {
+    targetBizId = hash.split('/')[1];
+  } else if (DB.currentBiz) {
+    targetBizId = typeof DB.currentBiz === 'string' ? DB.currentBiz : DB.currentBiz.id;
+  } else if (DB.currentWorker && DB.currentWorker.bizId) {
+    targetBizId = DB.currentWorker.bizId;
+  }
+
+  // Si hay una barbería objetivo, la bajamos de Supabase antes de arrancar la vista
+  if (targetBizId) {
+    const cloudBiz = await fetchBizFromCloud(targetBizId);
+    if (cloudBiz) {
+      syncBizToLocal(cloudBiz);
+    }
+  }
+
+  // Lógica original de navegación
+  if (DB.admin && DB.admin.auth) { 
+    goTo('s-admin'); showAdminPanel(); 
+  } else if (DB.currentWorker) { 
+    goWorker(); 
+  } else if (DB.currentBiz) { 
+    goBiz(); 
+  } else if (!checkLinkAccess()) { 
+    goTo('s-portal'); 
+  }
+
+  /* Escuchar cambios de hash (para clientes que navegan entre barberías) */
+  window.addEventListener('hashchange', async function() {
+    let newHash = window.location.hash;
+    if (newHash.startsWith('#b/')) {
+      let id = newHash.split('/')[1];
+      const freshData = await fetchBizFromCloud(id);
+      if (freshData) syncBizToLocal(freshData);
+    }
+    checkLinkAccess();
+  });
 };
