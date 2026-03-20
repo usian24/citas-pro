@@ -368,7 +368,7 @@ function confirmBooking() {
         + 'Fecha: ' + CSEL.date + ' a las ' + CSEL.time + '\n'
         + 'Total: ' + money(CSEL.svcPrice) + '\n\n'
         + 'Para gestionar o cancelar tu cita visita:\n'
-        + 'https://citas-po.netlify.app/#manage/' + token; // Actualizado a tu URL real
+        + 'https://incomparable-choux-301c3b.netlify.app/#manage/' + token; // Actualizado a tu URL real
     
     wa.href = 'https://wa.me/' + phone.replace(/\D/g,'') + '?text=' + encodeURIComponent(waMsg);
   }

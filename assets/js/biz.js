@@ -331,16 +331,16 @@ function finalizeBizReg() {
     appointments: []
   };
   DB.businesses.push(biz); DB.currentBiz=slug; DB.currentWorker=null; saveDB();
-  T('biz-link-display','citas-pro.netlify.app/#b/'+slug);
+  T('biz-link-display','incomparable-choux-301c3b.netlify.app/#b/'+slug);
   T('neg-badge', DB.businesses.length);
   var waLink=G('wa-share-link');
-  if (waLink) waLink.href='https://wa.me/?text='+encodeURIComponent('Reserva tu cita en '+REG.name+' → https://citas-pro.netlify.app/b/'+slug);
+  if (waLink) waLink.href='https://wa.me/?text='+encodeURIComponent('Reserva tu cita en '+REG.name+' → https://incomparable-choux-301c3b.netlify.app/b/'+slug);
   checkNotifications();
 }
 
 function completeBizReg() { CUR=DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0]; if(CUR) showBizPanel(); else showRegStep(0); }
 function copyLink() {
-  var link = 'https://citas-pro.netlify.app/#b/' + (CUR ? CUR.id : DB.currentBiz || 'mi-negocio');
+  var link = 'https://incomparable-choux-301c3b.netlify.app/#b/' + (CUR ? CUR.id : DB.currentBiz || 'mi-negocio');
   try { navigator.clipboard.writeText(link); } catch(e) {}
   toast('Enlace copiado', '#4A7FD4');
 }
@@ -385,7 +385,7 @@ function initBizPanel() {
   T('bh-week',  weekA.length);
   T('bh-month', money(monthA.reduce(function(s,a){ return s+(a.price||0); },0)));
 
-  var link = 'citas-pro.netlify.app/#b/' + CUR.id;
+  var link = 'incomparable-choux-301c3b.netlify.app/#b/' + CUR.id;
   T('biz-link-show', link);
   var wah = G('wa-share-home');
   if (wah) wah.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita en ' + CUR.name + ' → https://' + link);
