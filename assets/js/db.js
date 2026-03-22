@@ -204,7 +204,7 @@ function initREG() {
 function initCSEL() {
   CSEL = { bizId:null, workerId:null, svc:null, svcPrice:0, svcDur:30,
            date:null, time:null, clientName:'', clientPhone:'', clientEmail:'',
-           bookingToken:null };
+           bookingToken:null, editingToken:null };
 }
 
 function toast(msg, color) {
@@ -261,12 +261,17 @@ function goBiz() {
 
 function goWorker() {
   goTo('s-worker');
-  if(DB.currentWorker) showWorkerPanel();
+  if(DB.currentWorker) {
+      if (typeof showWorkerPanel === 'function') showWorkerPanel();
+  }
 }
 
 function goClientFromBiz() {
-  if(CUR) loadBizDirect(CUR.id);
-  else goTo('s-portal');
+  if(CUR) {
+      if(typeof loadBizDirect === 'function') loadBizDirect(CUR.id);
+  } else {
+      goTo('s-portal');
+  }
 }
 
 /* ══════════════════════════
@@ -282,17 +287,17 @@ function getWorkerById(bizId, workerId) {
   return (biz.workers||[]).filter(function(w){ return w.id===workerId; })[0] || null;
 }
 
-function addNotificationToWorker(bizId, workerId, notif) {
+function notifyWorker(bizId, workerId, type, title, data) {
   var w = getWorkerById(bizId, workerId);
   if(!w) return;
   if(!w.notifications) w.notifications = [];
   w.notifications.unshift({
     id: Date.now(),
-    type: notif.type,
-    msg: notif.msg,
-    data: notif.data || {},
+    type: type,
+    title: title,
+    body: data.detail || '',
     read: false,
-    date: new Date().toISOString()
+    date: new Date().toISOString().split('T')[0]
   });
   /* máx 50 notificaciones */
   if(w.notifications.length > 50) w.notifications = w.notifications.slice(0,50);

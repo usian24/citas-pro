@@ -48,7 +48,7 @@ exports.handler = async (event) => {
             Si no solicitaste esto, ignora este email.
           </p>
           <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1E2A40;text-align:center;font-size:11px;color:#475569">
-            © 2025 Citas Pro · <a href="https://citaspro.app" style="color:#4A7FD4;text-decoration:none">citaspro.app</a>
+            © 2026 Citas Pro · <a href="https://citasproonline.com" style="color:#4A7FD4;text-decoration:none">citasproonline.com</a>
           </div>
         </div>
       `
@@ -91,7 +91,7 @@ exports.handler = async (event) => {
             Contacta directamente con <strong style="color:#F1F5F9">${data.bizName}</strong>.
           </p>
           <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1E2A40;text-align:center;font-size:11px;color:#475569">
-            © 2025 Citas Pro · <a href="https://citaspro.app" style="color:#4A7FD4;text-decoration:none">citaspro.app</a>
+            © 2026 Citas Pro · <a href="https://citasproonline.com" style="color:#4A7FD4;text-decoration:none">citasproonline.com</a>
           </div>
         </div>
       `
@@ -113,32 +113,11 @@ exports.handler = async (event) => {
             <div style="padding:10px 0;border-bottom:1px solid #1E2A40"><span style="color:#94A3B8;font-size:13px">✂️ Servicio</span><br><strong>${data.service}</strong></div>
             <div style="padding:10px 0"><span style="color:#94A3B8;font-size:13px">📅 Fecha y hora</span><br><strong style="font-size:18px;color:#7EB8FF">${data.date} · ${data.time}</strong></div>
           </div>
-          <a href="https://citaspro.app" style="display:block;background:linear-gradient(135deg,#4A7FD4,#2855C8);color:#fff;padding:16px;border-radius:50px;text-align:center;font-weight:800;text-decoration:none;font-size:15px">
+          <a href="https://citasproonline.com" style="display:block;background:linear-gradient(135deg,#4A7FD4,#2855C8);color:#fff;padding:16px;border-radius:50px;text-align:center;font-weight:800;text-decoration:none;font-size:15px">
             Ver en mi panel →
           </a>
           <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1E2A40;text-align:center;font-size:11px;color:#475569">
-            © 2025 Citas Pro · <a href="https://citaspro.app" style="color:#4A7FD4;text-decoration:none">citaspro.app</a>
-          </div>
-        </div>
-      `
-    },
-    // 6. Aviso de cita cancelada por el cliente
-    booking_cancel: {
-      subject: `Cita cancelada: ${data.clientName}`,
-      html: `
-        <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;background:#07090F;color:#F1F5F9;padding:40px 32px;border-radius:20px">
-          <div style="margin-bottom:24px">
-            <div style="font-size:28px;font-weight:900;letter-spacing:3px;color:#4A7FD4">CITAS PRO</div>
-          </div>
-          <h2 style="font-size:20px;font-weight:800;color:#EF4444;margin-bottom:6px">Cita cancelada ❌</h2>
-          <p style="color:#94A3B8;margin-bottom:24px">El cliente ha cancelado su reserva desde el portal.</p>
-          <div style="background:#141824;border-radius:16px;padding:24px;margin-bottom:24px;border-left:4px solid #EF4444">
-            <div style="padding:10px 0;border-bottom:1px solid #1E2A40"><span style="color:#94A3B8;font-size:13px">👤 Cliente</span><br><strong style="font-size:16px">${data.clientName}</strong></div>
-            <div style="padding:10px 0;border-bottom:1px solid #1E2A40"><span style="color:#94A3B8;font-size:13px">✂️ Servicio cancelado</span><br><strong>${data.service}</strong></div>
-            <div style="padding:10px 0"><span style="color:#94A3B8;font-size:13px">📅 Fecha y hora liberada</span><br><strong style="font-size:18px;color:#EF4444">${data.date} · ${data.time}</strong></div>
-          </div>
-          <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1E2A40;text-align:center;font-size:11px;color:#475569">
-            © 2026 Citas Pro · <a href="https://citaspro.app" style="color:#4A7FD4;text-decoration:none">citaspro.app</a>
+            © 2026 Citas Pro · <a href="https://citasproonline.com" style="color:#4A7FD4;text-decoration:none">citasproonline.com</a>
           </div>
         </div>
       `
@@ -160,7 +139,7 @@ exports.handler = async (event) => {
             Ve a <strong style="color:#F1F5F9">Perfil → Contraseña</strong>.
           </p>
           <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1E2A40;text-align:center;font-size:11px;color:#475569">
-            © 2025 Citas Pro · <a href="https://citaspro.app" style="color:#4A7FD4;text-decoration:none">citaspro.app</a>
+            © 2026 Citas Pro · <a href="https://citasproonline.com" style="color:#4A7FD4;text-decoration:none">citasproonline.com</a>
           </div>
         </div>
       `
@@ -184,15 +163,74 @@ exports.handler = async (event) => {
             <div style="color:#22C55E;font-weight:700;margin-bottom:8px">✅ Plan Citas Pro activo</div>
             <div style="color:#94A3B8;font-size:13px">Acceso ilimitado a todas las funciones</div>
           </div>
-          <a href="https://citaspro.app" style="display:block;background:linear-gradient(135deg,#22C55E,#16A34A);color:#fff;padding:16px;border-radius:50px;text-align:center;font-weight:800;text-decoration:none;font-size:15px">
+          <a href="https://citasproonline.com" style="display:block;background:linear-gradient(135deg,#22C55E,#16A34A);color:#fff;padding:16px;border-radius:50px;text-align:center;font-weight:800;text-decoration:none;font-size:15px">
             Ir a mi panel →
           </a>
           <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1E2A40;text-align:center;font-size:11px;color:#475569">
-            © 2025 Citas Pro · <a href="https://citaspro.app" style="color:#4A7FD4;text-decoration:none">citaspro.app</a>
+            © 2026 Citas Pro · <a href="https://citasproonline.com" style="color:#4A7FD4;text-decoration:none">citasproonline.com</a>
+          </div>
+        </div>
+      `
+    },
+
+    // 6. Aviso de cita cancelada por el cliente
+    booking_cancel: {
+      subject: `❌ Cita cancelada: ${data.clientName}`,
+      html: `
+        <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;background:#07090F;color:#F1F5F9;padding:40px 32px;border-radius:20px">
+          <div style="margin-bottom:24px">
+            <div style="font-size:28px;font-weight:900;letter-spacing:3px;color:#4A7FD4">CITAS PRO</div>
+          </div>
+          <h2 style="font-size:20px;font-weight:800;color:#EF4444;margin-bottom:6px">Cita cancelada ❌</h2>
+          <p style="color:#94A3B8;margin-bottom:24px">El cliente ha cancelado su reserva desde el portal.</p>
+          <div style="background:#141824;border-radius:16px;padding:24px;margin-bottom:24px;border-left:4px solid #EF4444">
+            <div style="padding:10px 0;border-bottom:1px solid #1E2A40"><span style="color:#94A3B8;font-size:13px">👤 Cliente</span><br><strong style="font-size:16px">${data.clientName}</strong></div>
+            <div style="padding:10px 0;border-bottom:1px solid #1E2A40"><span style="color:#94A3B8;font-size:13px">✂️ Servicio cancelado</span><br><strong>${data.service}</strong></div>
+            <div style="padding:10px 0"><span style="color:#94A3B8;font-size:13px">📅 Fecha y hora liberada</span><br><strong style="font-size:18px;color:#EF4444">${data.date} · ${data.time}</strong></div>
+          </div>
+          <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1E2A40;text-align:center;font-size:11px;color:#475569">
+            © 2026 Citas Pro · <a href="https://citasproonline.com" style="color:#4A7FD4;text-decoration:none">citasproonline.com</a>
+          </div>
+        </div>
+      `
+    },
+
+    // 7. NUEVO: Bienvenida a un nuevo trabajador y envío de credenciales
+    worker_welcome: {
+      subject: `💈 ¡Bienvenido a ${data.bizName}! - Tu acceso a Citas Pro`,
+      html: `
+        <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;background:#07090F;color:#F1F5F9;padding:40px 32px;border-radius:20px">
+          <div style="text-align:center;margin-bottom:32px">
+            <div style="font-size:28px;font-weight:900;letter-spacing:3px;color:#4A7FD4">CITAS PRO</div>
+          </div>
+          <h2 style="font-size:22px;font-weight:900;margin-bottom:8px">¡Hola, ${data.workerName}! 👋</h2>
+          <p style="color:#94A3B8;margin-bottom:24px;line-height:1.6">
+            <strong style="color:#F1F5F9">${data.bizName}</strong> te ha añadido a su equipo en Citas Pro. Ahora puedes gestionar tus propios servicios, ver tus citas y tu facturación.
+          </p>
+          <div style="background:#141824;border:1.5px solid #4A7FD4;border-radius:16px;padding:24px;margin-bottom:24px">
+            <div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Tus credenciales de acceso:</div>
+            <div style="margin-bottom:10px">
+              <span style="color:#475569;font-size:13px">Email:</span><br>
+              <strong style="font-size:15px;color:#F1F5F9">${data.email}</strong>
+            </div>
+            <div>
+              <span style="color:#475569;font-size:13px">Contraseña provisional:</span><br>
+              <strong style="font-size:15px;color:#7EB8FF">${data.pass}</strong>
+            </div>
+          </div>
+          <p style="color:#475569;font-size:12px;text-align:center;margin-bottom:24px">
+            Te recomendamos cambiar esta contraseña desde tu Perfil una vez ingreses.
+          </p>
+          <a href="${data.link}" style="display:block;background:linear-gradient(135deg,#4A7FD4,#2855C8);color:#fff;padding:16px;border-radius:50px;text-align:center;font-weight:800;text-decoration:none;font-size:15px">
+            Iniciar sesión ahora →
+          </a>
+          <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1E2A40;text-align:center;font-size:11px;color:#475569">
+            © 2026 Citas Pro · <a href="https://citasproonline.com" style="color:#4A7FD4;text-decoration:none">citasproonline.com</a>
           </div>
         </div>
       `
     }
+
   };
 
   const template = templates[type];

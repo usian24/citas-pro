@@ -233,7 +233,7 @@ function setupPhotoUpload() {
     if (!CUR) return;
     if (!CUR.photos) CUR.photos = [];
     if (CUR.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; }
-    CUR.photos.push(d); saveDB(); renderGallery(); // Usamos esto ahora para "Tienda"
+    CUR.photos.push(d); saveDB(); renderGallery();
   });
 
   handleImg('bar-photo-input', function(d) {
@@ -250,7 +250,7 @@ function renderRegPhotos() {
   }).join('') + '<div class="img-thumb add-btn" onclick="document.getElementById(\'svc-photo-input\').click()">＋</div>';
 }
 
-function renderGallery() { // Renderiza la Tienda ahora
+function renderGallery() {
   if (!CUR) return;
   var grid = G('biz-gallery'); if (!grid) return;
   var photos = CUR.photos || [];
@@ -359,7 +359,7 @@ function initBizPanel() {
    TABS DUEÑO
 ══════════════════════════ */
 function bizTab(tab) {
-  var tabs=['home','agenda','equipo','tienda','finanzas','horario','perfil']; // Actualizado: 'tienda' en lugar de 'galeria' y 'servicios'
+  var tabs=['home','agenda','equipo','tienda','finanzas','horario','perfil']; 
   for (var i=0;i<tabs.length;i++) {
     var t=tabs[i];
     var pa=G('bp-'+t), bt=G('bn-'+t);
@@ -460,7 +460,7 @@ function renderBizWorkers() {
         
         return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:10px">'
           +'<div onclick="openWorkerProfile(\''+sanitizeText(w.id)+'\')" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer">'+av+'</div>'
-          +'<div style="flex:1" onclick="openWorkerProfile(\''+sanitizeText(w.id)+'\')" style="cursor:pointer">'
+          +'<div style="flex:1; cursor:pointer" onclick="openWorkerProfile(\''+sanitizeText(w.id)+'\')">'
           +'<div style="font-weight:700;font-size:15px;color:var(--blue)">'+san(w.name)+'</div>'
           +'<div style="font-size:12px;color:var(--t2);margin-top:2px">'+san(w.spec||'')+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:3px">'+apptCount+' citas · '+(w.services||[]).length+' servicios</div>'
@@ -476,14 +476,14 @@ function renderBizWorkers() {
     : '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">No hay trabajadores aún</div></div>');
 }
 
-// NUEVA FUNCIÓN: Perfil detallado del trabajador para el dueño
+// Perfil detallado del trabajador para el dueño
 function openWorkerProfile(workerId) {
   if (!CUR) return;
   var worker = CUR.workers.find(function(w) { return w.id === workerId; });
   if(!worker) return;
 
   var totalIngresos = (worker.appointments || [])
-    .filter(function(a) { return a.status === 'completed'; }) // Solo contamos las completadas
+    .filter(function(a) { return a.status === 'completed'; }) 
     .reduce(function(sum, a) { return sum + (a.price || 0); }, 0);
 
   var serviciosHtml = (worker.services && worker.services.length > 0) 
@@ -530,7 +530,7 @@ function openWorkerProfile(workerId) {
 }
 
 /* ══════════════════════════
-   MODAL TRABAJADOR (crear/editar)
+   MODAL TRABAJADOR (crear/editar) Y ENVIO DE CORREO
 ══════════════════════════ */
 var editWorkerId = null;
 
@@ -574,6 +574,7 @@ function saveBarber() {
   if (editWorkerId) {
     var w=(CUR.workers).filter(function(x){ return x.id===editWorkerId; })[0];
     if (w) { w.name=name; w.spec=spec; w.phone=phone; if(photo) w.photo=photo; }
+    toast('Trabajador editado','#4A7FD4');
   } else {
     if (!validEmail(email)) { toast('Email inválido','#EF4444'); return; }
     if (!pass || pass.length<6) { toast('Contraseña mínimo 6 caracteres','#EF4444'); return; }
@@ -592,10 +593,29 @@ function saveBarber() {
       services: [], horario: DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
       appointments: [], photos: [], notifications: []
     });
+
+    /* Enviar Email de Bienvenida con Credenciales usando la función de Netlify */
+    fetch('/.netlify/functions/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'worker_welcome', // Tendrás que asegurar que tu Netlify Function pueda leer este "type" o enviar el texto así:
+        to: email,
+        data: {
+          workerName: name,
+          bizName: CUR.name,
+          email: email,
+          pass: pass,
+          link: 'https://citasproonline.com' // La url de login
+        }
+      })
+    }).catch(function(e) { console.error('Error enviando email al trabajador:', e); });
+
+    toast('Trabajador creado y email enviado', '#22C55E');
   }
 
   editWorkerId=null; window._barPhoto=null;
-  saveDB(); renderBizWorkers(); closeOv('ov-barber'); toast('Trabajador guardado','#4A7FD4');
+  saveDB(); renderBizWorkers(); closeOv('ov-barber');
 }
 
 function confirmDeleteWorker(id) {

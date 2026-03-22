@@ -13,11 +13,9 @@
 </head>
 <body>
 
-<!-- ════════════ PANTALLA 0 — PORTAL PRINCIPAL ════════════ -->
 <div class="scr on" id="s-portal" style="min-height:100vh;background:#07090F;flex-direction:column;align-items:center;padding:0 0 60px;position:relative">
   <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:280px;background:radial-gradient(ellipse at 50% 0%,rgba(74,127,212,.16),transparent 70%);pointer-events:none;z-index:0"></div>
 
-  <!-- Top: toggle tema + 3 puntitos -->
   <div style="position:absolute;top:18px;right:18px;z-index:20;display:flex;gap:8px;align-items:center">
     <button id="theme-toggle" style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.7)"></button>
     <button id="dots-btn" aria-label="Panel Admin" style="width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;gap:3px;cursor:pointer">
@@ -27,7 +25,6 @@
     </button>
   </div>
 
-  <!-- Hero -->
   <div style="display:flex;flex-direction:column;align-items:center;padding-top:80px;margin-bottom:36px;text-align:center;width:100%;z-index:1">
     <div class="fu" style="width:100px;height:100px;border-radius:28px;background:linear-gradient(145deg,#5B8FE8,#3060D4);display:flex;align-items:center;justify-content:center;margin-bottom:22px;animation:glow 4s ease infinite">
       <svg width="56" height="56" viewBox="0 0 46 46" fill="none">
@@ -78,10 +75,8 @@
   </div>
 </div>
 
-<!-- ════════════ PANTALLA 1 — SUPER ADMIN ════════════ -->
 <div class="scr" id="s-admin">
 
-  <!-- Login admin -->
   <div id="adm-login" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 22px;background:#07090F;position:relative">
     <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:500px;height:220px;background:radial-gradient(ellipse at 50% 0%,rgba(74,127,212,.13),transparent 70%);pointer-events:none"></div>
     <div style="width:78px;height:78px;border-radius:24px;background:linear-gradient(145deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;margin-bottom:16px;animation:glow 4s ease infinite;z-index:1">
@@ -104,7 +99,6 @@
     </div>
   </div>
 
-  <!-- Panel admin -->
   <div id="adm-panel" style="display:none">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:10px">
@@ -198,13 +192,10 @@
   </div>
 </div>
 
-<!-- ════════════ PANTALLA 2 — PANEL NEGOCIO ════════════ -->
 <div class="scr" id="s-biz">
 
-  <!-- Registro wizard -->
   <div id="biz-reg" style="min-height:100vh;padding:32px 22px;max-width:460px;margin:0 auto">
 
-    <!-- Paso 0 -->
     <div class="reg-step on" id="rs-0" style="text-align:center;padding-top:24px">
       <div style="width:84px;height:84px;border-radius:26px;background:linear-gradient(145deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 20px;animation:glow 4s ease infinite">✂️</div>
       <div style="font-size:28px;font-weight:900;margin-bottom:10px">¡Registra tu negocio!</div>
@@ -213,7 +204,6 @@
       <button class="btn btn-ghost" id="login-toggle-btn" style="font-size:14px">¿Ya tienes cuenta? Iniciar sesión</button>
     </div>
 
-    <!-- Paso 1 -->
     <div class="reg-step" id="rs-1">
       <div class="progbar"><div class="progfill" style="width:16%"></div></div>
       <button class="btn btn-ghost btn-sm btn-icon" id="back-1" style="margin-bottom:22px;border-radius:50%">←</button>
@@ -230,7 +220,6 @@
       <button class="btn btn-blue" id="next-1">Continuar →</button>
     </div>
 
-    <!-- Paso 2 -->
     <div class="reg-step" id="rs-2">
       <div class="progbar"><div class="progfill" style="width:33%"></div></div>
       <button class="btn btn-ghost btn-sm btn-icon" id="back-2" style="margin-bottom:22px;border-radius:50%">←</button>
@@ -251,7 +240,6 @@
       <button class="btn btn-blue" id="next-2">Continuar</button>
     </div>
 
-    <!-- Paso 3 -->
     <div class="reg-step" id="rs-3">
       <div class="progbar"><div class="progfill" style="width:50%"></div></div>
       <button class="btn btn-ghost btn-sm btn-icon" id="back-3" style="margin-bottom:22px;border-radius:50%">←</button>
@@ -287,7 +275,6 @@
       <button class="btn btn-blue" id="next-3">Continuar</button>
     </div>
 
-    <!-- Paso 4 -->
     <div class="reg-step" id="rs-4">
       <div class="progbar"><div class="progfill" style="width:66%"></div></div>
       <button class="btn btn-ghost btn-sm btn-icon" id="back-4" style="margin-bottom:22px;border-radius:50%">←</button>
@@ -299,7 +286,6 @@
       <button class="btn btn-blue" id="next-4" style="margin-top:12px">Continuar</button>
     </div>
 
-    <!-- Paso 5 -->
     <div class="reg-step" id="rs-5">
       <div class="progbar"><div class="progfill" style="width:75%"></div></div>
       <button class="btn btn-ghost btn-sm btn-icon" id="back-5" style="margin-bottom:22px;border-radius:50%">←</button>
@@ -320,8 +306,6 @@
       <button class="btn btn-ghost" id="skip-5" style="margin-top:10px;font-size:13px">Omitir por ahora</button>
     </div>
 
-
-    <!-- Paso 6 -->
     <div class="reg-step" id="rs-6" style="text-align:center;padding-top:24px">
       <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#22C55E,#16A34A);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 20px;animation:popIn .5s ease">🎉</div>
       <div style="font-size:26px;font-weight:900;margin-bottom:8px">¡Bienvenido a Citas Pro!</div>
@@ -338,7 +322,6 @@
     </div>
   </div>
 
-  <!-- Panel del dueño -->
   <div id="biz-panel" style="display:none">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:10px">
@@ -412,12 +395,6 @@
         <div class="img-gallery" id="biz-gallery"></div>
         <input type="file" id="gallery-input" accept="image/jpeg,image/png,image/webp" multiple style="display:none"/>
       </div>
-      <div class="pane" id="bp-galeria">
-        <div class="sec-hdr"><span class="sec-ttl">Galería</span><button class="btn btn-dark btn-sm" style="width:auto" id="add-gallery-btn">Foto +</button></div>
-        <div class="tip-box">💡 Los clientes ven estas fotos al reservar.</div>
-        <div class="img-gallery" id="biz-gallery"></div>
-        <input type="file" id="gallery-input" accept="image/jpeg,image/png,image/webp" multiple style="display:none"/>
-      </div>
       <div class="pane" id="bp-finanzas">
         <div class="sec-hdr"><span class="sec-ttl">Finanzas (todo el equipo)</span></div>
         <div class="stats2">
@@ -465,7 +442,6 @@
   </div>
 </div>
 
-<!-- ════════════ PANTALLA 3 — PANEL TRABAJADOR ════════════ -->
 <div class="scr" id="s-worker">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
@@ -610,10 +586,8 @@
   </div>
 </div>
 
-<!-- ════════════ PANTALLA 4 — PORTAL CLIENTE ════════════ -->
 <div class="scr" id="s-client">
   <div style="max-width:500px;margin:0 auto;padding-bottom:60px">
-    <!-- Hero negocio -->
     <div style="background:linear-gradient(160deg,rgba(74,127,212,.12),transparent 60%);border-bottom:1px solid var(--b);padding:24px 20px 20px;position:relative">
       <button id="cl-back-btn" style="position:absolute;top:16px;left:16px;background:rgba(0,0,0,.3);border:none;border-radius:var(--rpill);padding:8px 14px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600">← Inicio</button>
       <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:8px">
@@ -623,7 +597,6 @@
       </div>
     </div>
 
-    <!-- Barra de progreso 5 pasos -->
     <div style="display:flex;background:var(--bg3)">
       <div id="bk-p1" style="height:4px;flex:1;background:var(--blue);transition:all .4s"></div>
       <div id="bk-p2" style="height:4px;flex:1;background:var(--b);transition:all .4s"></div>
@@ -639,7 +612,6 @@
       <div id="bk-lbl5" style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--muted)">CONFIRMAR</div>
     </div>
 
-    <!-- Paso 1: Datos cliente -->
     <div class="bstep on" id="cs-1" style="padding:24px 20px">
       <div style="font-size:22px;font-weight:900;margin-bottom:6px">¡Bienvenido!</div>
       <div style="font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.6">Ingresa tus datos para reservar tu cita.</div>
@@ -653,7 +625,6 @@
       <button class="btn btn-blue" id="cs1-next" style="font-size:16px;padding:18px">Continuar →</button>
     </div>
 
-    <!-- Paso 2: Seleccionar trabajador -->
     <div class="bstep" id="cs-2" style="padding:20px">
       <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige tu profesional</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:18px">¿Con quién quieres tu cita?</div>
@@ -662,7 +633,6 @@
       <button class="btn btn-ghost" id="cs2-back" style="font-size:13px;margin-top:8px">← Atrás</button>
     </div>
 
-    <!-- Paso 3: Seleccionar servicio -->
     <div class="bstep" id="cs-3" style="padding:20px">
       <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige el servicio</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:4px">Servicios de <strong id="cl-worker-name"></strong></div>
@@ -672,7 +642,6 @@
       <button class="btn btn-ghost" id="cs3-back" style="font-size:13px">← Atrás</button>
     </div>
 
-    <!-- Paso 4: Fecha y hora -->
     <div class="bstep" id="cs-4" style="padding:20px">
       <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige fecha y hora</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:18px">Selecciona el día y la hora disponible</div>
@@ -686,7 +655,6 @@
       <button class="btn btn-ghost" id="cs4-back" style="font-size:13px">← Atrás</button>
     </div>
 
-    <!-- Paso 5: Confirmar -->
     <div class="bstep" id="cs-5" style="padding:20px">
       <div style="font-size:20px;font-weight:900;margin-bottom:4px">Confirma tu cita</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:18px">Revisa los detalles antes de confirmar</div>
@@ -695,7 +663,6 @@
       <button class="btn btn-ghost" id="cs5-back" style="margin-top:10px;font-size:13px">← Atrás</button>
     </div>
 
-    <!-- Paso 6: Éxito -->
     <div class="bstep" id="cs-6">
       <div style="display:flex;flex-direction:column;align-items:center;min-height:60vh;padding:50px 20px;text-align:center">
         <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#22C55E,#16A34A);display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:20px;animation:popIn .5s ease;box-shadow:0 0 50px rgba(34,197,94,.35)">✅</div>
@@ -711,9 +678,6 @@
   </div>
 </div>
 
-<!-- ════════════ MODALES ════════════ -->
-
-<!-- Modal: Crear cuenta -->
 <div class="ov" id="ov-registro">
   <div class="modal" onclick="event.stopPropagation()">
     <div id="rm-step1">
@@ -774,7 +738,6 @@
   </div>
 </div>
 
-<!-- Modal: Login -->
 <div class="ov" id="ov-login">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Iniciar sesión</span><div class="xbtn" id="login-close">×</div></div>
@@ -795,7 +758,6 @@
   </div>
 </div>
 
-<!-- Modal: Recuperar contraseña -->
 <div class="ov" id="ov-forgot">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Recuperar contraseña</span><div class="xbtn" id="forgot-close">×</div></div>
@@ -814,7 +776,6 @@
   </div>
 </div>
 
-<!-- Modal: Admin 3 puntitos -->
 <div class="ov" id="ov-admin">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="mhdr"><div><div style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.8px;margin-bottom:4px">ACCESO EXCLUSIVO</div><span class="mttl">Panel de administración</span></div></div>
@@ -836,33 +797,12 @@
   </div>
 </div>
 
-<!-- Modal: Servicio (añadir/editar) -->
-<div class="ov bot" id="ov-svc">
-  <div class="mbot" onclick="event.stopPropagation()">
-    <div class="mhdr"><span class="mttl" id="svc-ttl">Añadir servicio</span><div class="xbtn" id="close-svc">×</div></div>
-    <div class="field"><label>Nombre</label><input class="inp" id="sv-name" placeholder="Ej: Corte de cabello" maxlength="60"/></div>
-    <div style="display:flex;gap:10px">
-      <div class="field" style="flex:1"><label>Precio (€)</label><input class="inp" id="sv-price" type="number" placeholder="12" min="0" max="9999" step="0.5"/></div>
-      <div class="field" style="flex:1"><label>Duración (min)</label><input class="inp" id="sv-dur" type="number" placeholder="30" min="5" max="480" step="5"/></div>
-    </div>
-    <div class="field"><label>Descripción</label><input class="inp" id="sv-desc" placeholder="Breve descripción..." maxlength="150"/></div>
-    <div class="field">
-      <label>Foto del servicio (opcional)</label>
-      <div id="sv-photo-preview" class="photo-upload" onclick="document.getElementById('sv-photo-input').click()"><div style="font-size:13px;color:var(--muted)">Añadir foto</div></div>
-      <input type="file" id="sv-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
-    </div>
-    <button class="btn btn-blue" id="save-svc-btn">Guardar servicio</button>
-  </div>
-</div>
-
-<!-- Modal: Trabajador (añadir/editar) -->
 <div class="ov bot" id="ov-barber">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl" id="bar-ttl">Añadir trabajador</span><div class="xbtn" id="close-bar">×</div></div>
     <div class="field"><label>Nombre *</label><input class="inp" id="bar-name" placeholder="Nombre del trabajador" maxlength="60"/></div>
     <div class="field"><label>Especialidad</label><input class="inp" id="bar-spec" placeholder="Ej: Cortes clásicos, barba..." maxlength="80"/></div>
     <div class="field"><label>Teléfono</label><input class="inp" id="bar-phone" type="tel" placeholder="+34..." maxlength="20"/></div>
-    <!-- Credenciales — solo visible al crear -->
     <div id="bar-cred-section">
       <div class="field"><label>Email (para acceso) *</label><input class="inp" id="bar-email" type="email" placeholder="trabajador@email.com" maxlength="100"/></div>
       <div class="field"><label>Contraseña *</label><input class="inp" id="bar-pass" type="password" placeholder="Mínimo 6 caracteres" maxlength="100"/></div>
@@ -876,7 +816,6 @@
   </div>
 </div>
 
-<!-- Modal: Nueva cita manual -->
 <div class="ov bot" id="ov-appt">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Nueva cita</span><div class="xbtn" id="close-appt">×</div></div>
@@ -902,7 +841,6 @@
   </div>
 </div>
 
-<!-- Modal: Detalle de cita (dueño) -->
 <div class="ov bot" id="ov-appt-detail">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Detalles de cita</span><div class="xbtn" onclick="closeOv('ov-appt-detail')">×</div></div>
@@ -915,7 +853,6 @@
   </div>
 </div>
 
-<!-- Modal: Detalle de cita (trabajador) -->
 <div class="ov bot" id="ov-wk-appt-detail">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Detalles de cita</span><div class="xbtn" id="close-wk-appt-detail">×</div></div>
@@ -928,7 +865,6 @@
   </div>
 </div>
 
-<!-- Modal: Servicio trabajador (añadir/editar) -->
 <div class="ov bot" id="ov-wk-svc">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl" id="wk-svc-ttl">Añadir servicio</span><div class="xbtn" id="close-wk-svc">×</div></div>
@@ -947,7 +883,6 @@
   </div>
 </div>
 
-<!-- Modal: Confirmación genérico -->
 <div class="ov" id="ov-confirm">
   <div class="modal" onclick="event.stopPropagation()" style="max-width:340px">
     <div style="text-align:center;margin-bottom:20px">
@@ -962,7 +897,6 @@
   </div>
 </div>
 
-<!-- Modal: Notificaciones admin -->
 <div class="ov bot" id="ov-notif">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Notificaciones</span><div class="xbtn" id="close-notif">×</div></div>
@@ -970,7 +904,6 @@
   </div>
 </div>
 
-<!-- Modal: Perfil del negocio (vista admin) -->
 <div class="ov bot" id="ov-biz-profile">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Perfil del negocio</span><div class="xbtn" id="close-biz-profile">×</div></div>
@@ -978,7 +911,6 @@
   </div>
 </div>
 
-<!-- Modal: Gestión de cita (cliente desde WhatsApp) -->
 <div class="ov" id="ov-manage">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Gestionar tu cita</span><div class="xbtn" id="close-manage">×</div></div>
@@ -986,7 +918,6 @@
   </div>
 </div>
 
-<!-- Modal: QR -->
 <div class="ov" id="ov-qr">
   <div class="modal" onclick="event.stopPropagation()" style="text-align:center">
     <div class="mhdr"><span class="mttl">Enlace y QR de reservas</span><div class="xbtn" onclick="closeOv('ov-qr')">×</div></div>
@@ -1005,7 +936,6 @@
     <div style="margin-top:12px"><button class="btn btn-dark btn-sm" id="qr-download-btn">Descargar QR</button></div>
   </div>
 </div>
-<!-- modal del perfil del trabajador -->
 <div class="ov bot" id="ov-worker-profile">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Perfil del Trabajador</span><div class="xbtn" onclick="closeOv('ov-worker-profile')">×</div></div>
@@ -1013,7 +943,6 @@
   </div>
 </div>
 
-<!-- ════════════ SCRIPTS — EN ESTE ORDEN EXACTO ════════════ -->
 <script src="assets/js/db.js"></script>
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/biz.js"></script>
