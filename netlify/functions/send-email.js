@@ -202,7 +202,7 @@ exports.handler = async (event) => {
 
   try {
     await resend.emails.send({
-      from: 'Citas Pro <onboarding@resend.dev>',
+      from: 'Citas Pro <reservas@citasproonline.com>',
       to: [to],
       subject: template.subject,
       html: template.html

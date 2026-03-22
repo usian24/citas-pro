@@ -35,7 +35,7 @@ function generateQR(text, containerId) {
 
 function openQRModal() {
   if (!CUR) return;
-  var link = 'https://incomparable-choux-301c3b.netlify.app/#b/' + CUR.id;
+  var link = 'https://citasproonline.com/#b/' + CUR.id;
   var el = G('qr-link-text'); if (el) el.textContent = link;
   generateQR(link, 'qr-code');
   var wa = G('qr-wa-btn'); if (wa) wa.href = 'https://wa.me/?text='+encodeURIComponent('Reserva tu cita en '+CUR.name+' → '+link);
@@ -169,8 +169,8 @@ function openBizProfile(bizId) {
     +'<div class="sbox"><div class="slbl">Citas hoy</div><div class="snum" style="color:var(--blue)">'+todayA.length+'</div></div></div>'
     +(b.desc?'<div class="card" style="margin-bottom:12px;font-size:13px;color:var(--t2);line-height:1.6">'+san(b.desc)+'</div>':'')
     +'<div style="background:var(--bg3);border-radius:11px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
-    +'<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">incomparable-choux-301c3b.netlify.app/b/'+sanitizeText(b.id)+'</span>'
-    +'<button onclick="copyText(\'https://incomparable-choux-301c3b.netlify.app/b/'+sanitizeText(b.id)+'\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
+    +'<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">citasproonline.com/b/'+sanitizeText(b.id)+'</span>'
+    +'<button onclick="copyText(\'https://citasproonline.com/b/'+sanitizeText(b.id)+'\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
     +'<button onclick="extendTrial(\''+sanitizeText(b.id)+'\')" class="btn btn-dark btn-sm" style="flex:1">Extender prueba</button>'
     +'<button onclick="activateBiz(\''+sanitizeText(b.id)+'\')" class="btn btn-green btn-sm" style="flex:1">Activar</button>'
@@ -424,7 +424,7 @@ window.onload = async function() {
   on('qr-btn','click',     openQRModal);
   on('qr-copy-btn','click',function(){
     if(!CUR)return;
-    try{navigator.clipboard.writeText('https://incomparable-choux-301c3b.netlify.app/#b/'+CUR.id);}catch(e){}
+    try{navigator.clipboard.writeText('https://citasproonline.com/#b/'+CUR.id);}catch(e){}
     toast('Enlace copiado','#4A7FD4');
   });
   on('qr-download-btn','click',function(){
@@ -505,7 +505,7 @@ window.onload = async function() {
         }
       }
     }
-    
+
     // Si algo falló con el ID del hash, limpiamos el hash y vamos al portal general
     window.location.hash = '';
     goTo('s-portal');

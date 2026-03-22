@@ -61,7 +61,7 @@ function initWorkerPanel() {
   T('wk-month',  money(monthA.reduce(function(s,a){ return s+(a.price||0); }, 0)));
 
   /* Link compartido (mismo que la barbería) */
-  var link = 'incomparable-choux-301c3b.netlify.app/#b/' + CUR.id;
+  var link = 'citasproonline.com/#b/' + CUR.id;
   T('wk-link-show', link);
   var waShare = G('wk-wa-share');
   if (waShare) waShare.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita con ' + CUR_WORKER.name + ' en ' + CUR.name + ' → https://' + link);
@@ -500,7 +500,7 @@ function setupWorkerPhotoUpload() {
 ══════════════════════════ */
 function copyWorkerLink() {
   if (!CUR) return;
-  var link = 'https://incomparable-choux-301c3b.netlify.app/#b/' + CUR.id;
+  var link = 'https://citasproonline.com/#b/' + CUR.id;
   try { navigator.clipboard.writeText(link); } catch(e) {}
   toast('Enlace copiado', '#4A7FD4');
 }
