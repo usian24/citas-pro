@@ -442,6 +442,14 @@ function updateApptStatus(id, status) {
   (CUR.workers||[]).forEach(function(w){ (w.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; }); });
   (CUR.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; });
   saveDB(); closeOv('ov-appt-detail'); renderTodayAppts(); initAgenda(); renderBizFinances();
+  
+  // Guardamos en la nube el estado actualizado de la cita
+  fetch('/.netlify/functions/update-biz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(CUR)
+  }).catch(function(err) { console.error('Error guardando status en nube:', err); });
+  
   toast(status==='completed'?'Cita completada':'Cita cancelada', status==='completed'?'#22C55E':'#EF4444');
 }
 
@@ -594,7 +602,7 @@ function saveBarber() {
       appointments: [], photos: [], notifications: []
     });
 
-    /* Enviar Email de Bienvenida con Credenciales usando la función de Netlify */
+    /* Enviar Email de Bienvenida con Credenciales */
     fetch('/.netlify/functions/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -749,6 +757,14 @@ function saveAppt() {
   }
 
   saveDB(); closeOv('ov-appt'); renderTodayAppts(); initAgenda(); renderBizFinances(); initBizPanel();
+  
+  // Guardar en la nube también la nueva cita manual
+  fetch('/.netlify/functions/update-biz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(CUR)
+  }).catch(function(err) { console.error('Error guardando en nube:', err); });
+  
   toast('Cita guardada','#22C55E');
 }
 

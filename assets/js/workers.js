@@ -728,8 +728,7 @@ function renderWorkerNotifications() {
   var notifs = CUR_WORKER.notifications || [];
   
   if (notifs.length) {
-      H('wk-notif-list', notifs.slice().reverse().map(function(n, i) {
-        var actualIndex = notifs.length - 1 - i;
+      H('wk-notif-list', notifs.map(function(n, i) {
         var bg = n.read ? 'transparent' : 'rgba(74,127,212,.08)';
         var border = n.read ? 'var(--b)' : 'var(--blue)';
         
@@ -739,11 +738,24 @@ function renderWorkerNotifications() {
           + '<span style="font-size:11px; color:var(--muted)">' + san(n.date) + '</span>'
           + '</div>'
           + '<div style="font-size:13px; color:var(--t2); line-height:1.5">' + san(n.body) + '</div>'
-          + (!n.read ? '<div style="text-align:right; margin-top:8px"><button onclick="markWorkerNotifRead(' + actualIndex + ')" style="background:var(--bblue); border:none; color:var(--blue); font-size:11px; font-weight:700; cursor:pointer; padding:6px 12px; border-radius:12px">Marcar como leída</button></div>' : '')
+          + (!n.read ? '<div style="text-align:right; margin-top:8px"><button onclick="markWorkerNotifRead(' + i + ')" style="background:var(--bblue); border:none; color:var(--blue); font-size:11px; font-weight:700; cursor:pointer; padding:6px 12px; border-radius:12px">Marcar como leída</button></div>' : '')
           + '</div>';
       }).join(''));
   } else {
       H('wk-notif-list', '<div style="text-align:center; padding:40px 20px; color:var(--muted)"><div style="font-size:32px; margin-bottom:10px">📭</div><div style="font-size:14px">No tienes notificaciones nuevas</div></div>');
+  }
+  
+  var clearBtn = G('clear-notif-btn');
+  if(clearBtn) {
+     clearBtn.onclick = function() {
+        openConfirmModal('Limpiar Notificaciones', '¿Borrar todas las notificaciones?', function() {
+            CUR_WORKER.notifications = [];
+            saveDB();
+            renderWorkerNotifications();
+            renderWorkerNotifBadge();
+            toast('Notificaciones borradas', '#475569');
+        });
+     };
   }
 }
 
