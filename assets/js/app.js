@@ -338,6 +338,7 @@ window.onload = async function() {
 
   /* Worker Panel */
   on('wk-out-btn','click',         workerLogout);
+  on('wk-copy-link','click',       function() { window.copyWorkerLink(); });
   on('wk-add-svc-btn','click',     function(){openWorkerSvcModal(null);});
   on('save-wk-profile-btn','click',saveWorkerProfile);
   on('save-wk-svc-btn','click',    saveWorkerSvc);

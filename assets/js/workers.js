@@ -499,11 +499,28 @@ function setupWorkerPhotoUpload() {
    COPIAR LINK BARBERÍA
 ══════════════════════════ */
 function copyWorkerLink() {
-  if (!CUR) return;
+  if (!CUR) {
+      toast('Error: No se encontró el ID del negocio', '#EF4444');
+      return;
+  }
   var link = 'https://citasproonline.com/#b/' + CUR.id;
-  try { navigator.clipboard.writeText(link); } catch(e) {}
-  toast('Enlace copiado', '#4A7FD4');
+  
+  // Intento moderno con Clipboard API
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(function() {
+      toast('¡Link de barbería copiado!', '#4A7FD4');
+    }).catch(function() {
+      // Fallback si falla el permiso
+      alert('Copia este link: ' + link);
+    });
+  } else {
+    // Fallback para navegadores antiguos o sin SSL
+    alert('Copia este link: ' + link);
+  }
 }
+
+// OBLIGATORIO: Hazla global para que app.js la vea
+window.copyWorkerLink = copyWorkerLink;
 
 /* ══════════════════════════
    NOTIFICACIONES TRABAJADOR
