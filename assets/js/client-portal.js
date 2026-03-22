@@ -221,7 +221,7 @@ function buildTimes(bizId, workerId) {
   }
 
   if (horDay.open) {
-    // Logica para soportar formatos viejos o el nuevo de dos turnos
+    // Lógica de dos turnos
     var f1 = horDay.from1 || horDay.from || '09:00';
     var t1 = horDay.to1 || horDay.to || '20:00';
     addInterval(f1, t1);
@@ -236,7 +236,6 @@ function buildTimes(bizId, workerId) {
   if (worker && worker.appointments) {
       worker.appointments.forEach(function(a) {
           if (a.date === CSEL.date && a.status !== 'cancelled') {
-              // Si estamos editando una cita (modificar), ignorar la hora original ocupada
               if (CSEL.editingToken && a.token === CSEL.editingToken) return;
               booked.push(a.time);
           }
@@ -294,7 +293,7 @@ function buildSummary() {
 }
 
 /* ══════════════════════════
-   CONFIRMAR RESERVA
+   CONFIRMAR RESERVA (CORREGIDO Y ORDENADO)
 ══════════════════════════ */
 function confirmBooking() {
   var name  = CSEL.clientName  || sanitizeText(V('cl-name'));
@@ -310,14 +309,11 @@ function confirmBooking() {
 
   var isModifying = !!CSEL.editingToken;
   
-  /* LÓGICA DE DUPLICADO A PRUEBA DE BALAS */
+  /* Control de Duplicados */
   var dup = false;
   (worker.appointments || []).forEach(function(a) {
       if (a.date === CSEL.date && a.time === CSEL.time && a.status !== 'cancelled') {
-          // Si estamos modificando, ignoramos la cita original que tiene este mismo token
-          if (isModifying && a.token === CSEL.editingToken) {
-              return; 
-          }
+          if (isModifying && a.token === CSEL.editingToken) { return; }
           dup = true;
       }
   });
@@ -328,7 +324,6 @@ function confirmBooking() {
       return; 
   }
 
-  /* Generar o reutilizar token */
   var token = isModifying ? CSEL.editingToken : 'tk_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
 
   var appt = {
@@ -344,30 +339,32 @@ function confirmBooking() {
   if (!worker.appointments) worker.appointments=[];
   
   if (isModifying) {
-      /* Reemplazar la cita vieja con la nueva */
       worker.appointments = worker.appointments.filter(function(a) { return a.token !== token; });
       worker.appointments.push(appt);
-      CSEL.editingToken = null; // Limpiamos bandera
+      CSEL.editingToken = null;
   } else {
       worker.appointments.push(appt);
   }
   
-  saveDB(); // Guarda localmente
+  /* 🔴 1. CREAMOS LA NOTIFICACIÓN PRIMERO (antes de guardar y subir) */
+  var notifTitle = isModifying ? 'Cita modificada: ' + name : 'Nueva cita: ' + name;
+  var notifDetail = 'Servicio: ' + CSEL.svc + ' • ' + CSEL.date + ' a las ' + CSEL.time + ' • Total: ' + money(CSEL.svcPrice);
+  
+  if (typeof notifyWorker === 'function') {
+      notifyWorker(biz.id, worker.id, 'new_booking', notifTitle, { detail: notifDetail });
+  }
 
-  /* Guardado forzado en Supabase para el cliente */
+  /* 🔴 2. GUARDAMOS LOCALMENTE (ahora con la notificación adentro) */
+  saveDB(); 
+
+  /* 🔴 3. SUBIMOS A LA NUBE (ahora el paquete va completo) */
   fetch('/.netlify/functions/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(biz)
   }).catch(function(e){ console.error('Error sincronizando cita en la nube:', e); });
 
-  /* Notificación interna al trabajador (con la función segura global) */
-  var notifTitle = isModifying ? 'Cita modificada por ' + name : name + ' reservó una cita';
-  if (typeof notifyWorker === 'function') {
-      notifyWorker(biz.id, worker.id, 'new_booking', notifTitle, { detail: CSEL.svc + ' · ' + CSEL.date + ' ' + CSEL.time });
-  }
-
-  /* Email al trabajador */
+  /* Emails a trabajador y cliente */
   if (worker.email) {
     fetch('/.netlify/functions/send-email', {
       method:'POST',
@@ -380,7 +377,6 @@ function confirmBooking() {
     }).catch(function(e){ console.error(e); });
   }
 
-  /* Email de confirmación al cliente */
   if (email) {
     fetch('/.netlify/functions/send-email', {
       method:'POST',
@@ -393,7 +389,7 @@ function confirmBooking() {
     }).catch(function(e){ console.error(e); });
   }
 
-  /* Pantalla de éxito */
+  /* UI final */
   var exitoTexto = isModifying ? 'ha sido modificada' : 'ha sido confirmada';
   T('cl-confirm-txt', '¡Hola ' + sanitizeText(name) + '! Tu cita en ' + sanitizeText(biz.name) + ' con ' + sanitizeText(worker.name) + ' ' + exitoTexto + '.');
 
@@ -408,7 +404,6 @@ function confirmBooking() {
     +'</div>'
   );
 
-  /* Botón WhatsApp al cliente */
   var wa = G('cl-wa-btn');
   if (wa) {
     var waMsg = isModifying ? '¡Mi cita fue modificada en ' + biz.name + '!\n' : '¡Cita confirmada en ' + biz.name + '!\n';
@@ -428,11 +423,9 @@ function confirmBooking() {
 
 /* ══════════════════════════
    GESTIÓN DE CITA EXISTENTE
-   (modificar / cancelar desde link de WhatsApp)
 ══════════════════════════ */
 function checkManageAccess() {
   var hash = window.location.hash;
-  /* Formato: #manage/TOKEN */
   if (hash && hash.indexOf('#manage/') === 0) {
     var token = hash.slice(8);
     if (token) {
@@ -507,20 +500,22 @@ function cancelApptByToken(token) {
   if (!found) { toast('Cita no encontrada','#EF4444'); return; }
 
   found.appt.status = 'cancelled';
+  
+  /* 🔴 1. CREAMOS NOTIFICACIÓN PRIMERO */
+  if (typeof notifyWorker === 'function') {
+      var notifDetail = 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time;
+      notifyWorker(found.biz.id, found.worker.id, 'booking_cancel', 'Cita cancelada: ' + found.appt.client, { detail: notifDetail });
+  }
+
+  /* 🔴 2. GUARDAMOS LOCAL */
   saveDB();
 
+  /* 🔴 3. SUBIMOS A SUPABASE */
   fetch('/.netlify/functions/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(found.biz)
   }).catch(function(e){ console.error('Error cancelando cita en la nube:', e); });
-
-  if (typeof notifyWorker === 'function') {
-      notifyWorker(found.biz.id, found.worker.id, 'booking_cancel',
-        found.appt.client + ' canceló su cita',
-        { detail: found.appt.svc + ' · ' + found.appt.date + ' · ' + found.appt.time }
-      );
-  }
 
   if (found.worker.email) {
     fetch('/.netlify/functions/send-email', {
