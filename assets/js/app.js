@@ -43,7 +43,7 @@ function openQRModal() {
 }
 
 /* ══════════════════════════
-   SUPER ADMIN
+   SUPER ADMIN LÓGICA
 ══════════════════════════ */
 function dotsLogin() {
   var email = V('dots-email').trim().toLowerCase();
@@ -106,7 +106,6 @@ function renderDash() {
     var b=bizs[i];
     if(b.plan==='active')active++;
     else if(b.plan==='trial')trial++;
-    /* contar citas de workers */
     (b.workers||[]).forEach(function(w){ appts+=(w.appointments||[]).length; });
     appts+=(b.appointments||[]).length;
     if(b.country)ctry[b.country]=1;
@@ -169,8 +168,8 @@ function openBizProfile(bizId) {
     +'<div class="sbox"><div class="slbl">Citas hoy</div><div class="snum" style="color:var(--blue)">'+todayA.length+'</div></div></div>'
     +(b.desc?'<div class="card" style="margin-bottom:12px;font-size:13px;color:var(--t2);line-height:1.6">'+san(b.desc)+'</div>':'')
     +'<div style="background:var(--bg3);border-radius:11px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
-    +'<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">citasproonline.com/b/'+sanitizeText(b.id)+'</span>'
-    +'<button onclick="copyText(\'https://citasproonline.com/b/'+sanitizeText(b.id)+'\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
+    +'<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">citasproonline.com/#b/'+sanitizeText(b.id)+'</span>'
+    +'<button onclick="copyText(\'https://citasproonline.com/#b/'+sanitizeText(b.id)+'\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
     +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
     +'<button onclick="extendTrial(\''+sanitizeText(b.id)+'\')" class="btn btn-dark btn-sm" style="flex:1">Extender prueba</button>'
     +'<button onclick="activateBiz(\''+sanitizeText(b.id)+'\')" class="btn btn-green btn-sm" style="flex:1">Activar</button>'
@@ -187,7 +186,7 @@ function renderRevenue(){ var active=DB.businesses.filter(function(b){return b.p
 function checkNotifications() {
   var notifs=[];
   DB.businesses.forEach(function(b){
-    if(b.plan==='trial')   notifs.push({type:'trial',  msg:b.name+' está en período de prueba',   biz:b.id,color:'#F59E0B'});
+    if(b.plan==='trial')   notifs.push({type:'trial',   msg:b.name+' está en período de prueba',   biz:b.id,color:'#F59E0B'});
     if(b.plan==='expired') notifs.push({type:'expired',msg:b.name+' tiene la suscripción vencida', biz:b.id,color:'#EF4444'});
   });
   var week=new Date(); week.setDate(week.getDate()-7);
@@ -226,47 +225,54 @@ function deleteBiz(id) {
 function copyText(txt){ try{navigator.clipboard.writeText(txt);}catch(e){} toast('Copiado','#4A7FD4'); }
 
 /* ══════════════════════════
-   FUNCIONES DE NUBE (NUEVAS)
+   FUNCIONES DE NUBE
 ══════════════════════════ */
 async function fetchBizFromCloud(bizId) {
   try {
-    // Llamamos a tu función segura en Netlify
     const response = await fetch('/.netlify/functions/get-biz?id=' + bizId);
-    if (response.ok) {
-      const data = await response.json();
-      return data;
-    }
-  } catch (err) {
-    console.error('Error obteniendo datos de la nube:', err);
-  }
+    if (response.ok) return await response.json();
+  } catch (err) { console.error('Error nube:', err); }
   return null;
 }
 
 function syncBizToLocal(cloudData) {
-  // Reemplaza o agrega el negocio en la memoria local para que la app lo encuentre
   let index = DB.businesses.findIndex(b => b.id === cloudData.id);
-  if (index >= 0) {
-    DB.businesses[index] = cloudData;
-  } else {
-    DB.businesses.push(cloudData);
-  }
-  CUR = cloudData; // Actualizamos la variable global
+  if (index >= 0) DB.businesses[index] = cloudData;
+  else DB.businesses.push(cloudData);
+  CUR = cloudData;
+}
+
+/* ══════════════════════════
+   LOGOUT / SALIR
+══════════════════════════ */
+function bizLogout() {
+    openConfirmModal('Cerrar sesión', '¿Quieres salir de la cuenta de barbería?', function() {
+        DB.currentBiz = null;
+        saveDB();
+        location.href = '/';
+    });
+}
+
+function workerLogout() {
+    openConfirmModal('Cerrar sesión', '¿Quieres salir de tu perfil de trabajador?', function() {
+        DB.currentWorker = null;
+        saveDB();
+        location.href = '/';
+    });
 }
 
 /* ══════════════════════════
    WINDOW.ONLOAD
 ══════════════════════════ */
-// NOTA: Agregamos la palabra 'async' aquí
 window.onload = async function() {
-  DB = loadDB(); initREG(); initCSEL();
-  initTheme();
+  DB = loadDB(); initREG(); initCSEL(); initTheme();
 
-  /* Cerrar overlays al click en fondo */
+  // Cerrar overlays al hacer click en el fondo
   document.querySelectorAll('.ov').forEach(function(o){
-    o.addEventListener('click', function(e){ if(e.target===o) o.classList.remove('on'); });
+    o.addEventListener('click', function(e){ if(e.target===o) closeOv(o.id); });
   });
 
-  /* Cerrar dropdown país al click fuera */
+  // Cerrar dropdown país
   document.addEventListener('click', function(e){
     var wrapper = G('country-wrapper');
     if(wrapper && !wrapper.contains(e.target)){
@@ -275,15 +281,12 @@ window.onload = async function() {
     }
   });
 
-  /* Toggle tema día/noche */
+  /* Eventos principales */
   on('theme-toggle','click', toggleTheme);
-
-  /* Portal principal */
   on('dots-btn','click',function(){
     var em=G('dots-email'),ps=G('dots-pass');
     if(em)em.value=''; if(ps)ps.value='';
     hideErr('dots-err'); openOv('ov-admin');
-    setTimeout(function(){var e=G('dots-email');if(e)e.focus();},250);
   });
   on('btn-crear','click', function(){ openRegModal(); });
   on('btn-login','click', function(){ openLoginModal(); });
@@ -294,267 +297,108 @@ window.onload = async function() {
   on('rm-btn-next','click',  rmGoStep2);
   on('rm-btn-verify','click',rmVerify);
   on('rm-btn-resend','click',rmResend);
-  on('rm-btn-back','click',function(){var s1=G('rm-step1'),s2=G('rm-step2');if(s1)s1.style.display='block';if(s2)s2.style.display='none';hideErr('rm-err2');});
+  on('rm-btn-back','click',function(){var s1=G('rm-step1'),s2=G('rm-step2');if(s1)s1.style.display='block';if(s2)s2.style.display='none';});
   on('rm-go-login','click',function(){closeOv('ov-registro');openLoginModal();});
   on('rm-pass','input',function(){updateRmPassStrength(this.value);});
-  on('rm-pass','keydown',function(e){if(e.key==='Enter')rmGoStep2();});
+
   [0,1,2,3,4,5].forEach(function(i){
     var box=G('rc'+i); if(!box)return;
     box.addEventListener('input',  function(){codeInput(i);});
     box.addEventListener('keydown',function(e){codeKey(e,i);});
   });
-  document.addEventListener('paste',function(e){
-    var focused=document.activeElement;
-    if(!focused||!focused.id||!focused.id.match(/^rc\d/))return;
-    var pasted=(e.clipboardData||window.clipboardData).getData('text');
-    var digits=pasted.replace(/[^0-9]/g,'').slice(0,6);
-    if(digits.length>=4){e.preventDefault();[0,1,2,3,4,5].forEach(function(i){var b=G('rc'+i);if(b)b.value=digits[i]||'';});if(digits.length===6)setTimeout(rmVerify,300);}
-  });
 
   /* Modal login */
   on('login-close','click',   function(){closeOv('ov-login');});
   on('li-btn-login','click',  doLogin);
-  on('li-pass','keydown',     function(e){if(e.key==='Enter')doLogin();});
-  on('li-email','keydown',    function(e){if(e.key==='Enter'){var p=G('li-pass');if(p)p.focus();}});
   on('li-forgot','click',     openForgotModal);
   on('li-go-register','click',function(){closeOv('ov-login');openRegModal();});
 
-  /* Modal forgot */
-  on('forgot-close','click',function(){closeOv('ov-forgot');});
-  on('fp-btn-send','click',  doForgot);
-  on('fp-email','keydown',   function(e){if(e.key==='Enter')doForgot();});
-  on('fp-btn-back','click',  function(){closeOv('ov-forgot');openLoginModal();});
-
-  /* Modal admin 3 puntitos */
+  /* Super Admin Modals */
   on('dots-cancel-btn','click',function(){closeOv('ov-admin');});
   on('dots-login-btn','click', dotsLogin);
-  on('dots-pass','keydown',    function(e){if(e.key==='Enter')dotsLogin();});
+  on('adm-login-btn','click',  doAdminLogin);
+  on('adm-out-btn','click',    doAdminLogout);
 
-  /* Admin panel */
-  on('adm-login-btn','click',doAdminLogin);
-  on('adm-pass','keydown',   function(e){if(e.key==='Enter')doAdminLogin();});
-  on('adm-back-btn','click', function(){goTo('s-portal');});
-  on('adm-home-btn','click', function(){goTo('s-portal');});
-  on('adm-out-btn','click',  doAdminLogout);
-  on('adm-notif-btn','click',function(){renderNotifications();openOv('ov-notif');});
-  on('cfg-save-btn','click', function(){toast('Configuración guardada','#4A7FD4');});
-  on('cfg-pass-btn','click', function(){
-    var p1=V('cfg-pass1'),p2=V('cfg-pass2');
-    if(!p1||p1!==p2){showErr('cfg-pass-err','Las contraseñas no coinciden.');return;}
-    if(p1.length<8){showErr('cfg-pass-err','Mínimo 8 caracteres.');return;}
-    hideErr('cfg-pass-err');toast('Contraseña actualizada','#4A7FD4');
-  });
-  on('close-notif','click',      function(){closeOv('ov-notif');});
-  on('close-biz-profile','click',function(){closeOv('ov-biz-profile');});
-
-  /* Biz registro */
-  on('reg-start-btn','click',   function(){bizRegStep(1);});
-  on('login-toggle-btn','click',function(){goTo('s-portal');openLoginModal();});
-  on('back-1','click',function(){bizRegStep(0);}); on('back-2','click',function(){bizRegStep(1);}); on('back-3','click',function(){bizRegStep(2);});
-  on('back-4','click',function(){bizRegStep(3);}); on('back-5','click',function(){bizRegStep(4);}); on('back-6','click',function(){bizRegStep(5);});
-  on('next-1','click',function(){bizRegStep(2);}); on('next-2','click',function(){bizRegStep(3);}); on('next-3','click',function(){bizRegStep(4);});
-  on('next-4','click',function(){bizRegStep(5);}); on('next-5','click',function(){bizRegStep(6);}); on('skip-5','click',function(){bizRegStep(6);}); on('next-6','click',function(){bizRegStep(7);});
-  on('enter-panel-btn','click',completeBizReg);
-  on('copy-link-reg','click',  copyLink);
-  on('add-reg-svc','click',    function(){openSvcModal(null);});
-  on('br-pass','input',        function(){updatePassStrength(this.value);});
-  [['barberia','Barbería'],['peluqueria','Peluquería'],['unias','Uñas'],['salon','Salón'],['spa','Spa'],['estetica','Estética']].forEach(function(t){ on('type-'+t[0],'click',function(){selType('type-'+t[0],t[1]);}); });
-  [['sz-1','1'],['sz-24','2-4'],['sz-59','5-9'],['sz-10','10+']].forEach(function(s){ on(s[0],'click',function(){selSize(s[0],s[1]);}); });
-
-  /* Biz panel — dueño */
+  /* Biz Panel */
   on('biz-out-btn','click',    bizLogout);
-  on('copy-link-btn','click',  copyLink);
   on('view-portal-btn','click',goClientFromBiz);
   on('new-appt-btn','click',   openApptModal);
   on('new-appt-btn2','click',  openApptModal);
   on('add-barber-btn','click', function(){openWorkerModal(null);});
-  on('add-svc-btn','click',    function(){openSvcModal(null);});
   on('save-profile-btn','click',saveBizProfile);
-  on('save-horario-btn','click',function(){if(CUR){saveDB();toast('Horario guardado','#4A7FD4');}});
   on('add-gallery-btn','click', function(){var gi=G('gallery-input');if(gi)gi.click();});
 
-  /* Modales negocio */
-  on('close-svc','click', function(){closeOv('ov-svc');}); on('save-svc-btn','click',saveSvc);
-  on('close-bar','click', function(){closeOv('ov-barber');}); on('save-bar-btn','click',saveBarber);
-  on('close-appt','click',function(){closeOv('ov-appt');}); on('save-appt-btn','click',saveAppt);
+  /* Guardar Worker */
+  on('save-bar-btn','click', saveBarber);
+  on('close-bar','click', function(){closeOv('ov-barber');});
 
-  /* Modal confirmación genérico */
-  on('confirm-ok-btn','click',    confirmOk);
-  on('confirm-cancel-btn','click',confirmCancel);
+  /* Modal Confirmación */
+  on('confirm-ok-btn','click',     confirmOk);
+  on('confirm-cancel-btn','click', confirmCancel);
 
-  /* Modal gestión de cita (cliente) */
-  on('close-manage','click',function(){closeOv('ov-manage');window.location.hash='';});
-
-  /* Panel trabajador */
-  on('wk-out-btn','click',       workerLogout);
-  on('wk-copy-link','click',     copyWorkerLink);
-  on('wk-add-svc-btn','click',   function(){openWorkerSvcModal(null);});
-  on('wk-add-gallery-btn','click',function(){var gi=G('wk-gallery-input');if(gi)gi.click();});
+  /* Worker Panel */
+  on('wk-out-btn','click',         workerLogout);
+  on('wk-add-svc-btn','click',     function(){openWorkerSvcModal(null);});
   on('save-wk-profile-btn','click',saveWorkerProfile);
-  on('save-wk-pass-btn','click',   saveWorkerPassword);
-  on('save-wk-horario-btn','click',function(){if(CUR_WORKER){saveDB();toast('Horario guardado','#4A7FD4');}});
-  on('clear-notif-btn','click',    clearWorkerNotifications);
-  on('wk-profile-photo-btn','click',function(){var gi=G('wk-profile-photo-input');if(gi)gi.click();});
+  on('save-wk-svc-btn','click',    saveWorkerSvc);
+  on('close-wk-svc','click',       function(){closeOv('ov-wk-svc');});
 
-  /* Modales trabajador */
-  on('close-wk-svc','click',      function(){closeOv('ov-wk-svc');}); on('save-wk-svc-btn','click',saveWorkerSvc);
-  on('close-wk-appt-detail','click',function(){closeOv('ov-wk-appt-detail');});
-
-  /* Portal cliente — nuevo flujo */
-  on('cl-back-btn','click',function(){goTo('s-portal');});
+  /* Portal cliente */
+  on('cl-back-btn','click',function(){location.href='/';});
   on('cs1-next','click',  clStep2);
-  on('cs2-next','click',  function(){clStep4();});
-  on('cs2-back','click',  function(){clGoStep(1);});
   on('cs3-next','click',  clStep4);
-  on('cs3-back','click',  function(){clGoStep(2);});
   on('cs4-next','click',  clStep5);
-  on('cs4-back','click',  function(){clGoStep(3);});
   on('cs5-confirm','click',confirmBooking);
-  on('cs5-back','click',  function(){clGoStep(4);});
   on('cl-reset-btn','click',resetBooking);
 
-  /* Fotos */
   setupPhotoUpload();
   setupWorkerPhotoUpload();
-
-  /* Eye toggles con SVG profesional */
   initAllEyeToggles();
 
   /* QR */
-  on('qr-btn','click',     openQRModal);
+  on('qr-btn','click', openQRModal);
   on('qr-copy-btn','click',function(){
     if(!CUR)return;
-    try{navigator.clipboard.writeText('https://citasproonline.com/#b/'+CUR.id);}catch(e){}
-    toast('Enlace copiado','#4A7FD4');
-  });
-  on('qr-download-btn','click',function(){
-    var img=G('qr-code')?G('qr-code').querySelector('img'):null; if(!img)return;
-    var a=document.createElement('a'); a.href=img.src; a.download='QR-'+((CUR&&CUR.name)||'citaspro')+'.png'; a.click();
+    copyText('https://citasproonline.com/#b/'+CUR.id);
   });
 
-  /* Globals para inline HTML */
-  window.admTab            = admTab;
-  window.bizTab            = bizTab;
-  window.workerTab         = workerTab;
-  window.openBizProfile    = openBizProfile;
-  window.extendTrial       = extendTrial;
-  window.activateBiz       = activateBiz;
-  window.suspendBiz        = suspendBiz;
-  window.deleteBiz         = deleteBiz;
-  window.copyText          = copyText;
-  window.filterClientBiz   = filterClientBiz;
-  window.prevMonth         = prevMonth;
-  window.nextMonth         = nextMonth;
-  window.selectCalDay      = selectCalDay;
-  window.openApptDetail    = openApptDetail;
-  window.toggleHorarioDay  = toggleHorarioDay;
-  window.openSvcModal      = openSvcModal;
-  window.openWorkerModal   = openWorkerModal;
+  /* Exportar funciones globales */
+  window.admTab = admTab;
+  window.bizTab = bizTab;
+  window.workerTab = workerTab;
+  window.openWorkerProfile = openWorkerProfile;
+  window.selectCalDay = selectCalDay;
+  window.openApptDetail = openApptDetail;
+  window.toggleHorarioDay = toggleHorarioDay;
+  window.openWorkerModal = openWorkerModal;
   window.confirmDeleteWorker = confirmDeleteWorker;
-  window.delService        = delService;
-  window.loadBizDirect     = loadBizDirect;
-  window.openQRModal       = openQRModal;
-  window.openWorkerSvcModal = openWorkerSvcModal;
-  window.delWorkerService  = delWorkerService;
-  window.delWorkerGalleryPhoto = delWorkerGalleryPhoto;
-  window.prevWorkerMonth   = prevWorkerMonth;
-  window.nextWorkerMonth   = nextWorkerMonth;
-  window.selectWorkerCalDay = selectWorkerCalDay;
-  window.openWorkerApptDetail = openWorkerApptDetail;
-  window.toggleWorkerHorarioDay = toggleWorkerHorarioDay;
-  window.selectWorker      = selectWorker;
   window.cancelApptByToken = cancelApptByToken;
-  window.confirmOk         = confirmOk;
-  window.confirmCancel     = confirmCancel;
-  window.REG               = REG;
+  window.selectWorker = selectWorker;
 
-
-  /* ═════════════════════════════════════
-     ARRANQUE CONECTADO A LA NUBE
-  ═════════════════════════════════════ */
+  /* ARRANQUE CRÍTICO */
   (async function startup() {
-  const hash = window.location.hash;
-
-  // 1. REGLA DE ORO: Si la URL es de cliente (#b/), va al Portal del Cliente. PUNTO.
-  if (hash && hash.startsWith('#b/')) {
-    const targetBizId = hash.split('/')[1];
-    
-    if (targetBizId) {
-      console.log('Modo Cliente Detectado para:', targetBizId);
-      
-      // Intentamos cargar de la nube para tener lo más fresco (servicios, precios, etc.)
-      try {
-        const cloudBiz = await fetchBizFromCloud(targetBizId);
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#b/')) {
+        const id = hash.split('/')[1];
+        const cloudBiz = await fetchBizFromCloud(id);
         if (cloudBiz) {
-          syncBizToLocal(cloudBiz);
-          // Pequeño hack: nos aseguramos de que no haya currentWorker/currentBiz locales
-          // que confundan a la UI al cargar el portal.
-          DB.currentWorker = null; 
-          saveDB(); 
-          loadBizDirect(targetBizId); // Función en client-portal.js
-          return; // DETENEMOS EL ARRANQUE AQUÍ. Ya estamos donde queríamos.
-        } else {
-          toast('La barbería no existe en la nube.', '#EF4444');
+            syncBizToLocal(cloudBiz);
+            DB.currentWorker = null; saveDB();
+            loadBizDirect(id);
+            return;
         }
-      } catch (e) {
-        console.error('Error en arranque de cliente:', e);
-        // Si falla la nube, intentamos carga local si existe como plan B
-        if (getBizById(targetBizId)) {
-          loadBizDirect(targetBizId);
-          return;
-        }
-      }
     }
+    
+    if (checkLinkAccess()) return;
 
-    // Si algo falló con el ID del hash, limpiamos el hash y vamos al portal general
-    window.location.hash = '';
-    goTo('s-portal');
-    return;
-  }
-
-  // 2. Si NO es link de cliente, revisamos accesos especiales (#manage, #reset)
-  if (checkLinkAccess()) {
-    return; // Si checkLinkAccess maneja la ruta, detenemos el arranque.
-  }
-
-  // 3. LÓGICA DE PANELS (Solo si no es ruta de cliente o acceso especial)
-  // Nota: goBiz(), goWorker(), etc., internamente ya redirigen a la sección correcta.
-  if (DB.admin && DB.admin.auth) {
-    goTo('s-admin');
-    showAdminPanel();
-  } else if (DB.currentWorker) {
-    // goWorker() debe internamente limpiar la UI y mostrar el panel del trabajador
-    if (typeof goWorker === 'function') goWorker();
-    else goTo('s-portal'); // Fallback por seguridad
-  } else if (DB.currentBiz) {
-    // goBiz() debe internamente limpiar la UI y mostrar el panel del dueño
-    if (typeof goBiz === 'function') goBiz();
-    else goTo('s-portal'); // Fallback por seguridad
-  } else {
-    // 4. Si no hay absolutamente nada, al Portal de Bienvenida
-    goTo('s-portal');
-  }
-})();
-
-  // Lógica original de navegación
-  if (DB.admin && DB.admin.auth) { 
-    goTo('s-admin'); showAdminPanel(); 
-  } else if (DB.currentWorker) { 
-    goWorker(); 
-  } else if (DB.currentBiz) { 
-    goBiz(); 
-  } else if (!checkLinkAccess()) { 
-    goTo('s-portal'); 
-  }
-
-  /* Escuchar cambios de hash (para clientes que navegan entre barberías) */
-  window.addEventListener('hashchange', async function() {
-    let newHash = window.location.hash;
-    if (newHash.startsWith('#b/')) {
-      let id = newHash.split('/')[1];
-      const freshData = await fetchBizFromCloud(id);
-      if (freshData) syncBizToLocal(freshData);
+    if (DB.admin && DB.admin.auth) {
+        goTo('s-admin'); showAdminPanel();
+    } else if (DB.currentWorker) {
+        showWorkerPanel();
+    } else if (DB.currentBiz) {
+        showBizPanel();
+    } else {
+        goTo('s-portal');
     }
-    checkLinkAccess();
-  });
+  })();
 };
