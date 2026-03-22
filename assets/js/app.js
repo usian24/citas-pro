@@ -484,6 +484,9 @@ window.onload = async function() {
   window.confirmOk         = confirmOk;
   window.confirmCancel     = confirmCancel;
   window.REG               = REG;
+  
+  // FUNCION VITAL EXPORTADA PARA QUE CLIENT-PORTAL NO FALLE
+  window.bizLogout         = typeof bizLogout === 'function' ? bizLogout : function(){};
 
 
   /* ═════════════════════════════════════

@@ -7,36 +7,73 @@ var loginAttempts = {};
 
 function checkRateLimit(k) {
   var n = Date.now();
-  if (!loginAttempts[k]) loginAttempts[k] = { count: 0, resetAt: n + 300000 };
-  if (n > loginAttempts[k].resetAt) loginAttempts[k] = { count: 0, resetAt: n + 300000 };
+  if (!loginAttempts[k]) {
+      loginAttempts[k] = { count: 0, resetAt: n + 300000 };
+  }
+  if (n > loginAttempts[k].resetAt) {
+      loginAttempts[k] = { count: 0, resetAt: n + 300000 };
+  }
   loginAttempts[k].count++;
   return loginAttempts[k].count <= 5;
 }
-function resetRateLimit(k) { delete loginAttempts[k]; }
+
+function resetRateLimit(k) { 
+    delete loginAttempts[k]; 
+}
 
 function san(s) {
   if (s === null || s === undefined) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#x27;').replace(/\//g,'&#x2F;').replace(/`/g,'&#x60;').slice(0,300);
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+    .replace(/`/g, '&#x60;')
+    .slice(0, 300);
 }
+
 function sanitizeText(s) {
   if (s === null || s === undefined) return '';
-  return String(s).replace(/[<>"'`\/\\]/g,'').trim().slice(0,300);
+  return String(s).replace(/[<>"'`\/\\]/g, '').trim().slice(0, 300);
 }
-function safeNum(v,def) { var n=parseFloat(v); return isNaN(n)?(def||0):Math.min(Math.max(n,0),999999); }
-function safeInt(v,def) { var n=parseInt(v);   return isNaN(n)?(def||0):Math.min(Math.max(n,0),99999); }
-function validEmail(e) { return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(String(e).trim()); }
-function validPhone(p) { return String(p).replace(/\D/g,'').length >= 7; }
+
+function safeNum(v, def) { 
+    var n = parseFloat(v); 
+    return isNaN(n) ? (def || 0) : Math.min(Math.max(n, 0), 999999); 
+}
+
+function safeInt(v, def) { 
+    var n = parseInt(v);   
+    return isNaN(n) ? (def || 0) : Math.min(Math.max(n, 0), 99999); 
+}
+
+function validEmail(e) { 
+    return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(String(e).trim()); 
+}
+
+function validPhone(p) { 
+    return String(p).replace(/\D/g, '').length >= 7; 
+}
+
 function passStrength(p) {
-  var s=0;
-  if(p.length>=8)s++; if(p.length>=12)s++;
-  if(/[A-Z]/.test(p))s++; if(/[0-9]/.test(p))s++; if(/[^A-Za-z0-9]/.test(p))s++;
+  var s = 0;
+  if (p.length >= 8) s++; 
+  if (p.length >= 12) s++;
+  if (/[A-Z]/.test(p)) s++; 
+  if (/[0-9]/.test(p)) s++; 
+  if (/[^A-Za-z0-9]/.test(p)) s++;
   return s;
 }
-function validImageType(f) { return ['image/jpeg','image/png','image/webp'].indexOf(f.type)>=0 && f.size<=5*1024*1024; }
+
+function validImageType(f) { 
+    return ['image/jpeg', 'image/png', 'image/webp'].indexOf(f.type) >= 0 && f.size <= 5 * 1024 * 1024; 
+}
+
 function sanitizeImageDataURL(d) {
-  if(!d||typeof d!=='string')return'';
-  if(!d.match(/^data:image\/(jpeg|png|webp);base64,/))return'';
+  if (!d || typeof d !== 'string') return '';
+  if (!d.match(/^data:image\/(jpeg|png|webp);base64,/)) return '';
   return d;
 }
 
@@ -51,14 +88,16 @@ var selectedCalDay = new Date().toISOString().split('T')[0];
 var FLAGS = { ES:'🇪🇸',CO:'🇨🇴',MX:'🇲🇽',AR:'🇦🇷',DE:'🇩🇪',NL:'🇳🇱',FR:'🇫🇷',CL:'🇨🇱',PE:'🇵🇪',US:'🇺🇸',BR:'🇧🇷',VE:'🇻🇪',EC:'🇪🇨',DO:'🇩🇴' };
 var MONTHS       = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var MONTHS_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+/* NUEVO: HORARIO CON DOBLE TURNO PARA ALMUERZO */
 var DEFAULT_HORARIO = [
-  {day:'Lunes',    open:true, from:'09:00',to:'20:00'},
-  {day:'Martes',   open:true, from:'09:00',to:'20:00'},
-  {day:'Miércoles',open:true, from:'09:00',to:'20:00'},
-  {day:'Jueves',   open:true, from:'09:00',to:'20:00'},
-  {day:'Viernes',  open:true, from:'09:00',to:'20:00'},
-  {day:'Sábado',   open:true, from:'09:00',to:'16:00'},
-  {day:'Domingo',  open:false,from:'09:00',to:'14:00'}
+  {day:'Lunes',    open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
+  {day:'Martes',   open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
+  {day:'Miércoles',open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
+  {day:'Jueves',   open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
+  {day:'Viernes',  open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
+  {day:'Sábado',   open:true,  from1:'09:00', to1:'16:00', hasBreak:false, from2:'',      to2:''},
+  {day:'Domingo',  open:false, from1:'09:00', to1:'14:00', hasBreak:false, from2:'',      to2:''}
 ];
 
 /* ══════════════════════════
@@ -68,72 +107,9 @@ function defDB() {
   var today = new Date().toISOString().split('T')[0];
   return {
     admin: { auth: false },
-    businesses: [{
-      id: 'la40barber',
-      name: 'La 40 Barber Shop',
-      owner: 'Versa Aguilar',
-      email: 'versa@la40.com',
-      pass: 'la40',
-      phone: '+34611200984',
-      addr: 'Carrer Sant Blai 32',
-      city: 'Tortosa',
-      country: 'ES',
-      type: 'Barbería',
-      joinDate: '2025-01-15',
-      plan: 'trial',
-      desc: 'Barbería profesional en el corazón de Tortosa.',
-      photos: [],
-      logo: '',
-      insta: '',
-      horario: DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
-      /* ── workers: cada trabajador tiene su propio perfil ── */
-      workers: [
-        {
-          id: 'w_versa',
-          name: 'Versa',
-          email: 'versa.worker@la40.com',
-          pass: 'la40worker',
-          phone: '+34611200984',
-          spec: 'Cortes clásicos y modernos',
-          photo: '',
-          active: true,
-          services: [
-            {id:'ws1',name:'Corte de cabello',price:12,dur:30,desc:'Corte personalizado',photo:''},
-            {id:'ws2',name:'Corte + Barba',   price:18,dur:45,desc:'Servicio completo',  photo:''}
-          ],
-          horario: DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
-          appointments: [
-            {id:'wa101',client:'Miguel R.',phone:'+34612222222',email:'',svc:'Corte de cabello',date:today,time:'10:00',price:12,status:'confirmed',notes:''}
-          ],
-          photos: [],
-          notifications: []
-        },
-        {
-          id: 'w_carlos',
-          name: 'Carlos',
-          email: 'carlos@la40.com',
-          pass: 'carlos123',
-          phone: '+34699000001',
-          spec: 'Barba y perfilado',
-          photo: '',
-          active: true,
-          services: [
-            {id:'ws3',name:'Arreglo de barba',price:8, dur:20,desc:'Perfilado y arreglo',photo:''},
-            {id:'ws4',name:'Rapado completo', price:10,dur:25,desc:'Máquina completa',   photo:''}
-          ],
-          horario: DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
-          appointments: [
-            {id:'wa102',client:'Juan M.',phone:'+34613333333',email:'',svc:'Arreglo de barba',date:today,time:'11:00',price:8,status:'completed',notes:''}
-          ],
-          photos: [],
-          notifications: []
-        }
-      ],
-      /* ── appointments a nivel barbería (reservas legacy) ── */
-      appointments: []
-    }],
+    businesses: [],
     currentBiz: null,
-    currentWorker: null   /* { bizId, workerId } */
+    currentWorker: null
   };
 }
 
@@ -145,27 +121,27 @@ function loadDB() {
     if (!p || typeof p !== 'object') return defDB();
     if (!Array.isArray(p.businesses)) p.businesses = [];
     if (!p.admin || typeof p.admin !== 'object') p.admin = { auth: false };
-    /* Migración: asegurar campo workers en negocios existentes */
+    
     p.businesses.forEach(function(b) {
       if (!Array.isArray(b.workers)) b.workers = [];
       if (!Array.isArray(b.appointments)) b.appointments = [];
     });
+    
     if (!p.currentWorker) p.currentWorker = null;
     return p;
-  } catch(e) { return defDB(); }
+  } catch(e) { 
+      return defDB(); 
+  }
 }
 
 function saveDB() {
   try {
     if (DB && typeof DB === 'object') {
-      // 1. Guardado rápido local (para que la app no se sienta lenta)
       localStorage.setItem(DBKEY, JSON.stringify(DB));
-
-      // 2. Guardado en la nube (Supabase)
+      
+      // Guardado en Supabase (Nube)
       if (CUR) {
-        // Buscamos el negocio actual en la DB local para mandarlo fresco
         var negocioFresco = DB.businesses.filter(function(b){ return b.id === CUR.id; })[0];
-        
         if (negocioFresco) {
           fetch('/.netlify/functions/update-biz', {
             method: 'POST',
@@ -185,35 +161,48 @@ function saveDB() {
 /* ══════════════════════════
    HELPERS UI
 ══════════════════════════ */
-function money(n) { return parseFloat(n||0).toFixed(2)+'€'; }
+function money(n) { return parseFloat(n || 0).toFixed(2) + '€'; }
 function G(id)    { return document.getElementById(id); }
-function V(id)    { var e=G(id); return e?e.value:''; }
-function T(id,t)  { var e=G(id); if(e) e.textContent=sanitizeText(t); }
-function H(id,h)  { var e=G(id); if(e) e.innerHTML=h; }
-function on(id,ev,fn) { var e=G(id); if(e) e.addEventListener(ev,fn); }
-function openOv(id)   { var e=G(id); if(e) e.classList.add('on'); }
-function closeOv(id)  { var e=G(id); if(e) e.classList.remove('on'); }
-function showErr(id,msg){ var e=G(id); if(e){ e.textContent=msg; e.style.display='block'; } }
-function hideErr(id)    { var e=G(id); if(e) e.style.display='none'; }
+function V(id)    { var e = G(id); return e ? e.value : ''; }
+function T(id, t) { var e = G(id); if (e) e.textContent = sanitizeText(t); }
+function H(id, h) { var e = G(id); if (e) e.innerHTML = h; }
+function on(id, ev, fn) { var e = G(id); if (e) e.addEventListener(ev, fn); }
+function openOv(id)   { var e = G(id); if (e) e.classList.add('on'); }
+function closeOv(id)  { var e = G(id); if (e) e.classList.remove('on'); }
+
+function showErr(id, msg) { 
+    var e = G(id); 
+    if (e) { 
+        e.textContent = msg; 
+        e.style.display = 'block'; 
+    } 
+}
+
+function hideErr(id) { 
+    var e = G(id); 
+    if (e) e.style.display = 'none'; 
+}
 
 function initREG() {
-  REG = { type:'',name:'',owner:'',email:'',pass:'',phone:'',addr:'',city:'',country:'ES',teamSize:'',services:[],photos:[],logo:'' };
-  regStep=0; editSvc=null; editBar=null;
+  REG = { type:'', name:'', owner:'', email:'', pass:'', phone:'', addr:'', city:'', country:'ES', teamSize:'', services:[], photos:[], logo:'' };
+  regStep = 0; editSvc = null; editBar = null;
 }
 
 function initCSEL() {
-  CSEL = { bizId:null, workerId:null, svc:null, svcPrice:0, svcDur:30,
-           date:null, time:null, clientName:'', clientPhone:'', clientEmail:'',
-           bookingToken:null, editingToken:null };
+  CSEL = { 
+      bizId: null, workerId: null, svc: null, svcPrice: 0, svcDur: 30,
+      date: null, time: null, clientName: '', clientPhone: '', clientEmail: '',
+      bookingToken: null, editingToken: null 
+  };
 }
 
 function toast(msg, color) {
   var old = document.querySelectorAll('.cpt');
-  for(var i=0;i<old.length;i++) old[i].remove();
+  for (var i = 0; i < old.length; i++) old[i].remove();
   var t = document.createElement('div');
   t.className = 'cpt';
   t.textContent = msg;
-  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:var(--rpill);font-weight:700;font-size:14px;z-index:99999;pointer-events:none;color:#fff;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);background:'+(color||'#1A2540');
+  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:var(--rpill);font-weight:700;font-size:14px;z-index:99999;pointer-events:none;color:#fff;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);background:' + (color || '#1A2540');
   document.body.appendChild(t);
   setTimeout(function(){ if(t.parentNode) t.remove(); }, 2800);
 }
@@ -247,15 +236,15 @@ function toggleTheme() {
 ══════════════════════════ */
 function goTo(id) {
   var ss = document.querySelectorAll('.scr');
-  for(var i=0;i<ss.length;i++) ss[i].classList.remove('on');
+  for (var i = 0; i < ss.length; i++) ss[i].classList.remove('on');
   var s = G(id);
-  if(s) s.classList.add('on');
-  window.scrollTo(0,0);
+  if (s) s.classList.add('on');
+  window.scrollTo(0, 0);
 }
 
 function goBiz() {
   goTo('s-biz');
-  if(DB.currentBiz) {
+  if (DB.currentBiz) {
     if (typeof showBizPanel === 'function') showBizPanel();
   } else {
     if (typeof showBizReg === 'function') showBizReg();
@@ -264,14 +253,14 @@ function goBiz() {
 
 function goWorker() {
   goTo('s-worker');
-  if(DB.currentWorker) {
+  if (DB.currentWorker) {
       if (typeof showWorkerPanel === 'function') showWorkerPanel();
   }
 }
 
 function goClientFromBiz() {
-  if(CUR) {
-      if(typeof loadBizDirect === 'function') loadBizDirect(CUR.id);
+  if (CUR) {
+      if (typeof loadBizDirect === 'function') loadBizDirect(CUR.id);
   } else {
       goTo('s-portal');
   }
@@ -281,20 +270,20 @@ function goClientFromBiz() {
    HELPERS DE DATOS Y NOTIFICACIONES
 ══════════════════════════ */
 function getBizById(id) {
-  return DB.businesses.filter(function(b){ return b.id===id; })[0] || null;
+  return DB.businesses.filter(function(b){ return b.id === id; })[0] || null;
 }
 
 function getWorkerById(bizId, workerId) {
   var biz = getBizById(bizId);
-  if(!biz) return null;
-  return (biz.workers||[]).filter(function(w){ return w.id===workerId; })[0] || null;
+  if (!biz) return null;
+  return (biz.workers || []).filter(function(w){ return w.id === workerId; })[0] || null;
 }
 
-// ESTA ES LA FUNCIÓN VITAL QUE NO DEBE BORRARSE NUNCA
+/* FUNCIÓN VITAL PARA QUE NO SE ROMPAN LAS NOTIFICACIONES */
 function addNotificationToWorker(bizId, workerId, notif) {
   var w = getWorkerById(bizId, workerId);
-  if(!w) return;
-  if(!w.notifications) w.notifications = [];
+  if (!w) return;
+  if (!w.notifications) w.notifications = [];
   
   w.notifications.unshift({
     id: Date.now(),
@@ -307,8 +296,8 @@ function addNotificationToWorker(bizId, workerId, notif) {
     date: new Date().toISOString().split('T')[0]
   });
   
-  /* máx 50 notificaciones */
-  if(w.notifications.length > 50) w.notifications = w.notifications.slice(0,50);
+  /* Máximo 50 notificaciones para no saturar la memoria */
+  if (w.notifications.length > 50) w.notifications = w.notifications.slice(0, 50);
   saveDB();
 }
 
@@ -322,7 +311,11 @@ function notifyWorker(bizId, workerId, type, title, data) {
 }
 
 function planTag(plan) {
-  var m = { active:{c:'#22C55E',l:'Activo'}, trial:{c:'#F59E0B',l:'Prueba'}, expired:{c:'#EF4444',l:'Vencido'} };
-  var x = m[plan] || {c:'#475569',l:'—'};
-  return '<span style="background:'+x.c+'22;color:'+x.c+';border:1px solid '+x.c+'44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">'+x.l+'</span>';
+  var m = { 
+      active:  { c:'#22C55E', l:'Activo' }, 
+      trial:   { c:'#F59E0B', l:'Prueba' }, 
+      expired: { c:'#EF4444', l:'Vencido' } 
+  };
+  var x = m[plan] || { c:'#475569', l:'—' };
+  return '<span style="background:' + x.c + '22;color:' + x.c + ';border:1px solid ' + x.c + '44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + x.l + '</span>';
 }

@@ -233,7 +233,7 @@ function setupPhotoUpload() {
     if (!CUR) return;
     if (!CUR.photos) CUR.photos = [];
     if (CUR.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; }
-    CUR.photos.push(d); saveDB(); renderGallery();
+    CUR.photos.push(d); saveDB(); renderGallery(); // Usamos esto ahora para "Tienda"
   });
 
   handleImg('bar-photo-input', function(d) {
@@ -250,7 +250,7 @@ function renderRegPhotos() {
   }).join('') + '<div class="img-thumb add-btn" onclick="document.getElementById(\'svc-photo-input\').click()">＋</div>';
 }
 
-function renderGallery() {
+function renderGallery() { // Renderiza la Tienda ahora
   if (!CUR) return;
   var grid = G('biz-gallery'); if (!grid) return;
   var photos = CUR.photos || [];
@@ -339,7 +339,7 @@ function initBizPanel() {
   renderBizWorkers();
   renderGallery();
   renderBizFinances();
-  renderHorario();
+  // ELIMINADO: renderHorario();
   renderCalendar();
   initAgenda();
 
@@ -359,7 +359,7 @@ function initBizPanel() {
    TABS DUEÑO
 ══════════════════════════ */
 function bizTab(tab) {
-  var tabs=['home','agenda','equipo','tienda','finanzas','horario','perfil']; 
+  var tabs=['home','agenda','equipo','tienda','finanzas','perfil']; // ELIMINADO: 'horario'
   for (var i=0;i<tabs.length;i++) {
     var t=tabs[i];
     var pa=G('bp-'+t), bt=G('bn-'+t);
@@ -599,14 +599,14 @@ function saveBarber() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type: 'worker_welcome', // Tendrás que asegurar que tu Netlify Function pueda leer este "type" o enviar el texto así:
+        type: 'worker_welcome',
         to: email,
         data: {
           workerName: name,
           bizName: CUR.name,
           email: email,
           pass: pass,
-          link: 'https://citasproonline.com' // La url de login
+          link: 'https://citasproonline.com'
         }
       })
     }).catch(function(e) { console.error('Error enviando email al trabajador:', e); });
@@ -702,38 +702,6 @@ function initAgenda() {
   T('agenda-day-label',days[d.getDay()]+' '+parseInt(parts[2])+' de '+MONTHS[parseInt(parts[1])-1]+' de '+parts[0]);
   H('biz-agenda-list',dayAppts.length?dayAppts.map(function(a){ return apptRowH(a); }).join('')
     :'<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">Sin citas para este día</div></div>');
-}
-
-/* ══════════════════════════
-   HORARIO BARBERÍA
-══════════════════════════ */
-function renderHorario() {
-  if (!CUR) return;
-  var horario=CUR.horario||DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); });
-  H('horario-days',horario.map(function(day,i){
-    return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px">'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:'+(day.open?'12px':'0')+'">'
-      +'<div style="font-weight:700;font-size:14px">'+san(day.day)+'</div>'
-      +'<div class="toggle '+(day.open?'on':'')+'" data-hday="'+i+'" onclick="toggleHorarioDay('+i+')"></div>'
-      +'</div>'
-      +(day.open
-        ?'<div style="display:flex;gap:10px;align-items:center">'
-          +'<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px">APERTURA</div><input class="inp" type="time" value="'+san(day.from)+'" data-hfrom="'+i+'" style="padding:9px 12px"/></div>'
-          +'<div style="color:var(--muted);font-size:16px;padding-top:18px">—</div>'
-          +'<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px">CIERRE</div><input class="inp" type="time" value="'+san(day.to)+'" data-hto="'+i+'" style="padding:9px 12px"/></div>'
-          +'</div>'
-        :'')
-      +'</div>';
-  }).join(''));
-  document.querySelectorAll('[data-hfrom]').forEach(function(el){ el.addEventListener('change',function(){ var i=parseInt(el.getAttribute('data-hfrom')); if(CUR.horario&&CUR.horario[i]) CUR.horario[i].from=el.value; }); });
-  document.querySelectorAll('[data-hto]').forEach(function(el){   el.addEventListener('change',function(){ var i=parseInt(el.getAttribute('data-hto'));   if(CUR.horario&&CUR.horario[i]) CUR.horario[i].to  =el.value; }); });
-}
-
-function toggleHorarioDay(i) {
-  if(!CUR) return;
-  if(!CUR.horario) CUR.horario=DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); });
-  CUR.horario[i].open=!CUR.horario[i].open;
-  renderHorario();
 }
 
 /* ══════════════════════════

@@ -205,28 +205,39 @@ function buildTimes(bizId, workerId) {
 
   var d = new Date(CSEL.date+'T12:00');
   var dayNames=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  var horDay = horario.filter(function(h){ return h.day===dayNames[d.getDay()]; })[0] || {open:true,from:'09:00',to:'20:00'};
+  var horDay = horario.filter(function(h){ return h.day===dayNames[d.getDay()]; })[0] || {open:true,from1:'09:00',to1:'20:00'};
 
   var times=[];
-  if (horDay.open) {
-    var fp=horDay.from.split(':').map(Number), tp=horDay.to.split(':').map(Number);
+  var interval = CSEL.svcDur || 30;
+
+  function addInterval(startStr, endStr) {
+    if(!startStr || !endStr) return;
+    var fp=startStr.split(':').map(Number), tp=endStr.split(':').map(Number);
     var fm=fp[0]*60+fp[1], tm=tp[0]*60+tp[1];
-    var interval=CSEL.svcDur||30;
-    for(var m=fm;m<=tm-interval;m+=30){
+    for(var m=fm; m <= tm-interval; m+=30){
       var h=Math.floor(m/60), mn=m%60;
       times.push(String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0'));
     }
   }
 
-  /* Horas ya ocupadas del worker */
+  if (horDay.open) {
+    // Logica para soportar formatos viejos o el nuevo de dos turnos
+    var f1 = horDay.from1 || horDay.from || '09:00';
+    var t1 = horDay.to1 || horDay.to || '20:00';
+    addInterval(f1, t1);
+
+    if (horDay.hasBreak && horDay.from2 && horDay.to2) {
+        addInterval(horDay.from2, horDay.to2);
+    }
+  }
+
+  /* Extraemos las citas del trabajador en ese día */
   var booked = [];
   if (worker && worker.appointments) {
       worker.appointments.forEach(function(a) {
           if (a.date === CSEL.date && a.status !== 'cancelled') {
               // Si estamos editando una cita (modificar), ignorar la hora original ocupada
-              if (CSEL.editingToken && a.token === CSEL.editingToken) {
-                  return;
-              }
+              if (CSEL.editingToken && a.token === CSEL.editingToken) return;
               booked.push(a.time);
           }
       });
@@ -299,7 +310,7 @@ function confirmBooking() {
 
   var isModifying = !!CSEL.editingToken;
   
-  /* LÓGICA DE DUPLICADO A PRUEBA DE BALAS (Igual a como la tenías al inicio) */
+  /* LÓGICA DE DUPLICADO A PRUEBA DE BALAS */
   var dup = false;
   (worker.appointments || []).forEach(function(a) {
       if (a.date === CSEL.date && a.time === CSEL.time && a.status !== 'cancelled') {
@@ -343,16 +354,15 @@ function confirmBooking() {
   
   saveDB(); // Guarda localmente
 
-  /* NUEVO: Guardado forzado en Supabase para el cliente */
+  /* Guardado forzado en Supabase para el cliente */
   fetch('/.netlify/functions/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(biz)
   }).catch(function(e){ console.error('Error sincronizando cita en la nube:', e); });
 
-  /* Notificación interna al trabajador (ahora usando la función conectada correctamente) */
+  /* Notificación interna al trabajador (con la función segura global) */
   var notifTitle = isModifying ? 'Cita modificada por ' + name : name + ' reservó una cita';
-  
   if (typeof notifyWorker === 'function') {
       notifyWorker(biz.id, worker.id, 'new_booking', notifTitle, { detail: CSEL.svc + ' · ' + CSEL.date + ' ' + CSEL.time });
   }
@@ -508,7 +518,7 @@ function cancelApptByToken(token) {
   if (typeof notifyWorker === 'function') {
       notifyWorker(found.biz.id, found.worker.id, 'booking_cancel',
         found.appt.client + ' canceló su cita',
-        { detail: found.appt.svc + ' · ' + found.appt.date + ' ' + found.appt.time }
+        { detail: found.appt.svc + ' · ' + found.appt.date + ' · ' + found.appt.time }
       );
   }
 
