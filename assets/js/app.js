@@ -256,6 +256,7 @@ function syncBizToLocal(cloudData) {
 /* ══════════════════════════
    WINDOW.ONLOAD
 ══════════════════════════ */
+// NOTA: Agregamos la palabra 'async' aquí
 window.onload = async function() {
   DB = loadDB(); initREG(); initCSEL();
   initTheme();
@@ -334,7 +335,10 @@ window.onload = async function() {
   on('adm-pass','keydown',   function(e){if(e.key==='Enter')doAdminLogin();});
   on('adm-back-btn','click', function(){goTo('s-portal');});
   on('adm-home-btn','click', function(){goTo('s-portal');});
-  on('adm-out-btn','click',  doAdminLogout);
+  
+  // PROTECCIÓN DE ERROR: Asegurar que doAdminLogout exista
+  on('adm-out-btn','click',  function() { if(typeof doAdminLogout === 'function') doAdminLogout(); });
+  
   on('adm-notif-btn','click',function(){renderNotifications();openOv('ov-notif');});
   on('cfg-save-btn','click', function(){toast('Configuración guardada','#4A7FD4');});
   on('cfg-pass-btn','click', function(){
@@ -360,44 +364,58 @@ window.onload = async function() {
   [['sz-1','1'],['sz-24','2-4'],['sz-59','5-9'],['sz-10','10+']].forEach(function(s){ on(s[0],'click',function(){selSize(s[0],s[1]);}); });
 
   /* Biz panel — dueño */
-  on('biz-out-btn','click',    bizLogout);
+  // PROTECCIÓN DE ERROR
+  on('biz-out-btn','click',    function() { if(typeof bizLogout === 'function') bizLogout(); });
   on('copy-link-btn','click',  copyLink);
   on('view-portal-btn','click',goClientFromBiz);
   on('new-appt-btn','click',   openApptModal);
   on('new-appt-btn2','click',  openApptModal);
   on('add-barber-btn','click', function(){openWorkerModal(null);});
+  
+  // PROTECCIÓN DE ERROR: Estas funciones fueron removidas, así que evitamos que detengan la app
+  on('add-svc-btn','click',    function(){ if(typeof openSvcModal === 'function') openSvcModal(null); });
+  on('close-svc','click', function(){ if(typeof closeOv === 'function') closeOv('ov-svc'); }); 
+  on('save-svc-btn','click', function(){ if(typeof saveSvc === 'function') saveSvc(); });
+
   on('save-profile-btn','click',saveBizProfile);
   on('save-horario-btn','click',function(){if(CUR){saveDB();toast('Horario guardado','#4A7FD4');}});
   on('add-gallery-btn','click', function(){var gi=G('gallery-input');if(gi)gi.click();});
 
   /* Modales negocio */
-  on('close-bar','click', function(){closeOv('ov-barber');}); on('save-bar-btn','click',saveBarber);
-  on('close-appt','click',function(){closeOv('ov-appt');}); on('save-appt-btn','click',saveAppt);
+  on('close-bar','click', function(){closeOv('ov-barber');}); 
+  on('save-bar-btn','click',function(){ if(typeof saveBarber === 'function') saveBarber(); });
+  on('close-appt','click',function(){closeOv('ov-appt');}); 
+  on('save-appt-btn','click',saveAppt);
 
   /* Modal confirmación genérico */
-  on('confirm-ok-btn','click',    confirmOk);
-  on('confirm-cancel-btn','click',confirmCancel);
+  on('confirm-ok-btn','click',    function(){ if(typeof confirmOk === 'function') confirmOk(); });
+  on('confirm-cancel-btn','click',function(){ if(typeof confirmCancel === 'function') confirmCancel(); });
 
   /* Modal gestión de cita (cliente) */
   on('close-manage','click',function(){closeOv('ov-manage');window.location.hash='';});
 
   /* Panel trabajador */
-  on('wk-out-btn','click',       workerLogout);
-  on('wk-copy-link','click',     function() { window.copyWorkerLink(); });
-  on('wk-add-svc-btn','click',   function(){openWorkerSvcModal(null);});
-  on('wk-add-gallery-btn','click',function(){var gi=G('wk-gallery-input');if(gi)gi.click();});
-  on('save-wk-profile-btn','click',saveWorkerProfile);
-  on('save-wk-pass-btn','click',   saveWorkerPassword);
-  on('save-wk-horario-btn','click',function(){if(CUR_WORKER){saveDB();toast('Horario guardado','#4A7FD4');}});
-  on('clear-notif-btn','click',    function() { 
-      openConfirmModal('Limpiar', '¿Borrar notificaciones?', function() { 
-          CUR_WORKER.notifications = []; saveDB(); renderWorkerNotifications(); renderWorkerNotifBadge(); 
-      }); 
+  // PROTECCIÓN DE ERROR
+  on('wk-out-btn','click',       function() { if(typeof workerLogout === 'function') workerLogout(); });
+  on('wk-copy-link','click',     function(){
+    if (typeof copyWorkerLink === 'function') {
+      copyWorkerLink();
+    } else if (CUR) {
+      try{navigator.clipboard.writeText('https://citasproonline.com/#b/'+CUR.id);}catch(e){}
+      toast('Enlace copiado', '#4A7FD4');
+    }
   });
+  on('wk-add-svc-btn','click',   function(){ if(typeof openWorkerSvcModal === 'function') openWorkerSvcModal(null); });
+  on('wk-add-gallery-btn','click',function(){var gi=G('wk-gallery-input');if(gi)gi.click();});
+  on('save-wk-profile-btn','click',function(){ if(typeof saveWorkerProfile === 'function') saveWorkerProfile(); });
+  on('save-wk-pass-btn','click',   function(){ if(typeof saveWorkerPassword === 'function') saveWorkerPassword(); });
+  on('save-wk-horario-btn','click',function(){if(typeof CUR_WORKER !== 'undefined' && CUR_WORKER){saveDB();toast('Horario guardado','#4A7FD4');}});
+  on('clear-notif-btn','click',    function(){ if(typeof clearWorkerNotifications === 'function') clearWorkerNotifications(); });
   on('wk-profile-photo-btn','click',function(){var gi=G('wk-profile-photo-input');if(gi)gi.click();});
 
   /* Modales trabajador */
-  on('close-wk-svc','click',      function(){closeOv('ov-wk-svc');}); on('save-wk-svc-btn','click',saveWorkerSvc);
+  on('close-wk-svc','click',      function(){closeOv('ov-wk-svc');}); 
+  on('save-wk-svc-btn','click',   function(){ if(typeof saveWorkerSvc === 'function') saveWorkerSvc(); });
   on('close-wk-appt-detail','click',function(){closeOv('ov-wk-appt-detail');});
 
   /* Portal cliente — nuevo flujo */
@@ -450,69 +468,92 @@ window.onload = async function() {
   window.toggleHorarioDay  = toggleHorarioDay;
   window.openWorkerModal   = openWorkerModal;
   window.confirmDeleteWorker = confirmDeleteWorker;
+  window.delService        = typeof delService === 'function' ? delService : function(){};
   window.loadBizDirect     = loadBizDirect;
   window.openQRModal       = openQRModal;
-  window.openWorkerSvcModal = openWorkerSvcModal;
-  window.delWorkerService  = delWorkerService;
-  window.delWorkerGalleryPhoto = delWorkerGalleryPhoto;
-  window.prevWorkerMonth   = prevWorkerMonth;
-  window.nextWorkerMonth   = nextWorkerMonth;
-  window.selectWorkerCalDay = selectWorkerCalDay;
-  window.openWorkerApptDetail = openWorkerApptDetail;
-  window.toggleWorkerHorarioDay = toggleWorkerHorarioDay;
+  window.openWorkerSvcModal = typeof openWorkerSvcModal === 'function' ? openWorkerSvcModal : function(){};
+  window.delWorkerService  = typeof delWorkerService === 'function' ? delWorkerService : function(){};
+  window.delWorkerGalleryPhoto = typeof delWorkerGalleryPhoto === 'function' ? delWorkerGalleryPhoto : function(){};
+  window.prevWorkerMonth   = typeof prevWorkerMonth === 'function' ? prevWorkerMonth : function(){};
+  window.nextWorkerMonth   = typeof nextWorkerMonth === 'function' ? nextWorkerMonth : function(){};
+  window.selectWorkerCalDay = typeof selectWorkerCalDay === 'function' ? selectWorkerCalDay : function(){};
+  window.openWorkerApptDetail = typeof openWorkerApptDetail === 'function' ? openWorkerApptDetail : function(){};
+  window.toggleWorkerHorarioDay = typeof toggleWorkerHorarioDay === 'function' ? toggleWorkerHorarioDay : function(){};
   window.selectWorker      = selectWorker;
   window.cancelApptByToken = cancelApptByToken;
   window.confirmOk         = confirmOk;
   window.confirmCancel     = confirmCancel;
   window.REG               = REG;
 
-  /* ARRANQUE CONECTADO A LA NUBE */
-  (async function startup() {
-    const hash = window.location.hash;
 
-    // 1. REGLA DE ORO: Si la URL es de cliente (#b/), va al Portal del Cliente.
-    if (hash && hash.startsWith('#b/')) {
-      const targetBizId = hash.split('/')[1];
+  /* ═════════════════════════════════════
+     ARRANQUE CONECTADO A LA NUBE
+  ═════════════════════════════════════ */
+  (async function startup() {
+  const hash = window.location.hash;
+
+  // 1. REGLA DE ORO: Si la URL es de cliente (#b/), va al Portal del Cliente. PUNTO.
+  if (hash && hash.startsWith('#b/')) {
+    const targetBizId = hash.split('/')[1];
+    
+    if (targetBizId) {
+      console.log('Modo Cliente Detectado para:', targetBizId);
       
-      if (targetBizId) {
-        try {
-          const cloudBiz = await fetchBizFromCloud(targetBizId);
-          if (cloudBiz) {
-            syncBizToLocal(cloudBiz);
-            DB.currentWorker = null; 
-            saveDB(); 
-            loadBizDirect(targetBizId);
-            return;
-          }
-        } catch (e) {
-          if (getBizById(targetBizId)) {
-            loadBizDirect(targetBizId);
-            return;
-          }
+      // Intentamos cargar de la nube para tener lo más fresco (servicios, precios, etc.)
+      try {
+        const cloudBiz = await fetchBizFromCloud(targetBizId);
+        if (cloudBiz) {
+          syncBizToLocal(cloudBiz);
+          // Pequeño hack: nos aseguramos de que no haya currentWorker/currentBiz locales
+          // que confundan a la UI al cargar el portal.
+          DB.currentWorker = null; 
+          saveDB(); 
+          loadBizDirect(targetBizId); // Función en client-portal.js
+          return; // DETENEMOS EL ARRANQUE AQUÍ. Ya estamos donde queríamos.
+        } else {
+          toast('La barbería no existe en la nube.', '#EF4444');
+        }
+      } catch (e) {
+        console.error('Error en arranque de cliente:', e);
+        // Si falla la nube, intentamos carga local si existe como plan B
+        if (getBizById(targetBizId)) {
+          loadBizDirect(targetBizId);
+          return;
         }
       }
-      window.location.hash = '';
-      goTo('s-portal');
-      return;
     }
 
-    // 2. Accesos especiales (#manage)
-    if (checkLinkAccess()) return; 
+    // Si algo falló con el ID del hash, limpiamos el hash y vamos al portal general
+    window.location.hash = '';
+    goTo('s-portal');
+    return;
+  }
 
-    // 3. LÓGICA DE PANELS
-    if (DB.admin && DB.admin.auth) {
-      goTo('s-admin');
-      showAdminPanel();
-    } else if (DB.currentWorker) {
-      if (typeof goWorker === 'function') goWorker();
-    } else if (DB.currentBiz) {
-      if (typeof goBiz === 'function') goBiz();
-    } else {
-      goTo('s-portal');
-    }
-  })();
+  // 2. Si NO es link de cliente, revisamos accesos especiales (#manage, #reset)
+  if (checkLinkAccess()) {
+    return; // Si checkLinkAccess maneja la ruta, detenemos el arranque.
+  }
 
-  /* Escuchar cambios de hash */
+  // 3. LÓGICA DE PANELS (Solo si no es ruta de cliente o acceso especial)
+  // Nota: goBiz(), goWorker(), etc., internamente ya redirigen a la sección correcta.
+  if (DB.admin && DB.admin.auth) {
+    goTo('s-admin');
+    showAdminPanel();
+  } else if (DB.currentWorker) {
+    // goWorker() debe internamente limpiar la UI y mostrar el panel del trabajador
+    if (typeof goWorker === 'function') goWorker();
+    else goTo('s-portal'); // Fallback por seguridad
+  } else if (DB.currentBiz) {
+    // goBiz() debe internamente limpiar la UI y mostrar el panel del dueño
+    if (typeof goBiz === 'function') goBiz();
+    else goTo('s-portal'); // Fallback por seguridad
+  } else {
+    // 4. Si no hay absolutamente nada, al Portal de Bienvenida
+    goTo('s-portal');
+  }
+})();
+
+  /* Escuchar cambios de hash (para clientes que navegan entre barberías) */
   window.addEventListener('hashchange', async function() {
     let newHash = window.location.hash;
     if (newHash.startsWith('#b/')) {

@@ -43,7 +43,7 @@ function doLogin() {
     saveDB();
     closeOv('ov-login');
     toast('Bienvenido/a ' + san(biz.owner || biz.name), '#22C55E');
-    setTimeout(function(){ location.reload(); }, 300); // Recargamos para limpiar UI vieja
+    setTimeout(function(){ goBiz(); }, 300);
     return;
   }
 
@@ -66,7 +66,7 @@ function doLogin() {
     saveDB();
     closeOv('ov-login');
     toast('Bienvenido/a ' + san(foundWorker.name), '#22C55E');
-    setTimeout(function(){ location.reload(); }, 300); // Recargamos para limpiar UI vieja
+    setTimeout(function(){ goWorker(); }, 300);
     return;
   }
 
@@ -75,6 +75,34 @@ function doLogin() {
   var p = G('li-pass'); if(p) p.value='';
 }
 
+/* ── Logout dueño ── */
+function bizLogout() {
+  openConfirmModal(
+    'Cerrar sesión',
+    '¿Estás seguro de que quieres cerrar sesión?',
+    function() {
+      DB.currentBiz = null;
+      DB.currentWorker = null;
+      saveDB();
+      CUR = null;
+      goTo('s-portal');
+    }
+  );
+}
+
+/* ── Logout trabajador ── */
+function workerLogout() {
+  openConfirmModal(
+    'Cerrar sesión',
+    '¿Estás seguro de que quieres cerrar sesión?',
+    function() {
+      DB.currentWorker = null;
+      saveDB();
+      CUR_WORKER = null;
+      goTo('s-portal');
+    }
+  );
+}
 
 /* ══════════════════════════
    MODAL CONFIRMACIÓN GENÉRICO
@@ -91,9 +119,7 @@ function openConfirmModal(title, msg, onConfirm) {
 
 function confirmOk() {
   closeOv('ov-confirm');
-  if(typeof _confirmCallback === 'function') {
-      _confirmCallback();
-  }
+  if(typeof _confirmCallback === 'function') _confirmCallback();
   _confirmCallback = null;
 }
 
