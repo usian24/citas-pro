@@ -255,8 +255,11 @@ function goTo(id) {
 
 function goBiz() {
   goTo('s-biz');
-  if(DB.currentBiz) showBizPanel();
-  else showBizReg();
+  if(DB.currentBiz) {
+    if (typeof showBizPanel === 'function') showBizPanel();
+  } else {
+    if (typeof showBizReg === 'function') showBizReg();
+  }
 }
 
 function goWorker() {
@@ -275,7 +278,7 @@ function goClientFromBiz() {
 }
 
 /* ══════════════════════════
-   HELPERS DE DATOS
+   HELPERS DE DATOS Y NOTIFICACIONES
 ══════════════════════════ */
 function getBizById(id) {
   return DB.businesses.filter(function(b){ return b.id===id; })[0] || null;
@@ -287,21 +290,35 @@ function getWorkerById(bizId, workerId) {
   return (biz.workers||[]).filter(function(w){ return w.id===workerId; })[0] || null;
 }
 
-function notifyWorker(bizId, workerId, type, title, data) {
+// ESTA ES LA FUNCIÓN VITAL QUE NO DEBE BORRARSE NUNCA
+function addNotificationToWorker(bizId, workerId, notif) {
   var w = getWorkerById(bizId, workerId);
   if(!w) return;
   if(!w.notifications) w.notifications = [];
+  
   w.notifications.unshift({
     id: Date.now(),
-    type: type,
-    title: title,
-    body: data.detail || '',
+    type: notif.type,
+    msg: notif.msg || notif.title, 
+    title: notif.title || notif.msg,
+    body: notif.body || (notif.data ? notif.data.detail : ''),
+    data: notif.data || {},
     read: false,
     date: new Date().toISOString().split('T')[0]
   });
+  
   /* máx 50 notificaciones */
   if(w.notifications.length > 50) w.notifications = w.notifications.slice(0,50);
   saveDB();
+}
+
+function notifyWorker(bizId, workerId, type, title, data) {
+  addNotificationToWorker(bizId, workerId, {
+      type: type,
+      title: title,
+      body: data.detail || '',
+      data: data
+  });
 }
 
 function planTag(plan) {

@@ -219,14 +219,17 @@ function buildTimes(bizId, workerId) {
   }
 
   /* Horas ya ocupadas del worker */
-  var booked = worker ? (worker.appointments||[]).filter(function(a){ return a.date===CSEL.date&&a.status!=='cancelled'; }).map(function(a){ return a.time; }) : [];
-  
-  /* Si estamos editando una cita (modificar), ignorar la hora original ocupada */
-  if (CSEL.editingToken) {
-     var oldAppt = findApptByToken(CSEL.editingToken);
-     if (oldAppt && oldAppt.appt.date === CSEL.date) {
-         booked = booked.filter(function(t) { return t !== oldAppt.appt.time; });
-     }
+  var booked = [];
+  if (worker && worker.appointments) {
+      worker.appointments.forEach(function(a) {
+          if (a.date === CSEL.date && a.status !== 'cancelled') {
+              // Si estamos editando una cita (modificar), ignorar la hora original ocupada
+              if (CSEL.editingToken && a.token === CSEL.editingToken) {
+                  return;
+              }
+              booked.push(a.time);
+          }
+      });
   }
 
   var available = times.filter(function(t){ return booked.indexOf(t)<0; }).length;
@@ -296,15 +299,23 @@ function confirmBooking() {
 
   var isModifying = !!CSEL.editingToken;
   
-  /* Verificar que la hora sigue libre (si es modificar, ignorar la actual del token) */
-  var booked = (worker.appointments||[]).filter(function(a){ return a.date===CSEL.date&&a.status!=='cancelled'; }).map(function(a){ return a.time; });
-  if (isModifying) {
-     var oldAppt = findApptByToken(CSEL.editingToken);
-     if (oldAppt && oldAppt.appt.date === CSEL.date) {
-         booked = booked.filter(function(t) { return t !== oldAppt.appt.time; });
-     }
+  /* LÓGICA DE DUPLICADO A PRUEBA DE BALAS (Igual a como la tenías al inicio) */
+  var dup = false;
+  (worker.appointments || []).forEach(function(a) {
+      if (a.date === CSEL.date && a.time === CSEL.time && a.status !== 'cancelled') {
+          // Si estamos modificando, ignoramos la cita original que tiene este mismo token
+          if (isModifying && a.token === CSEL.editingToken) {
+              return; 
+          }
+          dup = true;
+      }
+  });
+
+  if (dup) { 
+      toast('Esa hora ya está ocupada. Elige otra.', '#EF4444'); 
+      clGoStep(4); 
+      return; 
   }
-  if (booked.indexOf(CSEL.time) >= 0) { toast('Esa hora ya está ocupada. Elige otra.','#EF4444'); clGoStep(4); return; }
 
   /* Generar o reutilizar token */
   var token = isModifying ? CSEL.editingToken : 'tk_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
@@ -339,9 +350,12 @@ function confirmBooking() {
     body: JSON.stringify(biz)
   }).catch(function(e){ console.error('Error sincronizando cita en la nube:', e); });
 
-  /* Notificación interna al trabajador */
+  /* Notificación interna al trabajador (ahora usando la función conectada correctamente) */
   var notifTitle = isModifying ? 'Cita modificada por ' + name : name + ' reservó una cita';
-  notifyWorker(biz.id, worker.id, 'new_booking', notifTitle, { detail: CSEL.svc + ' · ' + CSEL.date + ' ' + CSEL.time });
+  
+  if (typeof notifyWorker === 'function') {
+      notifyWorker(biz.id, worker.id, 'new_booking', notifTitle, { detail: CSEL.svc + ' · ' + CSEL.date + ' ' + CSEL.time });
+  }
 
   /* Email al trabajador */
   if (worker.email) {
@@ -455,12 +469,10 @@ function openManageModal(biz, worker, appt) {
   openOv('ov-manage');
 }
 
-// NUEVA FUNCION: Reprogramar Cita
 function reprogramarCita(token) {
   var found = findApptByToken(token);
   if(!found) return;
   
-  // Guardamos que estamos editando esta cita y pre-llenamos los datos del cliente
   CSEL.editingToken = token;
   CSEL.bizId = found.biz.id;
   CSEL.clientName = found.appt.client;
@@ -470,13 +482,11 @@ function reprogramarCita(token) {
   CSEL.svc = found.appt.svc;
   CSEL.svcPrice = found.appt.price;
 
-  // Encontramos la duración del servicio en el catálogo del trabajador
   var sObj = found.worker.services.find(function(s) { return s.name === found.appt.svc; });
   CSEL.svcDur = sObj ? sObj.dur : 30;
 
   closeOv('ov-manage');
   
-  // Lo mandamos al portal de reservas directamente al paso 4 (Fecha y Hora)
   goTo('s-client');
   buildDates(found.biz.id, found.worker.id);
   clGoStep(4); 
@@ -489,20 +499,19 @@ function cancelApptByToken(token) {
   found.appt.status = 'cancelled';
   saveDB();
 
-  /* NUEVO: Guardar cancelación en Supabase directamente */
   fetch('/.netlify/functions/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(found.biz)
   }).catch(function(e){ console.error('Error cancelando cita en la nube:', e); });
 
-  /* Notificar al trabajador */
-  notifyWorker(found.biz.id, found.worker.id, 'booking_cancel',
-    found.appt.client + ' canceló su cita',
-    { detail: found.appt.svc + ' · ' + found.appt.date + ' ' + found.appt.time }
-  );
+  if (typeof notifyWorker === 'function') {
+      notifyWorker(found.biz.id, found.worker.id, 'booking_cancel',
+        found.appt.client + ' canceló su cita',
+        { detail: found.appt.svc + ' · ' + found.appt.date + ' ' + found.appt.time }
+      );
+  }
 
-  /* Email al trabajador */
   if (found.worker.email) {
     fetch('/.netlify/functions/send-email', {
       method:'POST',
@@ -526,16 +535,14 @@ function cancelApptByToken(token) {
 function checkLinkAccess() {
   var hash = window.location.hash;
 
-  /* Gestión de cita: #manage/TOKEN */
   if (hash && hash.indexOf('#manage/') === 0) {
     return checkManageAccess();
   }
 
-  /* Reserva normal: #b/BIZ_ID */
   if (hash && hash.indexOf('#b/') === 0) {
     var bizId = hash.slice(3);
     if (bizId) {
-      DB = loadDB(); /* Recargar DB por si acaso */
+      DB = loadDB(); 
       var biz = getBizById(bizId);
       if (biz) {
         loadBizDirect(bizId);
