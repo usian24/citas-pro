@@ -561,6 +561,10 @@ window.toggleWorkerBreak = function(i) {
       h.from2 = '15:00'; 
       h.to2 = '20:00'; 
   }
+  if (!h.hasBreak) {
+      h.from2 = '';
+      h.to2 = '';
+  }
   renderWorkerHorario();
 };
 

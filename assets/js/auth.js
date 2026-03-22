@@ -155,6 +155,17 @@ function doForgot() {
   }
   if(!found) { showErr('fp-err','No encontramos ninguna cuenta con ese correo.'); return; }
 
+  /* ENVÍO REAL DEL CORREO DE RECUPERACIÓN */
+  fetch('/.netlify/functions/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'password_reset',
+      to: email,
+      data: { password: found.pass }
+    })
+  }).catch(function(e) { console.error('Error enviando correo de recuperación:', e); });
+
   var suc = G('fp-success'); if(suc) suc.style.display='block';
   var btn = G('fp-btn-send'); if(btn) btn.style.display='none';
   toast('Instrucciones enviadas a ' + email, '#4A7FD4');
