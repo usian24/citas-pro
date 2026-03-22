@@ -504,3 +504,66 @@ function copyWorkerLink() {
   try { navigator.clipboard.writeText(link); } catch(e) {}
   toast('Enlace copiado', '#4A7FD4');
 }
+
+/* ══════════════════════════
+   NOTIFICACIONES TRABAJADOR
+══════════════════════════ */
+function renderWorkerNotifBadge() {
+  if (!CUR_WORKER) return;
+  var unread = (CUR_WORKER.notifications || []).filter(function(n) { return !n.read; }).length;
+  var badge1 = G('wn-notif-badge'); // Menú lateral
+  var badge2 = G('wk-notif-badge'); // Título sección superior
+  if (badge1) {
+    badge1.style.display = unread > 0 ? 'flex' : 'none';
+    badge1.textContent = unread;
+  }
+  if (badge2) {
+    badge2.style.display = unread > 0 ? 'inline-block' : 'none';
+    badge2.textContent = unread;
+  }
+}
+
+function renderWorkerNotifications() {
+  if (!CUR_WORKER) return;
+  var notifs = CUR_WORKER.notifications || [];
+  
+  H('wk-notif-list', notifs.length 
+    ? notifs.slice().reverse().map(function(n, i) {
+        // Obtenemos el index real en el array original
+        var actualIndex = notifs.length - 1 - i;
+        var bg = n.read ? 'transparent' : 'rgba(74,127,212,.08)';
+        var border = n.read ? 'var(--b)' : 'var(--blue)';
+        
+        return '<div style="padding:16px; border-bottom:1px solid var(--b); background:'+bg+'; border-left:3px solid '+border+'; margin-bottom:8px; border-radius:0 12px 12px 0">'
+          + '<div style="display:flex; justify-content:space-between; margin-bottom:6px">'
+          + '<span style="font-weight:800; font-size:14px; color:'+(n.read ? 'var(--text)' : 'var(--blue)')+'">' + san(n.title) + '</span>'
+          + '<span style="font-size:11px; color:var(--muted)">' + san(n.date) + '</span>'
+          + '</div>'
+          + '<div style="font-size:13px; color:var(--t2); line-height:1.5">' + san(n.body) + '</div>'
+          + (!n.read ? '<div style="text-align:right; margin-top:8px"><button onclick="markWorkerNotifRead('+actualIndex+')" style="background:var(--bblue); border:none; color:var(--blue); font-size:11px; font-weight:700; cursor:pointer; padding:6px 12px; border-radius:12px">Marcar como leída</button></div>' : '')
+          + '</div>';
+      }).join('') 
+    : '<div style="text-align:center; padding:40px 20px; color:var(--muted)"><div style="font-size:32px; margin-bottom:10px">📭</div><div style="font-size:14px">No tienes notificaciones nuevas</div></div>'
+  );
+  
+  var clearBtn = G('clear-notif-btn');
+  if(clearBtn) {
+     clearBtn.onclick = function() {
+        openConfirmModal('Limpiar Notificaciones', '¿Borrar todas las notificaciones?', function() {
+            CUR_WORKER.notifications = [];
+            saveDB();
+            renderWorkerNotifications();
+            renderWorkerNotifBadge();
+            toast('Notificaciones borradas', '#475569');
+        });
+     };
+  }
+}
+
+function markWorkerNotifRead(index) {
+  if (!CUR_WORKER || !CUR_WORKER.notifications || !CUR_WORKER.notifications[index]) return;
+  CUR_WORKER.notifications[index].read = true;
+  saveDB();
+  renderWorkerNotifications();
+  renderWorkerNotifBadge();
+}

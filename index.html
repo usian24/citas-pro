@@ -320,19 +320,9 @@
       <button class="btn btn-ghost" id="skip-5" style="margin-top:10px;font-size:13px">Omitir por ahora</button>
     </div>
 
-    <!-- Paso 6 -->
-    <div class="reg-step" id="rs-6">
-      <div class="progbar"><div class="progfill" style="width:88%"></div></div>
-      <button class="btn btn-ghost btn-sm btn-icon" id="back-6" style="margin-bottom:22px;border-radius:50%">←</button>
-      <div style="font-size:24px;font-weight:900;margin-bottom:6px">Tus servicios</div>
-      <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Añade al menos 1 servicio con precio</div>
-      <div id="reg-svc-list"></div>
-      <button class="btn btn-dark" id="add-reg-svc" style="margin-bottom:12px">＋ Añadir servicio</button>
-      <button class="btn btn-blue" id="next-6">Continuar</button>
-    </div>
 
-    <!-- Paso 7 -->
-    <div class="reg-step" id="rs-7" style="text-align:center;padding-top:24px">
+    <!-- Paso 6 -->
+    <div class="reg-step" id="rs-6" style="text-align:center;padding-top:24px">
       <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#22C55E,#16A34A);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 20px;animation:popIn .5s ease">🎉</div>
       <div style="font-size:26px;font-weight:900;margin-bottom:8px">¡Bienvenido a Citas Pro!</div>
       <div style="font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.8">Tu negocio está registrado.<br>Tienes <strong style="color:var(--blue3)">1 mes gratis</strong>.<br>Después solo 10€/mes.</div>
@@ -369,8 +359,7 @@
       <div class="bn on" id="bn-home"      onclick="bizTab('home')">Inicio</div>
       <div class="bn"    id="bn-agenda"    onclick="bizTab('agenda')">Agenda</div>
       <div class="bn"    id="bn-equipo"    onclick="bizTab('equipo')">Equipo</div>
-      <div class="bn"    id="bn-servicios" onclick="bizTab('servicios')">Servicios</div>
-      <div class="bn"    id="bn-galeria"   onclick="bizTab('galeria')">Galería</div>
+      <div class="bn"    id="bn-tienda"    onclick="bizTab('tienda')">Tienda</div>
       <div class="bn"    id="bn-finanzas"  onclick="bizTab('finanzas')">Finanzas</div>
       <div class="bn"    id="bn-horario"   onclick="bizTab('horario')">Horario</div>
       <div class="bn"    id="bn-perfil"    onclick="bizTab('perfil')">Perfil</div>
@@ -417,10 +406,11 @@
         <div class="sec-hdr"><span class="sec-ttl">Mi equipo</span><button class="btn btn-blue btn-sm" style="width:auto" id="add-barber-btn">Añadir +</button></div>
         <div id="biz-barbers-list"></div>
       </div>
-      <div class="pane" id="bp-servicios">
-        <div class="sec-hdr"><span class="sec-ttl">Servicios generales</span><button class="btn btn-blue btn-sm" style="width:auto" id="add-svc-btn">Añadir +</button></div>
-        <div class="tip-box" style="margin-bottom:12px">Servicios base del negocio. Cada trabajador puede tener los suyos desde su perfil.</div>
-        <div id="biz-svcs-list"></div>
+      <div class="pane" id="bp-tienda">
+        <div class="sec-hdr"><span class="sec-ttl">Tienda</span><button class="btn btn-dark btn-sm" style="width:auto" id="add-gallery-btn">Producto +</button></div>
+        <div class="tip-box">Sube los productos que vendes en el local (ceras, minoxidil, lociones, etc.)</div>
+        <div class="img-gallery" id="biz-gallery"></div>
+        <input type="file" id="gallery-input" accept="image/jpeg,image/png,image/webp" multiple style="display:none"/>
       </div>
       <div class="pane" id="bp-galeria">
         <div class="sec-hdr"><span class="sec-ttl">Galería</span><button class="btn btn-dark btn-sm" style="width:auto" id="add-gallery-btn">Foto +</button></div>
@@ -1013,6 +1003,13 @@
       <a id="qr-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex:1"><button class="btn btn-green btn-sm" style="width:100%">💬</button></a>
     </div>
     <div style="margin-top:12px"><button class="btn btn-dark btn-sm" id="qr-download-btn">Descargar QR</button></div>
+  </div>
+</div>
+<!-- modal del perfil del trabajador -->
+<div class="ov bot" id="ov-worker-profile">
+  <div class="mbot" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl">Perfil del Trabajador</span><div class="xbtn" onclick="closeOv('ov-worker-profile')">×</div></div>
+    <div id="worker-profile-content"></div>
   </div>
 </div>
 

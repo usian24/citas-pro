@@ -162,8 +162,8 @@ function bizRegStep(n) {
       REG.name = bn; REG.owner = sanitizeText(V('br-owner')); REG.email = em.toLowerCase(); REG.pass = ps; REG.phone = sanitizeText(V('br-phone'));
     }
     if (regStep === 3) { REG.addr = sanitizeText(V('br-addr')); REG.city = sanitizeText(V('br-city')); REG.country = sanitizeText(V('br-country')) || 'ES'; }
-    if (regStep === 6 && !REG.services.length) { toast('Añade al menos un servicio', '#EF4444'); return; }
-    if (n === 7) finalizeBizReg();
+    // Ya no requerimos servicios en el paso 6, porque ahora el paso 6 es el de éxito
+    if (n === 6) finalizeBizReg();
   }
   showRegStep(n);
 }
@@ -192,7 +192,6 @@ function updateRmPassStrength(pass) {
 function setupPhotoUpload() {
   function handleImg(inputId, onLoad) {
     var el = G(inputId); if (!el) return;
-    /* Eliminar listeners anteriores clonando el elemento */
     var fresh = el.cloneNode(true);
     el.parentNode.replaceChild(fresh, el);
     fresh.addEventListener('change', function(e) {
@@ -234,18 +233,12 @@ function setupPhotoUpload() {
     if (!CUR) return;
     if (!CUR.photos) CUR.photos = [];
     if (CUR.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; }
-    CUR.photos.push(d); saveDB(); renderGallery();
+    CUR.photos.push(d); saveDB(); renderGallery(); // Usamos esto ahora para "Tienda"
   });
 
   handleImg('bar-photo-input', function(d) {
     window._barPhoto = d;
     var p = G('bar-photo-preview');
-    if (p) p.innerHTML = '<img src="'+d+'" class="photo-preview" alt="Foto"/>';
-  });
-
-  handleImg('sv-photo-input', function(d) {
-    window._svcPhoto = d;
-    var p = G('sv-photo-preview');
     if (p) p.innerHTML = '<img src="'+d+'" class="photo-preview" alt="Foto"/>';
   });
 }
@@ -257,63 +250,17 @@ function renderRegPhotos() {
   }).join('') + '<div class="img-thumb add-btn" onclick="document.getElementById(\'svc-photo-input\').click()">＋</div>';
 }
 
-function renderGallery() {
+function renderGallery() { // Renderiza la Tienda ahora
   if (!CUR) return;
   var grid = G('biz-gallery'); if (!grid) return;
   var photos = CUR.photos || [];
   grid.innerHTML = photos.map(function(p, i) {
-    return '<div class="img-thumb"><img src="' + sanitizeImageDataURL(p) + '" alt="Foto ' + (i+1) + '"><button onclick="delGalleryPhoto(' + i + ')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.65);border:none;border-radius:5px;color:#fff;font-size:11px;padding:2px 6px;cursor:pointer">×</button></div>';
+    return '<div class="img-thumb"><img src="' + sanitizeImageDataURL(p) + '" alt="Producto ' + (i+1) + '"><button onclick="delGalleryPhoto(' + i + ')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.65);border:none;border-radius:5px;color:#fff;font-size:11px;padding:2px 6px;cursor:pointer">×</button></div>';
   }).join('');
 }
 
 function delGalleryPhoto(idx) {
-  if (CUR) { CUR.photos = (CUR.photos || []).filter(function(_, i) { return i !== idx; }); saveDB(); renderGallery(); toast('Foto eliminada', '#475569'); }
-}
-
-function openSvcModal(id) {
-  editSvc = id; window._svcPhoto = null;
-  T('svc-ttl', id ? 'Editar servicio' : 'Añadir servicio');
-  var reset = function() { var p = G('sv-photo-preview'); if (p) p.innerHTML = '<div style="font-size:13px;color:var(--muted)">Añadir foto</div>'; };
-  if (id && CUR) {
-    var s = CUR.services.filter(function(x) { return x.id === id; })[0];
-    if (s) { var n=G('sv-name'), p=G('sv-price'), d=G('sv-dur'), ds=G('sv-desc'); if(n) n.value=s.name; if(p) p.value=s.price; if(d) d.value=s.dur; if(ds) ds.value=s.desc||''; var pv=G('sv-photo-preview'); if(pv&&s.photo) pv.innerHTML='<img src="'+sanitizeImageDataURL(s.photo)+'" class="photo-preview" alt="Servicio"/>'; else reset(); }
-  } else {
-    ['sv-name','sv-price','sv-desc'].forEach(function(i2) { var e=G(i2); if(e) e.value=''; });
-    var dv=G('sv-dur'); if(dv) dv.value='30'; reset();
-  }
-  openOv('ov-svc');
-}
-
-function saveSvc() {
-  var name=sanitizeText(V('sv-name')), price=safeNum(V('sv-price'),0), dur=safeInt(V('sv-dur'),30), desc=sanitizeText(V('sv-desc'));
-  var photo=window._svcPhoto||null;
-  if (!name) { toast('Nombre requerido','#EF4444'); return; }
-  if (CUR) {
-    if (!CUR.services) CUR.services=[];
-    if (editSvc) { var s=CUR.services.filter(function(x){ return x.id===editSvc; })[0]; if(s){ s.name=name; s.price=price; s.dur=dur; s.desc=desc; if(photo) s.photo=photo; } }
-    else CUR.services.push({ id:Date.now(), name:name, price:price, dur:dur, desc:desc, photo:photo||'' });
-    saveDB(); renderBizServices();
-  } else {
-    if (editSvc) { var sr=REG.services.filter(function(x){ return x.id===editSvc; })[0]; if(sr){ sr.name=name; sr.price=price; sr.dur=dur; sr.desc=desc; if(photo) sr.photo=photo; } }
-    else REG.services.push({ id:Date.now(), name:name, price:price, dur:dur, desc:desc, photo:photo||'' });
-    renderRegSvcs();
-  }
-  editSvc=null; window._svcPhoto=null; closeOv('ov-svc'); toast('Servicio guardado','#4A7FD4');
-}
-
-function renderRegSvcs() {
-  H('reg-svc-list', (REG.services||[]).map(function(s) {
-    var thumb = s.photo ? '<img src="'+sanitizeImageDataURL(s.photo)+'" style="width:42px;height:42px;border-radius:11px;object-fit:cover;flex-shrink:0" alt="Servicio">'
-      : '<div style="width:42px;height:42px;border-radius:11px;background:var(--bblue);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">&#9986;</div>';
-    return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:8px">'
-      +thumb+'<div style="flex:1"><div style="font-weight:700;font-size:14px">'+san(s.name)+'</div>'
-      +'<div style="font-size:12px;color:var(--muted);margin-top:2px">'+s.dur+'min</div></div>'
-      +'<span style="font-weight:700;color:var(--blue);font-size:14px">'+money(s.price)+'</span>'
-      +'<button data-id="'+sanitizeText(s.id)+'" class="del-rs" style="font-size:13px;cursor:pointer;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:6px 8px;color:var(--red)">&#x2715;</button></div>';
-  }).join(''));
-  document.querySelectorAll('.del-rs').forEach(function(b) {
-    b.addEventListener('click', function() { var id=b.getAttribute('data-id'); REG.services=REG.services.filter(function(s){ return String(s.id)!==id; }); renderRegSvcs(); });
-  });
+  if (CUR) { CUR.photos = (CUR.photos || []).filter(function(_, i) { return i !== idx; }); saveDB(); renderGallery(); toast('Producto eliminado', '#475569'); }
 }
 
 function finalizeBizReg() {
@@ -326,8 +273,8 @@ function finalizeBizReg() {
     joinDate:new Date().toISOString().split('T')[0],
     plan:'trial', desc:'', logo:REG.logo||'', photos:REG.photos||[], insta:'',
     horario:DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
-    workers: [],        /* trabajadores con perfiles propios */
-    services: REG.services,
+    workers: [], 
+    services: [], // Array vacío, los servicios los crearán los workers
     appointments: []
   };
   DB.businesses.push(biz); DB.currentBiz=slug; DB.currentWorker=null; saveDB();
@@ -367,11 +314,9 @@ function initBizPanel() {
     else av.textContent=(CUR.name||'?').charAt(0).toUpperCase();
   }
 
-  /* Stats — suma citas de todos los workers */
   var today=new Date().toISOString().split('T')[0];
   var allAppts=[];
   (CUR.workers||[]).forEach(function(w){ (w.appointments||[]).forEach(function(a){ allAppts.push(a); }); });
-  /* también las del negocio (legacy) */
   (CUR.appointments||[]).forEach(function(a){ allAppts.push(a); });
 
   var todayA=allAppts.filter(function(a){ return a.date===today&&a.status!=='cancelled'; });
@@ -392,7 +337,6 @@ function initBizPanel() {
 
   renderTodayAppts(todayA);
   renderBizWorkers();
-  renderBizServices();
   renderGallery();
   renderBizFinances();
   renderHorario();
@@ -415,7 +359,7 @@ function initBizPanel() {
    TABS DUEÑO
 ══════════════════════════ */
 function bizTab(tab) {
-  var tabs=['home','agenda','equipo','servicios','galeria','finanzas','horario','perfil'];
+  var tabs=['home','agenda','equipo','tienda','finanzas','horario','perfil']; // Actualizado: 'tienda' en lugar de 'galeria' y 'servicios'
   for (var i=0;i<tabs.length;i++) {
     var t=tabs[i];
     var pa=G('bp-'+t), bt=G('bn-'+t);
@@ -465,7 +409,6 @@ function apptRowH(a) {
 function openApptDetail(id) {
   if (!CUR) return;
   var a=null;
-  /* Buscar en workers y en appointments legacy */
   (CUR.workers||[]).forEach(function(w){ (w.appointments||[]).forEach(function(ap){ if(String(ap.id)===String(id)) a=ap; }); });
   (CUR.appointments||[]).forEach(function(ap){ if(String(ap.id)===String(id)) a=ap; });
   if (!a) return;
@@ -496,7 +439,6 @@ function openApptDetail(id) {
 
 function updateApptStatus(id, status) {
   if (!CUR) return;
-  /* Actualizar en workers y en legacy */
   (CUR.workers||[]).forEach(function(w){ (w.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; }); });
   (CUR.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; });
   saveDB(); closeOv('ov-appt-detail'); renderTodayAppts(); initAgenda(); renderBizFinances();
@@ -504,7 +446,7 @@ function updateApptStatus(id, status) {
 }
 
 /* ══════════════════════════
-   EQUIPO — renderiza workers
+   EQUIPO — renderiza workers y perfil trabajador (Dueño)
 ══════════════════════════ */
 function renderBizWorkers() {
   if (!CUR) return;
@@ -515,10 +457,11 @@ function renderBizWorkers() {
           ? '<img src="'+sanitizeImageDataURL(w.photo)+'" style="width:100%;height:100%;object-fit:cover" alt="Foto">'
           : '<span style="font-size:18px;font-weight:800;color:#fff">'+san((w.name||'?').charAt(0).toUpperCase())+'</span>';
         var apptCount = (w.appointments||[]).filter(function(a){ return a.status!=='cancelled'; }).length;
+        
         return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:10px">'
-          +'<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">'+av+'</div>'
-          +'<div style="flex:1">'
-          +'<div style="font-weight:700;font-size:15px">'+san(w.name)+'</div>'
+          +'<div onclick="openWorkerProfile(\''+sanitizeText(w.id)+'\')" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer">'+av+'</div>'
+          +'<div style="flex:1" onclick="openWorkerProfile(\''+sanitizeText(w.id)+'\')" style="cursor:pointer">'
+          +'<div style="font-weight:700;font-size:15px;color:var(--blue)">'+san(w.name)+'</div>'
           +'<div style="font-size:12px;color:var(--t2);margin-top:2px">'+san(w.spec||'')+'</div>'
           +'<div style="font-size:11px;color:var(--muted);margin-top:3px">'+apptCount+' citas · '+(w.services||[]).length+' servicios</div>'
           +'</div>'
@@ -533,6 +476,59 @@ function renderBizWorkers() {
     : '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">No hay trabajadores aún</div></div>');
 }
 
+// NUEVA FUNCIÓN: Perfil detallado del trabajador para el dueño
+function openWorkerProfile(workerId) {
+  if (!CUR) return;
+  var worker = CUR.workers.find(function(w) { return w.id === workerId; });
+  if(!worker) return;
+
+  var totalIngresos = (worker.appointments || [])
+    .filter(function(a) { return a.status === 'completed'; }) // Solo contamos las completadas
+    .reduce(function(sum, a) { return sum + (a.price || 0); }, 0);
+
+  var serviciosHtml = (worker.services && worker.services.length > 0) 
+    ? worker.services.map(function(s) { 
+        return '<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--b);">'
+          +'<span style="font-size:13px">'+san(s.name)+' <small style="color:var(--muted)">('+s.dur+' min)</small></span>'
+          +'<span style="font-weight:bold;font-size:14px;color:var(--blue)">'+money(s.price)+'</span>'
+          +'</div>';
+      }).join('') 
+    : '<p style="color:var(--muted); font-size:12px; text-align:center;">Este trabajador no ha creado servicios aún.</p>';
+
+  var av = worker.photo
+    ? '<img src="'+sanitizeImageDataURL(worker.photo)+'" style="width:100%;height:100%;object-fit:cover" alt="Foto">'
+    : worker.name.charAt(0).toUpperCase();
+
+  H('worker-profile-content', 
+    '<div style="text-align:center;padding:20px 20px 10px">'
+    +'<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#4A7FD4,#2855C8);margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:30px;color:white;overflow:hidden;box-shadow:0 4px 15px rgba(74,127,212,.3)">'
+    + av
+    +'</div>'
+    +'<h3 style="margin:0;font-size:20px;font-weight:900">'+san(worker.name)+'</h3>'
+    +'<p style="color:var(--t2);font-size:13px;margin-top:4px">'+san(worker.email)+'</p>'
+    +'</div>'
+    
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px 20px">'
+    +'<div style="background:var(--b);padding:15px;border-radius:16px;text-align:center">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">CITAS REALIZADAS</div>'
+    +'<div style="font-size:22px;font-weight:900">'+(worker.appointments || []).filter(function(a){ return a.status === 'completed'; }).length+'</div>'
+    +'</div>'
+    +'<div style="background:var(--b);padding:15px;border-radius:16px;text-align:center">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">INGRESOS GENERADOS</div>'
+    +'<div style="font-size:22px;font-weight:900;color:var(--green)">'+money(totalIngresos)+'</div>'
+    +'</div>'
+    +'</div>'
+
+    +'<div style="padding:0 20px 20px">'
+    +'<h4 style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Catálogo del trabajador</h4>'
+    +'<div style="background:var(--card); padding:10px 15px; border-radius:16px; border:1px solid var(--b);">'
+    + serviciosHtml
+    +'</div>'
+    +'</div>'
+  );
+  openOv('ov-worker-profile'); 
+}
+
 /* ══════════════════════════
    MODAL TRABAJADOR (crear/editar)
 ══════════════════════════ */
@@ -543,11 +539,9 @@ function openWorkerModal(id) {
   window._barPhoto = null;
   T('bar-ttl', id ? 'Editar trabajador' : 'Añadir trabajador');
 
-  /* Limpiar / resetear foto preview */
   var pv = G('bar-photo-preview');
   if (pv) pv.innerHTML = '<div style="font-size:13px;color:var(--muted)">Añadir foto</div>';
 
-  /* Mostrar/ocultar campos de credenciales según si es edición */
   var credSection = G('bar-cred-section');
   if (credSection) credSection.style.display = id ? 'none' : 'block';
 
@@ -578,14 +572,11 @@ function saveBarber() {
   if (!CUR.workers) CUR.workers=[];
 
   if (editWorkerId) {
-    /* Editar trabajador existente */
     var w=(CUR.workers).filter(function(x){ return x.id===editWorkerId; })[0];
     if (w) { w.name=name; w.spec=spec; w.phone=phone; if(photo) w.photo=photo; }
   } else {
-    /* Crear nuevo trabajador — requiere email y contraseña */
     if (!validEmail(email)) { toast('Email inválido','#EF4444'); return; }
     if (!pass || pass.length<6) { toast('Contraseña mínimo 6 caracteres','#EF4444'); return; }
-    /* Verificar email único */
     var emailExists = false;
     DB.businesses.forEach(function(b){
       if((b.email||'').toLowerCase()===email) emailExists=true;
@@ -620,37 +611,12 @@ function confirmDeleteWorker(id) {
 }
 
 /* ══════════════════════════
-   SERVICIOS BARBERÍA (generales)
-══════════════════════════ */
-function renderBizServices() {
-  if (!CUR) return;
-  H('biz-svcs-list', (CUR.services||[]).length
-    ? (CUR.services||[]).map(function(s) {
-        var thumb=s.photo?'<img src="'+sanitizeImageDataURL(s.photo)+'" style="width:46px;height:46px;border-radius:11px;object-fit:cover;flex-shrink:0" alt="Servicio">'
-          :'<div style="width:46px;height:46px;border-radius:11px;background:var(--bblue);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">&#9986;</div>';
-        return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:10px">'
-          +thumb+'<div style="flex:1"><div style="font-weight:700;font-size:14px">'+san(s.name)+'</div>'
-          +'<div style="font-size:12px;color:var(--muted);margin-top:2px">'+s.dur+'min'+(s.desc?' · '+san(s.desc):'')+'</div></div>'
-          +'<div style="text-align:right;flex-shrink:0">'
-          +'<div style="font-weight:800;font-size:16px;color:var(--blue)">'+money(s.price)+'</div>'
-          +'<div style="display:flex;gap:5px;margin-top:6px">'
-          +'<button onclick="openSvcModal('+s.id+')" style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:var(--rpill);padding:5px 10px;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">Editar</button>'
-          +'<button onclick="delService('+s.id+')" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:var(--rpill);padding:5px 8px;color:var(--red);font-size:12px;cursor:pointer">&#x2715;</button>'
-          +'</div></div></div>';
-      }).join('')
-    : '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">No hay servicios aún</div></div>');
-}
-
-function delService(id) { if(!CUR) return; CUR.services=CUR.services.filter(function(s){ return s.id!==id; }); saveDB(); renderBizServices(); toast('Servicio eliminado','#475569'); }
-
-/* ══════════════════════════
    FINANZAS DUEÑO (suma todos los workers)
 ══════════════════════════ */
 function renderBizFinances() {
   if (!CUR) return;
   var now=new Date(), thisMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
 
-  /* Recopilar todas las citas */
   var allAppts=[];
   (CUR.workers||[]).forEach(function(w){ (w.appointments||[]).forEach(function(a){ allAppts.push(a); }); });
   (CUR.appointments||[]).forEach(function(a){ allAppts.push(a); });
@@ -683,7 +649,6 @@ function renderCalendar() {
   T('cal-title',MONTHS[month]+' '+year);
   var firstDay=new Date(year,month,1).getDay(), daysInMonth=new Date(year,month+1,0).getDate();
   var today=new Date().toISOString().split('T')[0];
-  /* Fechas con citas de todos los workers */
   var apptDates={};
   (CUR ? (CUR.workers||[]) : []).forEach(function(w){ (w.appointments||[]).forEach(function(a){ if(a.date&&a.status!=='cancelled') apptDates[a.date]=true; }); });
   (CUR ? (CUR.appointments||[]) : []).forEach(function(a){ if(a.date&&a.status!=='cancelled') apptDates[a.date]=true; });
@@ -762,18 +727,15 @@ function openApptModal() {
   if(dateEl) dateEl.value=today; if(timeEl) timeEl.value=nowTime;
   if(nameEl) nameEl.value=''; if(phoneEl) phoneEl.value=''; if(notesEl) notesEl.value='';
 
-  /* Servicios de todos los workers */
   var svcSel=G('ap-svc');
   if(svcSel){
     var opts='';
     (CUR.workers||[]).forEach(function(w){
       (w.services||[]).forEach(function(s){ opts+='<option value="'+san(s.name)+','+s.price+','+sanitizeText(w.id)+'">'+san(w.name)+' — '+san(s.name)+' ('+money(s.price)+')</option>'; });
     });
-    (CUR.services||[]).forEach(function(s){ opts+='<option value="'+san(s.name)+','+s.price+',">'+san(s.name)+' ('+money(s.price)+')</option>'; });
     svcSel.innerHTML=opts;
   }
 
-  /* Workers como barberos */
   var barSel=G('ap-bar');
   if(barSel) barSel.innerHTML='<option value="">Sin asignar</option>'+(CUR.workers||[]).map(function(w){ return '<option value="'+sanitizeText(w.id)+'">'+san(w.name)+'</option>'; }).join('');
   openOv('ov-appt');
@@ -791,7 +753,6 @@ function saveAppt() {
   var appt={ id:Date.now(), client:name, phone:phone, email:'', svc:parts[0], barber:workerId||'', date:date, time:time, price:safeNum(parts[1],0), status:status, notes:notes };
 
   if(workerId) {
-    /* Asignar a worker específico */
     var w=(CUR.workers||[]).filter(function(x){ return x.id===workerId; })[0];
     if(w){ if(!w.appointments) w.appointments=[]; w.appointments.push(appt); }
   } else {

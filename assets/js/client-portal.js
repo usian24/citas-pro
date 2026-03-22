@@ -220,6 +220,15 @@ function buildTimes(bizId, workerId) {
 
   /* Horas ya ocupadas del worker */
   var booked = worker ? (worker.appointments||[]).filter(function(a){ return a.date===CSEL.date&&a.status!=='cancelled'; }).map(function(a){ return a.time; }) : [];
+  
+  /* Si estamos editando una cita (modificar), ignorar la hora original ocupada */
+  if (CSEL.editingToken) {
+     var oldAppt = findApptByToken(CSEL.editingToken);
+     if (oldAppt && oldAppt.appt.date === CSEL.date) {
+         booked = booked.filter(function(t) { return t !== oldAppt.appt.time; });
+     }
+  }
+
   var available = times.filter(function(t){ return booked.indexOf(t)<0; }).length;
 
   var availEl=G('cl-time-available');
@@ -285,12 +294,20 @@ function confirmBooking() {
   var biz = getBizById(CSEL.bizId); if (!biz) return;
   var worker = (biz.workers||[]).filter(function(w){ return w.id===CSEL.workerId; })[0]; if (!worker) return;
 
-  /* Verificar que la hora sigue libre */
-  var dup = (worker.appointments||[]).filter(function(a){ return a.date===CSEL.date&&a.time===CSEL.time&&a.status!=='cancelled'; }).length>0;
-  if (dup) { toast('Esa hora ya está ocupada. Elige otra.','#EF4444'); clGoStep(4); return; }
+  var isModifying = !!CSEL.editingToken;
+  
+  /* Verificar que la hora sigue libre (si es modificar, ignorar la actual del token) */
+  var booked = (worker.appointments||[]).filter(function(a){ return a.date===CSEL.date&&a.status!=='cancelled'; }).map(function(a){ return a.time; });
+  if (isModifying) {
+     var oldAppt = findApptByToken(CSEL.editingToken);
+     if (oldAppt && oldAppt.appt.date === CSEL.date) {
+         booked = booked.filter(function(t) { return t !== oldAppt.appt.time; });
+     }
+  }
+  if (booked.indexOf(CSEL.time) >= 0) { toast('Esa hora ya está ocupada. Elige otra.','#EF4444'); clGoStep(4); return; }
 
-  /* Generar token único para modificar/cancelar */
-  var token = 'tk_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+  /* Generar o reutilizar token */
+  var token = isModifying ? CSEL.editingToken : 'tk_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
 
   var appt = {
     id: Date.now(),
@@ -303,7 +320,16 @@ function confirmBooking() {
   };
 
   if (!worker.appointments) worker.appointments=[];
-  worker.appointments.push(appt);
+  
+  if (isModifying) {
+      /* Reemplazar la cita vieja con la nueva */
+      worker.appointments = worker.appointments.filter(function(a) { return a.token !== token; });
+      worker.appointments.push(appt);
+      CSEL.editingToken = null; // Limpiamos bandera
+  } else {
+      worker.appointments.push(appt);
+  }
+  
   saveDB(); // Guarda localmente
 
   /* NUEVO: Guardado forzado en Supabase para el cliente */
@@ -314,10 +340,8 @@ function confirmBooking() {
   }).catch(function(e){ console.error('Error sincronizando cita en la nube:', e); });
 
   /* Notificación interna al trabajador */
-  notifyWorker(biz.id, worker.id, 'new_booking',
-    name + ' reservó una cita',
-    { detail: CSEL.svc + ' · ' + CSEL.date + ' ' + CSEL.time }
-  );
+  var notifTitle = isModifying ? 'Cita modificada por ' + name : name + ' reservó una cita';
+  notifyWorker(biz.id, worker.id, 'new_booking', notifTitle, { detail: CSEL.svc + ' · ' + CSEL.date + ' ' + CSEL.time });
 
   /* Email al trabajador */
   if (worker.email) {
@@ -346,7 +370,8 @@ function confirmBooking() {
   }
 
   /* Pantalla de éxito */
-  T('cl-confirm-txt', '¡Hola ' + sanitizeText(name) + '! Tu cita en ' + sanitizeText(biz.name) + ' con ' + sanitizeText(worker.name) + ' ha sido confirmada.');
+  var exitoTexto = isModifying ? 'ha sido modificada' : 'ha sido confirmada';
+  T('cl-confirm-txt', '¡Hola ' + sanitizeText(name) + '! Tu cita en ' + sanitizeText(biz.name) + ' con ' + sanitizeText(worker.name) + ' ' + exitoTexto + '.');
 
   H('cl-confirm-card',
     '<div style="display:flex;flex-direction:column;gap:10px">'
@@ -362,13 +387,13 @@ function confirmBooking() {
   /* Botón WhatsApp al cliente */
   var wa = G('cl-wa-btn');
   if (wa) {
-    var waMsg = '¡Cita confirmada en ' + biz.name + '!\n'
-        + 'Profesional: ' + worker.name + '\n'
+    var waMsg = isModifying ? '¡Mi cita fue modificada en ' + biz.name + '!\n' : '¡Cita confirmada en ' + biz.name + '!\n';
+    waMsg += 'Profesional: ' + worker.name + '\n'
         + 'Servicio: ' + CSEL.svc + '\n'
         + 'Fecha: ' + CSEL.date + ' a las ' + CSEL.time + '\n'
         + 'Total: ' + money(CSEL.svcPrice) + '\n\n'
         + 'Para gestionar o cancelar tu cita visita:\n'
-        + 'https://citasproonline.com/#manage/' + token; // Actualizado a tu URL real
+        + 'https://citasproonline.com/#manage/' + token;
     
     wa.href = 'https://wa.me/' + phone.replace(/\D/g,'') + '?text=' + encodeURIComponent(waMsg);
   }
@@ -414,19 +439,47 @@ function findApptByToken(token) {
 function openManageModal(biz, worker, appt) {
   H('manage-content',
     '<div style="text-align:center;margin-bottom:20px">'
-    +'<div style="font-size:18px;font-weight:800;margin-bottom:6px">Tu cita en '+san(biz.name)+'</div>'
-    +'<div style="font-size:13px;color:var(--t2)">con '+san(worker.name)+'</div>'
+    +'<div style="font-size:18px;font-weight:800;margin-bottom:6px">Gestionar tu cita</div>'
+    +'<div style="font-size:13px;color:var(--t2)">en '+san(biz.name)+'</div>'
     +'</div>'
     +'<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;padding:16px;margin-bottom:20px">'
     +'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--b)"><span style="color:var(--t2);font-size:13px">Servicio</span><span style="font-weight:700;font-size:13px">'+san(appt.svc)+'</span></div>'
     +'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--b)"><span style="color:var(--t2);font-size:13px">Fecha</span><span style="font-weight:700;font-size:13px">'+san(appt.date)+'</span></div>'
     +'<div style="display:flex;justify-content:space-between;padding:8px 0"><span style="color:var(--t2);font-size:13px">Hora</span><span style="font-weight:700;font-size:13px">'+san(appt.time)+'</span></div>'
     +'</div>'
-    +'<div style="display:flex;gap:10px">'
-    +'<button onclick="cancelApptByToken(\''+sanitizeText(appt.token)+'\')" style="flex:1;padding:14px;border-radius:var(--rpill);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);font-weight:700;font-size:14px;cursor:pointer;font-family:var(--font)">Cancelar cita</button>'
+    +'<div style="display:flex;flex-direction:column;gap:10px">'
+    +'<button onclick="reprogramarCita(\''+appt.token+'\')" style="width:100%;padding:14px;border-radius:var(--rpill);background:var(--bblue);border:1px solid rgba(74,127,212,.2);color:var(--blue);font-weight:700;cursor:pointer;font-family:var(--font)">Modificar fecha/hora</button>'
+    +'<button onclick="cancelApptByToken(\''+appt.token+'\')" style="width:100%;padding:14px;border-radius:var(--rpill);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar cita</button>'
     +'</div>'
   );
   openOv('ov-manage');
+}
+
+// NUEVA FUNCION: Reprogramar Cita
+function reprogramarCita(token) {
+  var found = findApptByToken(token);
+  if(!found) return;
+  
+  // Guardamos que estamos editando esta cita y pre-llenamos los datos del cliente
+  CSEL.editingToken = token;
+  CSEL.bizId = found.biz.id;
+  CSEL.clientName = found.appt.client;
+  CSEL.clientPhone = found.appt.phone;
+  CSEL.clientEmail = found.appt.email;
+  CSEL.workerId = found.worker.id;
+  CSEL.svc = found.appt.svc;
+  CSEL.svcPrice = found.appt.price;
+
+  // Encontramos la duración del servicio en el catálogo del trabajador
+  var sObj = found.worker.services.find(function(s) { return s.name === found.appt.svc; });
+  CSEL.svcDur = sObj ? sObj.dur : 30;
+
+  closeOv('ov-manage');
+  
+  // Lo mandamos al portal de reservas directamente al paso 4 (Fecha y Hora)
+  goTo('s-client');
+  buildDates(found.biz.id, found.worker.id);
+  clGoStep(4); 
 }
 
 function cancelApptByToken(token) {
