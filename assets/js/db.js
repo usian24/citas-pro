@@ -71,10 +71,21 @@ function validImageType(f) {
     return ['image/jpeg', 'image/png', 'image/webp'].indexOf(f.type) >= 0 && f.size <= 5 * 1024 * 1024; 
 }
 
-function sanitizeImageDataURL(d) {
-  if (!d || typeof d !== 'string') return '';
-  if (!d.match(/^data:image\/(jpeg|png|webp);base64,/)) return '';
-  return d;
+/* ══════════════════════════
+   GUARDIA DE IMÁGENES GLOBAL (Actualizado)
+══════════════════════════ */
+function sanitizeImageDataURL(url) {
+  if (!url) return '';
+  // 1. Si es un link moderno de la nube (ImgBB, etc.), ¡déjalo pasar!
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  // 2. Si es una foto antigua guardada en Base64, ¡déjala pasar!
+  if (url.startsWith('data:image/')) {
+    return url;
+  }
+  // Si no es nada de eso, devuélvelo vacío para que no rompa la página
+  return '';
 }
 
 /* ══════════════════════════

@@ -254,7 +254,7 @@ function openBizProfile(bizId) {
   var rev = allAppts.reduce(function(s, a) { return s + (a.price || 0); }, 0);
   var todayA = allAppts.filter(function(a) { return a.date === new Date().toISOString().split('T')[0]; });
   var av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : san((b.name || '?').charAt(0));
-  
+
   H('adm-biz-profile',
     '<div style="display:flex;align-items:center;gap:14px;background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px;margin-bottom:16px">'
     + '<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0">' + av + '</div>'
