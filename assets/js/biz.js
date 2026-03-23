@@ -162,7 +162,6 @@ function bizRegStep(n) {
       REG.name = bn; REG.owner = sanitizeText(V('br-owner')); REG.email = em.toLowerCase(); REG.pass = ps; REG.phone = sanitizeText(V('br-phone'));
     }
     if (regStep === 3) { REG.addr = sanitizeText(V('br-addr')); REG.city = sanitizeText(V('br-city')); REG.country = sanitizeText(V('br-country')) || 'ES'; }
-    // Ya no requerimos servicios en el paso 6, porque ahora el paso 6 es el de éxito
     if (n === 6) finalizeBizReg();
   }
   showRegStep(n);
@@ -189,30 +188,66 @@ function updateRmPassStrength(pass) {
   if (lbl) { lbl.textContent = pass.length ? cfg.t : ''; lbl.style.color = cfg.c; }
 }
 
+
+/* ══════════════════════════
+   MOTOR IMGBB (REEMPLAZA SETUPPHOTOUPLOAD)
+══════════════════════════ */
+async function uploadToImgBB(file) {
+  if (!file) return null;
+  var formData = new FormData();
+  formData.append('image', file);
+  try {
+    var res = await fetch('https://api.imgbb.com/1/upload?key=6d7ef48cb26db3e0279b772ff3efeed5', {
+      method: 'POST',
+      body: formData
+    });
+    var data = await res.json();
+    if (data.success) {
+      return data.data.url; 
+    } else {
+      throw new Error('Error en la nube de imágenes');
+    }
+  } catch (e) {
+    console.error('Error subiendo foto:', e);
+    toast('Error al subir la imagen', '#EF4444');
+    return null;
+  }
+}
+
 function setupPhotoUpload() {
   function handleImg(inputId, onLoad) {
     var el = G(inputId); if (!el) return;
     var fresh = el.cloneNode(true);
     el.parentNode.replaceChild(fresh, el);
-    fresh.addEventListener('change', function(e) {
+    fresh.addEventListener('change', async function(e) {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
-      var r = new FileReader();
-      r.onload = function(ev) { var d = sanitizeImageDataURL(ev.target.result); if (d) onLoad(d); };
-      r.readAsDataURL(f);
+      
+      toast('Subiendo foto a la nube... ⏳', '#F59E0B');
+      var url = await uploadToImgBB(f);
+      if (url) {
+        onLoad(url); 
+      }
     });
   }
+
   function handleImgs(inputId, onLoad) {
     var el = G(inputId); if (!el) return;
     var fresh = el.cloneNode(true);
     el.parentNode.replaceChild(fresh, el);
-    fresh.addEventListener('change', function(e) {
-      Array.from(e.target.files).forEach(function(f) {
-        if (!validImageType(f)) return;
-        var r = new FileReader();
-        r.onload = function(ev) { var d = sanitizeImageDataURL(ev.target.result); if (d) onLoad(d); };
-        r.readAsDataURL(f);
-      });
+    fresh.addEventListener('change', async function(e) {
+      var files = Array.from(e.target.files);
+      if (files.length === 0) return;
+      
+      toast('Subiendo ' + files.length + ' foto(s)... ⏳', '#F59E0B');
+      for (var i = 0; i < files.length; i++) {
+        var f = files[i];
+        if (!validImageType(f)) continue;
+        var url = await uploadToImgBB(f);
+        if (url) {
+           onLoad(url);
+        }
+      }
     });
   }
 
@@ -223,25 +258,37 @@ function setupPhotoUpload() {
     if (p) { p.style.backgroundImage='url('+d+')'; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.innerHTML=''; }
   });
   
-  // NUEVO: Manejador para cargar imagen de portada en el registro/perfil
   handleImg('biz-profile-cover-input', function(d) {
     if (!CUR) return;
     CUR.cover = d;
     var p = G('biz-profile-cover');
     if (p) { p.style.backgroundImage='url('+d+')'; }
     saveDB();
-    toast('Portada actualizada', '#22C55E');
+    
+    // Guardar en Supabase el link
+    fetch('/.netlify/functions/update-biz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(CUR)
+    }).catch(function(err){});
+
+    toast('Portada subida y guardada', '#22C55E');
   });
 
   handleImg('biz-profile-logo-input', function(d) {
     if (!CUR) return;
     CUR.logo = d;
     var p = G('biz-profile-logo');
-    if (p) { 
-        p.innerHTML = '<img src="' + d + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
-    }
+    if (p) { p.innerHTML = '<img src="' + d + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">'; }
     saveDB();
-    toast('Logo actualizado', '#22C55E');
+    
+    fetch('/.netlify/functions/update-biz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(CUR)
+    }).catch(function(err){});
+
+    toast('Logo subido y guardado', '#22C55E');
   });
 
   handleImgs('svc-photo-input', function(d) {
@@ -254,7 +301,17 @@ function setupPhotoUpload() {
     if (!CUR) return;
     if (!CUR.photos) CUR.photos = [];
     if (CUR.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; }
-    CUR.photos.push(d); saveDB(); renderGallery(); // Usamos esto ahora para "Tienda"
+    CUR.photos.push(d); 
+    saveDB(); 
+    renderGallery();
+    
+    fetch('/.netlify/functions/update-biz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(CUR)
+    }).catch(function(err){});
+    
+    toast('Producto añadido a la tienda', '#22C55E');
   });
 
   handleImg('bar-photo-input', function(d) {
@@ -281,7 +338,17 @@ function renderGallery() { // Renderiza la Tienda ahora
 }
 
 function delGalleryPhoto(idx) {
-  if (CUR) { CUR.photos = (CUR.photos || []).filter(function(_, i) { return i !== idx; }); saveDB(); renderGallery(); toast('Producto eliminado', '#475569'); }
+  if (CUR) { 
+    CUR.photos = (CUR.photos || []).filter(function(_, i) { return i !== idx; }); 
+    saveDB(); 
+    renderGallery(); 
+    toast('Producto eliminado', '#475569');
+    fetch('/.netlify/functions/update-biz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(CUR)
+    }).catch(function(err){});
+  }
 }
 
 function finalizeBizReg() {
@@ -299,6 +366,14 @@ function finalizeBizReg() {
     appointments: []
   };
   DB.businesses.push(biz); DB.currentBiz=slug; DB.currentWorker=null; saveDB();
+  
+  // Guardamos el nuevo negocio en Supabase
+  fetch('/.netlify/functions/update-biz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(biz)
+  }).catch(function(err){});
+
   T('biz-link-display','citasproonline.com/#b/'+slug);
   T('neg-badge', DB.businesses.length);
   var waLink=G('wa-share-link');
@@ -360,11 +435,9 @@ function initBizPanel() {
   renderBizWorkers();
   renderGallery();
   renderBizFinances();
-  // ELIMINADO: renderHorario();
   renderCalendar();
   initAgenda();
 
-  // NUEVO: Renderizar portada y logo en el perfil del dueño
   var profileCover = G('biz-profile-cover');
   if (profileCover && CUR.cover) {
       profileCover.style.backgroundImage = 'url(' + sanitizeImageDataURL(CUR.cover) + ')';
@@ -395,7 +468,7 @@ function initBizPanel() {
    TABS DUEÑO
 ══════════════════════════ */
 function bizTab(tab) {
-  var tabs=['home','agenda','equipo','tienda','finanzas','perfil']; // ELIMINADO: 'horario'
+  var tabs=['home','agenda','equipo','tienda','finanzas','perfil']; 
   for (var i=0;i<tabs.length;i++) {
     var t=tabs[i];
     var pa=G('bp-'+t), bt=G('bn-'+t);
@@ -479,7 +552,6 @@ function updateApptStatus(id, status) {
   (CUR.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; });
   saveDB(); closeOv('ov-appt-detail'); renderTodayAppts(); initAgenda(); renderBizFinances();
   
-  // Guardamos en la nube el estado actualizado de la cita
   fetch('/.netlify/functions/update-biz', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -520,7 +592,6 @@ function renderBizWorkers() {
     : '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">No hay trabajadores aún</div></div>');
 }
 
-// Perfil detallado del trabajador para el dueño
 function openWorkerProfile(workerId) {
   if (!CUR) return;
   var worker = CUR.workers.find(function(w) { return w.id === workerId; });
@@ -638,7 +709,6 @@ function saveBarber() {
       appointments: [], photos: [], notifications: [], cover: ''
     });
 
-    /* Enviar Email de Bienvenida con Credenciales */
     fetch('/.netlify/functions/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -660,6 +730,13 @@ function saveBarber() {
 
   editWorkerId=null; window._barPhoto=null;
   saveDB(); renderBizWorkers(); closeOv('ov-barber');
+  
+  // Guardar en la nube los trabajadores actualizados
+  fetch('/.netlify/functions/update-biz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(CUR)
+  }).catch(function(err){});
 }
 
 function confirmDeleteWorker(id) {
@@ -670,6 +747,12 @@ function confirmDeleteWorker(id) {
       if (!CUR) return;
       CUR.workers=(CUR.workers||[]).filter(function(w){ return w.id!==id; });
       saveDB(); renderBizWorkers(); toast('Trabajador eliminado','#475569');
+      
+      fetch('/.netlify/functions/update-biz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(CUR)
+      }).catch(function(err){});
     }
   );
 }
@@ -794,7 +877,6 @@ function saveAppt() {
 
   saveDB(); closeOv('ov-appt'); renderTodayAppts(); initAgenda(); renderBizFinances(); initBizPanel();
   
-  // Guardar en la nube también la nueva cita manual
   fetch('/.netlify/functions/update-biz', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -813,4 +895,11 @@ function saveBizProfile() {
   if(!nm){ toast('El nombre no puede estar vacío','#EF4444'); return; }
   CUR.name=nm; CUR.addr=addr; CUR.phone=phone; CUR.insta=insta; CUR.desc=desc.slice(0,300);
   saveDB(); initBizPanel(); toast('Perfil guardado','#4A7FD4');
+  
+  // Guardar datos del perfil en Supabase
+  fetch('/.netlify/functions/update-biz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(CUR)
+  }).catch(function(err){});
 }
