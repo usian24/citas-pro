@@ -1,6 +1,18 @@
 'use strict';
 
 /* ══════════════════════════
+   GUARDIA DE IMÁGENES ACTUALIZADO
+══════════════════════════ */
+function safeImg(url) {
+  if (!url) return '';
+  // Si es un link de ImgBB (http/https), lo dejamos pasar intacto
+  if (url.startsWith('http')) return url;
+  // Si es código antiguo (Base64), usamos tu función anterior
+  if (typeof sanitizeImageDataURL !== 'undefined') return sanitizeImageDataURL(url);
+  return url;
+}
+
+/* ══════════════════════════
    MODAL: CREAR CUENTA (registro)
 ══════════════════════════ */
 var _rmCode = null, _rmData = {}, _rmTimer = null;
@@ -188,9 +200,8 @@ function updateRmPassStrength(pass) {
   if (lbl) { lbl.textContent = pass.length ? cfg.t : ''; lbl.style.color = cfg.c; }
 }
 
-
 /* ══════════════════════════
-   MOTOR IMGBB (REEMPLAZA SETUPPHOTOUPLOAD)
+   MOTOR IMGBB
 ══════════════════════════ */
 async function uploadToImgBB(file) {
   if (!file) return null;
@@ -265,7 +276,6 @@ function setupPhotoUpload() {
     if (p) { p.style.backgroundImage='url('+d+')'; }
     saveDB();
     
-    // Guardar en Supabase el link
     fetch('/.netlify/functions/update-biz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -324,7 +334,7 @@ function setupPhotoUpload() {
 function renderRegPhotos() {
   var grid = G('service-photos-reg'); if (!grid) return;
   grid.innerHTML = REG.photos.map(function(p, i) {
-    return '<div class="img-thumb"><img src="' + sanitizeImageDataURL(p) + '" alt="Foto ' + (i+1) + '"><button onclick="REG.photos.splice(' + i + ',1);renderRegPhotos();" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.65);border:none;border-radius:5px;color:#fff;font-size:11px;padding:2px 6px;cursor:pointer">×</button></div>';
+    return '<div class="img-thumb"><img src="' + safeImg(p) + '" alt="Foto ' + (i+1) + '"><button onclick="REG.photos.splice(' + i + ',1);renderRegPhotos();" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.65);border:none;border-radius:5px;color:#fff;font-size:11px;padding:2px 6px;cursor:pointer">×</button></div>';
   }).join('') + '<div class="img-thumb add-btn" onclick="document.getElementById(\'svc-photo-input\').click()">＋</div>';
 }
 
@@ -333,7 +343,7 @@ function renderGallery() { // Renderiza la Tienda ahora
   var grid = G('biz-gallery'); if (!grid) return;
   var photos = CUR.photos || [];
   grid.innerHTML = photos.map(function(p, i) {
-    return '<div class="img-thumb"><img src="' + sanitizeImageDataURL(p) + '" alt="Producto ' + (i+1) + '"><button onclick="delGalleryPhoto(' + i + ')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.65);border:none;border-radius:5px;color:#fff;font-size:11px;padding:2px 6px;cursor:pointer">×</button></div>';
+    return '<div class="img-thumb"><img src="' + safeImg(p) + '" alt="Producto ' + (i+1) + '"><button onclick="delGalleryPhoto(' + i + ')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.65);border:none;border-radius:5px;color:#fff;font-size:11px;padding:2px 6px;cursor:pointer">×</button></div>';
   }).join('');
 }
 
@@ -367,7 +377,6 @@ function finalizeBizReg() {
   };
   DB.businesses.push(biz); DB.currentBiz=slug; DB.currentWorker=null; saveDB();
   
-  // Guardamos el nuevo negocio en Supabase
   fetch('/.netlify/functions/update-biz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -388,7 +397,6 @@ function copyLink() {
   toast('Enlace copiado', '#4A7FD4');
 }
 
-
 /* ══════════════════════════
    INIT PANEL DUEÑO
 ══════════════════════════ */
@@ -406,7 +414,7 @@ function initBizPanel() {
 
   var av=G('biz-hdr-av');
   if (av) {
-    if (CUR.logo) av.innerHTML='<img src="'+sanitizeImageDataURL(CUR.logo)+'" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
+    if (CUR.logo) av.innerHTML='<img src="'+safeImg(CUR.logo)+'" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
     else av.textContent=(CUR.name||'?').charAt(0).toUpperCase();
   }
 
@@ -440,13 +448,13 @@ function initBizPanel() {
 
   var profileCover = G('biz-profile-cover');
   if (profileCover && CUR.cover) {
-      profileCover.style.backgroundImage = 'url(' + sanitizeImageDataURL(CUR.cover) + ')';
+      profileCover.style.backgroundImage = 'url(' + safeImg(CUR.cover) + ')';
   }
   
   var profileLogo = G('biz-profile-logo');
   if (profileLogo) {
       if (CUR.logo) {
-          profileLogo.innerHTML = '<img src="' + sanitizeImageDataURL(CUR.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
+          profileLogo.innerHTML = '<img src="' + safeImg(CUR.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
       } else {
           profileLogo.textContent = (CUR.name || '?').charAt(0).toUpperCase();
       }
@@ -548,8 +556,8 @@ function openApptDetail(id) {
 
 function updateApptStatus(id, status) {
   if (!CUR) return;
-  (CUR.workers||[]).forEach(function(w){ (w.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; }); });
-  (CUR.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; });
+  (CUR.workers||[]).forEach(function(w){ (w.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a=ap; }); });
+  (CUR.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a=ap; });
   saveDB(); closeOv('ov-appt-detail'); renderTodayAppts(); initAgenda(); renderBizFinances();
   
   fetch('/.netlify/functions/update-biz', {
@@ -570,7 +578,7 @@ function renderBizWorkers() {
   H('biz-barbers-list', workers.length
     ? workers.map(function(w) {
         var av = w.photo
-          ? '<img src="'+sanitizeImageDataURL(w.photo)+'" style="width:100%;height:100%;object-fit:cover" alt="Foto">'
+          ? '<img src="'+safeImg(w.photo)+'" style="width:100%;height:100%;object-fit:cover" alt="Foto">'
           : '<span style="font-size:18px;font-weight:800;color:#fff">'+san((w.name||'?').charAt(0).toUpperCase())+'</span>';
         var apptCount = (w.appointments||[]).filter(function(a){ return a.status!=='cancelled'; }).length;
         
@@ -611,7 +619,7 @@ function openWorkerProfile(workerId) {
     : '<p style="color:var(--muted); font-size:12px; text-align:center;">Este trabajador no ha creado servicios aún.</p>';
 
   var av = worker.photo
-    ? '<img src="'+sanitizeImageDataURL(worker.photo)+'" style="width:100%;height:100%;object-fit:cover" alt="Foto">'
+    ? '<img src="'+safeImg(worker.photo)+'" style="width:100%;height:100%;object-fit:cover" alt="Foto">'
     : worker.name.charAt(0).toUpperCase();
 
   H('worker-profile-content', 
@@ -666,7 +674,7 @@ function openWorkerModal(id) {
       var n=G('bar-name'), sp=G('bar-spec'), ph=G('bar-phone'), em=G('bar-email');
       if(n) n.value=w.name||''; if(sp) sp.value=w.spec||''; if(ph) ph.value=w.phone||'';
       if(em) em.value=w.email||'';
-      if(pv&&w.photo) pv.innerHTML='<img src="'+sanitizeImageDataURL(w.photo)+'" class="photo-preview" alt="Foto"/>';
+      if(pv&&w.photo) pv.innerHTML='<img src="'+safeImg(w.photo)+'" class="photo-preview" alt="Foto"/>';
     }
   } else {
     ['bar-name','bar-spec','bar-phone','bar-email','bar-pass'].forEach(function(fid){ var e=G(fid); if(e) e.value=''; });
@@ -731,7 +739,6 @@ function saveBarber() {
   editWorkerId=null; window._barPhoto=null;
   saveDB(); renderBizWorkers(); closeOv('ov-barber');
   
-  // Guardar en la nube los trabajadores actualizados
   fetch('/.netlify/functions/update-biz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -896,7 +903,6 @@ function saveBizProfile() {
   CUR.name=nm; CUR.addr=addr; CUR.phone=phone; CUR.insta=insta; CUR.desc=desc.slice(0,300);
   saveDB(); initBizPanel(); toast('Perfil guardado','#4A7FD4');
   
-  // Guardar datos del perfil en Supabase
   fetch('/.netlify/functions/update-biz', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
