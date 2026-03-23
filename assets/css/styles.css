@@ -167,10 +167,10 @@ a{text-decoration:none;color:inherit}
 .stats2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .notif-dot{position:absolute;top:-3px;right:-3px;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid var(--card);display:none;animation:pulse 2s ease infinite}
 .notif-dot.on{display:block}
-.appt-row{background:var(--card);border:1px solid var(--b);border-radius:20px;padding:166px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .18s}
+.appt-row{background:var(--card);border:1px solid var(--b);border-radius:20px;padding:16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .18s}
 .appt-row:hover{border-color:rgba(74,127,212,.25)}
 .appt-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),var(--blue));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:166px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
 .cal-day{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;position:relative}
 .cal-day:hover{background:var(--bblue);color:var(--blue)}
 .cal-day.today{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff;box-shadow:0 2px 12px rgba(74,127,212,.4)}
@@ -218,6 +218,7 @@ a{text-decoration:none;color:inherit}
 ══════════════════════════ */
 .divider-text{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:12px;font-weight:600}
 .divider-text::before,.divider-text::after{content:'';flex:1;height:1px;background:var(--b)}
+
 /* ══════════════════════════
    paises
 ══════════════════════════ */
@@ -225,6 +226,7 @@ select.inp option {
   background: var(--card);
   color: var(--text);
 }
+
 /* ══════════════════════════
    MODO DÍA / NOCHE
 ══════════════════════════ */
@@ -286,10 +288,11 @@ select.inp option {
   background: var(--bg) !important;
 }
 
-/* Arreglar el título "CITAS PRO" para que resalte en fondo claro */
+/* Arreglar el título "CITAS PRO" para que resalte en fondo claro sin errores */
 [data-theme="light"] h1.fu {
   background: linear-gradient(135deg, #1E3A8A 25%, #2563EB 65%, #60A5FA 100%) !important;
   -webkit-background-clip: text !important;
+  background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
 
@@ -379,7 +382,7 @@ select.inp option {
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-/* 🔴 AJUSTE ESPECÍFICO PARA CUADRITOS DE COLOR (como WhatsApp) 🔴 */
+/* 🔴 AJUSTE ESPECÍFICO PARA CUADRITOS DE COLOR */
 /* Les damos profundidad interna y externa exclusivo para modo día */
 [data-theme="light"] .tip-box,
 [data-theme="light"] .pill-green,
@@ -412,19 +415,19 @@ select.inp option {
 [data-theme="light"] .progbar,
 [data-theme="light"] .pass-bar { background: rgba(0,0,0,.08); }
 
-/* Buscador modo claro nítido y con profundidad */
+/* Buscador modo claro nítido y con profundidad (Blanco mate) */
 [data-theme="light"] .search-bar {
-  background: #FFFFFF;
-  border-color: rgba(0,0,0,.15);
+  background: #F8FAFC; 
+  border-color: rgba(15, 23, 42, 0.12); 
   color: var(--text);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.03);
 }
 [data-theme="light"] .search-bar input {
   color: var(--text);
   background: transparent;
 }
 [data-theme="light"] select.inp option {
-  background: #FFFFFF;
+  background: #F8FAFC; 
   color: var(--text);
 }
 
@@ -432,7 +435,7 @@ select.inp option {
 [data-theme="light"] .cpt { box-shadow: 0 8px 32px rgba(0,0,0,.3); }
 
 /* ════════════════════════════════════════
-  MODO CLARO (BOTONES SUPERIORES Y WHATSAPP)
+   CORRECCIONES MODO CLARO (BOTONES SUPERIORES Y WHATSAPP)
 ════════════════════════════════════════ */
 
 /* 1. Botón de Tema (Luna/Sol) y Botón Admin (3 puntos) */
@@ -440,7 +443,7 @@ select.inp option {
 [data-theme="light"] #dots-btn {
   background: #FFFFFF !important;
   border-color: rgba(15, 23, 42, 0.15) !important;
-  color: #0F172A !important; /* Fuerza el icono a gris casi negro */
+  color: #0F172A !important; 
   box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
 }
 
