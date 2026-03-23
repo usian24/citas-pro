@@ -586,6 +586,12 @@ function renderWorkerProfile() {
   if (sp) sp.value = CUR_WORKER.spec  || '';
   if (em) em.value = CUR_WORKER.email || '';
 
+  // NUEVO: Pinta la portada si existe
+  var profileCover = G('wk-profile-cover');
+  if (profileCover && CUR_WORKER.cover) {
+      profileCover.style.backgroundImage = 'url(' + sanitizeImageDataURL(CUR_WORKER.cover) + ')';
+  }
+
   var pv = G('wk-profile-photo-preview');
   if (pv) {
     if (CUR_WORKER.photo) {
@@ -634,6 +640,27 @@ function saveWorkerPassword() {
    ARCHIVOS FOTO
 ══════════════════════════ */
 function setupWorkerPhotoUpload() {
+  
+  // NUEVO: Escuchador para subir y guardar la foto de portada del trabajador
+  var coverInp = G('wk-profile-cover-input');
+  if (coverInp) {
+    coverInp.addEventListener('change', function(e) {
+      var f = e.target.files[0];
+      if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
+      var r = new FileReader();
+      r.onload = function(ev) {
+        var d = sanitizeImageDataURL(ev.target.result);
+        if (d && CUR_WORKER) { 
+            CUR_WORKER.cover = d; 
+            saveDB(); 
+            renderWorkerProfile(); 
+            toast('Portada actualizada', '#22C55E');
+        }
+      };
+      r.readAsDataURL(f);
+    });
+  }
+
   var logoInp = G('wk-profile-photo-input');
   if (logoInp) {
     logoInp.addEventListener('change', function(e) {

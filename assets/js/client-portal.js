@@ -25,6 +25,16 @@ function loadBizDirect(bizId) {
   CSEL.bizId = bizId;
   goTo('s-client');
 
+  /* NUEVO: Cargar Portada de fondo si existe */
+  var coverBg = G('cl-cover-bg');
+  if (coverBg) {
+      if (biz.cover) {
+          coverBg.style.backgroundImage = 'url(' + sanitizeImageDataURL(biz.cover) + ')';
+      } else {
+          coverBg.style.backgroundImage = 'none';
+      }
+  }
+
   /* Logo y nombre */
   var av = G('ch-av');
   if (av) {
@@ -408,7 +418,7 @@ function confirmBooking() {
     +'</div>'
   );
 
-  /* LINK DE WHATSAPP (AHORA INCLUYE EL ID DEL NEGOCIO PARA QUE FUNCIONE EN CELULARES) */
+  /* LINK DE WHATSAPP */
   var wa = G('cl-wa-btn');
   if (wa) {
     var waMsg = isModifying ? '¡Mi cita fue modificada en ' + biz.name + '!\n' : '¡Cita confirmada en ' + biz.name + '!\n';
@@ -436,7 +446,6 @@ async function checkManageAccess() {
     var token = parts.length === 3 ? parts[2] : parts[1];
     var bizId = parts.length === 3 ? parts[1] : null;
 
-    // Si el link trae el ID del negocio (el formato nuevo), lo descargamos de la nube primero
     if (bizId && typeof fetchBizFromCloud === 'function') {
         try {
             var cloudBiz = await fetchBizFromCloud(bizId);

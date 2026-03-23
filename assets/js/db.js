@@ -184,7 +184,7 @@ function hideErr(id) {
 }
 
 function initREG() {
-  REG = { type:'', name:'', owner:'', email:'', pass:'', phone:'', addr:'', city:'', country:'ES', teamSize:'', services:[], photos:[], logo:'' };
+  REG = { type:'', name:'', owner:'', email:'', pass:'', phone:'', addr:'', city:'', country:'ES', teamSize:'', services:[], photos:[], logo:'', cover:'' };
   regStep = 0; editSvc = null; editBar = null;
 }
 

@@ -222,6 +222,27 @@ function setupPhotoUpload() {
     var p = G('logo-preview');
     if (p) { p.style.backgroundImage='url('+d+')'; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.innerHTML=''; }
   });
+  
+  // NUEVO: Manejador para cargar imagen de portada en el registro/perfil
+  handleImg('biz-profile-cover-input', function(d) {
+    if (!CUR) return;
+    CUR.cover = d;
+    var p = G('biz-profile-cover');
+    if (p) { p.style.backgroundImage='url('+d+')'; }
+    saveDB();
+    toast('Portada actualizada', '#22C55E');
+  });
+
+  handleImg('biz-profile-logo-input', function(d) {
+    if (!CUR) return;
+    CUR.logo = d;
+    var p = G('biz-profile-logo');
+    if (p) { 
+        p.innerHTML = '<img src="' + d + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
+    }
+    saveDB();
+    toast('Logo actualizado', '#22C55E');
+  });
 
   handleImgs('svc-photo-input', function(d) {
     if (!REG) return;
@@ -271,7 +292,7 @@ function finalizeBizReg() {
     phone:REG.phone, addr:REG.addr, city:REG.city, country:REG.country,
     type:REG.type, teamSize:REG.teamSize,
     joinDate:new Date().toISOString().split('T')[0],
-    plan:'trial', desc:'', logo:REG.logo||'', photos:REG.photos||[], insta:'',
+    plan:'trial', desc:'', logo:REG.logo||'', photos:REG.photos||[], insta:'', cover:REG.cover||'',
     horario:DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
     workers: [], 
     services: [], // Array vacío, los servicios los crearán los workers
@@ -342,6 +363,21 @@ function initBizPanel() {
   // ELIMINADO: renderHorario();
   renderCalendar();
   initAgenda();
+
+  // NUEVO: Renderizar portada y logo en el perfil del dueño
+  var profileCover = G('biz-profile-cover');
+  if (profileCover && CUR.cover) {
+      profileCover.style.backgroundImage = 'url(' + sanitizeImageDataURL(CUR.cover) + ')';
+  }
+  
+  var profileLogo = G('biz-profile-logo');
+  if (profileLogo) {
+      if (CUR.logo) {
+          profileLogo.innerHTML = '<img src="' + sanitizeImageDataURL(CUR.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
+      } else {
+          profileLogo.textContent = (CUR.name || '?').charAt(0).toUpperCase();
+      }
+  }
 
   var pfNm=G('pf-nm'); if(pfNm) pfNm.value=CUR.name||'';
   var pfAd=G('pf-addr'); if(pfAd) pfAd.value=CUR.addr||'';
@@ -599,7 +635,7 @@ function saveBarber() {
       phone: phone, spec: spec, photo: photo||'',
       active: true,
       services: [], horario: DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
-      appointments: [], photos: [], notifications: []
+      appointments: [], photos: [], notifications: [], cover: ''
     });
 
     /* Enviar Email de Bienvenida con Credenciales */

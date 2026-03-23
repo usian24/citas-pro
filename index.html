@@ -10,6 +10,55 @@
   <link rel="icon" href="assets/img/favicon.ico" type="image/x-icon"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="assets/css/styles.css"/>
+  
+  <style>
+    .cover-container {
+        position: relative;
+        width: 100%;
+        height: 140px;
+        background-color: var(--bg3);
+        border-radius: 16px 16px 0 0;
+        background-size: cover;
+        background-position: center;
+        margin-bottom: 50px;
+    }
+    .cover-avatar {
+        position: absolute;
+        bottom: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 4px solid var(--card);
+        background: linear-gradient(135deg, #4A7FD4, #2855C8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        font-weight: 800;
+        color: #fff;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .cover-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.6);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        backdrop-filter: blur(4px);
+    }
+  </style>
 </head>
 <body>
 
@@ -289,7 +338,15 @@
     <div class="reg-step" id="rs-5">
       <div class="progbar"><div class="progfill" style="width:75%"></div></div>
       <button class="btn btn-ghost btn-sm btn-icon" id="back-5" style="margin-bottom:22px;border-radius:50%">←</button>
-      <div style="font-size:24px;font-weight:900;margin-bottom:6px">Foto o logo</div>
+      <div style="font-size:24px;font-weight:900;margin-bottom:6px">Foto de Portada y Logo</div>
+      
+      <div style="margin-bottom:18px">
+        <div id="biz-cover-preview" style="width:100%;height:100px;border-radius:16px;background:rgba(74,127,212,.08);border:2px dashed rgba(74,127,212,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:24px;overflow:hidden;transition:all .2s" onclick="document.getElementById('biz-cover-input').click()">
+          📸 <div style="font-size:10px;color:var(--muted);margin-top:4px">Subir portada (Fondo)</div>
+        </div>
+        <input type="file" id="biz-cover-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+      </div>
+      
       <div style="margin-bottom:18px">
         <div id="logo-preview" style="width:90px;height:90px;border-radius:24px;background:rgba(74,127,212,.08);border:2px dashed rgba(74,127,212,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:28px;overflow:hidden;transition:all .2s" onclick="document.getElementById('logo-input').click()">
           <div style="font-size:10px;color:var(--muted);margin-top:4px">Subir logo</div>
@@ -413,14 +470,26 @@
       
       <div class="pane" id="bp-perfil">
         <div class="sec-hdr"><span class="sec-ttl">Mi perfil</span></div>
-        <div class="card" style="margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Información del negocio</div>
-          <div class="field"><label>Nombre negocio</label><input class="inp" id="pf-nm" maxlength="80"/></div>
-          <div class="field"><label>Dirección</label><input class="inp" id="pf-addr" maxlength="100"/></div>
-          <div class="field"><label>Teléfono / WhatsApp</label><input class="inp" id="pf-phone" type="tel" maxlength="20"/></div>
-          <div class="field"><label>Instagram (opcional)</label><input class="inp" id="pf-insta" placeholder="@tunegocio" maxlength="50"/></div>
-          <div class="field"><label>Descripción</label><textarea class="inp" id="pf-desc" rows="3" placeholder="Describe tu negocio..." maxlength="300" style="resize:vertical"></textarea></div>
-          <button class="btn btn-blue" id="save-profile-btn">Guardar cambios</button>
+        <div class="card" style="margin-bottom:12px; padding: 0;">
+          
+          <div id="biz-profile-cover" class="cover-container">
+             <button class="cover-btn" onclick="document.getElementById('biz-profile-cover-input').click()">📸 Editar portada</button>
+             <input type="file" id="biz-profile-cover-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+             <div id="biz-profile-logo" class="cover-avatar" onclick="document.getElementById('biz-profile-logo-input').click()" style="cursor:pointer" title="Cambiar Logo">
+                B
+             </div>
+             <input type="file" id="biz-profile-logo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+          </div>
+          
+          <div style="padding: 40px 14px 14px;">
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px; text-align:center">Información del negocio</div>
+              <div class="field"><label>Nombre negocio</label><input class="inp" id="pf-nm" maxlength="80"/></div>
+              <div class="field"><label>Dirección</label><input class="inp" id="pf-addr" maxlength="100"/></div>
+              <div class="field"><label>Teléfono / WhatsApp</label><input class="inp" id="pf-phone" type="tel" maxlength="20"/></div>
+              <div class="field"><label>Instagram (opcional)</label><input class="inp" id="pf-insta" placeholder="@tunegocio" maxlength="50"/></div>
+              <div class="field"><label>Descripción</label><textarea class="inp" id="pf-desc" rows="3" placeholder="Describe tu negocio..." maxlength="300" style="resize:vertical"></textarea></div>
+              <button class="btn btn-blue" id="save-profile-btn">Guardar cambios</button>
+          </div>
         </div>
         <div class="card" style="margin-bottom:12px">
           <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">💳 Mi suscripción</div>
@@ -539,18 +608,27 @@
     </div>
     <div class="pane" id="wp-perfil">
       <div class="sec-hdr"><span class="sec-ttl">Mi perfil</span></div>
-      <div class="card" style="margin-bottom:12px">
-        <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:20px">
-          <div id="wk-profile-photo-preview" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:10px;cursor:pointer" onclick="document.getElementById('wk-profile-photo-input').click()"></div>
-          <button class="btn btn-dark btn-sm" id="wk-profile-photo-btn" style="width:auto">Cambiar foto</button>
-          <input type="file" id="wk-profile-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+      
+      <div class="card" style="margin-bottom:12px; padding: 0;">
+        <div id="wk-profile-cover" class="cover-container">
+           <button class="cover-btn" onclick="document.getElementById('wk-profile-cover-input').click()">📸 Editar portada</button>
+           <input type="file" id="wk-profile-cover-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+           <div id="wk-profile-photo-preview" class="cover-avatar" onclick="document.getElementById('wk-profile-photo-input').click()" style="cursor:pointer" title="Cambiar foto">
+              T
+           </div>
+           <input type="file" id="wk-profile-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
         </div>
-        <div class="field"><label>Nombre</label><input class="inp" id="wk-pf-nm" maxlength="60"/></div>
-        <div class="field"><label>Teléfono</label><input class="inp" id="wk-pf-phone" type="tel" maxlength="20"/></div>
-        <div class="field"><label>Especialidad</label><input class="inp" id="wk-pf-spec" placeholder="Ej: Cortes clásicos, barba..." maxlength="80"/></div>
-        <div class="field"><label>Email</label><input class="inp" id="wk-pf-email" type="email" disabled style="opacity:.6"/></div>
-        <button class="btn btn-blue" id="save-wk-profile-btn">Guardar perfil</button>
+        
+        <div style="padding: 40px 14px 14px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px; text-align:center">Datos Personales</div>
+            <div class="field"><label>Nombre</label><input class="inp" id="wk-pf-nm" maxlength="60"/></div>
+            <div class="field"><label>Teléfono</label><input class="inp" id="wk-pf-phone" type="tel" maxlength="20"/></div>
+            <div class="field"><label>Especialidad</label><input class="inp" id="wk-pf-spec" placeholder="Ej: Cortes clásicos, barba..." maxlength="80"/></div>
+            <div class="field"><label>Email</label><input class="inp" id="wk-pf-email" type="email" disabled style="opacity:.6"/></div>
+            <button class="btn btn-blue" id="save-wk-profile-btn">Guardar perfil</button>
+        </div>
       </div>
+
       <div class="card" style="margin-bottom:12px">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
         <div class="field">
@@ -582,13 +660,16 @@
 
 <div class="scr" id="s-client">
   <div style="max-width:500px;margin:0 auto;padding-bottom:60px">
-    <div style="background:linear-gradient(160deg,rgba(74,127,212,.12),transparent 60%);border-bottom:1px solid var(--b);padding:24px 20px 20px;position:relative">
-      <button id="cl-back-btn" style="position:absolute;top:16px;left:16px;background:rgba(0,0,0,.3);border:none;border-radius:var(--rpill);padding:8px 14px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600">← Inicio</button>
-      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:8px">
-        <div id="ch-av" style="width:80px;height:80px;border-radius:22px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff;overflow:hidden;margin-bottom:12px;box-shadow:0 4px 20px rgba(74,127,212,.3)"></div>
-        <div style="font-size:22px;font-weight:900;margin-bottom:4px" id="ch-nm">Negocio</div>
-        <div style="font-size:13px;color:var(--t2);margin-bottom:6px" id="ch-meta"></div>
-      </div>
+    
+    <div id="cl-cover-bg" style="width: 100%; height: 160px; background-color: var(--bg3); background-size: cover; background-position: center; position: relative; border-bottom: 1px solid var(--b);">
+        <button id="cl-back-btn" style="position:absolute;top:16px;left:16px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:var(--rpill);padding:8px 14px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600;z-index:10;">← Inicio</button>
+        
+        <div id="ch-av" style="position: absolute; bottom: -45px; left: 50%; transform: translateX(-50%); width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #4A7FD4, #2855C8); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; color: #fff; overflow: hidden; border: 5px solid #07090F; box-shadow: 0 4px 20px rgba(0,0,0,.4); z-index: 5;"></div>
+    </div>
+    
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding: 55px 20px 20px; background: linear-gradient(180deg, rgba(74,127,212,.05), transparent);">
+      <div style="font-size:24px;font-weight:900;margin-bottom:4px" id="ch-nm">Negocio</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:6px" id="ch-meta"></div>
     </div>
 
     <div style="display:flex;background:var(--bg3)">
