@@ -38,6 +38,7 @@ a{text-decoration:none;color:inherit}
 .scr{display:none;min-height:100vh}
 .scr.on{display:block}
 #s-portal.scr.on{display:flex}
+
 /* ══════════════════════════
    INPUTS
 ══════════════════════════ */
@@ -166,10 +167,10 @@ a{text-decoration:none;color:inherit}
 .stats2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .notif-dot{position:absolute;top:-3px;right:-3px;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid var(--card);display:none;animation:pulse 2s ease infinite}
 .notif-dot.on{display:block}
-.appt-row{background:var(--card);border:1px solid var(--b);border-radius:20px;padding:16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .18s}
+.appt-row{background:var(--card);border:1px solid var(--b);border-radius:20px;padding:166px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .18s}
 .appt-row:hover{border-color:rgba(74,127,212,.25)}
 .appt-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue2),var(--blue));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:166px}
 .cal-day{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;position:relative}
 .cal-day:hover{background:var(--bblue);color:var(--blue)}
 .cal-day.today{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff;box-shadow:0 2px 12px rgba(74,127,212,.4)}
@@ -253,39 +254,60 @@ select.inp option {
   --font:  'Inter', sans-serif;
 }
 
-/* MODO CLARO */
+/* ════════════════════════════════════════
+   MODO CLARO - DISEÑO PREMIUM Y ELEGANTE CON PROFUNDIDAD
+════════════════════════════════════════ */
 [data-theme="light"] {
-  --bg:    #F0F4FF;
-  --bg2:   #E8EDF8;
-  --bg3:   #DDE4F2;
-  --card:  #FFFFFF;
-  --card2: #F5F8FF;
-  --b:     rgba(0,0,0,.08);
-  --text:  #0D1018;
-  --t2:    #4A5568;
-  --muted: #8B9BB4;
-  --blue:  #2F6CC4;
-  --blue3: #1A4FA0;
-  --bblue: rgba(47,108,196,.1);
+  --bg:    #F4F7FB;  /* Fondo gris perlado súper suave (no blanco puro) */
+  --bg2:   #E2E8F0;
+  --bg3:   #E9EEF5;
+  --card:  #FFFFFF;  /* Blanco puro SOLO para tarjetas y modales */
+  --card2: #FAFCFF;
+  --b:     rgba(15, 23, 42, 0.1); /* Bordes definidos pero extremadamente suaves */
+  --text:  #0F172A;  /* Texto gris oscuro/casi negro (máxima legibilidad) */
+  --t2:    #334155;  /* Texto secundario gris oscuro */
+  --muted: #8B9BB4;  /* Texto terciario gris medio */
+  --blue:  #2563EB;  /* Azul profesional vibrante pero no chillón */
+  --blue3: #111827;
+  --bblue: rgba(37,99,235,.1);
   --green: #16A34A;
   --red:   #DC2626;
   --gold:  #D97706;
   --purple:#7C3AED;
 }
 
-/* Forzar colores de fondo en modo claro */
-[data-theme="light"] body {
-  background: var(--bg);
-  color: var(--text);
-}
-
+[data-theme="light"] body,
 [data-theme="light"] .scr {
   background: var(--bg);
   color: var(--text);
 }
 
 [data-theme="light"] #s-portal {
-  background: #EEF2FF !important;
+  background: var(--bg) !important;
+}
+
+/* Arreglar el título "CITAS PRO" para que resalte en fondo claro */
+[data-theme="light"] h1.fu {
+  background: linear-gradient(135deg, #1E3A8A 25%, #2563EB 65%, #60A5FA 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* 🔴 Tarjetas y Cuadritos Blancos con Sombras Elegantes y Relieve PROFUNDO */
+[data-theme="light"] .card,
+[data-theme="light"] .sbox,
+[data-theme="light"] .link-box,
+[data-theme="light"] .worker-card,
+[data-theme="light"] .svcitem,
+[data-theme="light"] .typbtn,
+[data-theme="light"] .szopt,
+[data-theme="light"] .dateopt,
+[data-theme="light"] .topt {
+  background: var(--card);
+  border-color: var(--b);
+  /* Nueva sombra premium con profundidad real */
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.05) !important;
+  color: var(--text);
 }
 
 [data-theme="light"] .modal,
@@ -293,114 +315,89 @@ select.inp option {
   background: var(--card);
   border-color: var(--b);
   color: var(--text);
+  /* Sombra de profundidad máxima para modales */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+/* Inputs nítidos y definidos */
 [data-theme="light"] .inp {
-  background: rgba(0,0,0,.04);
-  border-color: rgba(0,0,0,.12);
+  background: #FFFFFF;
+  border-color: rgba(15, 23, 42, 0.15);
   color: var(--text);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
 }
-
+[data-theme="light"] .inp:focus {
+  border-color: var(--blue);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
 [data-theme="light"] .inp::placeholder {
   color: var(--muted);
 }
+[data-theme="light"] select.inp option {
+  background: #FFFFFF;
+  color: var(--text);
+}
 
+/* Barras superiores e inferiores separadas del fondo */
 [data-theme="light"] .topbar {
-  background: rgba(255,255,255,.95);
+  background: rgba(255,255,255,.98);
   border-bottom-color: var(--b);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-
 [data-theme="light"] .bnav {
-  background: rgba(255,255,255,.95);
+  background: rgba(255,255,255,.98);
   border-top-color: var(--b);
+  box-shadow: 0 -1px 3px rgba(0,0,0,0.04);
 }
 
-[data-theme="light"] .bn {
-  color: var(--t2);
-}
-
-[data-theme="light"] .bn.on {
-  color: var(--blue);
-}
-
-[data-theme="light"] .card,
-[data-theme="light"] .sbox,
-[data-theme="light"] .link-box {
-  background: var(--card);
-  border-color: var(--b);
-}
-
+/* Navegación interna (Tabs) */
 [data-theme="light"] .tabs {
   background: var(--card);
   border-bottom-color: var(--b);
 }
-
-[data-theme="light"] .tab {
+[data-theme="light"] .tab,
+[data-theme="light"] .bn {
   color: var(--t2);
 }
-
-[data-theme="light"] .tab.on {
+[data-theme="light"] .tab.on,
+[data-theme="light"] .bn.on {
   color: var(--blue);
   border-bottom-color: var(--blue);
 }
 
-[data-theme="light"] .appt-row {
-  background: var(--card);
-  border-color: var(--b);
-}
-
-[data-theme="light"] .typbtn {
-  background: var(--card);
-  border-color: var(--b);
-  color: var(--text);
-}
-
-[data-theme="light"] .szopt {
-  background: var(--card);
-  border-color: var(--b);
-  color: var(--text);
-}
-
-[data-theme="light"] .svcitem {
-  background: var(--card);
-  border-color: var(--b);
-}
-
-[data-theme="light"] .worker-card {
-  background: var(--card);
-  border-color: var(--b);
-  color: var(--text);
-}
-
-[data-theme="light"] .dateopt {
-  background: var(--card);
-  border-color: var(--b);
-  color: var(--text);
-}
-
-[data-theme="light"] .dateopt.sel {
-  background: var(--blue);
-  color: #fff;
-  border-color: var(--blue);
-}
-
-[data-theme="light"] .topt {
-  background: var(--card);
-  border-color: var(--b);
-  color: var(--text);
-}
-
+/* Elementos seleccionados y hover */
+[data-theme="light"] .dateopt.sel,
 [data-theme="light"] .topt.sel {
   background: var(--blue);
   color: #fff;
   border-color: var(--blue);
 }
-
-[data-theme="light"] .tip-box {
-  background: rgba(47,108,196,.07);
-  border-color: rgba(47,108,196,.2);
-  color: var(--t2);
+[data-theme="light"] .appt-row {
+  background: var(--card);
+  border-color: var(--b);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
+
+/* 🔴 AJUSTE ESPECÍFICO PARA CUADRITOS DE COLOR (como WhatsApp) 🔴 */
+/* Les damos profundidad interna y externa exclusivo para modo día */
+[data-theme="light"] .tip-box,
+[data-theme="light"] .pill-green,
+[data-theme="light"] .pill-gold,
+[data-theme="light"] .pill-red,
+[data-theme="light"] .pill-blue {
+  background: rgba(37, 99, 235, 0.08); /* Fondo claro y profesional */
+  color: #0F172A; /* Texto azul marino profundo, máxima legibilidad */
+  border: 1px solid rgba(37, 99, 235, 0.2); /* Borde suave pero definido */
+  /* Sombra de relieve interno y externo para máxima profundidad */
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.6), 0 4px 6px -1px rgba(0,0,0,0.08) !important;
+  position: relative;
+}
+
+[data-theme="light"] .pill-green { background: rgba(22, 163, 74, 0.1); color: #166534; border: 1px solid rgba(22, 163, 74, 0.2); }
+[data-theme="light"] .pill-gold { background: rgba(217, 119, 6, 0.1); color: #92400E; border: 1px solid rgba(217, 119, 6, 0.2); }
+[data-theme="light"] .pill-red { background: rgba(220, 38, 38, 0.1); color: #991B1B; border: 1px solid rgba(220, 38, 38, 0.2); }
+[data-theme="light"] .pill-blue { background: rgba(37, 99, 235, 0.12); color: var(--blue); border: 1px solid rgba(37, 99, 235, 0.2); }
 
 [data-theme="light"] .err-box {
   background: rgba(220,38,38,.07);
@@ -408,61 +405,68 @@ select.inp option {
   color: var(--red);
 }
 
-[data-theme="light"] .pill-blue {
-  background: rgba(47,108,196,.12);
-  color: var(--blue);
-}
+[data-theme="light"] .toggle { background: rgba(15, 23, 42, 0.15); border-color: rgba(15, 23, 42, 0.2); }
+[data-theme="light"] .toggle.on { background: var(--blue); border-color: var(--blue); }
+[data-theme="light"] .toggle-wrap { border-bottom-color: rgba(0,0,0,.08); }
+[data-theme="light"] .img-thumb { border: 1px solid rgba(0,0,0,.08); }
+[data-theme="light"] .progbar,
+[data-theme="light"] .pass-bar { background: rgba(0,0,0,.08); }
 
-[data-theme="light"] .toggle {
-  background: var(--b);
-}
-
-[data-theme="light"] .toggle.on {
-  background: var(--blue);
-}
-
-[data-theme="light"] .toggle-wrap {
-  border-bottom-color: var(--b);
-}
-
+/* Buscador modo claro nítido y con profundidad */
 [data-theme="light"] .search-bar {
-  background: var(--card);
-  border-color: var(--b);
+  background: #FFFFFF;
+  border-color: rgba(0,0,0,.15);
   color: var(--text);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
 }
-
 [data-theme="light"] .search-bar input {
   color: var(--text);
   background: transparent;
 }
-
 [data-theme="light"] select.inp option {
-  background: var(--card);
+  background: #FFFFFF;
   color: var(--text);
 }
 
-[data-theme="light"] .img-thumb {
-  border-color: var(--b);
+[data-theme="light"] .ov { background: rgba(0,0,0,.5); }
+[data-theme="light"] .cpt { box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+
+/* ════════════════════════════════════════
+  MODO CLARO (BOTONES SUPERIORES Y WHATSAPP)
+════════════════════════════════════════ */
+
+/* 1. Botón de Tema (Luna/Sol) y Botón Admin (3 puntos) */
+[data-theme="light"] #theme-toggle,
+[data-theme="light"] #dots-btn {
+  background: #FFFFFF !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+  color: #0F172A !important; /* Fuerza el icono a gris casi negro */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
 }
 
-[data-theme="light"] .progbar {
-  background: var(--b);
+/* Fuerza los 3 puntitos blancos a oscuros */
+[data-theme="light"] #dots-btn span {
+  background: #0F172A !important; 
 }
 
-[data-theme="light"] .pass-bar {
-  background: var(--b);
+/* 2. Botón WhatsApp del portal (Fondo y sombra) */
+[data-theme="light"] #s-portal a[href^="https://wa.me"] {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.8) !important;
 }
 
-[data-theme="light"] .reg-step,
-[data-theme="light"] #biz-reg,
-[data-theme="light"] #adm-login {
-  background: var(--bg);
+/* Fuerza el texto principal de WhatsApp a Verde Oscuro */
+[data-theme="light"] #s-portal a[href^="https://wa.me"] div > div:first-child {
+  color: #064E3B !important; 
 }
 
-[data-theme="light"] .ov {
-  background: rgba(0,0,0,.4);
+/* Fuerza el subtítulo de WhatsApp a Verde Medio */
+[data-theme="light"] #s-portal a[href^="https://wa.me"] div > div:last-child {
+  color: #15803D !important; 
 }
 
-[data-theme="light"] .cpt {
-  box-shadow: 0 8px 32px rgba(0,0,0,.2);
+/* Fuerza la flechita "›" a Verde Medio */
+[data-theme="light"] #s-portal a[href^="https://wa.me"] span {
+  color: #15803D !important;
 }
