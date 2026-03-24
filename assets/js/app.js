@@ -353,29 +353,32 @@ function suspendBiz(id) {
 }
 
 /* ══════════════════════════
-   ELIMINAR BARBERÍA (Super Admin) 
-══════════════════════════ */
-/* ══════════════════════════
-   ELIMINAR BARBERÍA (Super Admin) - Solución Definitiva
+   ELIMINAR BARBERÍA (Super Admin) - 
 ══════════════════════════ */
 function deleteBiz(id) {
-  // El setTimeout obliga al navegador a mostrar el modal AL INSTANTE sin congelarse
+  // 1. PRIMERO: Cerramos el panel de la barbería para que no tape el mensaje
+  if (typeof closeOv === 'function') {
+    closeOv('ov-biz-profile');
+  }
+
+  // 2. Esperamos un instante pequeñito (300ms) a que el panel se cierre visualmente
   setTimeout(function() {
+    
+    // 3. AHORA SÍ, abrimos el mensaje de confirmación sin nada que lo cubra
     openConfirmModal(
       'Eliminar negocio',
-      '¿Estás seguro? Se eliminarán todos los datos, citas y trabajadores de este negocio.',
+      '¿Estás seguro? Se eliminarán todos los datos, citas y trabajadores de este negocio de la base de datos.',
       function() {
-        // Borrado local
+        // Borramos de la pantalla local
         DB.businesses = DB.businesses.filter(function(b) { return b.id !== id; });
         saveDB(); 
-        closeOv('ov-biz-profile'); 
         renderBizListAdmin(filterBiz()); 
         renderDash(); 
         checkNotifications();
         
-        toast('Eliminando...', '#F59E0B');
+        toast('Eliminando de la nube...', '#F59E0B');
 
-        // Borrado en Supabase
+        // Mandamos a borrar a la nube (Supabase)
         fetch('/.netlify/functions/delete-biz', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -383,9 +386,9 @@ function deleteBiz(id) {
         })
         .then(function(res) {
           if (res.ok) {
-            toast('Negocio eliminado ', '#EF4444');
+            toast('Negocio eliminado por completo', '#EF4444');
           } else {
-            toast('Error al borrar', '#EF4444');
+            toast('Error al borrar de la base de datos', '#EF4444');
           }
         })
         .catch(function(e) {
@@ -393,7 +396,8 @@ function deleteBiz(id) {
         });
       }
     );
-  }, 10);
+    
+  }, 300);
 }
 
 function copyText(txt) { 
