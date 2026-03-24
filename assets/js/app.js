@@ -588,7 +588,23 @@ window.onload = async function() {
   on('next-5', 'click', function() { bizRegStep(6); }); 
   on('skip-5', 'click', function() { bizRegStep(6); }); 
   on('next-6', 'click', function() { bizRegStep(7); });
-  on('enter-panel-btn', 'click', completeBizReg);
+  
+  // AQUI ES DONDE SE COMPLETA EL REGISTRO
+  on('enter-panel-btn', 'click', function() {
+      // 1. Establecer CUR antes de guardar
+      CUR = DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0];
+      
+      // 2. Guardar DB ahora que CUR está definido (esto evita el error 500)
+      if (typeof saveDB === 'function') saveDB();
+      
+      // 3. Mostrar el panel
+      if(CUR) {
+          if (typeof showBizPanel === 'function') showBizPanel();
+      } else {
+          showRegStep(0);
+      }
+  });
+  
   on('copy-link-reg', 'click',  copyLink);
   on('br-pass', 'input',        function() { updatePassStrength(this.value); });
   
@@ -710,7 +726,7 @@ window.onload = async function() {
   setupWorkerPhotoUpload();
 
   /* Eye toggles con SVG profesional */
-  initAllEyeToggles();
+  if (typeof initAllEyeToggles === 'function') initAllEyeToggles();
 
   /* QR */
   on('qr-btn', 'click',     openQRModal);

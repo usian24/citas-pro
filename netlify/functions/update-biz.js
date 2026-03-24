@@ -2,19 +2,17 @@ const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event) => {
   const headers = { 'Content-Type': 'application/json' };
-  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: 'X' };
+  if (event.httpMethod !== 'POST') return { statusCode: 200, headers, body: JSON.stringify({success: false, detalle: 'Método no permitido'}) };
 
   try {
     const data = JSON.parse(event.body);
-    
-    // Si por algún error el código envía una barbería sin ID, detenemos el proceso sin colapsar
+
     if (!data || !data.id) {
-        return { statusCode: 200, headers, body: JSON.stringify({ success: false, msg: 'Sin ID' }) };
+        return { statusCode: 200, headers, body: JSON.stringify({ success: false, detalle: 'Sin ID' }) };
     }
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-    // ARMADURA: Rellenamos campos vacíos para no violar las reglas de Supabase
     const payload = {
       id: data.id,
       name: data.name || 'Sin nombre',
@@ -38,14 +36,14 @@ exports.handler = async (event) => {
 
     const { error } = await supabase.from('businesses').upsert(payload);
 
-    // Si Supabase se queja, capturamos el error REAL y lo enviamos a la consola
+    // TRUCO: Devolvemos 200 para que Netlify no tire "500", pero mandamos success: false para leer el error.
     if (error) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: "Rechazo de Supabase", detalle: error.message }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ success: false, detalle: error.message }) };
     }
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
-    
+
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: "Fallo interno", detalle: err.message }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ success: false, detalle: err.message }) };
   }
 };

@@ -5,9 +5,7 @@
 ══════════════════════════ */
 function safeImg(url) {
   if (!url) return '';
-  // Si es un link de ImgBB (http/https), lo dejamos pasar intacto
   if (url.startsWith('http')) return url;
-  // Si es código antiguo (Base64), usamos tu función anterior
   if (typeof sanitizeImageDataURL !== 'undefined') return sanitizeImageDataURL(url);
   return url;
 }
@@ -275,13 +273,6 @@ function setupPhotoUpload() {
     var p = G('biz-profile-cover');
     if (p) { p.style.backgroundImage='url('+d+')'; }
     saveDB();
-    
-    fetch('/.netlify/functions/update-biz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(CUR)
-    }).catch(function(err){});
-
     toast('Portada subida y guardada', '#22C55E');
   });
 
@@ -291,13 +282,6 @@ function setupPhotoUpload() {
     var p = G('biz-profile-logo');
     if (p) { p.innerHTML = '<img src="' + d + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">'; }
     saveDB();
-    
-    fetch('/.netlify/functions/update-biz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(CUR)
-    }).catch(function(err){});
-
     toast('Logo subido y guardado', '#22C55E');
   });
 
@@ -314,13 +298,6 @@ function setupPhotoUpload() {
     CUR.photos.push(d); 
     saveDB(); 
     renderGallery();
-    
-    fetch('/.netlify/functions/update-biz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(CUR)
-    }).catch(function(err){});
-    
     toast('Producto añadido a la tienda', '#22C55E');
   });
 
@@ -338,7 +315,7 @@ function renderRegPhotos() {
   }).join('') + '<div class="img-thumb add-btn" onclick="document.getElementById(\'svc-photo-input\').click()">＋</div>';
 }
 
-function renderGallery() { // Renderiza la Tienda ahora
+function renderGallery() { 
   if (!CUR) return;
   var grid = G('biz-gallery'); if (!grid) return;
   var photos = CUR.photos || [];
@@ -353,11 +330,6 @@ function delGalleryPhoto(idx) {
     saveDB(); 
     renderGallery(); 
     toast('Producto eliminado', '#475569');
-    fetch('/.netlify/functions/update-biz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(CUR)
-    }).catch(function(err){});
   }
 }
 
@@ -379,10 +351,9 @@ function finalizeBizReg() {
   DB.businesses.push(biz); 
   DB.currentBiz=slug; 
   DB.currentWorker=null; 
+  CUR = biz; // VITAL para que saveDB() sepa qué guardar
   
-  // ESTO ES TODO LO QUE NECESITAMOS AHORA.
-  // saveDB() guarda en tu memoria local y usa el colador para guardar en la nube
-  saveDB(); 
+  saveDB(); // Guarda localmente Y en Supabase automáticamente
   
   T('biz-link-display','citasproonline.com/#b/'+slug);
   T('neg-badge', DB.businesses.length);
@@ -557,16 +528,13 @@ function openApptDetail(id) {
 
 function updateApptStatus(id, status) {
   if (!CUR) return;
-  (CUR.workers||[]).forEach(function(w){ (w.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a=ap; }); });
-  (CUR.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a=ap; });
-  saveDB(); closeOv('ov-appt-detail'); renderTodayAppts(); initAgenda(); renderBizFinances();
-  
-  fetch('/.netlify/functions/update-biz', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(CUR)
-  }).catch(function(err) { console.error('Error guardando status en nube:', err); });
-  
+  (CUR.workers||[]).forEach(function(w){ (w.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; }); });
+  (CUR.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; });
+  saveDB(); 
+  closeOv('ov-appt-detail'); 
+  renderTodayAppts(); 
+  initAgenda(); 
+  renderBizFinances();
   toast(status==='completed'?'Cita completada':'Cita cancelada', status==='completed'?'#22C55E':'#EF4444');
 }
 
@@ -654,7 +622,7 @@ function openWorkerProfile(workerId) {
 }
 
 /* ══════════════════════════
-   MODAL TRABAJADOR (crear/editar) Y ENVIO DE CORREO
+   MODAL TRABAJADOR (crear/editar) Y ENVÍO DE CORREO
 ══════════════════════════ */
 var editWorkerId = null;
 
@@ -695,16 +663,14 @@ function saveBarber() {
   if (!CUR) return;
   if (!CUR.workers) CUR.workers=[];
 
-  // Creamos el ID único si es nuevo
   var workerId = editWorkerId || 'w_' + Date.now();
 
-  // 1. PREPARAMOS EL OBJETO PROFESIONAL PARA SUPABASE
   var workerDbObj = {
     id: workerId,
-    business_id: CUR.id, // VITAL: Le dice a Supabase a qué barbería pertenece
+    business_id: CUR.id, 
     name: name,
     email: email,
-    password: pass, // Luego lo encriptaremos
+    password: pass, 
     phone: phone,
     avatar: photo || '',
     role: 'barber'
@@ -718,16 +684,14 @@ function saveBarber() {
     if (!validEmail(email)) { toast('Email inválido','#EF4444'); return; }
     if (!pass || pass.length<6) { toast('Contraseña mínimo 6 caracteres','#EF4444'); return; }
     
-    // Mantenemos tu lógica visual local para que la página no parpadee
     CUR.workers.push({
       id: workerId, name: name, email: email, pass: pass, phone: phone, spec: spec, photo: photo||'',
       active: true, services: [], horario: DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
       appointments: [], photos: [], notifications: [], cover: ''
     });
-    toast('Trabajador guardado', '#22C55E');
+    toast('Trabajador creado', '#22C55E');
   }
 
-  // 2. LO ENVIAMOS A SU NUEVA TABLA EXCLUSIVA (workers)
   fetch('/.netlify/functions/save-worker', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -735,7 +699,7 @@ function saveBarber() {
   }).catch(function(err){ console.error('Error nube:', err); });
 
   editWorkerId=null; window._barPhoto=null;
-  saveDB(); // Este ahora usa el "colador" que pusimos en db.js
+  saveDB(); 
   renderBizWorkers(); 
   closeOv('ov-barber');
 }
@@ -746,36 +710,15 @@ function confirmDeleteWorker(id) {
     '¿Estás seguro? Se eliminarán sus citas y datos.',
     function() {
       if (!CUR) return;
-      
-      // Borrar de la memoria local
       CUR.workers = (CUR.workers||[]).filter(function(w){ return w.id!==id; });
       saveDB(); 
       renderBizWorkers(); 
       toast('Trabajador eliminado','#475569');
       
-      // Borrar de la tabla workers en Supabase
       fetch('/.netlify/functions/save-worker', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'delete', worker: { id: id } })
-      }).catch(function(err){});
-    }
-  );
-}
-
-function confirmDeleteWorker(id) {
-  openConfirmModal(
-    'Eliminar trabajador',
-    '¿Estás seguro? Se eliminarán sus citas y datos.',
-    function() {
-      if (!CUR) return;
-      CUR.workers=(CUR.workers||[]).filter(function(w){ return w.id!==id; });
-      saveDB(); renderBizWorkers(); toast('Trabajador eliminado','#475569');
-      
-      fetch('/.netlify/functions/update-biz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(CUR)
       }).catch(function(err){});
     }
   );
@@ -899,14 +842,12 @@ function saveAppt() {
     CUR.appointments.push(appt);
   }
 
-  saveDB(); closeOv('ov-appt'); renderTodayAppts(); initAgenda(); renderBizFinances(); initBizPanel();
-  
-  fetch('/.netlify/functions/update-biz', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(CUR)
-  }).catch(function(err) { console.error('Error guardando en nube:', err); });
-  
+  saveDB(); 
+  closeOv('ov-appt'); 
+  renderTodayAppts(); 
+  initAgenda(); 
+  renderBizFinances(); 
+  initBizPanel();
   toast('Cita guardada','#22C55E');
 }
 
@@ -918,11 +859,7 @@ function saveBizProfile() {
   var nm=sanitizeText(V('pf-nm')), addr=sanitizeText(V('pf-addr')), phone=sanitizeText(V('pf-phone')), insta=sanitizeText(V('pf-insta')), desc=sanitizeText(V('pf-desc'));
   if(!nm){ toast('El nombre no puede estar vacío','#EF4444'); return; }
   CUR.name=nm; CUR.addr=addr; CUR.phone=phone; CUR.insta=insta; CUR.desc=desc.slice(0,300);
-  saveDB(); initBizPanel(); toast('Perfil guardado','#4A7FD4');
-  
-  fetch('/.netlify/functions/update-biz', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(CUR)
-  }).catch(function(err){});
+  saveDB(); 
+  initBizPanel(); 
+  toast('Perfil guardado','#4A7FD4');
 }
