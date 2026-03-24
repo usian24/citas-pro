@@ -53,11 +53,10 @@ function openQRModal() {
   if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita en ' + CUR.name + ' → ' + link);
   openOv('ov-qr');
 }
-
 /* ══════════════════════════
-   SUPER ADMIN
+   SUPER ADMIN — LOGIN (SEGURO CON SUPABASE)
 ══════════════════════════ */
-function dotsLogin() {
+async function dotsLogin() {
   var email = V('dots-email').trim().toLowerCase();
   var pass  = V('dots-pass');
   hideErr('dots-err');
@@ -72,24 +71,36 @@ function dotsLogin() {
       showErr('dots-err', 'Demasiados intentos. Espera 5 minutos.'); 
       return; 
   }
-  
-  if (email === 'virche70021261@gmail.com' && pass === 'Versa70021261*#') {
-    resetRateLimit(key); 
-    DB.admin.auth = true; 
-    saveDB();
-    hideErr('dots-err'); 
-    closeOv('ov-admin');
-    goTo('s-admin'); 
-    showAdminPanel();
-    toast('Bienvenida, Versa', '#2855C8');
-  } else {
-    showErr('dots-err', 'Credenciales incorrectas.');
-    var p = G('dots-pass'); 
-    if (p) { p.value = ''; p.focus(); }
+
+  try {
+    // Mandamos las credenciales al "Guardia" en Netlify
+    let res = await fetch('/.netlify/functions/admin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: email, password: pass })
+    });
+
+    if (res.ok) {
+      let data = await res.json();
+      resetRateLimit(key); 
+      DB.admin.auth = true; 
+      saveDB();
+      hideErr('dots-err'); 
+      closeOv('ov-admin');
+      goTo('s-admin'); 
+      showAdminPanel();
+      toast('Bienvenido/a, Admin', '#2855C8');
+    } else {
+      showErr('dots-err', 'Credenciales incorrectas.');
+      var p = G('dots-pass'); 
+      if (p) { p.value = ''; p.focus(); }
+    }
+  } catch (error) {
+    showErr('dots-err', 'Error de conexión con el servidor.');
   }
 }
 
-function doAdminLogin() {
+async function doAdminLogin() {
   var email = V('adm-email').trim().toLowerCase();
   var pass  = V('adm-pass');
   hideErr('adm-err');
@@ -105,16 +116,27 @@ function doAdminLogin() {
       return; 
   }
   
-  if (email === 'virche70021261@gmail.com' && pass === 'Versa70021261*#') {
-    resetRateLimit(key); 
-    DB.admin.auth = true; 
-    saveDB(); 
-    hideErr('adm-err'); 
-    showAdminPanel();
-  } else {
-    showErr('adm-err', 'Credenciales incorrectas.');
-    var p = G('adm-pass'); 
-    if (p) { p.value = ''; p.focus(); }
+  try {
+    // Mandamos las credenciales al "Guardia" en Netlify
+    let res = await fetch('/.netlify/functions/admin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: email, password: pass })
+    });
+
+    if (res.ok) {
+      resetRateLimit(key); 
+      DB.admin.auth = true; 
+      saveDB(); 
+      hideErr('adm-err'); 
+      showAdminPanel();
+    } else {
+      showErr('adm-err', 'Credenciales incorrectas.');
+      var p = G('adm-pass'); 
+      if (p) { p.value = ''; p.focus(); }
+    }
+  } catch (error) {
+    showErr('adm-err', 'Error de conexión con el servidor.');
   }
 }
 

@@ -1,42 +1,5 @@
 'use strict';
 
-/* ══════════════════════════
-   SUPER ADMIN — LOGIN
-══════════════════════════ */
-function dotsLogin() {
-  var email = V('dots-email').trim().toLowerCase();
-  var pass  = V('dots-pass');
-  hideErr('dots-err');
-  if (!email || !pass) { showErr('dots-err', 'Completa todos los campos.'); return; }
-  var key = 'dots_' + email;
-  if (!checkRateLimit(key)) { showErr('dots-err', 'Demasiados intentos. Espera 5 minutos.'); return; }
-  if (email === 'virche70021261@gmail.com' && pass === 'Versa70021261*#') {
-    resetRateLimit(key);
-    DB.admin.auth = true; saveDB();
-    hideErr('dots-err'); closeOv('ov-admin');
-    goTo('s-admin'); showAdminPanel();
-    toast(' Bienvenida, Versa ', '#2855C8');
-  } else {
-    showErr('dots-err', 'Credenciales incorrectas.');
-    var p = G('dots-pass'); if (p) { p.value = ''; p.focus(); }
-  }
-}
-
-function doAdminLogin() {
-  var email = V('adm-email').trim().toLowerCase();
-  var pass  = V('adm-pass');
-  hideErr('adm-err');
-  if (!email || !pass) { showErr('adm-err', 'Escribe email y contraseña.'); return; }
-  var key = 'admin_' + email;
-  if (!checkRateLimit(key)) { showErr('adm-err', 'Demasiados intentos. Espera 5 minutos.'); return; }
-  if (email === 'virche70021261@gmail.com' && pass === 'Versa70021261*#') {
-    resetRateLimit(key); DB.admin.auth = true; saveDB(); hideErr('adm-err'); showAdminPanel();
-  } else {
-    showErr('adm-err', 'Credenciales incorrectas.');
-    var p = G('adm-pass'); if (p) { p.value = ''; p.focus(); }
-  }
-}
-
 function doAdminLogout() {
   DB.admin.auth = false; saveDB();
   var l = G('adm-login'), p = G('adm-panel');
