@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.2",
+    "bcryptjs": "^3.0.3",
     "resend": "^3.2.0",
     "stripe": "^14.21.0"
   }

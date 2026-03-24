@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const bcrypt = require('bcryptjs');
 
 exports.handler = async (event) => {
   const headers = { 'Content-Type': 'application/json' };
@@ -10,29 +11,30 @@ exports.handler = async (event) => {
   try {
     const { username, password } = JSON.parse(event.body);
 
-    if (!username || !password) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Faltan credenciales' }) };
-    }
-
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-    // 1. Va a tu nueva tabla secreta y busca si existe ese usuario y contraseña
+    // 1. Buscamos SOLO el usuario
     const { data, error } = await supabase
       .from('super_admins')
       .select('*')
       .eq('username', username)
-      .eq('password', password)
-      .single(); // single() asegura que solo traiga un resultado exacto
+      .single();
 
-    // 2. Si hay un error o no encuentra nada, rebota el login
     if (error || !data) {
-      return { statusCode: 401, headers, body: JSON.stringify({ error: 'Credenciales incorrectas' }) };
+      return { statusCode: 401, headers, body: JSON.stringify({ error: 'Usuario no encontrado' }) };
     }
 
-    // 3. Si todo coincide, te da luz verde para entrar
+    // 2. Aquí está la magia: bcrypt compara tu contraseña escrita con el Hash de Supabase
+    const isPasswordValid = bcrypt.compareSync(password, data.password);
+
+    if (!isPasswordValid) {
+        return { statusCode: 401, headers, body: JSON.stringify({ error: 'Contraseña incorrecta' }) };
+    }
+
+    // 3. ¡Aprobado!
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, admin: data.username }) };
     
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Error del servidor: ' + err.message }) };
   }
 };
