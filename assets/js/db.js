@@ -363,3 +363,37 @@ async function forceCloudSync() {
 
 // Ejecuta la descarga silenciosa apenas la persona abre la página
 forceCloudSync();
+
+/* ══════════════════════════
+   MANTENER SESIÓN ACTIVA (Auto-Login Inmediato)
+══════════════════════════ */
+function restaurarSesion() {
+  // 1. Cargamos la memoria del celular para ver si alguien dejó su sesión abierta
+  DB = loadDB();
+
+  // 2. ¿Hay un BARBERO / TRABAJADOR logueado?
+  if (DB && DB.currentWorker && DB.currentBiz) {
+    CUR = getBizById(DB.currentBiz);
+    if (CUR) {
+       // Ocultamos el inicio y lo mandamos directo a su panel de trabajo
+       if (typeof goWorker === 'function') goWorker();
+       return; 
+    }
+  }
+
+  // 3. ¿Hay un DUEÑO de barbería logueado?
+  if (DB && DB.currentBiz && !DB.currentWorker) {
+    CUR = getBizById(DB.currentBiz);
+    if (CUR) {
+       // Ocultamos el inicio y lo mandamos a la administración
+       if (typeof goBiz === 'function') goBiz();
+       return;
+    }
+  }
+
+  // 4. Si nadie ha iniciado sesión, mostramos la pantalla principal normal
+  if (typeof goTo === 'function') goTo('s-portal');
+}
+
+// Le decimos al navegador: "Apenas termines de cargar la página, ejecuta el Auto-Login"
+window.addEventListener('DOMContentLoaded', restaurarSesion);
