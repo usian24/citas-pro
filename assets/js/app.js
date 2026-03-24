@@ -274,7 +274,7 @@ function openBizProfile(bizId) {
     + '<button onclick="extendTrial(\'' + sanitizeText(b.id) + '\')" class="btn btn-dark btn-sm" style="flex:1">Extender prueba</button>'
     + '<button onclick="activateBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-green btn-sm" style="flex:1">Activar</button>'
     + '<button onclick="suspendBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-red btn-sm" style="flex:1">Suspender</button>'
-    + '<button onclick="deleteBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-red btn-sm" style="flex:1">Eliminar</button></div>'
+    + '<button onclick="deleteBiz(\'' + sanitizeText(b.id) + '\', event)" class="btn btn-red btn-sm" style="flex:1">Eliminar</button></div>'
   );
   openOv('ov-biz-profile');
 }
@@ -352,18 +352,46 @@ function suspendBiz(id) {
     if (b) { b.plan = 'expired'; saveDB(); toast('Negocio suspendido', '#EF4444'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); } 
 }
 
-function deleteBiz(id) {
+/* ══════════════════════════
+   ELIMINAR BARBERÍA (Super Admin) 
+══════════════════════════ */
+function deleteBiz(id, event) {
+  // 1. Arreglo del "Click Fantasma": Evita que el click se confunda con el fondo
+  if (event) {
+    event.stopPropagation();
+  }
+
+  // 2. Tu modal personalizado (se mantiene igual)
   openConfirmModal(
     'Eliminar negocio',
-    '¿Estás seguro? Se eliminarán todos los datos, citas y trabajadores de este negocio.',
+    '¿Estás seguro? Se eliminarán todos los datos, citas y trabajadores de este negocio de la base de datos.',
     function() {
+      // 3. Borrado en la pantalla (Tu código original intacto)
       DB.businesses = DB.businesses.filter(function(b) { return b.id !== id; });
       saveDB(); 
       closeOv('ov-biz-profile'); 
       renderBizListAdmin(filterBiz()); 
       renderDash(); 
       checkNotifications();
-      toast('Negocio eliminado', '#EF4444');
+      
+      toast('Eliminando de la nube...', '#F59E0B');
+
+      // 4. Borrado REAL en Supabase (El Destructor)
+      fetch('/.netlify/functions/delete-biz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+      })
+      .then(function(res) {
+        if (res.ok) {
+          toast('Negocio eliminado por completo', '#EF4444');
+        } else {
+          toast('Error al borrar de la base de datos', '#EF4444');
+        }
+      })
+      .catch(function(e) {
+        console.error('Error de red al eliminar en Supabase:', e);
+      });
     }
   );
 }
