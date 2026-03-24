@@ -1,7 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event) => {
-  // Siempre devolvemos JSON para que el navegador lo entienda
   const headers = { 'Content-Type': 'application/json' };
 
   if (event.httpMethod !== 'POST') {
@@ -15,9 +14,8 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Faltan datos' }) };
     }
 
-    // Verificamos que Netlify sí esté leyendo tus claves
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Faltan las variables de entorno en Netlify' }) };
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Faltan las variables de entorno' }) };
     }
 
     const supabase = createClient(
@@ -25,12 +23,34 @@ exports.handler = async (event) => {
       process.env.SUPABASE_ANON_KEY
     );
 
-    // UPSERT: Si no existe lo crea, si existe lo actualiza
+    // LA MAGIA DEL FILTRO: Extraemos SOLO lo que pertenece a la tabla businesses
+    // Dejamos fuera los arrays de workers, services y appointments para no causar errores
+    const cleanBizData = {
+      id: bizData.id,
+      name: bizData.name || '',
+      owner: bizData.owner || '',
+      email: bizData.email || '',
+      password: bizData.pass || bizData.password || '', // Mapeamos "pass" a "password"
+      phone: bizData.phone || '',
+      addr: bizData.addr || '',
+      city: bizData.city || '',
+      country: bizData.country || '',
+      type: bizData.type || '',
+      plan: bizData.plan || 'trial',
+      desc_text: bizData.desc || '', // Mapeamos "desc" a "desc_text"
+      logo: bizData.logo || '',
+      cover: bizData.cover || '',
+      insta: bizData.insta || '',
+      joinDate: bizData.joinDate || new Date().toISOString(),
+      horario: bizData.horario || null,
+      photos: bizData.photos || []
+    };
+
+    // UPSERT: Si no existe lo crea, si existe lo actualiza de forma súper limpia
     const { data, error } = await supabase
       .from('businesses')
-      .upsert(bizData);
+      .upsert(cleanBizData);
 
-    // Si Supabase rechaza los datos (ej: falta una columna), capturamos el error exacto
     if (error) {
       console.error("Error de Supabase:", error);
       return { statusCode: 500, headers, body: JSON.stringify({ error: error.message, details: error.details }) };
@@ -39,7 +59,6 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     
   } catch (err) {
-    // Si la función colapsa, capturamos el motivo
     console.error("Error en la función:", err);
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
