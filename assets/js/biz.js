@@ -694,56 +694,72 @@ function saveBarber() {
   if (!CUR) return;
   if (!CUR.workers) CUR.workers=[];
 
+  // Creamos el ID único si es nuevo
+  var workerId = editWorkerId || 'w_' + Date.now();
+
+  // 1. PREPARAMOS EL OBJETO PROFESIONAL PARA SUPABASE
+  var workerDbObj = {
+    id: workerId,
+    business_id: CUR.id, // VITAL: Le dice a Supabase a qué barbería pertenece
+    name: name,
+    email: email,
+    password: pass, // Luego lo encriptaremos
+    phone: phone,
+    avatar: photo || '',
+    role: 'barber'
+  };
+
   if (editWorkerId) {
-    var w=(CUR.workers).filter(function(x){ return x.id===editWorkerId; })[0];
+    var w = CUR.workers.filter(function(x){ return x.id===editWorkerId; })[0];
     if (w) { w.name=name; w.spec=spec; w.phone=phone; if(photo) w.photo=photo; }
     toast('Trabajador editado','#4A7FD4');
   } else {
     if (!validEmail(email)) { toast('Email inválido','#EF4444'); return; }
     if (!pass || pass.length<6) { toast('Contraseña mínimo 6 caracteres','#EF4444'); return; }
-    var emailExists = false;
-    DB.businesses.forEach(function(b){
-      if((b.email||'').toLowerCase()===email) emailExists=true;
-      (b.workers||[]).forEach(function(wk){ if((wk.email||'').toLowerCase()===email) emailExists=true; });
-    });
-    if (emailExists) { toast('Ese email ya está registrado','#EF4444'); return; }
-
+    
+    // Mantenemos tu lógica visual local para que la página no parpadee
     CUR.workers.push({
-      id: 'w_'+Date.now(),
-      name: name, email: email, pass: pass,
-      phone: phone, spec: spec, photo: photo||'',
-      active: true,
-      services: [], horario: DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
+      id: workerId, name: name, email: email, pass: pass, phone: phone, spec: spec, photo: photo||'',
+      active: true, services: [], horario: DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
       appointments: [], photos: [], notifications: [], cover: ''
     });
-
-    fetch('/.netlify/functions/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'worker_welcome',
-        to: email,
-        data: {
-          workerName: name,
-          bizName: CUR.name,
-          email: email,
-          pass: pass,
-          link: 'https://citasproonline.com'
-        }
-      })
-    }).catch(function(e) { console.error('Error enviando email al trabajador:', e); });
-
-    toast('Trabajador creado y email enviado', '#22C55E');
+    toast('Trabajador guardado', '#22C55E');
   }
 
+  // 2. LO ENVIAMOS A SU NUEVA TABLA EXCLUSIVA (workers)
+  fetch('/.netlify/functions/save-worker', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'upsert', worker: workerDbObj })
+  }).catch(function(err){ console.error('Error nube:', err); });
+
   editWorkerId=null; window._barPhoto=null;
-  saveDB(); renderBizWorkers(); closeOv('ov-barber');
-  
-  fetch('/.netlify/functions/update-biz', {
+  saveDB(); // Este ahora usa el "colador" que pusimos en db.js
+  renderBizWorkers(); 
+  closeOv('ov-barber');
+}
+
+function confirmDeleteWorker(id) {
+  openConfirmModal(
+    'Eliminar trabajador',
+    '¿Estás seguro? Se eliminarán sus citas y datos.',
+    function() {
+      if (!CUR) return;
+      
+      // Borrar de la memoria local
+      CUR.workers = (CUR.workers||[]).filter(function(w){ return w.id!==id; });
+      saveDB(); 
+      renderBizWorkers(); 
+      toast('Trabajador eliminado','#475569');
+      
+      // Borrar de la tabla workers en Supabase
+      fetch('/.netlify/functions/save-worker', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(CUR)
-  }).catch(function(err){});
+        body: JSON.stringify({ action: 'delete', worker: { id: id } })
+      }).catch(function(err){});
+    }
+  );
 }
 
 function confirmDeleteWorker(id) {

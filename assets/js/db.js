@@ -152,16 +152,35 @@ function saveDB() {
       
       // Guardado en Supabase (Nube)
       if (CUR) {
-        var negocioFresco = DB.businesses.filter(function(b){ return b.id === CUR.id; })[0];
-        if (negocioFresco) {
-          fetch('/.netlify/functions/update-biz', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(negocioFresco)
-          }).catch(function(err) {
-            console.error('Error guardando en la nube:', err);
-          });
-        }
+        // 🌟 EL COLADOR: Extraemos SOLO la info de la barbería
+        var negocioLimpio = {
+          id: CUR.id, 
+          name: CUR.name, 
+          owner: CUR.owner, 
+          email: CUR.email,
+          password: CUR.pass || CUR.password || '', 
+          phone: CUR.phone, 
+          addr: CUR.addr,
+          city: CUR.city, 
+          country: CUR.country, 
+          type: CUR.type, 
+          plan: CUR.plan,
+          desc_text: CUR.desc || '', 
+          logo: CUR.logo || '', 
+          cover: CUR.cover || '',
+          insta: CUR.insta || '', 
+          joinDate: CUR.joinDate, 
+          horario: CUR.horario || null,
+          photos: CUR.photos || []
+        };
+
+        fetch('/.netlify/functions/update-biz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(negocioLimpio)
+        }).catch(function(err) {
+          console.error('Error guardando en la nube:', err);
+        });
       }
     }
   } catch(e) { 
