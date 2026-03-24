@@ -372,17 +372,18 @@ function finalizeBizReg() {
     plan:'trial', desc:'', logo:REG.logo||'', photos:REG.photos||[], insta:'', cover:REG.cover||'',
     horario:DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
     workers: [], 
-    services: [], // Array vacío, los servicios los crearán los workers
+    services: [], 
     appointments: []
   };
-  DB.businesses.push(biz); DB.currentBiz=slug; DB.currentWorker=null; saveDB();
   
-  fetch('/.netlify/functions/update-biz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(biz)
-  }).catch(function(err){});
-
+  DB.businesses.push(biz); 
+  DB.currentBiz=slug; 
+  DB.currentWorker=null; 
+  
+  // ESTO ES TODO LO QUE NECESITAMOS AHORA.
+  // saveDB() guarda en tu memoria local y usa el colador para guardar en la nube
+  saveDB(); 
+  
   T('biz-link-display','citasproonline.com/#b/'+slug);
   T('neg-badge', DB.businesses.length);
   var waLink=G('wa-share-link');
