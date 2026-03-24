@@ -1,7 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 
-exports.handler = async (event) => {
-  const headers = { 'Content-Type': 'application/json' };
+module.exports = async (req, res) => {
   try {
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
     
@@ -10,8 +9,8 @@ exports.handler = async (event) => {
     
     if (error) throw error;
 
-    return { statusCode: 200, headers, body: JSON.stringify(data || []) };
+    return res.status(200).json(data || []);
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    return res.status(500).json({ error: err.message });
   }
 };

@@ -1,11 +1,10 @@
 const { createClient } = require('@supabase/supabase-js');
 
-exports.handler = async (event) => {
-  const headers = { 'Content-Type': 'application/json' };
-  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: 'Método no permitido' };
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
 
   try {
-    const { action, worker } = JSON.parse(event.body);
+    const { action, worker } = req.body;
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
     if (action === 'delete') {
@@ -18,8 +17,8 @@ exports.handler = async (event) => {
       if (error) throw error;
     }
 
-    return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    return res.status(200).json({ success: true });
   } catch (err) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    return res.status(500).json({ error: err.message });
   }
 };
