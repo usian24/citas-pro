@@ -330,3 +330,36 @@ function planTag(plan) {
   var x = m[plan] || { c:'#475569', l:'—' };
   return '<span style="background:' + x.c + '22;color:' + x.c + ';border:1px solid ' + x.c + '44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + x.l + '</span>';
 }
+/* ══════════════════════════
+   SINCRONIZACIÓN EN TIEMPO REAL CON LA NUBE (SUPABASE)
+══════════════════════════ */
+async function forceCloudSync() {
+  try {
+    // 1. Llama a la nueva función que lee la base de datos
+    var res = await fetch('/.netlify/functions/get-db');
+    if (res.ok) {
+      var cloudBusinesses = await res.json();
+      
+      // 2. Trae la memoria local (que en un celular nuevo estará vacía)
+      var local = loadDB(); 
+      
+      // 3. Reemplaza la memoria local con la VERDADERA info de la nube
+      local.businesses = cloudBusinesses; 
+      localStorage.setItem(DBKEY, JSON.stringify(local)); 
+      
+      // 4. Actualiza la variable global que usa tu app para iniciar sesión
+      DB = local; 
+
+      // 5. Si estás viendo un negocio específico, actualiza la pantalla
+      if (typeof CUR !== 'undefined' && CUR && typeof initBizPanel === 'function') {
+         CUR = DB.businesses.find(function(b) { return b.id === CUR.id; }) || CUR;
+         initBizPanel();
+      }
+    }
+  } catch(e) {
+    console.error("Error descargando la base de datos de la nube:", e);
+  }
+}
+
+// Ejecuta la descarga silenciosa apenas la persona abre la página
+forceCloudSync();
