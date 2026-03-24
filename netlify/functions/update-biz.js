@@ -2,64 +2,50 @@ const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event) => {
   const headers = { 'Content-Type': 'application/json' };
-
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Método no permitido' }) };
-  }
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: 'X' };
 
   try {
-    const bizData = JSON.parse(event.body);
+    const data = JSON.parse(event.body);
     
-    if (!bizData || !bizData.id) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Faltan datos' }) };
+    // Si por algún error el código envía una barbería sin ID, detenemos el proceso sin colapsar
+    if (!data || !data.id) {
+        return { statusCode: 200, headers, body: JSON.stringify({ success: false, msg: 'Sin ID' }) };
     }
 
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Faltan las variables de entorno' }) };
-    }
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_ANON_KEY
-    );
-
-    // LA MAGIA DEL FILTRO: Extraemos SOLO lo que pertenece a la tabla businesses
-    // Dejamos fuera los arrays de workers, services y appointments para no causar errores
-    const cleanBizData = {
-      id: bizData.id,
-      name: bizData.name || '',
-      owner: bizData.owner || '',
-      email: bizData.email || '',
-      password: bizData.pass || bizData.password || '', // Mapeamos "pass" a "password"
-      phone: bizData.phone || '',
-      addr: bizData.addr || '',
-      city: bizData.city || '',
-      country: bizData.country || '',
-      type: bizData.type || '',
-      plan: bizData.plan || 'trial',
-      desc_text: bizData.desc || '', // Mapeamos "desc" a "desc_text"
-      logo: bizData.logo || '',
-      cover: bizData.cover || '',
-      insta: bizData.insta || '',
-      joinDate: bizData.joinDate || new Date().toISOString(),
-      horario: bizData.horario || null,
-      photos: bizData.photos || []
+    // ARMADURA: Rellenamos campos vacíos para no violar las reglas de Supabase
+    const payload = {
+      id: data.id,
+      name: data.name || 'Sin nombre',
+      owner: data.owner || '',
+      email: data.email || '',
+      password: data.password || data.pass || '',
+      phone: data.phone || '',
+      addr: data.addr || '',
+      city: data.city || '',
+      country: data.country || '',
+      type: data.type || '',
+      plan: data.plan || 'trial',
+      desc_text: data.desc_text || data.desc || '',
+      logo: data.logo || '',
+      cover: data.cover || '',
+      insta: data.insta || '',
+      joinDate: data.joinDate || new Date().toISOString().split('T')[0],
+      horario: Array.isArray(data.horario) ? data.horario : [],
+      photos: Array.isArray(data.photos) ? data.photos : []
     };
 
-    // UPSERT: Si no existe lo crea, si existe lo actualiza de forma súper limpia
-    const { data, error } = await supabase
-      .from('businesses')
-      .upsert(cleanBizData);
+    const { error } = await supabase.from('businesses').upsert(payload);
 
+    // Si Supabase se queja, capturamos el error REAL y lo enviamos a la consola
     if (error) {
-      console.error("Error de Supabase:", error);
-      return { statusCode: 500, headers, body: JSON.stringify({ error: error.message, details: error.details }) };
+      return { statusCode: 500, headers, body: JSON.stringify({ error: "Rechazo de Supabase", detalle: error.message }) };
     }
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     
   } catch (err) {
-    console.error("Error en la función:", err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: "Fallo interno", detalle: err.message }) };
   }
 };

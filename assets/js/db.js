@@ -149,37 +149,21 @@ function saveDB() {
   try {
     if (DB && typeof DB === 'object') {
       localStorage.setItem(DBKEY, JSON.stringify(DB));
-      
-      // Guardado en Supabase (Nube)
-      if (CUR) {
-        // 🌟 EL COLADOR: Extraemos SOLO la info de la barbería
-        var negocioLimpio = {
-          id: CUR.id, 
-          name: CUR.name, 
-          owner: CUR.owner, 
-          email: CUR.email,
-          password: CUR.pass || CUR.password || '', 
-          phone: CUR.phone, 
-          addr: CUR.addr,
-          city: CUR.city, 
-          country: CUR.country, 
-          type: CUR.type, 
-          plan: CUR.plan,
-          desc_text: CUR.desc || '', 
-          logo: CUR.logo || '', 
-          cover: CUR.cover || '',
-          insta: CUR.insta || '', 
-          joinDate: CUR.joinDate, 
-          horario: CUR.horario || null,
-          photos: CUR.photos || []
-        };
 
+      // Solo enviamos a la nube si hay una barbería seleccionada y TIENE ID
+      if (CUR && CUR.id) {
         fetch('/.netlify/functions/update-biz', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(negocioLimpio)
-        }).catch(function(err) {
-          console.error('Error guardando en la nube:', err);
+          body: JSON.stringify(CUR)
+        }).then(async function(res) {
+          if (!res.ok) {
+            // AQUÍ ATRAPAMOS AL CULPABLE: Imprime el error exacto en consola
+            var err = await res.json();
+            console.error("🔥 ERROR EXACTO DE SUPABASE:", err.detalle || err.error);
+          }
+        }).catch(function(e) {
+            // Silenciamos errores de red (ej. si el usuario no tiene internet)
         });
       }
     }
