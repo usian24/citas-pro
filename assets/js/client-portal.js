@@ -17,7 +17,6 @@
 function loadBizDirect(bizId) {
   var biz = getBizById(bizId);
   if (!biz) { toast('Negocio no encontrado', '#EF4444'); return; }
-   /* Limpiar sesiones activas para modo cliente */
   DB.currentBiz    = null;
   DB.currentWorker = null;
 
@@ -25,7 +24,6 @@ function loadBizDirect(bizId) {
   CSEL.bizId = bizId;
   goTo('s-client');
 
-  /* NUEVO: Cargar Portada de fondo si existe */
   var coverBg = G('cl-cover-bg');
   if (coverBg) {
       if (biz.cover) {
@@ -35,7 +33,6 @@ function loadBizDirect(bizId) {
       }
   }
 
-  /* Logo y nombre */
   var av = G('ch-av');
   if (av) {
     if (biz.logo) av.innerHTML = '<img src="' + sanitizeImageDataURL(biz.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo"/>';
@@ -79,7 +76,6 @@ function clStep2() {
   CSEL.clientName  = name;
   CSEL.clientPhone = phone;
   CSEL.clientEmail = sanitizeText(V('cl-email'));
-  /* Mostrar tarjetas de trabajadores */
   buildWorkerCards();
   clGoStep(2);
 }
@@ -110,12 +106,9 @@ function buildWorkerCards() {
 
 function selectWorker(workerId) {
   CSEL.workerId = workerId;
-  /* Resaltar tarjeta seleccionada */
   document.querySelectorAll('.worker-card').forEach(function(c) { c.classList.remove('sel'); });
   var card = document.querySelector('.worker-card[data-wid="' + workerId + '"]');
   if (card) card.classList.add('sel');
-
-  /* Cargar servicios del trabajador */
   buildServicesList(workerId);
   clGoStep(3);
 }
@@ -129,7 +122,6 @@ function buildServicesList(workerId) {
   var worker = (biz.workers||[]).filter(function(w) { return w.id === workerId; })[0];
   if (!worker) return;
 
-  /* Nombre del trabajador en el título */
   T('cl-worker-name', worker.name);
 
   var svcs = worker.services || [];
@@ -332,9 +324,10 @@ function confirmBooking() {
   }
 
   var token = isModifying ? CSEL.editingToken : 'tk_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+  var apptId = String(Date.now());
 
   var appt = {
-    id: Date.now(),
+    id: apptId,
     client: name, phone: phone, email: email,
     date: CSEL.date, time: CSEL.time,
     svc: CSEL.svc, barber: worker.name,
@@ -353,7 +346,7 @@ function confirmBooking() {
       worker.appointments.push(appt);
   }
   
-  /* 1. CREAMOS LA NOTIFICACIÓN DIRECTAMENTE PARA ASEGURAR QUE SE GUARDE */
+  /* ✅ 1. NOTIFICACIÓN AL BARBERO */
   var notifTitle = isModifying ? 'Cita modificada: ' + name : 'Nueva cita: ' + name;
   var notifDetail = 'Servicio: ' + CSEL.svc + ' • ' + CSEL.date + ' a las ' + CSEL.time + ' • Total: ' + money(CSEL.svcPrice);
   
@@ -368,10 +361,36 @@ function confirmBooking() {
       date: new Date().toISOString().split('T')[0]
   });
 
-  /* 2. GUARDAMOS LOCAL */
-  saveDB(); 
-  
-  /* 2.5 SINCRONIZAR CLIENTE A SUPABASE */
+  /* ✅ 2. GUARDAR LOCAL — Temporalmente ponemos CUR para que saveDB sincronice */
+  var prevCUR = CUR;
+  CUR = biz;
+  saveDB();
+  CUR = prevCUR;
+
+  /* ✅ 3. SINCRONIZAR CITA DIRECTAMENTE A TABLA appointments EN SUPABASE */
+  fetch('/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'appointments',
+      business_id: biz.id,
+      appointments: [{
+        id:            apptId,
+        business_id:   biz.id,
+        worker_id:     worker.id,
+        client_id:     '',
+        client_name:   name,
+        client_phone:  phone,
+        service_name:  CSEL.svc,
+        service_price: CSEL.svcPrice || 0,
+        date:          CSEL.date,
+        time:          CSEL.time,
+        status:        'confirmed'
+      }]
+    })
+  }).catch(function(e){ console.error('Error sync appointment:', e); });
+
+  /* ✅ 4. SINCRONIZAR CLIENTE A SUPABASE */
   if (typeof syncClientToCloud === 'function') {
     syncClientToCloud(CSEL.bizId, {
       name:          name,
@@ -386,18 +405,14 @@ function confirmBooking() {
     });
   }
 
-  // Sincronizar cliente a Supabase
-  if (typeof syncClientToCloud === 'function') {
-    syncClientToCloud(CSEL.bizId, { name: name, phone: phone, email: email });
-  }
-  /* 3. SUBIMOS A SUPABASE */
+  /* ✅ 5. TAMBIÉN ENVIAR EL BIZ COMPLETO PARA QUE LA NOTIFICACIÓN SE GUARDE */
   fetch('/api/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(biz)
-  }).catch(function(e){ console.error('Error sincronizando cita en la nube:', e); });
+  }).catch(function(e){ console.error('Error sync biz:', e); });
 
-  /* EMAILS */
+  /* ✅ 6. EMAILS */
   if (worker.email) {
     fetch('/api/send-email', {
       method:'POST',
@@ -437,7 +452,6 @@ function confirmBooking() {
     +'</div>'
   );
 
-  /* LINK DE WHATSAPP */
   var wa = G('cl-wa-btn');
   if (wa) {
     var waMsg = isModifying ? '¡Mi cita fue modificada en ' + biz.name + '!\n' : '¡Cita confirmada en ' + biz.name + '!\n';
@@ -490,7 +504,6 @@ async function checkManageAccess() {
 function findApptByToken(token) {
   var result = null;
   DB.businesses.forEach(function(biz) {
-    // Buscar en los trabajadores
     (biz.workers||[]).forEach(function(w) {
       (w.appointments||[]).forEach(function(a) {
         if (a.token === token && a.status !== 'cancelled') {
@@ -498,7 +511,6 @@ function findApptByToken(token) {
         }
       });
     });
-    // Buscar en la barbería general
     (biz.appointments||[]).forEach(function(a) {
       if (a.token === token && a.status !== 'cancelled') {
         result = { biz:biz, worker:null, appt:a };
@@ -562,7 +574,6 @@ function cancelApptByToken(token) {
 
   found.appt.status = 'cancelled';
   
-  /* 🔴 CREAMOS NOTIFICACIÓN DIRECTA */
   if (found.worker) {
       if (!found.worker.notifications) found.worker.notifications = [];
       var notifDetail = 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time;
@@ -577,8 +588,13 @@ function cancelApptByToken(token) {
       });
   }
 
+  // ✅ Guardar local con CUR temporal
+  var prevCUR = CUR;
+  CUR = found.biz;
   saveDB();
+  CUR = prevCUR;
 
+  // ✅ Enviar a Supabase
   fetch('/api/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -618,7 +634,6 @@ async function checkLinkAccess() {
       DB = loadDB(); 
       var biz = getBizById(bizId);
       
-      // Si no existe local, intentar forzar la nube
       if (!biz && typeof fetchBizFromCloud === 'function') {
           biz = await fetchBizFromCloud(bizId);
           if (biz && typeof syncBizToLocal === 'function') syncBizToLocal(biz);
