@@ -1,7 +1,7 @@
 'use strict';
 
 /* ══════════════════════════════════════════════════
-   REALTIME.JS — Supabase Realtime (VERSIÓN FINAL Y PULIDA)
+   REALTIME.JS — Supabase Realtime (VERSIÓN DEFINITIVA)
 ══════════════════════════════════════════════════ */
 
 var SUPABASE_RT_URL  = 'https://fcbbquvuffpmudvwqgbg.supabase.co';   
@@ -11,7 +11,7 @@ var _supaRT = null;
 var _rtChannel = null;  
 var _rtBizChannel = null; 
 
-// Timers para evitar bucles (Antirrebote)
+// Timers para evitar bucles (Antirrebote / Debounce)
 var _refreshTimerWorker = null;
 var _refreshTimerBiz = null;
 
@@ -80,6 +80,7 @@ function handleAppointmentChange(payload, workerId, bizId) {
 
   if (!CUR_WORKER || CUR_WORKER.id !== workerId) return;
 
+  // Buscar la cita en nuestra memoria local para comparar
   var localAppt = (CUR_WORKER.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
   
   var isRealChange = false;
@@ -87,10 +88,12 @@ function handleAppointmentChange(payload, workerId, bizId) {
   var notifTitle = '';
   var notifDetail = '';
 
+  // Capturar datos adaptados a las columnas reales de Supabase
   var clientName = newData.client_name || newData.client || 'Cliente';
   var serviceName = newData.service_name || newData.svc || 'Servicio';
   var servicePrice = newData.service_price !== undefined ? newData.service_price : (newData.price || 0);
 
+  // 1. EVALUAR SI ES UN CAMBIO REAL
   if (eventType === 'INSERT') {
     if (!localAppt) {
       isRealChange = true;
@@ -124,10 +127,12 @@ function handleAppointmentChange(payload, workerId, bizId) {
     }
   }
 
+  // Ejecutamos la notificación si es un cambio real
   if (isRealChange) {
       createRealtimeNotification(workerId, bizId, { type: notifType, title: notifTitle, detail: notifDetail });
   }
 
+  // 2. ACTUALIZAR UI CON ANTIRREBOTE (Freno de bucles)
   if (_refreshTimerWorker) clearTimeout(_refreshTimerWorker);
   _refreshTimerWorker = setTimeout(function() {
       safeRefreshWorkerUI(workerId, bizId);
@@ -177,6 +182,7 @@ function handleBizAppointmentChange(payload, bizId) {
 ══════════════════════════ */
 function createRealtimeNotification(workerId, bizId, notif) {
   
+  // Objeto estructurado PERFECTAMENTE para tu notifications.js
   var notifObj = {
       type: notif.type,
       msg: notif.title,               
@@ -185,15 +191,19 @@ function createRealtimeNotification(workerId, bizId, notif) {
       read: false
   };
 
+  // Agregar la notificación a la memoria
   if (typeof addNotificationToWorker === 'function') {
     addNotificationToWorker(bizId, workerId, notifObj);
   } else if (CUR_WORKER) {
       if (!CUR_WORKER.notifications) CUR_WORKER.notifications = [];
       CUR_WORKER.notifications.unshift(notifObj);
       if(CUR_WORKER.notifications.length > 50) CUR_WORKER.notifications.pop();
-      if (typeof saveDB === 'function') saveDB();
   }
 
+  // ✅ ¡FUNDAMENTAL! Obligamos a guardar la notificación localmente antes de que la nube aplaste todo
+  if (typeof saveDB === 'function') saveDB();
+
+  // Refrescar UI visual
   if (typeof renderWorkerNotifBadge === 'function') renderWorkerNotifBadge();
   
   var activePane = document.querySelector('#s-worker .pane.on');
@@ -201,6 +211,7 @@ function createRealtimeNotification(workerId, bizId, notif) {
       renderWorkerNotifications();
   }
 
+  // Sonidos y Banners
   var colors = { new_booking: '#22C55E', booking_cancel: '#EF4444', booking_modify: '#F59E0B' };
   toast(notif.title, colors[notif.type] || '#4A7FD4');
   showFloatingNotification(notif);
@@ -266,9 +277,8 @@ function showFloatingNotification(notif) {
 }
 
 /* ══════════════════════════
-   SONIDO DE NOTIFICACIÓN Y PERMISOS (Corregido)
+   SONIDO DE NOTIFICACIÓN Y PERMISOS 
 ══════════════════════════ */
-// Función restaurada para pedir permiso al navegador
 function requestNotificationPermission() {
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission().catch(function(){}); // Silencioso si falla
@@ -290,7 +300,6 @@ function playNotificationSound(type) {
       _audioCtx = new AudioContext();
     }
 
-    // Intentamos reanudar el contexto de audio. Si Chrome lo bloquea, atrapamos el error en silencio (.catch)
     if (_audioCtx.state === 'suspended') {
       _audioCtx.resume().catch(function(){});
     }
@@ -317,9 +326,7 @@ function playNotificationSound(type) {
     gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.5);
     osc.start(_audioCtx.currentTime);
     osc.stop(_audioCtx.currentTime + 0.5);
-  } catch (e) {
-    // Si algo sale mal con el audio, no rompemos el resto de la aplicación
-  }
+  } catch (e) { }
 }
 
 /* ══════════════════════════
@@ -352,7 +359,7 @@ function showRealtimeIndicator(connected) {
 }
 
 /* ══════════════════════════
-   ACTUALIZACIÓN SEGURA DE UI
+   ACTUALIZACIÓN SEGURA DE UI (🛡️ ESCUDO DE NOTIFICACIONES)
 ══════════════════════════ */
 async function safeRefreshWorkerUI(workerId, bizId) {
     if (typeof fetchBizFromCloud !== 'function') return;
@@ -361,15 +368,30 @@ async function safeRefreshWorkerUI(workerId, bizId) {
     if (!freshData) return;
     
     let index = DB.businesses.findIndex(b => b.id === bizId);
-    if (index >= 0) DB.businesses[index] = freshData;
+    if (index >= 0) {
+        let oldBiz = DB.businesses[index];
+        
+        // 🛡️ ESCUDO: Antes de sobrescribir, rescatamos las notificaciones locales de TODOS
+        if (oldBiz.notifications) freshData.notifications = oldBiz.notifications;
+        
+        (freshData.workers || []).forEach(fw => {
+            let oldW = (oldBiz.workers || []).find(ow => ow.id === fw.id);
+            if (oldW && oldW.notifications) {
+                fw.notifications = oldW.notifications;
+            }
+        });
+        
+        DB.businesses[index] = freshData;
+    }
     CUR = freshData;
     
     let freshWorker = CUR.workers.find(w => w.id === workerId);
     if (freshWorker) {
-        var localNotifs = CUR_WORKER.notifications || [];
-        freshWorker.notifications = localNotifs;
         CUR_WORKER = freshWorker;
     }
+    
+    // ✅ ¡GUARDAMOS EL RESCATE EN LOCAL! Para que si das F5, no se pierdan.
+    if (typeof saveDB === 'function') saveDB();
     
     var activePane = document.querySelector('#s-worker .pane.on');
     if (activePane) {
@@ -394,8 +416,21 @@ async function safeRefreshBizUI(bizId) {
     if (!freshData) return;
     
     let index = DB.businesses.findIndex(b => b.id === bizId);
-    if (index >= 0) DB.businesses[index] = freshData;
+    if (index >= 0) {
+        let oldBiz = DB.businesses[index];
+        
+        // 🛡️ ESCUDO
+        if (oldBiz.notifications) freshData.notifications = oldBiz.notifications;
+        (freshData.workers || []).forEach(fw => {
+            let oldW = (oldBiz.workers || []).find(ow => ow.id === fw.id);
+            if (oldW && oldW.notifications) fw.notifications = oldW.notifications;
+        });
+        
+        DB.businesses[index] = freshData;
+    }
     CUR = freshData;
+    
+    if (typeof saveDB === 'function') saveDB();
     
     var activePane = document.querySelector('#s-biz .pane.on');
     if (activePane) {
