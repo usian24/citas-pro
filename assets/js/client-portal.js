@@ -628,6 +628,12 @@ function cancelApptByToken(token) {
   if (!found) { toast('Cita no encontrada', '#EF4444'); return; }
 
   found.appt.status = 'cancelled';
+  
+  console.log('DATOS QUE SE MANDAN:', JSON.stringify({
+  id: found.appt.id,
+  token: found.appt.token,
+  business_id: found.biz.id
+}));
 
   // 1. Cancelar en Supabase
   fetch('/api/sync', {
