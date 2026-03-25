@@ -642,7 +642,7 @@ function cancelApptByToken(token) {
 
   found.appt.status = 'cancelled';
 
-  // ✅ 1. Eliminar/cancelar en Supabase — tabla appointments
+  // 1. Cancelar en Supabase
   fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -665,14 +665,16 @@ function cancelApptByToken(token) {
         notes:         found.appt.notes || ''
       }]
     })
-  }).catch(function(e){ console.error('Error cancelando en Supabase:', e); });
+  }).then(function(r) { return r.json(); })
+    .then(function(d) { console.log('Sync cancel result:', JSON.stringify(d)); })
+    .catch(function(e) { console.error('Error cancelando en Supabase:', e); });
 
-  // ✅ 2. Notificar al worker y guardar notificación en Supabase via save-worker
+  // 2. Notificar al worker
   if (found.worker) {
     if (!found.worker.notifications) found.worker.notifications = [];
     found.worker.notifications.unshift({
-      id: Date.now(),
-      type: 'booking_cancel',
+      id:    Date.now(),
+      type:  'booking_cancel',
       title: 'Cita cancelada: ' + found.appt.client,
       msg:   'Cita cancelada: ' + found.appt.client,
       body:  'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time,
@@ -681,37 +683,44 @@ function cancelApptByToken(token) {
       date:  new Date().toISOString()
     });
 
-    // Guardar worker actualizado con la notificación en Supabase
     fetch('/api/save-worker', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'upsert',
         worker: {
-          id:            found.worker.id,
-          business_id:   found.biz.id,
-          name:          found.worker.name || '',
-          email:         found.worker.email || '',
-          password:      found.worker.pass || found.worker.password || '',
-          phone:         found.worker.phone || '',
-          avatar:        found.worker.photo || '',
-          cover:         found.worker.cover || '',
-          role:          found.worker.spec || 'barber'
+          id:          found.worker.id,
+          business_id: found.biz.id,
+          name:        found.worker.name || '',
+          email:       found.worker.email || '',
+          password:    found.worker.pass || found.worker.password || '',
+          phone:       found.worker.phone || '',
+          avatar:      found.worker.photo || '',
+          cover:       found.worker.cover || '',
+          role:        found.worker.spec || 'barber'
         }
       })
-    }).catch(function(e){ console.error('Error guardando worker:', e); });
+    }).catch(function(e) { console.error('Error guardando worker:', e); });
   }
 
-  // ✅ 3. Guardar en local si el biz existe
+  // 3. Marcar como cancelada en local y guardar — una sola vez, sin var duplicado
   var localBiz = getBizById(found.biz.id);
   if (localBiz) {
+    (localBiz.workers || []).forEach(function(w) {
+      (w.appointments || []).forEach(function(a) {
+        if (a.token === token) a.status = 'cancelled';
+      });
+    });
+    (localBiz.appointments || []).forEach(function(a) {
+      if (a.token === token) a.status = 'cancelled';
+    });
     var prevCUR = CUR;
     CUR = localBiz;
     saveDB();
     CUR = prevCUR;
   }
 
-  // ✅ 4. Notificar por email al worker si tiene email
+  // 4. Email al worker
   if (found.worker && found.worker.email) {
     fetch('/api/send-email', {
       method: 'POST',
@@ -726,29 +735,13 @@ function cancelApptByToken(token) {
           time:       found.appt.time
         }
       })
-    }).catch(function(e){ console.error('Error email cancelación:', e); });
+    }).catch(function(e) { console.error('Error email:', e); });
   }
+
   window._cloudApptCache = null;
-
-// Marcar como cancelada en local también para que el link no funcione
-var localBiz = getBizById(found.biz.id);
-if (localBiz) {
-  (localBiz.workers || []).forEach(function(w) {
-    (w.appointments || []).forEach(function(a) {
-      if (a.token === token) a.status = 'cancelled';
-    });
-  });
-  (localBiz.appointments || []).forEach(function(a) {
-    if (a.token === token) a.status = 'cancelled';
-  });
-}
-
-closeOv('ov-manage');
-toast('Tu cita ha sido cancelada', '#22C55E');
-// Pequeño delay para que el toast se vea antes de limpiar el hash
-setTimeout(function() {
-  window.location.hash = '';
-}, 1500);
+  closeOv('ov-manage');
+  toast('Tu cita ha sido cancelada', '#22C55E');
+  setTimeout(function() { window.location.hash = ''; }, 1500);
 }
 
 /* ══════════════════════════
