@@ -32,6 +32,12 @@ module.exports = async (req, res) => {
           client_id:     appt.client_id || '',
           client_name:   appt.client_name || '',
           client_phone:  appt.client_phone || '',
+          
+          // NUEVO: Agregamos el correo, notas y el TOKEN para que funcione el portal de gestión
+          client_email:  appt.client_email || appt.email || '',
+          notes:         appt.notes || '',
+          token:         appt.token || '', 
+
           service_name:  appt.service_name || '',
           service_price: parseFloat(appt.service_price) || 0,
           date:          appt.date || '',
