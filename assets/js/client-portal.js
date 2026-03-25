@@ -352,14 +352,15 @@ function confirmBooking() {
   
   if (!worker.notifications) worker.notifications = [];
   worker.notifications.unshift({
-      id: Date.now(),
-      type: 'new_booking',
-      title: notifTitle,
-      msg: notifTitle,
-      body: notifDetail,
-      read: false,
-      date: new Date().toISOString().split('T')[0]
-  });
+    id: Date.now(),
+    type: 'new_booking',
+    title: notifTitle,
+    msg: notifTitle,
+    body: notifDetail,
+    data: { detail: notifDetail },
+    read: false,
+    date: new Date().toISOString()  // ← ISO completo para que el reloj funcione
+});
 
   /* 2. GUARDAR LOCAL — Temporalmente ponemos CUR para que saveDB sincronice */
   var prevCUR = CUR;
@@ -469,6 +470,9 @@ function confirmBooking() {
 /* ══════════════════════════
    GESTIÓN DE CITA EXISTENTE
 ══════════════════════════ */
+/* Variable temporal para citas cargadas desde Supabase */
+var _cloudApptCache = null;
+
 async function checkManageAccess() {
   var hash = window.location.hash;
   if (hash && hash.indexOf('#manage/') === 0) {
@@ -476,13 +480,15 @@ async function checkManageAccess() {
     var token = parts.length === 3 ? parts[2] : parts[1];
     var bizId = parts.length === 3 ? parts[1] : null;
 
-    // 1. Cargar el biz desde cloud (esto trae las citas con tokens correctos)
+    // 1. Cargar biz desde cloud SIN pisar DB activa
     if (bizId && typeof fetchBizFromCloud === 'function') {
       try {
         var cloudBiz = await fetchBizFromCloud(bizId);
         if (cloudBiz && typeof syncBizToLocal === 'function') {
           syncBizToLocal(cloudBiz);
-          DB = loadDB(); // ← Recargar DB local con los datos frescos
+          // Recargar solo businesses, sin tocar CUR_WORKER
+          var fresh = loadDB();
+          DB.businesses = fresh.businesses;
         }
       } catch(e) {
         console.error('Error cargando biz desde cloud:', e);
@@ -490,10 +496,10 @@ async function checkManageAccess() {
     }
 
     if (token) {
-      // 2. Buscar en local (ahora sí debería estar con tokens correctos)
+      // 2. Buscar en local primero
       var found = findApptByToken(token);
 
-      // 3. Si AÚN no está, buscar directo en Supabase por token via nuevo endpoint
+      // 3. Si no está local, buscar en Supabase
       if (!found) {
         try {
           var resp = await fetch('/api/get-appointment-by-token?token=' + encodeURIComponent(token));
@@ -501,38 +507,32 @@ async function checkManageAccess() {
             var data = await resp.json();
             if (data && data.appointment) {
               var a = data.appointment;
-              
-              // Intentar obtener el biz (puede que ya esté en local ahora)
               var biz = getBizById(a.business_id);
               if (!biz) {
                 biz = { id: a.business_id, name: 'Tu barbería', workers: [] };
               }
-              
               var worker = null;
               if (biz.workers) {
                 worker = biz.workers.find(function(w) {
                   return w.id === a.worker_id;
                 }) || null;
               }
-
-              // Normalizar al formato interno
-              found = {
-                biz: biz,
-                worker: worker,
-                appt: {
-                  id:     a.id,
-                  token:  a.token,
-                  client: a.client_name,
-                  phone:  a.client_phone,
-                  email:  a.client_email || '',
-                  svc:    a.service_name,
-                  price:  parseFloat(a.service_price) || 0,
-                  date:   a.date,
-                  time:   a.time,
-                  status: a.status,
-                  notes:  a.notes || ''
-                }
+              var normalizedAppt = {
+                id:     a.id,
+                token:  a.token,
+                client: a.client_name,
+                phone:  a.client_phone,
+                email:  a.client_email || '',
+                svc:    a.service_name,
+                price:  parseFloat(a.service_price) || 0,
+                date:   a.date,
+                time:   a.time,
+                status: a.status,
+                notes:  a.notes || ''
               };
+              found = { biz: biz, worker: worker, appt: normalizedAppt };
+              // Guardar en cache temporal para que cancel/modify funcionen
+              _cloudApptCache = found;
             }
           }
         } catch(e) {
@@ -590,61 +590,81 @@ function openManageModal(biz, worker, appt) {
 }
 
 function reprogramarCita(token) {
+  // Buscar en local primero, luego en cache de Supabase
   var found = findApptByToken(token);
-  if(!found) return;
-  
+  if (!found && _cloudApptCache && _cloudApptCache.appt.token === token) {
+    found = _cloudApptCache;
+  }
+  if (!found) { toast('No se pudo cargar la cita', '#EF4444'); return; }
+
   CSEL.editingToken = token;
-  CSEL.bizId = found.biz.id;
-  CSEL.clientName = found.appt.client;
-  CSEL.clientPhone = found.appt.phone;
-  CSEL.clientEmail = found.appt.email;
-  CSEL.workerId = found.worker ? found.worker.id : null;
-  CSEL.svc = found.appt.svc;
-  CSEL.svcPrice = found.appt.price;
+  CSEL.bizId        = found.biz.id;
+  CSEL.clientName   = found.appt.client;
+  CSEL.clientPhone  = found.appt.phone;
+  CSEL.clientEmail  = found.appt.email;
+  CSEL.workerId     = found.worker ? found.worker.id : null;
+  CSEL.svc          = found.appt.svc;
+  CSEL.svcPrice     = found.appt.price;
+  CSEL.svcDur       = 30;
 
-  if (found.worker) {
-      var sObj = found.worker.services.find(function(s) { return s.name === found.appt.svc; });
-      CSEL.svcDur = sObj ? sObj.dur : 30;
-  } else {
-      CSEL.svcDur = 30;
+  if (found.worker && found.worker.services) {
+    var sObj = found.worker.services.find(function(s) { return s.name === found.appt.svc; });
+    if (sObj) CSEL.svcDur = sObj.dur || 30;
   }
 
+  _cloudApptCache = null;
   closeOv('ov-manage');
-  
-  goTo('s-client');
-  if (found.worker) {
+
+  // Cargar la pantalla de reserva con el biz correcto
+  var biz = getBizById(found.biz.id);
+  if (biz) {
+    loadBizDirect(found.biz.id);
+    if (found.worker) {
       buildDates(found.biz.id, found.worker.id);
+    }
+  } else {
+    goTo('s-client');
+    if (found.worker) {
+      buildDates(found.biz.id, found.worker.id);
+    }
   }
-  clGoStep(4); 
+  clGoStep(4);
 }
 
 function cancelApptByToken(token) {
+  // Buscar en local primero, luego en cache
   var found = findApptByToken(token);
-  if (!found) { toast('Cita no encontrada','#EF4444'); return; }
+  if (!found && _cloudApptCache && _cloudApptCache.appt.token === token) {
+    found = _cloudApptCache;
+  }
+  if (!found) { toast('Cita no encontrada', '#EF4444'); return; }
 
   found.appt.status = 'cancelled';
-  
+
+  // Notificar al worker si está disponible localmente
   if (found.worker) {
-      if (!found.worker.notifications) found.worker.notifications = [];
-      var notifDetail = 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time;
-      found.worker.notifications.unshift({
-          id: Date.now(),
-          type: 'booking_cancel',
-          title: 'Cita cancelada: ' + found.appt.client,
-          msg: 'Cita cancelada: ' + found.appt.client,
-          body: notifDetail,
-          read: false,
-          date: new Date().toISOString().split('T')[0]
-      });
+    if (!found.worker.notifications) found.worker.notifications = [];
+    found.worker.notifications.unshift({
+      id: Date.now(),
+      type: 'booking_cancel',
+      title: 'Cita cancelada: ' + found.appt.client,
+      msg: 'Cita cancelada: ' + found.appt.client,
+      body: 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time,
+      read: false,
+      date: new Date().toISOString()
+    });
   }
 
-  // Guardar local con CUR temporal
-  var prevCUR = CUR;
-  CUR = found.biz;
-  saveDB();
-  CUR = prevCUR;
+  // Guardar local solo si el biz existe en DB
+  var localBiz = getBizById(found.biz.id);
+  if (localBiz) {
+    var prevCUR = CUR;
+    CUR = localBiz;
+    saveDB();
+    CUR = prevCUR;
+  }
 
-  // ✅ 1. Sincronizar a la tabla de appointments en Supabase para cambiar el status
+  // Cancelar en Supabase
   fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -663,32 +683,22 @@ function cancelApptByToken(token) {
         service_price: found.appt.price || 0,
         date:          found.appt.date,
         time:          found.appt.time,
-        status:        'cancelled'
+        status:        'cancelled',
+        notes:         found.appt.notes || ''
       }]
     })
-  }).catch(function(e){ console.error('Error cancelando cita en la tabla de Supabase:', e); });
+  }).catch(function(e){ console.error('Error cancelando en Supabase:', e); });
 
-  // ✅ 2. Guardar las notificaciones en el perfil del negocio
+  // Notificar al negocio
   fetch('/api/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(found.biz)
-  }).catch(function(e){ console.error('Error actualizando notificaciones del negocio:', e); });
+  }).catch(function(e){ console.error('Error update-biz:', e); });
 
-  if (found.worker && found.worker.email) {
-    fetch('/api/send-email', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        type: 'booking_cancel',
-        to: found.worker.email,
-        data: { clientName:found.appt.client, service:found.appt.svc, date:found.appt.date, time:found.appt.time }
-      })
-    }).catch(function(e){ console.error(e); });
-  }
-
+  _cloudApptCache = null;
   closeOv('ov-manage');
-  toast('Tu cita ha sido cancelada','#22C55E');
+  toast('Tu cita ha sido cancelada', '#22C55E');
   window.location.hash = '';
 }
 
