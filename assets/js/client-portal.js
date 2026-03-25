@@ -346,7 +346,7 @@ function confirmBooking() {
       worker.appointments.push(appt);
   }
   
-  /* ✅ 1. NOTIFICACIÓN AL BARBERO */
+  /* 1. NOTIFICACIÓN AL BARBERO */
   var notifTitle = isModifying ? 'Cita modificada: ' + name : 'Nueva cita: ' + name;
   var notifDetail = 'Servicio: ' + CSEL.svc + ' • ' + CSEL.date + ' a las ' + CSEL.time + ' • Total: ' + money(CSEL.svcPrice);
   
@@ -361,13 +361,13 @@ function confirmBooking() {
       date: new Date().toISOString().split('T')[0]
   });
 
-  /* ✅ 2. GUARDAR LOCAL — Temporalmente ponemos CUR para que saveDB sincronice */
+  /* 2. GUARDAR LOCAL — Temporalmente ponemos CUR para que saveDB sincronice */
   var prevCUR = CUR;
   CUR = biz;
   saveDB();
   CUR = prevCUR;
 
-  /* ✅ 3. SINCRONIZAR CITA DIRECTAMENTE A TABLA appointments EN SUPABASE */
+  /* 3. SINCRONIZAR CITA DIRECTAMENTE A TABLA appointments EN SUPABASE */
   fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -381,6 +381,9 @@ function confirmBooking() {
         client_id:     '',
         client_name:   name,
         client_phone:  phone,
+        client_email:  email,
+        token:         token,
+        notes:         '',
         service_name:  CSEL.svc,
         service_price: CSEL.svcPrice || 0,
         date:          CSEL.date,
@@ -390,29 +393,23 @@ function confirmBooking() {
     })
   }).catch(function(e){ console.error('Error sync appointment:', e); });
 
-  /* ✅ 4. SINCRONIZAR CLIENTE A SUPABASE */
+  /* 4. SINCRONIZAR CLIENTE A SUPABASE */
   if (typeof syncClientToCloud === 'function') {
     syncClientToCloud(CSEL.bizId, {
       name:          name,
       phone:         phone,
       email:         email,
-      worker_id:     worker.id,
-      worker_name:   worker.name,
-      service_name:  CSEL.svc,
-      service_price: CSEL.svcPrice,
-      date:          CSEL.date,
-      time:          CSEL.time
     });
   }
 
-  /* ✅ 5. TAMBIÉN ENVIAR EL BIZ COMPLETO PARA QUE LA NOTIFICACIÓN SE GUARDE */
+  /* 5. TAMBIÉN ENVIAR EL BIZ COMPLETO PARA QUE LA NOTIFICACIÓN SE GUARDE */
   fetch('/api/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(biz)
   }).catch(function(e){ console.error('Error sync biz:', e); });
 
-  /* ✅ 6. EMAILS */
+  /* 6. EMAILS */
   if (worker.email) {
     fetch('/api/send-email', {
       method:'POST',
@@ -588,18 +585,42 @@ function cancelApptByToken(token) {
       });
   }
 
-  // ✅ Guardar local con CUR temporal
+  // Guardar local con CUR temporal
   var prevCUR = CUR;
   CUR = found.biz;
   saveDB();
   CUR = prevCUR;
 
-  // ✅ Enviar a Supabase
+  // ✅ 1. Sincronizar a la tabla de appointments en Supabase para cambiar el status
+  fetch('/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'appointments',
+      business_id: found.biz.id,
+      appointments: [{
+        id:            found.appt.id,
+        business_id:   found.biz.id,
+        worker_id:     found.worker ? found.worker.id : '',
+        client_name:   found.appt.client,
+        client_phone:  found.appt.phone || '',
+        client_email:  found.appt.email || '',
+        token:         found.appt.token || '',
+        service_name:  found.appt.svc,
+        service_price: found.appt.price || 0,
+        date:          found.appt.date,
+        time:          found.appt.time,
+        status:        'cancelled'
+      }]
+    })
+  }).catch(function(e){ console.error('Error cancelando cita en la tabla de Supabase:', e); });
+
+  // ✅ 2. Guardar las notificaciones en el perfil del negocio
   fetch('/api/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(found.biz)
-  }).catch(function(e){ console.error('Error cancelando cita en la nube:', e); });
+  }).catch(function(e){ console.error('Error actualizando notificaciones del negocio:', e); });
 
   if (found.worker && found.worker.email) {
     fetch('/api/send-email', {
