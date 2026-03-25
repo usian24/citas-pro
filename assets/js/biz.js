@@ -47,7 +47,7 @@ function rmGoStep2() {
   if (DB.businesses.filter(function(b) { return (b.email||'').toLowerCase() === email; })[0]) { showErr('rm-err1', 'Este correo ya tiene una cuenta registrada. Inicia sesión.'); return; }
   _rmData = { email: email, phone: phone, pass: pass };
   _rmCode = String(Math.floor(100000 + Math.random() * 900000));
-  fetch('/.netlify/functions/send-email', {
+  fetch('/./api//send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'verification', to: email, data: { code: _rmCode } })
@@ -93,7 +93,7 @@ function rmVerify() {
 function rmResend() {
   if (!_rmData.email) return;
   _rmCode = String(Math.floor(100000 + Math.random() * 900000));
-  fetch('/.netlify/functions/send-email', {
+  fetch('/./api//send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'verification', to: _rmData.email, data: { code: _rmCode } })
@@ -692,7 +692,7 @@ function saveBarber() {
     toast('Trabajador creado', '#22C55E');
   }
 
-  fetch('/.netlify/functions/save-worker', {
+  fetch('/./api//save-worker', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'upsert', worker: workerDbObj })
@@ -715,7 +715,7 @@ function confirmDeleteWorker(id) {
       renderBizWorkers(); 
       toast('Trabajador eliminado','#475569');
       
-      fetch('/.netlify/functions/save-worker', {
+      fetch('/./api//save-worker', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'delete', worker: { id: id } })

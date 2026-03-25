@@ -152,7 +152,7 @@ function saveDB() {
 
       // Solo enviamos a la nube si hay una barbería seleccionada y TIENE ID
       if (CUR && CUR.id) {
-        fetch('/.netlify/functions/update-biz', {
+        fetch('/./api//update-biz', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(CUR)
@@ -339,7 +339,7 @@ function planTag(plan) {
 async function forceCloudSync() {
   try {
     // 1. Llama a la nueva función que lee la base de datos
-    var res = await fetch('/.netlify/functions/get-db');
+    var res = await fetch('/./api//get-db');
     if (res.ok) {
       var cloudBusinesses = await res.json();
       

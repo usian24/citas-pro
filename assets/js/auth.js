@@ -156,7 +156,7 @@ function doForgot() {
   if(!found) { showErr('fp-err','No encontramos ninguna cuenta con ese correo.'); return; }
 
   /* ENVÍO REAL DEL CORREO DE RECUPERACIÓN */
-  fetch('/.netlify/functions/send-email', {
+  fetch('/./api//send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

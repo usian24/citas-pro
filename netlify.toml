@@ -4,7 +4,7 @@
 
 [build]
   publish = "."
-  functions = "netlify/functions"
+  functions = "/api/"
 
 # Archivos JS — MIME type correcto (fix del error de scripts)
 [[headers]]

@@ -372,7 +372,7 @@ function confirmBooking() {
   saveDB(); 
 
   /* 🔴 3. SUBIMOS A SUPABASE */
-  fetch('/.netlify/functions/update-biz', {
+  fetch('/./api//update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(biz)
@@ -380,7 +380,7 @@ function confirmBooking() {
 
   /* EMAILS */
   if (worker.email) {
-    fetch('/.netlify/functions/send-email', {
+    fetch('/./api//send-email', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -392,7 +392,7 @@ function confirmBooking() {
   }
 
   if (email) {
-    fetch('/.netlify/functions/send-email', {
+    fetch('/./api//send-email', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -560,14 +560,14 @@ function cancelApptByToken(token) {
 
   saveDB();
 
-  fetch('/.netlify/functions/update-biz', {
+  fetch('/./api//update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(found.biz)
   }).catch(function(e){ console.error('Error cancelando cita en la nube:', e); });
 
   if (found.worker && found.worker.email) {
-    fetch('/.netlify/functions/send-email', {
+    fetch('/./api//send-email', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({

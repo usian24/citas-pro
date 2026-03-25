@@ -199,7 +199,7 @@ function confirmBooking() {
 
   // Email de confirmación al cliente
   if (email) {
-    fetch('/.netlify/functions/send-email', {
+    fetch('/./api//send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -218,7 +218,7 @@ function confirmBooking() {
 
   // Email de aviso al negocio
   if (biz.email) {
-    fetch('/.netlify/functions/send-email', {
+    fetch('/./api//send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
