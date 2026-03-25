@@ -31,8 +31,9 @@ function doLogin() {
   if(!checkRateLimit(key)) { showErr('li-err','Demasiados intentos. Espera 5 minutos.'); return; }
 
   /* 1 — Buscar como dueño de negocio */
+  // ✅ CORREGIDO: busca en "pass" Y en "password" (por si vino de Supabase)
   var biz = DB.businesses.filter(function(b){
-    return (b.email||'').toLowerCase() === email && b.pass === pass;
+    return (b.email||'').toLowerCase() === email && ((b.pass || b.password || '') === pass);
   })[0];
 
   if(biz) {
@@ -51,7 +52,8 @@ function doLogin() {
   var foundWorker = null, foundBiz = null;
   DB.businesses.forEach(function(b) {
     (b.workers||[]).forEach(function(w) {
-      if((w.email||'').toLowerCase() === email && w.pass === pass && w.active) {
+      // ✅ CORREGIDO: busca en "pass" Y en "password"
+      if((w.email||'').toLowerCase() === email && ((w.pass || w.password || '') === pass) && w.active) {
         foundWorker = w;
         foundBiz    = b;
       }
@@ -155,14 +157,16 @@ function doForgot() {
   }
   if(!found) { showErr('fp-err','No encontramos ninguna cuenta con ese correo.'); return; }
 
-  /* ENVÍO REAL DEL CORREO DE RECUPERACIÓN */
+  /* ✅ CORREGIDO: busca la contraseña en "pass" O en "password" (evita "undefined") */
+  var actualPassword = found.pass || found.password || '(no disponible)';
+
   fetch('/api/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       type: 'password_reset',
       to: email,
-      data: { password: found.pass }
+      data: { password: actualPassword }
     })
   }).catch(function(e) { console.error('Error enviando correo de recuperación:', e); });
 
