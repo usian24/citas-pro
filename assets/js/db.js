@@ -526,8 +526,12 @@ window.addEventListener('load', function() {
 ══════════════════════════ */
 function restaurarSesion() {
   DB = loadDB();
-
-  // ✅ ¿Hay un BARBERO / TRABAJADOR logueado?
+  // Si hay hash de negocio o manage, no hacer nada — startup() lo maneja
+  var hash = window.location.hash;
+  if (hash && (hash.indexOf('#b/') === 0 || hash.indexOf('#manage/') === 0)) {
+    return;
+  }
+  // ¿Hay un BARBERO / TRABAJADOR logueado?
   if (DB && DB.currentWorker) {
     var workerBiz = getBizById(DB.currentWorker.bizId);
     if (workerBiz) {

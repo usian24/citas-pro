@@ -803,8 +803,9 @@ window.onload = async function() {
     const hash = window.location.hash;
 
     if (hash && hash.startsWith('#b/')) {
+      goTo('s-client'); // ← mostrar pantalla cliente inmediatamente
       const targetBizId = hash.split('/')[1];
-      
+        
       if (targetBizId) {
         try {
           const cloudBiz = await fetchBizFromCloud(targetBizId);
@@ -833,7 +834,7 @@ window.onload = async function() {
       const handled = await checkLinkAccess();
         if (handled) return;
     }
-    
+
     if (DB.admin && DB.admin.auth) {
       goTo('s-admin');
       showAdminPanel();

@@ -98,7 +98,7 @@ function handleAppointmentChange(payload, workerId, bizId) {
     if (!localAppt) {
       isRealChange = true;
       notifType = 'new_booking';
-      notifTitle = '📅 Nueva cita: ' + clientName;
+      notifTitle = 'Nueva cita: ' + clientName;
       notifDetail = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') + ' • ' + money(servicePrice);
     }
   } else if (eventType === 'UPDATE') {
@@ -109,12 +109,12 @@ function handleAppointmentChange(payload, workerId, bizId) {
       if (changedStatus && newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
         isRealChange = true;
         notifType = 'booking_cancel';
-        notifTitle = '❌ Cita cancelada: ' + clientName;
+        notifTitle = 'Cita cancelada: ' + clientName;
         notifDetail = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '');
       } else if (changedDateOrTime) {
         isRealChange = true;
         notifType = 'booking_modify';
-        notifTitle = '✏️ Cita modificada: ' + clientName;
+        notifTitle = 'Cita modificada: ' + clientName;
         notifDetail = 'Nuevo horario: ' + (newData.date || '') + ' a las ' + (newData.time || '');
       }
     }
@@ -166,7 +166,7 @@ function handleBizAppointmentChange(payload, bizId) {
     if (localAppt) {
         var changedStatus = (newData.status !== localAppt.status);
         if (changedStatus && newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
-            toast('❌ Cita cancelada: ' + clientName, '#EF4444');
+            toast('Cita cancelada: ' + clientName, '#EF4444');
         }
     }
   }
