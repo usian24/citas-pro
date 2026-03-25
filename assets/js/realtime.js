@@ -1,7 +1,7 @@
 'use strict';
 
 /* ══════════════════════════════════════════════════
-   REALTIME.JS — Supabase Realtime (VERSIÓN CORREGIDA)
+   REALTIME.JS — Supabase Realtime (VERSIÓN FINAL)
 ══════════════════════════════════════════════════ */
 
 var SUPABASE_RT_URL  = 'https://fcbbquvuffpmudvwqgbg.supabase.co';   
@@ -80,7 +80,7 @@ function handleAppointmentChange(payload, workerId, bizId) {
 
   if (!CUR_WORKER || CUR_WORKER.id !== workerId) return;
 
-  // LA MAGIA: Buscar la cita en nuestra memoria local para comparar
+  // Buscar la cita en nuestra memoria local para comparar
   var localAppt = (CUR_WORKER.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
   
   var isRealChange = false;
@@ -90,7 +90,6 @@ function handleAppointmentChange(payload, workerId, bizId) {
 
   // 1. EVALUAR SI ES UN CAMBIO REAL
   if (eventType === 'INSERT') {
-    // Solo notificar si no la teníamos ya en memoria
     if (!localAppt) {
       isRealChange = true;
       notifType = 'new_booking';
@@ -98,7 +97,6 @@ function handleAppointmentChange(payload, workerId, bizId) {
       notifDetail = (newData.svc || 'Servicio') + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') + ' • ' + money(newData.price || 0);
     }
   } else if (eventType === 'UPDATE') {
-    // Si la tenemos, comparamos dato por dato para evitar los falsos Updates masivos
     if (localAppt) {
       var changedStatus = (newData.status !== localAppt.status);
       var changedDateOrTime = (newData.date !== localAppt.date) || (newData.time !== localAppt.time);
@@ -124,7 +122,7 @@ function handleAppointmentChange(payload, workerId, bizId) {
     }
   }
 
-  // Si fue puro "ruido" de la base de datos, lo ignoramos y no hacemos nada.
+  // Ejecutamos la notificación si es un cambio real
   if (isRealChange) {
       createRealtimeNotification(workerId, bizId, { type: notifType, title: notifTitle, detail: notifDetail });
   }
@@ -145,7 +143,6 @@ function handleBizAppointmentChange(payload, bizId) {
 
   if (!CUR || CUR.id !== bizId) return;
 
-  // Buscar cita local
   var localAppt = null;
   (CUR.workers || []).forEach(function(w){ 
       var found = (w.appointments || []).find(a => String(a.id) === String(newData.id));
@@ -156,28 +153,17 @@ function handleBizAppointmentChange(payload, bizId) {
       if (found) localAppt = found;
   }
 
-  var isRealChange = false;
-
   if (eventType === 'INSERT') {
-    if (!localAppt) {
-        isRealChange = true;
-        toast('📅 Nueva cita: ' + (newData.client || 'Cliente'), '#22C55E');
-    }
+    if (!localAppt) toast('📅 Nueva cita: ' + (newData.client || 'Cliente'), '#22C55E');
   } else if (eventType === 'UPDATE') {
     if (localAppt) {
         var changedStatus = (newData.status !== localAppt.status);
         if (changedStatus && newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
-            isRealChange = true;
             toast('❌ Cita cancelada: ' + (newData.client || ''), '#EF4444');
-        } else if ((newData.date !== localAppt.date) || (newData.time !== localAppt.time)) {
-            isRealChange = true;
         }
     }
-  } else if (eventType === 'DELETE') {
-      if (localAppt) isRealChange = true;
   }
 
-  // ANTIRREBOTE
   if (_refreshTimerBiz) clearTimeout(_refreshTimerBiz);
   _refreshTimerBiz = setTimeout(function() {
       safeRefreshBizUI(bizId);
@@ -188,7 +174,18 @@ function handleBizAppointmentChange(payload, bizId) {
    CREAR NOTIFICACIÓN REALTIME
 ══════════════════════════ */
 function createRealtimeNotification(workerId, bizId, notif) {
-  if (CUR_WORKER) {
+  
+  // USAMOS TU FUNCIÓN ORIGINAL PARA EL FORMATO PERFECTO
+  if (typeof addNotificationToWorker === 'function') {
+    addNotificationToWorker(bizId, workerId, {
+      type:  notif.type,
+      title: notif.title,
+      msg:   notif.title,
+      body:  notif.detail,
+      data:  { detail: notif.detail }
+    });
+  } else if (CUR_WORKER) {
+      // Fallback por si acaso
       if (!CUR_WORKER.notifications) CUR_WORKER.notifications = [];
       var d = new Date();
       CUR_WORKER.notifications.unshift({
@@ -198,12 +195,10 @@ function createRealtimeNotification(workerId, bizId, notif) {
           read: false
       });
       if(CUR_WORKER.notifications.length > 50) CUR_WORKER.notifications.pop();
-      
-      if (typeof localStorage !== 'undefined') {
-          try { localStorage.setItem('citaspro_db', JSON.stringify(DB)); } catch(e){}
-      }
+      if (typeof saveDB === 'function') saveDB();
   }
 
+  // Refrescar UI visual
   if (typeof renderWorkerNotifBadge === 'function') renderWorkerNotifBadge();
   
   var activePane = document.querySelector('#s-worker .pane.on');
@@ -211,20 +206,15 @@ function createRealtimeNotification(workerId, bizId, notif) {
       renderWorkerNotifications();
   }
 
+  // Sonidos y Banners
   var colors = { new_booking: '#22C55E', booking_cancel: '#EF4444', booking_modify: '#F59E0B' };
   toast(notif.title, colors[notif.type] || '#4A7FD4');
-
   showFloatingNotification(notif);
   playNotificationSound(notif.type);
 
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
-      new Notification(notif.title, {
-        body: notif.detail || '',
-        icon: 'assets/img/logocitas barber2.png',
-        tag: 'citaspro-' + Date.now(),
-        renotify: true
-      });
+      new Notification(notif.title, { body: notif.detail || '', icon: 'assets/img/logocitas barber2.png', tag: 'citaspro-' + Date.now(), renotify: true });
     } catch (e) {}
   }
 }
@@ -284,12 +274,10 @@ function showFloatingNotification(notif) {
 /* ══════════════════════════
    SONIDO DE NOTIFICACIÓN
 ══════════════════════════ */
-// Variable para evitar que el sonido colapse si llegan muchos de golpe
 var _lastSoundTime = 0;
-
 function playNotificationSound(type) {
   var now = Date.now();
-  if (now - _lastSoundTime < 1000) return; // Mínimo 1 segundo entre sonidos
+  if (now - _lastSoundTime < 1000) return; 
   _lastSoundTime = now;
 
   try {
