@@ -18,44 +18,57 @@ module.exports = async (req, res) => {
     // APPOINTMENTS — type: "appointments"
     // ═══════════════════════════════════════
     if (type === 'appointments') {
-      const { business_id, appointments } = req.body;
-      if (!business_id || !Array.isArray(appointments)) {
-        return res.status(400).json({ success: false, error: 'Datos incompletos' });
+  const { business_id, appointments } = req.body;
+  if (!business_id || !Array.isArray(appointments)) {
+    return res.status(400).json({ success: false, error: 'Datos incompletos' });
+  }
+
+  var apptErrors = [];
+  for (const appt of appointments) {
+    
+    // Si viene con status cancelled y tiene token, actualizar por TOKEN
+    if (appt.status === 'cancelled' && appt.token) {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'cancelled' })
+        .eq('token', appt.token)
+        .eq('business_id', business_id);
+
+      if (error) {
+        apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
       }
-
-      var apptErrors = [];
-      for (const appt of appointments) {
-        const { data, error } = await supabase.from('appointments').upsert({
-          id:            String(appt.id),
-          business_id:   business_id,
-          worker_id:     appt.worker_id || '',
-          client_id:     appt.client_id || '',
-          client_name:   appt.client_name || '',
-          client_phone:  appt.client_phone || '',
-          
-          // NUEVO: Agregamos el correo, notas y el TOKEN para que funcione el portal de gestión
-          client_email:  appt.client_email || appt.email || '',
-          notes:         appt.notes || '',
-          token:         appt.token || '', 
-
-          service_name:  appt.service_name || '',
-          service_price: parseFloat(appt.service_price) || 0,
-          date:          appt.date || '',
-          time:          appt.time || '',
-          status:        appt.status || 'confirmed'
-        }).select();
-
-        if (error) {
-          apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
-        }
-      }
-
-      if (apptErrors.length > 0) {
-        return res.status(400).json({ success: false, errors: apptErrors });
-      }
-
-      return res.status(200).json({ success: true, synced: appointments.length });
+      continue;
     }
+
+    // Para el resto (crear/modificar), upsert normal por id
+    const { data, error } = await supabase.from('appointments').upsert({
+      id:            String(appt.id),
+      business_id:   business_id,
+      worker_id:     appt.worker_id || '',
+      client_id:     appt.client_id || '',
+      client_name:   appt.client_name || '',
+      client_phone:  appt.client_phone || '',
+      client_email:  appt.client_email || appt.email || '',
+      notes:         appt.notes || '',
+      token:         appt.token || '',
+      service_name:  appt.service_name || '',
+      service_price: parseFloat(appt.service_price) || 0,
+      date:          appt.date || '',
+      time:          appt.time || '',
+      status:        appt.status || 'confirmed'
+    }).select();
+
+    if (error) {
+      apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
+    }
+  }
+
+  if (apptErrors.length > 0) {
+    return res.status(400).json({ success: false, errors: apptErrors });
+  }
+
+  return res.status(200).json({ success: true, synced: appointments.length });
+}
 
     // ═══════════════════════════════════════
     // SERVICES — type: "services"
