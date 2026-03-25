@@ -56,6 +56,7 @@ module.exports = async (req, res) => {
           id:          String(svc.id),
           business_id: business_id,
           name:        svc.name || '',
+          description: svc.description || '',
           price:       parseFloat(svc.price) || 0,
           duration:    parseInt(svc.duration) || 30,
           color:       svc.color || '',

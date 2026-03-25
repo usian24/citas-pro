@@ -234,6 +234,7 @@ function syncServicesToCloud(biz) {
         id:          String(s.id),
         business_id: biz.id,
         name:        s.name || '',
+        description: s.desc || '',
         price:       parseFloat(s.price) || 0,
         duration:    parseInt(s.dur) || 30,
         color:       s.color || '',

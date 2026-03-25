@@ -67,7 +67,7 @@ module.exports = async (req, res) => {
               name: s.name || '',
               price: parseFloat(s.price) || 0,
               dur: parseInt(s.duration) || 30,
-              desc: '',
+              desc: s.description || '',
               color: s.color || '',
               photo: s.image || ''
             };
