@@ -1,3 +1,4 @@
+// get-biz.js
 const { createClient } = require('@supabase/supabase-js');
 
 module.exports = async (req, res) => {
@@ -70,7 +71,7 @@ module.exports = async (req, res) => {
             id: a.id,
             client: a.client_name || '',
             phone: a.client_phone || '',
-            email: '',
+            email: a.client_email || '',
             date: a.date || '',
             time: a.time || '',
             svc: a.service_name || '',
@@ -78,12 +79,11 @@ module.exports = async (req, res) => {
             price: parseFloat(a.service_price) || 0,
             status: a.status || 'confirmed',
             notes: '',
-            token: a.id
+            token: a.token || a.id
           };
         }),
         photos: [],
         notifications: [],
-        cover: ''
       };
     });
 

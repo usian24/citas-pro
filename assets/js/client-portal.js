@@ -476,22 +476,75 @@ async function checkManageAccess() {
     var token = parts.length === 3 ? parts[2] : parts[1];
     var bizId = parts.length === 3 ? parts[1] : null;
 
+    // 1. Cargar el biz desde cloud (esto trae las citas con tokens correctos)
     if (bizId && typeof fetchBizFromCloud === 'function') {
-        try {
-            var cloudBiz = await fetchBizFromCloud(bizId);
-            if (cloudBiz && typeof syncBizToLocal === 'function') {
-                syncBizToLocal(cloudBiz);
-            }
-        } catch(e) {}
+      try {
+        var cloudBiz = await fetchBizFromCloud(bizId);
+        if (cloudBiz && typeof syncBizToLocal === 'function') {
+          syncBizToLocal(cloudBiz);
+          DB = loadDB(); // ← Recargar DB local con los datos frescos
+        }
+      } catch(e) {
+        console.error('Error cargando biz desde cloud:', e);
+      }
     }
 
     if (token) {
+      // 2. Buscar en local (ahora sí debería estar con tokens correctos)
       var found = findApptByToken(token);
+
+      // 3. Si AÚN no está, buscar directo en Supabase por token via nuevo endpoint
+      if (!found) {
+        try {
+          var resp = await fetch('/api/get-appointment-by-token?token=' + encodeURIComponent(token));
+          if (resp.ok) {
+            var data = await resp.json();
+            if (data && data.appointment) {
+              var a = data.appointment;
+              
+              // Intentar obtener el biz (puede que ya esté en local ahora)
+              var biz = getBizById(a.business_id);
+              if (!biz) {
+                biz = { id: a.business_id, name: 'Tu barbería', workers: [] };
+              }
+              
+              var worker = null;
+              if (biz.workers) {
+                worker = biz.workers.find(function(w) {
+                  return w.id === a.worker_id;
+                }) || null;
+              }
+
+              // Normalizar al formato interno
+              found = {
+                biz: biz,
+                worker: worker,
+                appt: {
+                  id:     a.id,
+                  token:  a.token,
+                  client: a.client_name,
+                  phone:  a.client_phone,
+                  email:  a.client_email || '',
+                  svc:    a.service_name,
+                  price:  parseFloat(a.service_price) || 0,
+                  date:   a.date,
+                  time:   a.time,
+                  status: a.status,
+                  notes:  a.notes || ''
+                }
+              };
+            }
+          }
+        } catch(e) {
+          console.error('Error buscando cita por token:', e);
+        }
+      }
+
       if (found) {
         openManageModal(found.biz, found.worker, found.appt);
         return true;
       } else {
-         toast('Cita no encontrada o ya expirada', '#EF4444');
+        toast('Cita no encontrada o ya expirada', '#EF4444');
       }
     }
   }

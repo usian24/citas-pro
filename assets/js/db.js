@@ -195,11 +195,14 @@ function syncAppointmentsToCloud(biz) {
         client_id:     '',
         client_name:   a.client || '',
         client_phone:  a.phone || '',
+        client_email:  a.email || '',
+        token:         a.token || '',
         service_name:  a.svc || '',
         service_price: parseFloat(a.price) || 0,
         date:          a.date || '',
         time:          a.time || '',
-        status:        a.status || 'confirmed'
+        status:        a.status || 'confirmed',
+        notes:         a.notes || ''
       });
     });
   });
@@ -213,11 +216,14 @@ function syncAppointmentsToCloud(biz) {
       client_id:     '',
       client_name:   a.client || '',
       client_phone:  a.phone || '',
+      client_email:  a.email || '',  
+      token:         a.token || '',   
       service_name:  a.svc || '',
       service_price: parseFloat(a.price) || 0,
       date:          a.date || '',
       time:          a.time || '',
-      status:        a.status || 'confirmed'
+      status:        a.status || 'confirmed',
+      notes:         a.notes || ''
     });
   });
 
