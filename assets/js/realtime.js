@@ -1,7 +1,7 @@
 'use strict';
 
 /* ══════════════════════════════════════════════════
-   REALTIME.JS — Supabase Realtime (VERSIÓN DEFINITIVA)
+   REALTIME.JS — Supabase Realtime (VERSIÓN FINAL Y PULIDA)
 ══════════════════════════════════════════════════ */
 
 var SUPABASE_RT_URL  = 'https://fcbbquvuffpmudvwqgbg.supabase.co';   
@@ -11,7 +11,7 @@ var _supaRT = null;
 var _rtChannel = null;  
 var _rtBizChannel = null; 
 
-// Timers para evitar bucles (Antirrebote / Debounce)
+// Timers para evitar bucles (Antirrebote)
 var _refreshTimerWorker = null;
 var _refreshTimerBiz = null;
 
@@ -80,7 +80,6 @@ function handleAppointmentChange(payload, workerId, bizId) {
 
   if (!CUR_WORKER || CUR_WORKER.id !== workerId) return;
 
-  // Buscar la cita en nuestra memoria local para comparar
   var localAppt = (CUR_WORKER.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
   
   var isRealChange = false;
@@ -88,12 +87,10 @@ function handleAppointmentChange(payload, workerId, bizId) {
   var notifTitle = '';
   var notifDetail = '';
 
-  // Capturar datos adaptados a las columnas reales de Supabase
   var clientName = newData.client_name || newData.client || 'Cliente';
   var serviceName = newData.service_name || newData.svc || 'Servicio';
   var servicePrice = newData.service_price !== undefined ? newData.service_price : (newData.price || 0);
 
-  // 1. EVALUAR SI ES UN CAMBIO REAL
   if (eventType === 'INSERT') {
     if (!localAppt) {
       isRealChange = true;
@@ -127,12 +124,10 @@ function handleAppointmentChange(payload, workerId, bizId) {
     }
   }
 
-  // Ejecutamos la notificación si es un cambio real
   if (isRealChange) {
       createRealtimeNotification(workerId, bizId, { type: notifType, title: notifTitle, detail: notifDetail });
   }
 
-  // 2. ACTUALIZAR UI CON ANTIRREBOTE (Freno de bucles)
   if (_refreshTimerWorker) clearTimeout(_refreshTimerWorker);
   _refreshTimerWorker = setTimeout(function() {
       safeRefreshWorkerUI(workerId, bizId);
@@ -182,23 +177,23 @@ function handleBizAppointmentChange(payload, bizId) {
 ══════════════════════════ */
 function createRealtimeNotification(workerId, bizId, notif) {
   
-  // Objeto estructurado PERFECTAMENTE para tu notifications.js
   var notifObj = {
       type: notif.type,
-      msg: notif.title,               // Titulo principal
-      data: { detail: notif.detail }, // Texto secundario
-      date: new Date().toISOString(), // Fecha ISO válida para evitar el "NaN"
+      msg: notif.title,               
+      data: { detail: notif.detail }, 
+      date: new Date().toISOString(), 
       read: false
   };
 
-  if (CUR_WORKER) {
+  if (typeof addNotificationToWorker === 'function') {
+    addNotificationToWorker(bizId, workerId, notifObj);
+  } else if (CUR_WORKER) {
       if (!CUR_WORKER.notifications) CUR_WORKER.notifications = [];
       CUR_WORKER.notifications.unshift(notifObj);
       if(CUR_WORKER.notifications.length > 50) CUR_WORKER.notifications.pop();
       if (typeof saveDB === 'function') saveDB();
   }
 
-  // Refrescar UI visual
   if (typeof renderWorkerNotifBadge === 'function') renderWorkerNotifBadge();
   
   var activePane = document.querySelector('#s-worker .pane.on');
@@ -206,7 +201,6 @@ function createRealtimeNotification(workerId, bizId, notif) {
       renderWorkerNotifications();
   }
 
-  // Sonidos y Banners
   var colors = { new_booking: '#22C55E', booking_cancel: '#EF4444', booking_modify: '#F59E0B' };
   toast(notif.title, colors[notif.type] || '#4A7FD4');
   showFloatingNotification(notif);
@@ -272,31 +266,17 @@ function showFloatingNotification(notif) {
 }
 
 /* ══════════════════════════
-   SONIDO DE NOTIFICACIÓN
+   SONIDO DE NOTIFICACIÓN Y PERMISOS (Corregido)
 ══════════════════════════ */
-var _lastSoundTime = 0;
-var _audioCtx = null;
-
-// Inicializamos el motor de audio en el primer clic que haga el usuario en la pantalla
-function initAudioOnFirstInteraction() {
-  if (!_audioCtx) {
-    var AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (AudioContext) {
-      _audioCtx = new AudioContext();
-      // Algunos navegadores lo crean pausado, así que lo reanudamos
-      if (_audioCtx.state === 'suspended') {
-          _audioCtx.resume();
-      }
-    }
+// Función restaurada para pedir permiso al navegador
+function requestNotificationPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().catch(function(){}); // Silencioso si falla
   }
-  // Una vez iniciado, quitamos los escuchadores para no repetir el proceso
-  document.removeEventListener('click', initAudioOnFirstInteraction);
-  document.removeEventListener('touchstart', initAudioOnFirstInteraction);
 }
 
-// Escuchamos el primer clic en cualquier lado
-document.addEventListener('click', initAudioOnFirstInteraction);
-document.addEventListener('touchstart', initAudioOnFirstInteraction);
+var _lastSoundTime = 0;
+var _audioCtx = null;
 
 function playNotificationSound(type) {
   var now = Date.now();
@@ -304,10 +284,16 @@ function playNotificationSound(type) {
   _lastSoundTime = now;
 
   try {
-    if (!_audioCtx) return; // Si aún no ha hecho clic, no podemos sonar
-    
-    // Asegurarnos de que el contexto esté activo
-    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+    if (!_audioCtx) {
+      var AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      _audioCtx = new AudioContext();
+    }
+
+    // Intentamos reanudar el contexto de audio. Si Chrome lo bloquea, atrapamos el error en silencio (.catch)
+    if (_audioCtx.state === 'suspended') {
+      _audioCtx.resume().catch(function(){});
+    }
 
     var osc = _audioCtx.createOscillator();
     var gain = _audioCtx.createGain();
@@ -331,7 +317,9 @@ function playNotificationSound(type) {
     gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.5);
     osc.start(_audioCtx.currentTime);
     osc.stop(_audioCtx.currentTime + 0.5);
-  } catch (e) {}
+  } catch (e) {
+    // Si algo sale mal con el audio, no rompemos el resto de la aplicación
+  }
 }
 
 /* ══════════════════════════
