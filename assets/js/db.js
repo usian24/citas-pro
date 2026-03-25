@@ -72,19 +72,12 @@ function validImageType(f) {
 }
 
 /* ══════════════════════════
-   GUARDIA DE IMÁGENES GLOBAL (Actualizado)
+   GUARDIA DE IMÁGENES GLOBAL
 ══════════════════════════ */
 function sanitizeImageDataURL(url) {
   if (!url) return '';
-  // 1. Si es un link moderno de la nube (ImgBB, etc.), ¡déjalo pasar!
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
-  }
-  // 2. Si es una foto antigua guardada en Base64, ¡déjala pasar!
-  if (url.startsWith('data:image/')) {
-    return url;
-  }
-  // Si no es nada de eso, devuélvelo vacío para que no rompa la página
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('data:image/')) return url;
   return '';
 }
 
@@ -100,7 +93,6 @@ var FLAGS = { ES:'🇪🇸',CO:'🇨🇴',MX:'🇲🇽',AR:'🇦🇷',DE:'🇩�
 var MONTHS       = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var MONTHS_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
-/* NUEVO: HORARIO CON DOBLE TURNO PARA ALMUERZO */
 var DEFAULT_HORARIO = [
   {day:'Lunes',    open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
   {day:'Martes',   open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
@@ -149,9 +141,8 @@ function saveDB() {
     if (DB && typeof DB === 'object') {
       localStorage.setItem(DBKEY, JSON.stringify(DB));
 
-      // Solo enviamos a la nube si hay una barbería seleccionada y TIENE ID
       if (CUR && CUR.id) {
-        // ✅ CORREGIDO: ruta limpia sin doble barra
+        // ✅ Sincronizar negocio a Supabase
         fetch('/api/update-biz', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -159,16 +150,151 @@ function saveDB() {
         }).then(async function(res) {
           if (!res.ok) {
             var err = await res.json();
-            console.error("🔥 ERROR EXACTO DE SUPABASE:", err.detalle || err.error);
+            console.error("🔥 ERROR SUPABASE (update-biz):", err.detalle || err.error);
           }
-        }).catch(function(e) {
-            // Silenciamos errores de red (ej. si el usuario no tiene internet)
-        });
+        }).catch(function(e) {});
+
+        // ✅ Sincronizar appointments de cada worker a Supabase
+        syncAppointmentsToCloud(CUR);
+
+        // ✅ Sincronizar services de cada worker a Supabase
+        syncServicesToCloud(CUR);
       }
     }
   } catch(e) { 
     toast('Almacenamiento lleno', '#EF4444'); 
   }
+}
+
+/* ══════════════════════════
+   SINCRONIZACIÓN GRANULAR CON SUPABASE
+   Cada tabla se sincroniza por separado
+══════════════════════════ */
+
+// Sincroniza TODAS las citas del negocio a la tabla "appointments"
+function syncAppointmentsToCloud(biz) {
+  if (!biz || !biz.id) return;
+  var allAppts = [];
+
+  // Citas de workers
+  (biz.workers || []).forEach(function(w) {
+    (w.appointments || []).forEach(function(a) {
+      allAppts.push({
+        id:            String(a.id),
+        business_id:   biz.id,
+        worker_id:     w.id,
+        client_id:     '',
+        client_name:   a.client || '',
+        client_phone:  a.phone || '',
+        service_name:  a.svc || '',
+        service_price: parseFloat(a.price) || 0,
+        date:          a.date || '',
+        time:          a.time || '',
+        status:        a.status || 'confirmed'
+      });
+    });
+  });
+
+  // Citas sin worker asignado
+  (biz.appointments || []).forEach(function(a) {
+    allAppts.push({
+      id:            String(a.id),
+      business_id:   biz.id,
+      worker_id:     '',
+      client_id:     '',
+      client_name:   a.client || '',
+      client_phone:  a.phone || '',
+      service_name:  a.svc || '',
+      service_price: parseFloat(a.price) || 0,
+      date:          a.date || '',
+      time:          a.time || '',
+      status:        a.status || 'confirmed'
+    });
+  });
+
+  if (allAppts.length === 0) return;
+
+  // Enviamos en lotes para no saturar
+  fetch('/api/sync-appointments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ business_id: biz.id, appointments: allAppts })
+  }).catch(function(e) {
+    console.error('Error sync appointments:', e);
+  });
+}
+
+// Sincroniza TODOS los servicios del negocio a la tabla "services"
+function syncServicesToCloud(biz) {
+  if (!biz || !biz.id) return;
+  var allSvcs = [];
+
+  (biz.workers || []).forEach(function(w) {
+    (w.services || []).forEach(function(s) {
+      allSvcs.push({
+        id:          String(s.id),
+        business_id: biz.id,
+        name:        s.name || '',
+        price:       parseFloat(s.price) || 0,
+        duration:    parseInt(s.dur) || 30,
+        color:       s.color || ''
+      });
+    });
+  });
+
+  if (allSvcs.length === 0) return;
+
+  fetch('/api/sync-services', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ business_id: biz.id, services: allSvcs })
+  }).catch(function(e) {
+    console.error('Error sync services:', e);
+  });
+}
+
+// Sincroniza un cliente nuevo a la tabla "clients"
+function syncClientToCloud(bizId, client) {
+  if (!bizId || !client) return;
+
+  fetch('/api/sync-client', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id:          'cl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      business_id: bizId,
+      name:        client.name || '',
+      email:       client.email || '',
+      phone:       client.phone || '',
+      avatar:      ''
+    })
+  }).catch(function(e) {
+    console.error('Error sync client:', e);
+  });
+}
+
+// Sincroniza un producto a la tabla "products"
+function syncProductToCloud(bizId, product) {
+  if (!bizId || !product) return;
+
+  fetch('/api/sync-product', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id:            product.id || ('prod_' + Date.now()),
+      business_id:   bizId,
+      name:          product.name || '',
+      description:   product.description || '',
+      price:         parseFloat(product.price) || 0,
+      stock:         parseInt(product.stock) || 0,
+      image:         product.image || '',
+      category:      product.category || '',
+      rating:        parseFloat(product.rating) || 0,
+      reviews_count: parseInt(product.reviews_count) || 0
+    })
+  }).catch(function(e) {
+    console.error('Error sync product:', e);
+  });
 }
 
 /* ══════════════════════════
@@ -221,7 +347,7 @@ function toast(msg, color) {
 }
 
 /* ══════════════════════════
-   THEME — modo día/noche
+   THEME
 ══════════════════════════ */
 function initTheme() {
   var saved = localStorage.getItem('citaspro_theme') || 'dark';
@@ -292,7 +418,6 @@ function getWorkerById(bizId, workerId) {
   return (biz.workers || []).filter(function(w){ return w.id === workerId; })[0] || null;
 }
 
-/* FUNCIÓN VITAL PARA QUE NO SE ROMPAN LAS NOTIFICACIONES */
 function addNotificationToWorker(bizId, workerId, notif) {
   var w = getWorkerById(bizId, workerId);
   if (!w) return;
@@ -309,7 +434,6 @@ function addNotificationToWorker(bizId, workerId, notif) {
     date: new Date().toISOString().split('T')[0]
   });
   
-  /* Máximo 50 notificaciones para no saturar la memoria */
   if (w.notifications.length > 50) w.notifications = w.notifications.slice(0, 50);
   saveDB();
 }
@@ -334,15 +458,13 @@ function planTag(plan) {
 }
 
 /* ══════════════════════════
-   SINCRONIZACIÓN EN TIEMPO REAL CON LA NUBE (SUPABASE)
+   SINCRONIZACIÓN CON LA NUBE
 ══════════════════════════ */
 async function forceCloudSync() {
   try {
-    // ✅ CORREGIDO: ruta limpia
     var res = await fetch('/api/get-db');
     if (res.ok) {
       var cloudBusinesses = await res.json();
-      
       var local = loadDB(); 
       local.businesses = cloudBusinesses; 
       localStorage.setItem(DBKEY, JSON.stringify(local)); 
@@ -354,15 +476,14 @@ async function forceCloudSync() {
       }
     }
   } catch(e) {
-    console.error("Error descargando la base de datos de la nube:", e);
+    console.error("Error descargando de la nube:", e);
   }
 }
 
-// Ejecuta la descarga silenciosa apenas la persona abre la página
 forceCloudSync();
 
 /* ══════════════════════════
-   MANTENER SESIÓN ACTIVA (Auto-Login Inmediato)
+   AUTO-LOGIN
 ══════════════════════════ */
 function restaurarSesion() {
   DB = loadDB();

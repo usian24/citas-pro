@@ -1,5 +1,5 @@
 'use strict';
-
+//  app.js
 /* ══════════════════════════
    SELECTOR DE PAÍS
 ══════════════════════════ */
@@ -74,7 +74,7 @@ async function dotsLogin() {
 
   try {
     // Mandamos las credenciales al "Guardia" en Netlify
-    let res = await fetch('/./api//admin-login', {
+    let res = await fetch('/api/admin-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: email, password: pass })
@@ -118,7 +118,7 @@ async function doAdminLogin() {
   
   try {
     // Mandamos las credenciales al "Guardia" en Netlify
-    let res = await fetch('/./api//admin-login', {
+    let res = await fetch('/api/admin-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: email, password: pass })
@@ -401,7 +401,7 @@ function deleteBiz(id) {
         toast('Eliminando de la nube...', '#F59E0B');
 
         // Mandamos a borrar a la nube (Supabase)
-        fetch('/./api//delete-biz', {
+        fetch('/api/delete-biz', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: id })
@@ -432,7 +432,7 @@ function copyText(txt) {
 ══════════════════════════ */
 async function fetchBizFromCloud(bizId) {
   try {
-    const response = await fetch('/./api//get-biz?id=' + bizId);
+    const response = await fetch('/api/get-biz?id=' + bizId);
     if (response.ok) {
       const data = await response.json();
       return data;

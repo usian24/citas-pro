@@ -1,33 +1,122 @@
 const { createClient } = require('@supabase/supabase-js');
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método no permitido' });
-  }
-
   try {
-    const { id } = req.body;
-    
-    if (!id) {
-      return res.status(400).json({ error: 'Falta el ID de la barbería' });
+    const bizId = req.query.id;
+    if (!bizId) {
+      return res.status(400).json({ error: 'Falta el ID del negocio' });
     }
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-    // Orden explícita de ELIMINAR en Supabase
-    const { error } = await supabase
+    // Traer el negocio
+    const { data: biz, error } = await supabase
       .from('businesses')
-      .delete()
-      .eq('id', id);
+      .select('*')
+      .eq('id', bizId)
+      .single();
 
-    if (error) {
-      console.error("Error de Supabase al eliminar:", error);
-      return res.status(500).json({ error: error.message });
+    if (error || !biz) {
+      return res.status(404).json({ error: 'Negocio no encontrado' });
     }
 
-    return res.status(200).json({ success: true });
-    
+    // Traer workers
+    const { data: workers } = await supabase
+      .from('workers')
+      .select('*')
+      .eq('business_id', bizId);
+
+    // Traer appointments
+    const { data: appointments } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('business_id', bizId);
+
+    // Traer services
+    const { data: services } = await supabase
+      .from('services')
+      .select('*')
+      .eq('business_id', bizId);
+
+    // Mapear workers con sus citas y servicios
+    biz.workers = (workers || []).map(function(w) {
+      var wAppts = (appointments || []).filter(function(a) { return a.worker_id === w.id; });
+      var wSvcs = (services || []).filter(function(s) { return s.business_id === bizId; });
+
+      return {
+        id: w.id,
+        name: w.name || '',
+        email: w.email || '',
+        pass: w.password || '',
+        phone: w.phone || '',
+        spec: w.role || '',
+        photo: w.avatar || '',
+        active: true,
+        services: wSvcs.map(function(s) {
+          return {
+            id: s.id,
+            name: s.name || '',
+            price: parseFloat(s.price) || 0,
+            dur: parseInt(s.duration) || 30,
+            desc: '',
+            color: s.color || '',
+            photo: ''
+          };
+        }),
+        horario: biz.horario || [],
+        appointments: wAppts.map(function(a) {
+          return {
+            id: a.id,
+            client: a.client_name || '',
+            phone: a.client_phone || '',
+            email: '',
+            date: a.date || '',
+            time: a.time || '',
+            svc: a.service_name || '',
+            barber: w.name || '',
+            price: parseFloat(a.service_price) || 0,
+            status: a.status || 'confirmed',
+            notes: '',
+            token: a.id
+          };
+        }),
+        photos: [],
+        notifications: [],
+        cover: ''
+      };
+    });
+
+    // Appointments sin worker
+    var unassignedAppts = (appointments || []).filter(function(a) {
+      return !a.worker_id;
+    });
+    biz.appointments = unassignedAppts.map(function(a) {
+      return {
+        id: a.id,
+        client: a.client_name || '',
+        phone: a.client_phone || '',
+        email: '',
+        date: a.date || '',
+        time: a.time || '',
+        svc: a.service_name || '',
+        barber: '',
+        price: parseFloat(a.service_price) || 0,
+        status: a.status || 'confirmed',
+        notes: ''
+      };
+    });
+
+    // Mapear campos snake_case
+    biz.joinDate = biz.join_date;
+    biz.desc = biz.desc_text || '';
+    biz.services = biz.services || [];
+    biz.photos = biz.photos || [];
+    biz.horario = biz.horario || [];
+
+    return res.status(200).json(biz);
+
   } catch (err) {
+    console.error('Server error get-biz:', err);
     return res.status(500).json({ error: err.message });
   }
 };

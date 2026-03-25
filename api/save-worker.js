@@ -1,24 +1,46 @@
 const { createClient } = require('@supabase/supabase-js');
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, error: 'Método no permitido' });
+  }
 
   try {
     const { action, worker } = req.body;
+    if (!worker || !worker.id) {
+      return res.status(400).json({ success: false, error: 'Falta el ID del trabajador' });
+    }
+
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
     if (action === 'delete') {
-      // Si la orden es borrar, lo elimina de la tabla
       const { error } = await supabase.from('workers').delete().eq('id', worker.id);
-      if (error) throw error;
-    } else {
-      // Si la orden es crear o actualizar, lo guarda
-      const { error } = await supabase.from('workers').upsert(worker);
-      if (error) throw error;
+      if (error) return res.status(400).json({ success: false, error: error.message });
+      return res.status(200).json({ success: true });
+    }
+
+    // upsert (crear o actualizar)
+    const payload = {
+      id:          worker.id,
+      business_id: worker.business_id || '',
+      name:        worker.name || '',
+      email:       worker.email || '',
+      password:    worker.password || '',
+      phone:       worker.phone || '',
+      avatar:      worker.avatar || '',
+      role:        worker.role || 'barber'
+    };
+
+    const { error } = await supabase.from('workers').upsert(payload);
+    if (error) {
+      console.error('Supabase workers error:', JSON.stringify(error));
+      return res.status(400).json({ success: false, error: error.message });
     }
 
     return res.status(200).json({ success: true });
+
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('Server error:', err);
+    return res.status(500).json({ success: false, error: err.message });
   }
 };

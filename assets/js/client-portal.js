@@ -353,7 +353,7 @@ function confirmBooking() {
       worker.appointments.push(appt);
   }
   
-  /* 🔴 1. CREAMOS LA NOTIFICACIÓN DIRECTAMENTE PARA ASEGURAR QUE SE GUARDE */
+  /* 1. CREAMOS LA NOTIFICACIÓN DIRECTAMENTE PARA ASEGURAR QUE SE GUARDE */
   var notifTitle = isModifying ? 'Cita modificada: ' + name : 'Nueva cita: ' + name;
   var notifDetail = 'Servicio: ' + CSEL.svc + ' • ' + CSEL.date + ' a las ' + CSEL.time + ' • Total: ' + money(CSEL.svcPrice);
   
@@ -368,11 +368,15 @@ function confirmBooking() {
       date: new Date().toISOString().split('T')[0]
   });
 
-  /* 🔴 2. GUARDAMOS LOCAL */
+  /* 2. GUARDAMOS LOCAL */
   saveDB(); 
 
-  /* 🔴 3. SUBIMOS A SUPABASE */
-  fetch('/./api//update-biz', {
+  // Sincronizar cliente a Supabase
+  if (typeof syncClientToCloud === 'function') {
+    syncClientToCloud(CSEL.bizId, { name: name, phone: phone, email: email });
+  }
+  /* 3. SUBIMOS A SUPABASE */
+  fetch('/api/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(biz)
@@ -380,7 +384,7 @@ function confirmBooking() {
 
   /* EMAILS */
   if (worker.email) {
-    fetch('/./api//send-email', {
+    fetch('/api/send-email', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -392,7 +396,7 @@ function confirmBooking() {
   }
 
   if (email) {
-    fetch('/./api//send-email', {
+    fetch('/api/send-email', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -560,14 +564,14 @@ function cancelApptByToken(token) {
 
   saveDB();
 
-  fetch('/./api//update-biz', {
+  fetch('/api/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(found.biz)
   }).catch(function(e){ console.error('Error cancelando cita en la nube:', e); });
 
   if (found.worker && found.worker.email) {
-    fetch('/./api//send-email', {
+    fetch('/api/send-email', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
