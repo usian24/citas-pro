@@ -729,9 +729,26 @@ function cancelApptByToken(token) {
     }).catch(function(e){ console.error('Error email cancelación:', e); });
   }
   window._cloudApptCache = null;
-  closeOv('ov-manage');
-  toast('Tu cita ha sido cancelada', '#22C55E');
+
+// Marcar como cancelada en local también para que el link no funcione
+var localBiz = getBizById(found.biz.id);
+if (localBiz) {
+  (localBiz.workers || []).forEach(function(w) {
+    (w.appointments || []).forEach(function(a) {
+      if (a.token === token) a.status = 'cancelled';
+    });
+  });
+  (localBiz.appointments || []).forEach(function(a) {
+    if (a.token === token) a.status = 'cancelled';
+  });
+}
+
+closeOv('ov-manage');
+toast('Tu cita ha sido cancelada', '#22C55E');
+// Pequeño delay para que el toast se vea antes de limpiar el hash
+setTimeout(function() {
   window.location.hash = '';
+}, 1500);
 }
 
 /* ══════════════════════════
