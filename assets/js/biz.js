@@ -668,20 +668,33 @@ function saveBarber() {
 
   var workerId = editWorkerId || 'w_' + Date.now();
 
+  // ✅ Si estamos editando y no se subió foto nueva, conservar la existente
+  var existingPhoto = '';
+  var existingCover = '';
+  if (editWorkerId) {
+    var existing = CUR.workers.filter(function(x){ return x.id===editWorkerId; })[0];
+    if (existing) {
+      existingPhoto = existing.photo || '';
+      existingCover = existing.cover || '';
+    }
+  }
+  var finalPhoto = photo || existingPhoto;
+
   var workerDbObj = {
     id: workerId,
     business_id: CUR.id, 
     name: name,
     email: email,
-    password: pass, 
+    password: pass || (editWorkerId && CUR.workers.filter(function(x){ return x.id===editWorkerId; })[0] ? (CUR.workers.filter(function(x){ return x.id===editWorkerId; })[0].pass || '') : ''),
     phone: phone,
-    avatar: photo || '',
-    role: 'barber'
+    avatar: finalPhoto,
+    cover: existingCover,
+    role: spec || 'barber'
   };
 
   if (editWorkerId) {
     var w = CUR.workers.filter(function(x){ return x.id===editWorkerId; })[0];
-    if (w) { w.name=name; w.spec=spec; w.phone=phone; if(photo) w.photo=photo; }
+    if (w) { w.name=name; w.spec=spec; w.phone=phone; w.photo=finalPhoto; }
     toast('Trabajador editado','#4A7FD4');
   } else {
     if (!validEmail(email)) { toast('Email inválido','#EF4444'); return; }

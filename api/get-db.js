@@ -59,6 +59,7 @@ module.exports = async (req, res) => {
           phone: w.phone || '',
           spec: w.role || '',
           photo: w.avatar || '',
+          cover: w.cover || '',
           active: true,
           services: wSvcs.map(function(s) {
             return {
@@ -68,7 +69,7 @@ module.exports = async (req, res) => {
               dur: parseInt(s.duration) || 30,
               desc: '',
               color: s.color || '',
-              photo: ''
+              photo: s.image || ''
             };
           }),
           horario: biz.horario || [],

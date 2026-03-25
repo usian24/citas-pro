@@ -236,7 +236,8 @@ function syncServicesToCloud(biz) {
         name:        s.name || '',
         price:       parseFloat(s.price) || 0,
         duration:    parseInt(s.dur) || 30,
-        color:       s.color || ''
+        color:       s.color || '',
+        image:       s.photo || ''
       });
     });
   });

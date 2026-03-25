@@ -28,6 +28,7 @@ module.exports = async (req, res) => {
       password:    worker.password || '',
       phone:       worker.phone || '',
       avatar:      worker.avatar || '',
+      cover:       worker.cover || '',
       role:        worker.role || 'barber'
     };
 

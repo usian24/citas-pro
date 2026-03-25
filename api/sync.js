@@ -58,7 +58,8 @@ module.exports = async (req, res) => {
           name:        svc.name || '',
           price:       parseFloat(svc.price) || 0,
           duration:    parseInt(svc.duration) || 30,
-          color:       svc.color || ''
+          color:       svc.color || '',
+          image:       svc.image || ''
         });
         if (error) console.error('Error upsert service:', error.message);
       }

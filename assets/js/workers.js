@@ -467,14 +467,13 @@ function renderWorkerFinances() {
 }
 
 /* ══════════════════════════
-   HORARIO TRABAJADOR (NUEVO DISEÑO 2 TURNOS)
+   HORARIO TRABAJADOR
 ══════════════════════════ */
 function renderWorkerHorario() {
   if (!CUR_WORKER) return;
   var horario = CUR_WORKER.horario || DEFAULT_HORARIO.map(function(h) { return Object.assign({}, h); });
   
   H('wk-horario-days', horario.map(function(day, i) {
-    // Compatibilidad segura con versiones anteriores
     var f1 = day.from1 || day.from || '09:00';
     var t1 = day.to1 || day.to || '14:00';
     var hb = day.hasBreak === true || (day.from2 ? true : false);
@@ -512,13 +511,12 @@ function renderWorkerHorario() {
       + '</div>';
   }).join(''));
 
-  // Aseguramos que los eventos queden registrados
   document.querySelectorAll('[data-wfrom1]').forEach(function(el) { 
       el.addEventListener('change', function() { 
           var i = parseInt(el.getAttribute('data-wfrom1')); 
           if (CUR_WORKER.horario && CUR_WORKER.horario[i]) { 
               CUR_WORKER.horario[i].from1 = el.value; 
-              CUR_WORKER.horario[i].from = el.value; // Compatibilidad legacy
+              CUR_WORKER.horario[i].from = el.value;
           } 
       }); 
   });
@@ -552,7 +550,6 @@ function renderWorkerHorario() {
   });
 }
 
-// Hacemos globales las funciones del HTML generado dinámicamente
 window.toggleWorkerBreak = function(i) {
   if (!CUR_WORKER || !CUR_WORKER.horario) return;
   var h = CUR_WORKER.horario[i];
@@ -586,7 +583,6 @@ function renderWorkerProfile() {
   if (sp) sp.value = CUR_WORKER.spec  || '';
   if (em) em.value = CUR_WORKER.email || '';
 
-  // NUEVO: Pinta la portada si existe
   var profileCover = G('wk-profile-cover');
   if (profileCover && CUR_WORKER.cover) {
       profileCover.style.backgroundImage = 'url(' + sanitizeImageDataURL(CUR_WORKER.cover) + ')';
@@ -613,6 +609,9 @@ function saveWorkerProfile() {
   CUR_WORKER.phone = sanitizeText(V('wk-pf-phone')); 
   CUR_WORKER.spec  = sanitizeText(V('wk-pf-spec'));
   
+  // ✅ Sincronizar cambios del perfil a Supabase
+  syncWorkerToCloud();
+  
   saveDB(); 
   initWorkerPanel(); 
   toast('Perfil guardado', '#4A7FD4');
@@ -627,6 +626,10 @@ function saveWorkerPassword() {
   if (!CUR_WORKER) return;
   
   CUR_WORKER.pass = p1; 
+  
+  // ✅ Sincronizar nueva contraseña a Supabase
+  syncWorkerToCloud();
+  
   saveDB();
   
   var f1 = G('wk-pass-new'), f2 = G('wk-pass-confirm'); 
@@ -637,85 +640,115 @@ function saveWorkerPassword() {
 }
 
 /* ══════════════════════════
-   ARCHIVOS FOTO
+   ✅ SYNC WORKER A SUPABASE
+   Función centralizada para enviar datos del worker
+══════════════════════════ */
+function syncWorkerToCloud() {
+  if (!CUR_WORKER || !CUR) return;
+  
+  fetch('/api/save-worker', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'upsert',
+      worker: {
+        id:          CUR_WORKER.id,
+        business_id: CUR.id,
+        name:        CUR_WORKER.name || '',
+        email:       CUR_WORKER.email || '',
+        password:    CUR_WORKER.pass || CUR_WORKER.password || '',
+        phone:       CUR_WORKER.phone || '',
+        avatar:      CUR_WORKER.photo || '',
+        cover:       CUR_WORKER.cover || '',
+        role:        CUR_WORKER.spec || 'barber'
+      }
+    })
+  }).catch(function(e) { console.error('Error sync worker:', e); });
+}
+
+/* ══════════════════════════
+   ARCHIVOS FOTO — ✅ ACTUALIZADO CON IMGBB
 ══════════════════════════ */
 function setupWorkerPhotoUpload() {
   
-  // NUEVO: Escuchador para subir y guardar la foto de portada del trabajador
+  // PORTADA del trabajador — sube a ImgBB y sincroniza
   var coverInp = G('wk-profile-cover-input');
   if (coverInp) {
-    coverInp.addEventListener('change', function(e) {
+    coverInp.addEventListener('change', async function(e) {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
-      var r = new FileReader();
-      r.onload = function(ev) {
-        var d = sanitizeImageDataURL(ev.target.result);
-        if (d && CUR_WORKER) { 
-            CUR_WORKER.cover = d; 
-            saveDB(); 
-            renderWorkerProfile(); 
-            toast('Portada actualizada', '#22C55E');
-        }
-      };
-      r.readAsDataURL(f);
+      
+      toast('Subiendo portada a la nube... ⏳', '#F59E0B');
+      var url = await uploadToImgBB(f);
+      if (url && CUR_WORKER) { 
+        CUR_WORKER.cover = url; 
+        syncWorkerToCloud();
+        saveDB(); 
+        renderWorkerProfile(); 
+        toast('Portada actualizada', '#22C55E');
+      }
     });
   }
 
+  // FOTO DE PERFIL del trabajador — sube a ImgBB y sincroniza
   var logoInp = G('wk-profile-photo-input');
   if (logoInp) {
-    logoInp.addEventListener('change', function(e) {
+    logoInp.addEventListener('change', async function(e) {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
-      var r = new FileReader();
-      r.onload = function(ev) {
-        var d = sanitizeImageDataURL(ev.target.result);
-        if (d && CUR_WORKER) { 
-            CUR_WORKER.photo = d; 
-            saveDB(); 
-            renderWorkerProfile(); 
-            initWorkerPanel(); 
-        }
-      };
-      r.readAsDataURL(f);
+      
+      toast('Subiendo foto de perfil... ⏳', '#F59E0B');
+      var url = await uploadToImgBB(f);
+      if (url && CUR_WORKER) { 
+        CUR_WORKER.photo = url; 
+        syncWorkerToCloud();
+        saveDB(); 
+        renderWorkerProfile(); 
+        initWorkerPanel(); 
+        toast('Foto de perfil actualizada', '#22C55E');
+      }
     });
   }
 
+  // GALERÍA del trabajador — sube a ImgBB
   var galInp = G('wk-gallery-input');
   if (galInp) {
-    galInp.addEventListener('change', function(e) {
-      Array.from(e.target.files).forEach(function(f) {
-        if (!validImageType(f)) return;
-        var r = new FileReader();
-        r.onload = function(ev) {
-          var d = sanitizeImageDataURL(ev.target.result);
-          if (d && CUR_WORKER) {
-            if (!CUR_WORKER.photos) CUR_WORKER.photos = [];
-            if (CUR_WORKER.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; }
-            CUR_WORKER.photos.push(d); 
-            saveDB(); 
-            renderWorkerGallery();
-          }
-        };
-        r.readAsDataURL(f);
-      });
+    galInp.addEventListener('change', async function(e) {
+      var files = Array.from(e.target.files);
+      if (files.length === 0) return;
+      
+      toast('Subiendo ' + files.length + ' foto(s)... ⏳', '#F59E0B');
+      for (var i = 0; i < files.length; i++) {
+        var f = files[i];
+        if (!validImageType(f)) continue;
+        var url = await uploadToImgBB(f);
+        if (url && CUR_WORKER) {
+          if (!CUR_WORKER.photos) CUR_WORKER.photos = [];
+          if (CUR_WORKER.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; }
+          CUR_WORKER.photos.push(url); 
+          saveDB(); 
+          renderWorkerGallery();
+        }
+      }
+      toast('Fotos subidas', '#22C55E');
     });
   }
 
+  // FOTO DE SERVICIO — sube a ImgBB
   var svcInp = G('wk-sv-photo-input');
   if (svcInp) {
-    svcInp.addEventListener('change', function(e) {
+    svcInp.addEventListener('change', async function(e) {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) return;
-      var r = new FileReader();
-      r.onload = function(ev) {
-        var d = sanitizeImageDataURL(ev.target.result);
-        if (d) { 
-            window._wkSvcPhoto = d; 
-            var pv = G('wk-sv-photo-preview'); 
-            if (pv) pv.innerHTML = '<img src="' + d + '" class="photo-preview" alt="Servicio"/>'; 
-        }
-      };
-      r.readAsDataURL(f);
+      
+      toast('Subiendo foto del servicio... ⏳', '#F59E0B');
+      var url = await uploadToImgBB(f);
+      if (url) { 
+        window._wkSvcPhoto = url; 
+        var pv = G('wk-sv-photo-preview'); 
+        if (pv) pv.innerHTML = '<img src="' + url + '" class="photo-preview" alt="Servicio"/>'; 
+        toast('Foto lista', '#22C55E');
+      }
     });
   }
 }
