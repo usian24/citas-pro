@@ -590,7 +590,6 @@ function openManageModal(biz, worker, appt) {
 }
 
 function reprogramarCita(token) {
-  // Buscar en local primero, luego en cache de Supabase
   var found = findApptByToken(token);
   if (!found && _cloudApptCache && _cloudApptCache.appt.token === token) {
     found = _cloudApptCache;
@@ -615,18 +614,16 @@ function reprogramarCita(token) {
   _cloudApptCache = null;
   closeOv('ov-manage');
 
-  // Cargar la pantalla de reserva con el biz correcto
-  var biz = getBizById(found.biz.id);
-  if (biz) {
-    loadBizDirect(found.biz.id);
-    if (found.worker) {
-      buildDates(found.biz.id, found.worker.id);
-    }
-  } else {
-    goTo('s-client');
-    if (found.worker) {
-      buildDates(found.biz.id, found.worker.id);
-    }
+  // ✅ Asegurarse que el biz esté en DB.businesses para que buildDates funcione
+  var localBiz = getBizById(found.biz.id);
+  if (!localBiz && found.biz.workers && found.biz.workers.length > 0) {
+    // El biz vino de Supabase con workers completos — agregarlo temporalmente
+    DB.businesses.push(found.biz);
+  }
+
+  goTo('s-client');
+  if (found.worker) {
+    buildDates(found.biz.id, found.worker.id);
   }
   clGoStep(4);
 }
