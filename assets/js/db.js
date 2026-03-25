@@ -139,6 +139,15 @@ function loadDB() {
 function saveDB() {
   try {
     if (DB && typeof DB === 'object') {
+      // ✅ Antes de guardar, asegurar que CUR_WORKER tenga sus fotos actualizadas en CUR
+      if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR) {
+        var wInCur = (CUR.workers || []).find(function(w) { return w.id === CUR_WORKER.id; });
+        if (wInCur) {
+          if (CUR_WORKER.photo) wInCur.photo = CUR_WORKER.photo;
+          if (CUR_WORKER.cover) wInCur.cover = CUR_WORKER.cover;
+        }
+      }
+
       localStorage.setItem(DBKEY, JSON.stringify(DB));
 
       if (CUR && CUR.id) {

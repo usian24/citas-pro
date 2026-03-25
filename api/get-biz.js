@@ -23,7 +23,7 @@ module.exports = async (req, res) => {
     // Traer workers
     const { data: workers } = await supabase
       .from('workers')
-      .select('*')
+      .select('id, business_id, created_at, name, email, password, phone, avatar, cover, role')
       .eq('business_id', bizId);
 
     // Traer appointments

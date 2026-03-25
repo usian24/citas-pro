@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
     for (let biz of (businesses || [])) {
       const { data: workers } = await supabase
         .from('workers')
-        .select('*')
+        .select('id, business_id, created_at, name, email, password, phone, avatar, cover, role')
         .eq('business_id', biz.id);
 
       // Traer appointments de la tabla appointments
