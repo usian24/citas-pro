@@ -1,6 +1,9 @@
 'use strict';
+
 // Cache global para citas cargadas desde Supabase
 window._cloudApptCache = window._cloudApptCache || null;
+var _cloudApptCache = null;
+
 /* ══════════════════════════════════════════════════
    CLIENT-PORTAL.JS
    Flujo de reserva del cliente:
@@ -27,11 +30,11 @@ function loadBizDirect(bizId) {
 
   var coverBg = G('cl-cover-bg');
   if (coverBg) {
-      if (biz.cover) {
-          coverBg.style.backgroundImage = 'url(' + sanitizeImageDataURL(biz.cover) + ')';
-      } else {
-          coverBg.style.backgroundImage = 'none';
-      }
+    if (biz.cover) {
+      coverBg.style.backgroundImage = 'url(' + sanitizeImageDataURL(biz.cover) + ')';
+    } else {
+      coverBg.style.backgroundImage = 'none';
+    }
   }
 
   var av = G('ch-av');
@@ -227,24 +230,22 @@ function buildTimes(bizId, workerId) {
     var f1 = horDay.from1 || horDay.from || '09:00';
     var t1 = horDay.to1 || horDay.to || '20:00';
     addInterval(f1, t1);
-
     if (horDay.hasBreak && horDay.from2 && horDay.to2) {
-        addInterval(horDay.from2, horDay.to2);
+      addInterval(horDay.from2, horDay.to2);
     }
   }
 
   var booked = [];
   if (worker && worker.appointments) {
-      worker.appointments.forEach(function(a) {
-          if (a.date === CSEL.date && a.status !== 'cancelled') {
-              if (CSEL.editingToken && a.token === CSEL.editingToken) return;
-              booked.push(a.time);
-          }
-      });
+    worker.appointments.forEach(function(a) {
+      if (a.date === CSEL.date && a.status !== 'cancelled') {
+        if (CSEL.editingToken && a.token === CSEL.editingToken) return;
+        booked.push(a.time);
+      }
+    });
   }
 
   var available = times.filter(function(t){ return booked.indexOf(t)<0; }).length;
-
   var availEl=G('cl-time-available');
   if(availEl) availEl.textContent = times.length ? (available>0 ? available+' horarios disponibles' : 'Sin horarios disponibles') : '';
 
@@ -309,67 +310,67 @@ function confirmBooking() {
   var worker = (biz.workers||[]).filter(function(w){ return w.id===CSEL.workerId; })[0]; if (!worker) return;
 
   var isModifying = !!CSEL.editingToken;
-  
+
   var dup = false;
   (worker.appointments || []).forEach(function(a) {
-      if (a.date === CSEL.date && a.time === CSEL.time && a.status !== 'cancelled') {
-          if (isModifying && a.token === CSEL.editingToken) return; 
-          dup = true;
-      }
+    if (a.date === CSEL.date && a.time === CSEL.time && a.status !== 'cancelled') {
+      if (isModifying && a.token === CSEL.editingToken) return;
+      dup = true;
+    }
   });
 
-  if (dup) { 
-      toast('Esa hora ya está ocupada. Elige otra.', '#EF4444'); 
-      clGoStep(4); 
-      return; 
+  if (dup) {
+    toast('Esa hora ya está ocupada. Elige otra.', '#EF4444');
+    clGoStep(4);
+    return;
   }
 
-  var token = isModifying ? CSEL.editingToken : 'tk_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+  var token  = isModifying ? CSEL.editingToken : 'tk_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
   var apptId = String(Date.now());
 
   var appt = {
-    id: apptId,
+    id:     apptId,
     client: name, phone: phone, email: email,
-    date: CSEL.date, time: CSEL.time,
-    svc: CSEL.svc, barber: worker.name,
-    price: CSEL.svcPrice||0,
+    date:   CSEL.date, time: CSEL.time,
+    svc:    CSEL.svc, barber: worker.name,
+    price:  CSEL.svcPrice||0,
     status: 'confirmed', notes: '',
-    token: token
+    token:  token
   };
 
-  if (!worker.appointments) worker.appointments=[];
-  
+  if (!worker.appointments) worker.appointments = [];
+
   if (isModifying) {
-      worker.appointments = worker.appointments.filter(function(a) { return a.token !== token; });
-      worker.appointments.push(appt);
-      CSEL.editingToken = null;
+    worker.appointments = worker.appointments.filter(function(a) { return a.token !== token; });
+    worker.appointments.push(appt);
+    CSEL.editingToken = null;
   } else {
-      worker.appointments.push(appt);
+    worker.appointments.push(appt);
   }
-  
+
   /* 1. NOTIFICACIÓN AL BARBERO */
-  var notifTitle = isModifying ? 'Cita modificada: ' + name : 'Nueva cita: ' + name;
+  var notifTitle  = isModifying ? 'Cita modificada: ' + name : 'Nueva cita: ' + name;
   var notifDetail = 'Servicio: ' + CSEL.svc + ' • ' + CSEL.date + ' a las ' + CSEL.time + ' • Total: ' + money(CSEL.svcPrice);
-  
+
   if (!worker.notifications) worker.notifications = [];
   worker.notifications.unshift({
-    id: Date.now(),
-    type: 'new_booking',
+    id:    Date.now(),
+    type:  'new_booking',
     title: notifTitle,
     msg:   notifTitle,
     body:  notifDetail,
     data:  { detail: notifDetail },
     read:  false,
     date:  new Date().toISOString()
-});
+  });
 
-  /* 2. GUARDAR LOCAL — Temporalmente ponemos CUR para que saveDB sincronice */
+  /* 2. GUARDAR LOCAL */
   var prevCUR = CUR;
   CUR = biz;
   saveDB();
   CUR = prevCUR;
 
-  /* 3. SINCRONIZAR CITA DIRECTAMENTE A TABLA appointments EN SUPABASE */
+  /* 3. SINCRONIZAR CITA A SUPABASE */
   fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -395,16 +396,12 @@ function confirmBooking() {
     })
   }).catch(function(e){ console.error('Error sync appointment:', e); });
 
-  /* 4. SINCRONIZAR CLIENTE A SUPABASE */
+  /* 4. SINCRONIZAR CLIENTE */
   if (typeof syncClientToCloud === 'function') {
-    syncClientToCloud(CSEL.bizId, {
-      name:          name,
-      phone:         phone,
-      email:         email,
-    });
+    syncClientToCloud(CSEL.bizId, { name: name, phone: phone, email: email });
   }
 
-  /* 5. TAMBIÉN ENVIAR EL BIZ COMPLETO PARA QUE LA NOTIFICACIÓN SE GUARDE */
+  /* 5. GUARDAR BIZ PARA NOTIFICACIONES */
   fetch('/api/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -414,11 +411,9 @@ function confirmBooking() {
   /* 6. EMAILS */
   if (worker.email) {
     fetch('/api/send-email', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        type: 'new_booking_biz',
-        to: worker.email,
+        type: 'new_booking_biz', to: worker.email,
         data: { clientName:name, clientPhone:phone, service:CSEL.svc, date:CSEL.date, time:CSEL.time, workerName:worker.name }
       })
     }).catch(function(e){ console.error(e); });
@@ -426,11 +421,9 @@ function confirmBooking() {
 
   if (email) {
     fetch('/api/send-email', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        type: 'booking_confirmed',
-        to: email,
+        type: 'booking_confirmed', to: email,
         data: { bizName:biz.name, workerName:worker.name, service:CSEL.svc, date:CSEL.date, time:CSEL.time, price:money(CSEL.svcPrice) }
       })
     }).catch(function(e){ console.error(e); });
@@ -455,12 +448,11 @@ function confirmBooking() {
   if (wa) {
     var waMsg = isModifying ? '¡Mi cita fue modificada en ' + biz.name + '!\n' : '¡Cita confirmada en ' + biz.name + '!\n';
     waMsg += 'Profesional: ' + worker.name + '\n'
-        + 'Servicio: ' + CSEL.svc + '\n'
-        + 'Fecha: ' + CSEL.date + ' a las ' + CSEL.time + '\n'
-        + 'Total: ' + money(CSEL.svcPrice) + '\n\n'
-        + 'Para gestionar o cancelar tu cita visita:\n'
-        + 'https://citasproonline.com/#manage/' + biz.id + '/' + token;
-    
+      + 'Servicio: ' + CSEL.svc + '\n'
+      + 'Fecha: ' + CSEL.date + ' a las ' + CSEL.time + '\n'
+      + 'Total: ' + money(CSEL.svcPrice) + '\n\n'
+      + 'Para gestionar o cancelar tu cita visita:\n'
+      + 'https://citasproonline.com/#manage/' + biz.id + '/' + token;
     wa.href = 'https://wa.me/' + phone.replace(/\D/g,'') + '?text=' + encodeURIComponent(waMsg);
   }
 
@@ -471,9 +463,6 @@ function confirmBooking() {
 /* ══════════════════════════
    GESTIÓN DE CITA EXISTENTE
 ══════════════════════════ */
-/* Variable temporal para citas cargadas desde Supabase */
-var _cloudApptCache = null;
-
 async function checkManageAccess() {
   var hash = window.location.hash;
   if (hash && hash.indexOf('#manage/') === 0) {
@@ -487,7 +476,6 @@ async function checkManageAccess() {
         var cloudBiz = await fetchBizFromCloud(bizId);
         if (cloudBiz && typeof syncBizToLocal === 'function') {
           syncBizToLocal(cloudBiz);
-          // Recargar solo businesses, sin tocar CUR_WORKER
           var fresh = loadDB();
           DB.businesses = fresh.businesses;
         }
@@ -500,7 +488,7 @@ async function checkManageAccess() {
       // 2. Buscar en local primero
       var found = findApptByToken(token);
 
-      // 3. Si no está local, buscar en Supabase
+      // 3. Si no está local, buscar en Supabase por token
       if (!found) {
         try {
           var resp = await fetch('/api/get-appointment-by-token?token=' + encodeURIComponent(token));
@@ -514,9 +502,7 @@ async function checkManageAccess() {
               }
               var worker = null;
               if (biz.workers) {
-                worker = biz.workers.find(function(w) {
-                  return w.id === a.worker_id;
-                }) || null;
+                worker = biz.workers.find(function(w) { return w.id === a.worker_id; }) || null;
               }
               var normalizedAppt = {
                 id:     a.id,
@@ -532,8 +518,9 @@ async function checkManageAccess() {
                 notes:  a.notes || ''
               };
               found = { biz: biz, worker: worker, appt: normalizedAppt };
-              // Guardar en cache temporal para que cancel/modify funcionen
+              // Guardar en cache global
               window._cloudApptCache = found;
+              _cloudApptCache = found;
             }
           }
         } catch(e) {
@@ -593,7 +580,6 @@ function openManageModal(biz, worker, appt) {
 function reprogramarCita(token) {
   var found = findApptByToken(token);
   if (!found) {
-    // Buscar en cache global
     if (window._cloudApptCache && window._cloudApptCache.appt && window._cloudApptCache.appt.token === token) {
       found = window._cloudApptCache;
     }
@@ -616,6 +602,7 @@ function reprogramarCita(token) {
   }
 
   window._cloudApptCache = null;
+  _cloudApptCache = null;
   closeOv('ov-manage');
 
   // Asegurar que el biz esté en DB para que buildDates funcione
@@ -703,7 +690,7 @@ function cancelApptByToken(token) {
     }).catch(function(e) { console.error('Error guardando worker:', e); });
   }
 
-  // 3. Marcar como cancelada en local y guardar — una sola vez, sin var duplicado
+  // 3. Marcar como cancelada en local y guardar — una sola var localBiz
   var localBiz = getBizById(found.biz.id);
   if (localBiz) {
     (localBiz.workers || []).forEach(function(w) {
@@ -739,6 +726,7 @@ function cancelApptByToken(token) {
   }
 
   window._cloudApptCache = null;
+  _cloudApptCache = null;
   closeOv('ov-manage');
   toast('Tu cita ha sido cancelada', '#22C55E');
   setTimeout(function() { window.location.hash = ''; }, 1500);
@@ -757,14 +745,14 @@ async function checkLinkAccess() {
   if (hash && hash.indexOf('#b/') === 0) {
     var bizId = hash.slice(3);
     if (bizId) {
-      DB = loadDB(); 
+      DB = loadDB();
       var biz = getBizById(bizId);
-      
+
       if (!biz && typeof fetchBizFromCloud === 'function') {
-          biz = await fetchBizFromCloud(bizId);
-          if (biz && typeof syncBizToLocal === 'function') syncBizToLocal(biz);
+        biz = await fetchBizFromCloud(bizId);
+        if (biz && typeof syncBizToLocal === 'function') syncBizToLocal(biz);
       }
-      
+
       if (biz) {
         loadBizDirect(bizId);
         return true;
@@ -789,9 +777,9 @@ function goClientFromBiz() {
 }
 
 /* EXPORTACIONES GLOBALES */
-window.checkLinkAccess = checkLinkAccess;
+window.checkLinkAccess   = checkLinkAccess;
 window.checkManageAccess = checkManageAccess;
-window.findApptByToken = findApptByToken;
-window.openManageModal = openManageModal;
-window.reprogramarCita = reprogramarCita;
+window.findApptByToken   = findApptByToken;
+window.openManageModal   = openManageModal;
+window.reprogramarCita   = reprogramarCita;
 window.cancelApptByToken = cancelApptByToken;
