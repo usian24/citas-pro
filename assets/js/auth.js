@@ -31,7 +31,6 @@ function doLogin() {
   if(!checkRateLimit(key)) { showErr('li-err','Demasiados intentos. Espera 5 minutos.'); return; }
 
   /* 1 — Buscar como dueño de negocio */
-  // ✅ CORREGIDO: busca en "pass" Y en "password" (por si vino de Supabase)
   var biz = DB.businesses.filter(function(b){
     return (b.email||'').toLowerCase() === email && ((b.pass || b.password || '') === pass);
   })[0];
@@ -41,6 +40,8 @@ function doLogin() {
     if(biz.plan === 'expired') { showErr('li-err','Tu suscripción ha vencido. Contacta soporte.'); return; }
     DB.currentBiz    = biz.id;
     DB.currentWorker = null;
+    // ✅ CRÍTICO: asignar CUR antes de llamar goBiz/showBizPanel
+    CUR = biz;
     saveDB();
     closeOv('ov-login');
     toast('Bienvenido/a ' + san(biz.owner || biz.name), '#22C55E');
@@ -52,7 +53,6 @@ function doLogin() {
   var foundWorker = null, foundBiz = null;
   DB.businesses.forEach(function(b) {
     (b.workers||[]).forEach(function(w) {
-      // ✅ CORREGIDO: busca en "pass" Y en "password"
       if((w.email||'').toLowerCase() === email && ((w.pass || w.password || '') === pass) && w.active) {
         foundWorker = w;
         foundBiz    = b;
@@ -65,6 +65,9 @@ function doLogin() {
     if(foundBiz.plan === 'expired') { showErr('li-err','La barbería tiene suscripción vencida.'); return; }
     DB.currentWorker = { bizId: foundBiz.id, workerId: foundWorker.id };
     DB.currentBiz    = null;
+    // ✅ CRÍTICO: asignar CUR y CUR_WORKER antes de llamar goWorker/showWorkerPanel
+    CUR        = foundBiz;
+    CUR_WORKER = foundWorker;
     saveDB();
     closeOv('ov-login');
     toast('Bienvenido/a ' + san(foundWorker.name), '#22C55E');
@@ -148,7 +151,6 @@ function doForgot() {
   hideErr('fp-err');
   if(!email || !validEmail(email)) { showErr('fp-err','Introduce un correo electrónico válido.'); return; }
 
-  /* Buscar en dueños y en trabajadores */
   var found = DB.businesses.filter(function(b){ return (b.email||'').toLowerCase()===email; })[0];
   if(!found) {
     DB.businesses.forEach(function(b){
@@ -157,7 +159,6 @@ function doForgot() {
   }
   if(!found) { showErr('fp-err','No encontramos ninguna cuenta con ese correo.'); return; }
 
-  /* ✅ CORREGIDO: busca la contraseña en "pass" O en "password" (evita "undefined") */
   var actualPassword = found.pass || found.password || '(no disponible)';
 
   fetch('/api/send-email', {

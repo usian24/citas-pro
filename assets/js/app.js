@@ -608,14 +608,12 @@ window.onload = async function() {
   
   // AQUI ES DONDE SE COMPLETA EL REGISTRO
   on('enter-panel-btn', 'click', function() {
-      // 1. Establecer CUR antes de guardar
-      CUR = DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0];
+      // ✅ CRÍTICO: asignar CUR antes de showBizPanel
+      CUR = DB.businesses.filter(function(b){ return b.id === DB.currentBiz; })[0];
       
-      // 2. Guardar DB ahora que CUR está definido (esto evita el error 500)
-      if (typeof saveDB === 'function') saveDB();
-      
-      // 3. Mostrar el panel
-      if(CUR) {
+      if (CUR) {
+          // Guardar DB ahora que CUR está correctamente definido
+          if (typeof saveDB === 'function') saveDB();
           if (typeof showBizPanel === 'function') showBizPanel();
       } else {
           showRegStep(0);
@@ -805,7 +803,7 @@ window.onload = async function() {
     if (hash && hash.startsWith('#b/')) {
       goTo('s-client'); // ← mostrar pantalla cliente inmediatamente
       const targetBizId = hash.split('/')[1];
-        
+
       if (targetBizId) {
         try {
           const cloudBiz = await fetchBizFromCloud(targetBizId);
