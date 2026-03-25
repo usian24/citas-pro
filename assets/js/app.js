@@ -829,10 +829,11 @@ window.onload = async function() {
       return;
     }
 
-    if (typeof checkLinkAccess === 'function' && checkLinkAccess()) {
-      return; 
+    if (typeof checkLinkAccess === 'function') {
+      const handled = await checkLinkAccess();
+        if (handled) return;
     }
-
+    
     if (DB.admin && DB.admin.auth) {
       goTo('s-admin');
       showAdminPanel();

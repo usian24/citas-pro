@@ -355,11 +355,11 @@ function confirmBooking() {
     id: Date.now(),
     type: 'new_booking',
     title: notifTitle,
-    msg: notifTitle,
-    body: notifDetail,
-    data: { detail: notifDetail },
-    read: false,
-    date: new Date().toISOString()  // ← ISO completo para que el reloj funcione
+    msg:   notifTitle,
+    body:  notifDetail,
+    data:  { detail: notifDetail },
+    read:  false,
+    date:  new Date().toISOString()
 });
 
   /* 2. GUARDAR LOCAL — Temporalmente ponemos CUR para que saveDB sincronice */
@@ -638,30 +638,7 @@ function cancelApptByToken(token) {
 
   found.appt.status = 'cancelled';
 
-  // Notificar al worker si está disponible localmente
-  if (found.worker) {
-    if (!found.worker.notifications) found.worker.notifications = [];
-    found.worker.notifications.unshift({
-      id: Date.now(),
-      type: 'booking_cancel',
-      title: 'Cita cancelada: ' + found.appt.client,
-      msg: 'Cita cancelada: ' + found.appt.client,
-      body: 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time,
-      read: false,
-      date: new Date().toISOString()
-    });
-  }
-
-  // Guardar local solo si el biz existe en DB
-  var localBiz = getBizById(found.biz.id);
-  if (localBiz) {
-    var prevCUR = CUR;
-    CUR = localBiz;
-    saveDB();
-    CUR = prevCUR;
-  }
-
-  // Cancelar en Supabase
+  // ✅ 1. Eliminar/cancelar en Supabase — tabla appointments
   fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -686,12 +663,67 @@ function cancelApptByToken(token) {
     })
   }).catch(function(e){ console.error('Error cancelando en Supabase:', e); });
 
-  // Notificar al negocio
-  fetch('/api/update-biz', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(found.biz)
-  }).catch(function(e){ console.error('Error update-biz:', e); });
+  // ✅ 2. Notificar al worker y guardar notificación en Supabase via save-worker
+  if (found.worker) {
+    if (!found.worker.notifications) found.worker.notifications = [];
+    found.worker.notifications.unshift({
+      id: Date.now(),
+      type: 'booking_cancel',
+      title: 'Cita cancelada: ' + found.appt.client,
+      msg:   'Cita cancelada: ' + found.appt.client,
+      body:  'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time,
+      data:  { detail: 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time },
+      read:  false,
+      date:  new Date().toISOString()
+    });
+
+    // Guardar worker actualizado con la notificación en Supabase
+    fetch('/api/save-worker', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'upsert',
+        worker: {
+          id:            found.worker.id,
+          business_id:   found.biz.id,
+          name:          found.worker.name || '',
+          email:         found.worker.email || '',
+          password:      found.worker.pass || found.worker.password || '',
+          phone:         found.worker.phone || '',
+          avatar:        found.worker.photo || '',
+          cover:         found.worker.cover || '',
+          role:          found.worker.spec || 'barber'
+        }
+      })
+    }).catch(function(e){ console.error('Error guardando worker:', e); });
+  }
+
+  // ✅ 3. Guardar en local si el biz existe
+  var localBiz = getBizById(found.biz.id);
+  if (localBiz) {
+    var prevCUR = CUR;
+    CUR = localBiz;
+    saveDB();
+    CUR = prevCUR;
+  }
+
+  // ✅ 4. Notificar por email al worker si tiene email
+  if (found.worker && found.worker.email) {
+    fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'booking_cancel',
+        to:   found.worker.email,
+        data: {
+          clientName: found.appt.client,
+          service:    found.appt.svc,
+          date:       found.appt.date,
+          time:       found.appt.time
+        }
+      })
+    }).catch(function(e){ console.error('Error email cancelación:', e); });
+  }
 
   _cloudApptCache = null;
   closeOv('ov-manage');
