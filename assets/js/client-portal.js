@@ -1,5 +1,6 @@
 'use strict';
-
+// Cache global para citas cargadas desde Supabase
+window._cloudApptCache = window._cloudApptCache || null;
 /* ══════════════════════════════════════════════════
    CLIENT-PORTAL.JS
    Flujo de reserva del cliente:
@@ -532,7 +533,7 @@ async function checkManageAccess() {
               };
               found = { biz: biz, worker: worker, appt: normalizedAppt };
               // Guardar en cache temporal para que cancel/modify funcionen
-              _cloudApptCache = found;
+              window._cloudApptCache = found;
             }
           }
         } catch(e) {
@@ -591,8 +592,11 @@ function openManageModal(biz, worker, appt) {
 
 function reprogramarCita(token) {
   var found = findApptByToken(token);
-  if (!found && _cloudApptCache && _cloudApptCache.appt.token === token) {
-    found = _cloudApptCache;
+  if (!found) {
+    // Buscar en cache global
+    if (window._cloudApptCache && window._cloudApptCache.appt && window._cloudApptCache.appt.token === token) {
+      found = window._cloudApptCache;
+    }
   }
   if (!found) { toast('No se pudo cargar la cita', '#EF4444'); return; }
 
@@ -611,13 +615,12 @@ function reprogramarCita(token) {
     if (sObj) CSEL.svcDur = sObj.dur || 30;
   }
 
-  _cloudApptCache = null;
+  window._cloudApptCache = null;
   closeOv('ov-manage');
 
-  // ✅ Asegurarse que el biz esté en DB.businesses para que buildDates funcione
+  // Asegurar que el biz esté en DB para que buildDates funcione
   var localBiz = getBizById(found.biz.id);
-  if (!localBiz && found.biz.workers && found.biz.workers.length > 0) {
-    // El biz vino de Supabase con workers completos — agregarlo temporalmente
+  if (!localBiz) {
     DB.businesses.push(found.biz);
   }
 
@@ -629,10 +632,11 @@ function reprogramarCita(token) {
 }
 
 function cancelApptByToken(token) {
-  // Buscar en local primero, luego en cache
   var found = findApptByToken(token);
-  if (!found && _cloudApptCache && _cloudApptCache.appt.token === token) {
-    found = _cloudApptCache;
+  if (!found) {
+    if (window._cloudApptCache && window._cloudApptCache.appt && window._cloudApptCache.appt.token === token) {
+      found = window._cloudApptCache;
+    }
   }
   if (!found) { toast('Cita no encontrada', '#EF4444'); return; }
 
@@ -724,8 +728,7 @@ function cancelApptByToken(token) {
       })
     }).catch(function(e){ console.error('Error email cancelación:', e); });
   }
-
-  _cloudApptCache = null;
+  window._cloudApptCache = null;
   closeOv('ov-manage');
   toast('Tu cita ha sido cancelada', '#22C55E');
   window.location.hash = '';
