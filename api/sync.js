@@ -28,17 +28,39 @@ module.exports = async (req, res) => {
     
     // Si viene con status cancelled y tiene token, actualizar por TOKEN
     if (appt.status === 'cancelled' && appt.token) {
-      const { error } = await supabase
+  // Intentar por token primero
+  const { data: updated, error } = await supabase
+    .from('appointments')
+    .update({ status: 'cancelled' })
+    .eq('token', appt.token)
+    .eq('business_id', business_id);
+
+  // Si no encontró por token, buscar por date+time+worker_id
+  if (!error) {
+    const { data: check } = await supabase
+      .from('appointments')
+      .select('id')
+      .eq('token', appt.token)
+      .eq('business_id', business_id);
+    
+    if (!check || check.length === 0) {
+      // Fallback: cancelar por date + time + worker_id
+      await supabase
         .from('appointments')
         .update({ status: 'cancelled' })
-        .eq('token', appt.token)
-        .eq('business_id', business_id);
-
-      if (error) {
-        apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
-      }
-      continue;
+        .eq('business_id', business_id)
+        .eq('worker_id', appt.worker_id || '')
+        .eq('date', appt.date)
+        .eq('time', appt.time)
+        .neq('status', 'cancelled');
     }
+  }
+
+  if (error) {
+    apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
+  }
+  continue;
+}
 
     // Para el resto (crear/modificar), upsert normal por id
     const { data, error } = await supabase.from('appointments').upsert({
