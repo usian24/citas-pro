@@ -1,12 +1,9 @@
 'use strict';
 
 /* ══════════════════════════════════════════════════
-   REALTIME.JS — Supabase Realtime
+   REALTIME.JS — Supabase Realtime (VERSIÓN CORREGIDA)
 ══════════════════════════════════════════════════ */
 
-/* ══════════════════════════
-   CONFIGURACIÓN SUPABASE CLIENT
-══════════════════════════ */
 var SUPABASE_RT_URL  = 'https://fcbbquvuffpmudvwqgbg.supabase.co';   
 var SUPABASE_RT_KEY  = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF'; 
 
@@ -20,20 +17,14 @@ var _refreshTimerBiz = null;
 
 function initSupabaseRealtime() {
   if (_supaRT) return _supaRT;
-
-  if (typeof supabase === 'undefined' || !supabase.createClient) {
-    console.warn('⚠️ Supabase SDK no cargado. Realtime desactivado.');
-    return null;
-  }
+  if (typeof supabase === 'undefined' || !supabase.createClient) return null;
 
   try {
     _supaRT = supabase.createClient(SUPABASE_RT_URL, SUPABASE_RT_KEY, {
       realtime: { params: { eventsPerSecond: 10 } }
     });
     return _supaRT;
-  } catch (e) {
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 /* ══════════════════════════
@@ -68,7 +59,6 @@ function subscribeBizRealtime(bizId) {
   if (!client) return;
 
   if (_rtBizChannel) { _rtBizChannel.unsubscribe(); _rtBizChannel = null; }
-
   var channelName = 'biz-appointments-' + bizId;
 
   _rtBizChannel = client
@@ -87,59 +77,63 @@ function subscribeBizRealtime(bizId) {
 function handleAppointmentChange(payload, workerId, bizId) {
   var eventType = payload.eventType;
   var newData   = payload.new || {};
-  var oldData   = payload.old || {};
 
   if (!CUR_WORKER || CUR_WORKER.id !== workerId) return;
 
+  // LA MAGIA: Buscar la cita en nuestra memoria local para comparar
+  var localAppt = (CUR_WORKER.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
+  
   var isRealChange = false;
+  var notifType = '';
+  var notifTitle = '';
+  var notifDetail = '';
 
   // 1. EVALUAR SI ES UN CAMBIO REAL
   if (eventType === 'INSERT') {
-    isRealChange = true;
-    createRealtimeNotification(workerId, bizId, {
-      type: 'new_booking',
-      title: '📅 Nueva cita: ' + (newData.client_name || 'Cliente'),
-      detail: (newData.service_name || 'Servicio') + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') 
-    });
+    // Solo notificar si no la teníamos ya en memoria
+    if (!localAppt) {
+      isRealChange = true;
+      notifType = 'new_booking';
+      notifTitle = '📅 Nueva cita: ' + (newData.client || 'Cliente');
+      notifDetail = (newData.svc || 'Servicio') + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') + ' • ' + money(newData.price || 0);
+    }
   } else if (eventType === 'UPDATE') {
-    var changedStatus = (newData.status !== oldData.status);
-    var changedDateOrTime = (newData.date !== oldData.date) || (newData.time !== oldData.time);
+    // Si la tenemos, comparamos dato por dato para evitar los falsos Updates masivos
+    if (localAppt) {
+      var changedStatus = (newData.status !== localAppt.status);
+      var changedDateOrTime = (newData.date !== localAppt.date) || (newData.time !== localAppt.time);
 
-    if (changedStatus && newData.status === 'cancelled' && oldData.status !== 'cancelled') {
-      isRealChange = true;
-      createRealtimeNotification(workerId, bizId, {
-        type: 'booking_cancel',
-        title: '❌ Cita cancelada: ' + (newData.client_name || oldData.client_name || 'Cliente'),
-        detail: (newData.service_name || '') + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '')
-      });
-    } else if (changedDateOrTime) {
-      isRealChange = true;
-      createRealtimeNotification(workerId, bizId, {
-        type: 'booking_modify',
-        title: '✏️ Cita modificada: ' + (newData.client_name || 'Cliente'),
-        detail: 'Nuevo horario: ' + (newData.date || '') + ' a las ' + (newData.time || '')
-      });
+      if (changedStatus && newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
+        isRealChange = true;
+        notifType = 'booking_cancel';
+        notifTitle = '❌ Cita cancelada: ' + (newData.client || 'Cliente');
+        notifDetail = (newData.svc || '') + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '');
+      } else if (changedDateOrTime) {
+        isRealChange = true;
+        notifType = 'booking_modify';
+        notifTitle = '✏️ Cita modificada: ' + (newData.client || 'Cliente');
+        notifDetail = 'Nuevo horario: ' + (newData.date || '') + ' a las ' + (newData.time || '');
+      }
     }
   } else if (eventType === 'DELETE') {
-    isRealChange = true;
-    createRealtimeNotification(workerId, bizId, {
-      type: 'booking_cancel',
-      title: '🗑️ Cita eliminada: ' + (oldData.client_name || 'Cliente'),
-      detail: (oldData.service_name || '') + ' • ' + (oldData.date || '')
-    });
+    if (localAppt) {
+      isRealChange = true;
+      notifType = 'booking_cancel';
+      notifTitle = '🗑️ Cita eliminada: ' + (localAppt.client || 'Cliente');
+      notifDetail = (localAppt.svc || '') + ' • ' + (localAppt.date || '');
+    }
   }
 
-  // Solo mostrar en consola si fue un cambio de verdad (silencia los falsos updates)
+  // Si fue puro "ruido" de la base de datos, lo ignoramos y no hacemos nada.
   if (isRealChange) {
-      console.log('🔔 Cambio real detectado:', eventType, newData.id);
+      createRealtimeNotification(workerId, bizId, { type: notifType, title: notifTitle, detail: notifDetail });
   }
 
   // 2. ACTUALIZAR UI CON ANTIRREBOTE (Freno de bucles)
-  // Si llegan 50 avisos de golpe, el temporizador se reinicia y solo se ejecuta UNA vez al final.
   if (_refreshTimerWorker) clearTimeout(_refreshTimerWorker);
   _refreshTimerWorker = setTimeout(function() {
       safeRefreshWorkerUI(workerId, bizId);
-  }, 800); // Espera 0.8 segundos a que pase el "ruido" antes de refrescar
+  }, 1000);
 }
 
 /* ══════════════════════════
@@ -148,35 +142,46 @@ function handleAppointmentChange(payload, workerId, bizId) {
 function handleBizAppointmentChange(payload, bizId) {
   var eventType = payload.eventType;
   var newData   = payload.new || {};
-  var oldData   = payload.old || {};
 
   if (!CUR || CUR.id !== bizId) return;
+
+  // Buscar cita local
+  var localAppt = null;
+  (CUR.workers || []).forEach(function(w){ 
+      var found = (w.appointments || []).find(a => String(a.id) === String(newData.id));
+      if (found) localAppt = found;
+  });
+  if (!localAppt) {
+      var found = (CUR.appointments || []).find(a => String(a.id) === String(newData.id));
+      if (found) localAppt = found;
+  }
 
   var isRealChange = false;
 
   if (eventType === 'INSERT') {
-    isRealChange = true;
-    toast('📅 Nueva cita: ' + (newData.client_name || 'Cliente'), '#22C55E');
+    if (!localAppt) {
+        isRealChange = true;
+        toast('📅 Nueva cita: ' + (newData.client || 'Cliente'), '#22C55E');
+    }
   } else if (eventType === 'UPDATE') {
-    if (newData.status === 'cancelled' && oldData.status !== 'cancelled') {
-        isRealChange = true;
-        toast('❌ Cita cancelada: ' + (newData.client_name || ''), '#EF4444');
-    } else if (newData.date !== oldData.date || newData.time !== oldData.time) {
-        isRealChange = true;
+    if (localAppt) {
+        var changedStatus = (newData.status !== localAppt.status);
+        if (changedStatus && newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
+            isRealChange = true;
+            toast('❌ Cita cancelada: ' + (newData.client || ''), '#EF4444');
+        } else if ((newData.date !== localAppt.date) || (newData.time !== localAppt.time)) {
+            isRealChange = true;
+        }
     }
   } else if (eventType === 'DELETE') {
-      isRealChange = true;
+      if (localAppt) isRealChange = true;
   }
 
-  if (isRealChange) {
-      console.log('🔔 Cambio real detectado en negocio:', eventType, newData.id);
-  }
-
-  // ANTIRREBOTE (Freno de bucles)
+  // ANTIRREBOTE
   if (_refreshTimerBiz) clearTimeout(_refreshTimerBiz);
   _refreshTimerBiz = setTimeout(function() {
       safeRefreshBizUI(bizId);
-  }, 800);
+  }, 1000);
 }
 
 /* ══════════════════════════
@@ -200,7 +205,9 @@ function createRealtimeNotification(workerId, bizId, notif) {
   }
 
   if (typeof renderWorkerNotifBadge === 'function') renderWorkerNotifBadge();
-  if (document.querySelector('#s-worker .pane.on') && document.querySelector('#s-worker .pane.on').id === 'wp-notif' && typeof renderWorkerNotifications === 'function') {
+  
+  var activePane = document.querySelector('#s-worker .pane.on');
+  if (activePane && activePane.id === 'wp-notif' && typeof renderWorkerNotifications === 'function') {
       renderWorkerNotifications();
   }
 
@@ -277,7 +284,14 @@ function showFloatingNotification(notif) {
 /* ══════════════════════════
    SONIDO DE NOTIFICACIÓN
 ══════════════════════════ */
+// Variable para evitar que el sonido colapse si llegan muchos de golpe
+var _lastSoundTime = 0;
+
 function playNotificationSound(type) {
+  var now = Date.now();
+  if (now - _lastSoundTime < 1000) return; // Mínimo 1 segundo entre sonidos
+  _lastSoundTime = now;
+
   try {
     var AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
@@ -314,7 +328,7 @@ function requestNotificationPermission() {
 }
 
 /* ══════════════════════════
-   INDICADOR REALTIME (punto verde)
+   INDICADOR REALTIME
 ══════════════════════════ */
 function showRealtimeIndicator(connected) {
   var existing = G('rt-indicator');
@@ -405,7 +419,7 @@ async function safeRefreshBizUI(bizId) {
 }
 
 /* ══════════════════════════
-   DESUSCRIBIR (limpieza)
+   DESUSCRIBIR
 ══════════════════════════ */
 function unsubscribeRealtime() {
   if (_rtChannel) { _rtChannel.unsubscribe(); _rtChannel = null; }
