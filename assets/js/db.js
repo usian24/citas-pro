@@ -512,14 +512,19 @@ window.addEventListener('load', function() {
 function restaurarSesion() {
   DB = loadDB();
 
-  if (DB && DB.currentWorker && DB.currentBiz) {
-    CUR = getBizById(DB.currentBiz);
-    if (CUR) {
+  // ✅ ¿Hay un BARBERO / TRABAJADOR logueado?
+  if (DB && DB.currentWorker) {
+    var workerBiz = getBizById(DB.currentWorker.bizId);
+    if (workerBiz) {
+       CUR = workerBiz;
+       var w = (workerBiz.workers || []).find(function(x) { return x.id === DB.currentWorker.workerId; });
+       if (w) CUR_WORKER = w;
        if (typeof goWorker === 'function') goWorker();
        return; 
     }
   }
 
+  // ¿Hay un DUEÑO de barbería logueado?
   if (DB && DB.currentBiz && !DB.currentWorker) {
     CUR = getBizById(DB.currentBiz);
     if (CUR) {
