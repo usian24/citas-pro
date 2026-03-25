@@ -482,13 +482,29 @@ async function forceCloudSync() {
          CUR = DB.businesses.find(function(b) { return b.id === CUR.id; }) || CUR;
          initBizPanel();
       }
+
+      // ✅ Actualizar CUR_WORKER si el barbero tiene sesión activa
+      if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && DB.currentWorker) {
+         var freshBiz = getBizById(DB.currentWorker.bizId);
+         if (freshBiz) {
+           CUR = freshBiz;
+           var freshWorker = (freshBiz.workers || []).find(function(w) { return w.id === DB.currentWorker.workerId; });
+           if (freshWorker) {
+             CUR_WORKER = freshWorker;
+             if (typeof initWorkerPanel === 'function') initWorkerPanel();
+           }
+         }
+      }
     }
   } catch(e) {
-    console.error("Error descargando de la nube:", e);
+    // Silencioso — si no hay red, usamos datos locales
   }
 }
 
-forceCloudSync();
+// Esperar a que la página cargue antes de sincronizar
+window.addEventListener('load', function() {
+  setTimeout(forceCloudSync, 500);
+});
 
 /* ══════════════════════════
    AUTO-LOGIN
