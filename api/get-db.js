@@ -90,8 +90,7 @@ module.exports = async (req, res) => {
             };
           }),
           photos: [],
-          notifications: [],
-          cover: ''
+          notifications: []
         };
       });
 
