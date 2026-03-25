@@ -22,8 +22,9 @@ module.exports = async (req, res) => {
         return res.status(400).json({ success: false, error: 'Datos incompletos' });
       }
 
+      var apptErrors = [];
       for (const appt of appointments) {
-        const { error } = await supabase.from('appointments').upsert({
+        const { data, error } = await supabase.from('appointments').upsert({
           id:            String(appt.id),
           business_id:   business_id,
           worker_id:     appt.worker_id || '',
@@ -35,8 +36,15 @@ module.exports = async (req, res) => {
           date:          appt.date || '',
           time:          appt.time || '',
           status:        appt.status || 'confirmed'
-        });
-        if (error) console.error('Error upsert appointment:', error.message);
+        }).select();
+
+        if (error) {
+          apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
+        }
+      }
+
+      if (apptErrors.length > 0) {
+        return res.status(400).json({ success: false, errors: apptErrors });
       }
 
       return res.status(200).json({ success: true, synced: appointments.length });
@@ -62,7 +70,9 @@ module.exports = async (req, res) => {
           color:       svc.color || '',
           image:       svc.image || ''
         });
-        if (error) console.error('Error upsert service:', error.message);
+        if (error) {
+          return res.status(400).json({ success: false, error: error.message });
+        }
       }
 
       return res.status(200).json({ success: true, synced: services.length });
@@ -91,7 +101,6 @@ module.exports = async (req, res) => {
         time:          data.time || ''
       };
 
-      // Evitar duplicados por teléfono + fecha + hora
       const { data: existing } = await supabase
         .from('clients')
         .select('id')
@@ -107,7 +116,6 @@ module.exports = async (req, res) => {
 
       const { error } = await supabase.from('clients').upsert(payload);
       if (error) {
-        console.error('Error upsert client:', error.message);
         return res.status(400).json({ success: false, error: error.message });
       }
 
@@ -137,7 +145,6 @@ module.exports = async (req, res) => {
       });
 
       if (error) {
-        console.error('Error upsert product:', error.message);
         return res.status(400).json({ success: false, error: error.message });
       }
 
