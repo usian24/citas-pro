@@ -1,5 +1,5 @@
 'use strict';
-
+//db.js 
 /* ══════════════════════════
    SECURITY
 ══════════════════════════ */
@@ -115,7 +115,6 @@ var DEFAULT_HORARIO = [
    BASE DE DATOS
 ══════════════════════════ */
 function defDB() {
-  var today = new Date().toISOString().split('T')[0];
   return {
     admin: { auth: false },
     businesses: [],
@@ -152,13 +151,13 @@ function saveDB() {
 
       // Solo enviamos a la nube si hay una barbería seleccionada y TIENE ID
       if (CUR && CUR.id) {
-        fetch('/./api//update-biz', {
+        // ✅ CORREGIDO: ruta limpia sin doble barra
+        fetch('/api/update-biz', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(CUR)
         }).then(async function(res) {
           if (!res.ok) {
-            // AQUÍ ATRAPAMOS AL CULPABLE: Imprime el error exacto en consola
             var err = await res.json();
             console.error("🔥 ERROR EXACTO DE SUPABASE:", err.detalle || err.error);
           }
@@ -333,27 +332,22 @@ function planTag(plan) {
   var x = m[plan] || { c:'#475569', l:'—' };
   return '<span style="background:' + x.c + '22;color:' + x.c + ';border:1px solid ' + x.c + '44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + x.l + '</span>';
 }
+
 /* ══════════════════════════
    SINCRONIZACIÓN EN TIEMPO REAL CON LA NUBE (SUPABASE)
 ══════════════════════════ */
 async function forceCloudSync() {
   try {
-    // 1. Llama a la nueva función que lee la base de datos
-    var res = await fetch('/./api//get-db');
+    // ✅ CORREGIDO: ruta limpia
+    var res = await fetch('/api/get-db');
     if (res.ok) {
       var cloudBusinesses = await res.json();
       
-      // 2. Trae la memoria local (que en un celular nuevo estará vacía)
       var local = loadDB(); 
-      
-      // 3. Reemplaza la memoria local con la VERDADERA info de la nube
       local.businesses = cloudBusinesses; 
       localStorage.setItem(DBKEY, JSON.stringify(local)); 
-      
-      // 4. Actualiza la variable global que usa tu app para iniciar sesión
       DB = local; 
 
-      // 5. Si estás viendo un negocio específico, actualiza la pantalla
       if (typeof CUR !== 'undefined' && CUR && typeof initBizPanel === 'function') {
          CUR = DB.businesses.find(function(b) { return b.id === CUR.id; }) || CUR;
          initBizPanel();
@@ -371,32 +365,25 @@ forceCloudSync();
    MANTENER SESIÓN ACTIVA (Auto-Login Inmediato)
 ══════════════════════════ */
 function restaurarSesion() {
-  // 1. Cargamos la memoria del celular para ver si alguien dejó su sesión abierta
   DB = loadDB();
 
-  // 2. ¿Hay un BARBERO / TRABAJADOR logueado?
   if (DB && DB.currentWorker && DB.currentBiz) {
     CUR = getBizById(DB.currentBiz);
     if (CUR) {
-       // Ocultamos el inicio y lo mandamos directo a su panel de trabajo
        if (typeof goWorker === 'function') goWorker();
        return; 
     }
   }
 
-  // 3. ¿Hay un DUEÑO de barbería logueado?
   if (DB && DB.currentBiz && !DB.currentWorker) {
     CUR = getBizById(DB.currentBiz);
     if (CUR) {
-       // Ocultamos el inicio y lo mandamos a la administración
        if (typeof goBiz === 'function') goBiz();
        return;
     }
   }
 
-  // 4. Si nadie ha iniciado sesión, mostramos la pantalla principal normal
   if (typeof goTo === 'function') goTo('s-portal');
 }
 
-// Le decimos al navegador: "Apenas termines de cargar la página, ejecuta el Auto-Login"
 window.addEventListener('DOMContentLoaded', restaurarSesion);

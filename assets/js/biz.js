@@ -1,5 +1,5 @@
 'use strict';
-
+//biz.js
 /* ══════════════════════════
    GUARDIA DE IMÁGENES ACTUALIZADO
 ══════════════════════════ */
@@ -47,7 +47,8 @@ function rmGoStep2() {
   if (DB.businesses.filter(function(b) { return (b.email||'').toLowerCase() === email; })[0]) { showErr('rm-err1', 'Este correo ya tiene una cuenta registrada. Inicia sesión.'); return; }
   _rmData = { email: email, phone: phone, pass: pass };
   _rmCode = String(Math.floor(100000 + Math.random() * 900000));
-  fetch('/./api//send-email', {
+  // ✅ CORREGIDO: ruta limpia sin doble barra
+  fetch('/api/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'verification', to: email, data: { code: _rmCode } })
@@ -93,7 +94,8 @@ function rmVerify() {
 function rmResend() {
   if (!_rmData.email) return;
   _rmCode = String(Math.floor(100000 + Math.random() * 900000));
-  fetch('/./api//send-email', {
+  // ✅ CORREGIDO: ruta limpia
+  fetch('/api/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'verification', to: _rmData.email, data: { code: _rmCode } })
@@ -340,7 +342,8 @@ function finalizeBizReg() {
     id:slug, name:REG.name, owner:REG.owner, email:REG.email, pass:REG.pass,
     phone:REG.phone, addr:REG.addr, city:REG.city, country:REG.country,
     type:REG.type, teamSize:REG.teamSize,
-    joinDate:new Date().toISOString().split('T')[0],
+    // ✅ CORREGIDO: era "joinDate", ahora "join_date" para que coincida con Supabase
+    join_date:new Date().toISOString().split('T')[0],
     plan:'trial', desc:'', logo:REG.logo||'', photos:REG.photos||[], insta:'', cover:REG.cover||'',
     horario:DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
     workers: [], 
@@ -351,9 +354,9 @@ function finalizeBizReg() {
   DB.businesses.push(biz); 
   DB.currentBiz=slug; 
   DB.currentWorker=null; 
-  CUR = biz; // VITAL para que saveDB() sepa qué guardar
+  CUR = biz;
   
-  saveDB(); // Guarda localmente Y en Supabase automáticamente
+  saveDB();
   
   T('biz-link-display','citasproonline.com/#b/'+slug);
   T('neg-badge', DB.businesses.length);
@@ -692,7 +695,8 @@ function saveBarber() {
     toast('Trabajador creado', '#22C55E');
   }
 
-  fetch('/./api//save-worker', {
+  // ✅ CORREGIDO: ruta limpia
+  fetch('/api/save-worker', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'upsert', worker: workerDbObj })
@@ -715,7 +719,8 @@ function confirmDeleteWorker(id) {
       renderBizWorkers(); 
       toast('Trabajador eliminado','#475569');
       
-      fetch('/./api//save-worker', {
+      // ✅ CORREGIDO: ruta limpia
+      fetch('/api/save-worker', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'delete', worker: { id: id } })
