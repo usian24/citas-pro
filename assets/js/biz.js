@@ -417,9 +417,17 @@ function initBizPanel() {
   renderTodayAppts(todayA);
   renderBizWorkers();
   renderGallery();
+  
+  // Llamada a finanzas antiguas por si acaso
   renderBizFinances();
+  
   renderCalendar();
   initAgenda();
+
+  // Llamadas al nuevo script de Real Data para el Home (si existe)
+  if (typeof renderBizHomeStats === 'function') {
+      renderBizHomeStats();
+  }
 
   var profileCover = G('biz-profile-cover');
   if (profileCover && CUR.cover) {
@@ -458,8 +466,27 @@ function bizTab(tab) {
     if(pa) pa.classList[t===tab?'add':'remove']('on');
     if(bt) bt.classList[t===tab?'add':'remove']('on');
   }
+  
   if(tab==='agenda'){ DB=loadDB(); CUR=DB.currentBiz?DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0]:CUR; initAgenda(); }
-  if(tab==='home'){   DB=loadDB(); CUR=DB.currentBiz?DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0]:CUR; renderTodayAppts(); }
+  
+  // NUEVO: Hook para cargar los datos reales en Finanzas
+  if(tab === 'finanzas'){
+      if (typeof renderBizFinanzas === 'function') {
+          renderBizFinanzas();
+      } else {
+          renderBizFinances(); // Fallback
+      }
+  }
+  
+  // NUEVO: Hook para actualizar los datos reales en Home
+  if(tab==='home'){ 
+      DB=loadDB(); 
+      CUR=DB.currentBiz?DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0]:CUR; 
+      renderTodayAppts(); 
+      if (typeof renderBizHomeStats === 'function') {
+          renderBizHomeStats();
+      }
+  }
 }
 
 /* ══════════════════════════
@@ -538,6 +565,7 @@ function updateApptStatus(id, status) {
   renderTodayAppts(); 
   initAgenda(); 
   renderBizFinances();
+  if (typeof renderBizFinanzas === 'function') renderBizFinanzas(); // actualiza grafico real
   toast(status==='completed'?'Cita completada':'Cita cancelada', status==='completed'?'#22C55E':'#EF4444');
 }
 

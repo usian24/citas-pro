@@ -1,5 +1,5 @@
 'use strict';
-
+// admin.js
 function doAdminLogout() {
   DB.admin.auth = false; saveDB();
   var l = G('adm-login'), p = G('adm-panel');

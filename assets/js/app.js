@@ -89,6 +89,10 @@ async function dotsLogin() {
       closeOv('ov-admin');
       goTo('s-admin'); 
       showAdminPanel();
+      
+      // NUEVO: Conectar Realtime
+      if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
+      
       toast('Bienvenido/a, Admin', '#2855C8');
     } else {
       showErr('dots-err', 'Credenciales incorrectas.');
@@ -130,6 +134,10 @@ async function doAdminLogin() {
       saveDB(); 
       hideErr('adm-err'); 
       showAdminPanel();
+      
+      // NUEVO: Conectar Realtime
+      if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
+      
     } else {
       showErr('adm-err', 'Credenciales incorrectas.');
       var p = G('adm-pass'); 
@@ -146,6 +154,9 @@ function doAdminLogout() {
     var l = G('adm-login'), p = G('adm-panel'); 
     if (l) l.style.display = 'flex'; 
     if (p) p.style.display = 'none'; 
+    
+    // NUEVO: Desconectar Realtime
+    if (typeof unsubscribeRealtime === 'function') unsubscribeRealtime();
 }
 
 function showAdminPanel() { 
@@ -215,22 +226,28 @@ function renderDash() {
   T('ds-flags', cl.map(function(c) { return FLAGS[c] || ''; }).join(' '));
   T('neg-badge', bizs.length);
   
-  var vals = [0, 0, 0, 0, mrr > 0 ? Math.round(mrr * .4) : 0, mrr];
-  var max = Math.max.apply(null, vals.concat([10]));
-  var mns = ['Oct','Nov','Dic','Ene','Feb',MONTHS_SHORT[now.getMonth()]];
-  var ch = G('ds-chart');
-  
-  if (ch) {
-      ch.innerHTML = vals.map(function(v, i) {
-          return '<div class="bar' + (i === vals.length - 1 ? ' hi' : '') + '" style="height:' + Math.max(4, Math.round(v / max * 100)) + '%" title="' + money(v) + '"></div>';
-      }).join('');
-  }
-  
-  var ml = G('ds-months');
-  if (ml) {
-      ml.innerHTML = mns.map(function(m, i) {
-          return '<div style="flex:1;text-align:center;font-size:9px;color:' + (i === mns.length - 1 ? 'var(--blue)' : 'var(--muted)') + ';font-weight:700">' + m + '</div>';
-      }).join('');
+  // NUEVO: Hook para renderizar el gráfico MRR con datos reales
+  if (typeof renderAdminMRRChart === 'function') {
+      renderAdminMRRChart();
+  } else {
+      // Fallback a gráfico falso
+      var vals = [0, 0, 0, 0, mrr > 0 ? Math.round(mrr * .4) : 0, mrr];
+      var max = Math.max.apply(null, vals.concat([10]));
+      var mns = ['Oct','Nov','Dic','Ene','Feb',MONTHS_SHORT[now.getMonth()]];
+      var ch = G('ds-chart');
+      
+      if (ch) {
+          ch.innerHTML = vals.map(function(v, i) {
+              return '<div class="bar' + (i === vals.length - 1 ? ' hi' : '') + '" style="height:' + Math.max(4, Math.round(v / max * 100)) + '%" title="' + money(v) + '"></div>';
+          }).join('');
+      }
+      
+      var ml = G('ds-months');
+      if (ml) {
+          ml.innerHTML = mns.map(function(m, i) {
+              return '<div style="flex:1;text-align:center;font-size:9px;color:' + (i === mns.length - 1 ? 'var(--blue)' : 'var(--muted)') + ';font-weight:700">' + m + '</div>';
+          }).join('');
+      }
   }
   
   var recent = bizs.slice().sort(function(a, b) {
@@ -819,12 +836,18 @@ window.onload = async function() {
     if (DB.admin && DB.admin.auth) {
       goTo('s-admin');
       showAdminPanel();
+      // NUEVO: Conectar Realtime
+      if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
     } else if (DB.currentWorker) {
       if (typeof showWorkerPanel === 'function') showWorkerPanel();
       else goTo('s-portal'); 
+      // NUEVO: Conectar Realtime
+      if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
     } else if (DB.currentBiz) {
       if (typeof showBizPanel === 'function') showBizPanel();
       else goTo('s-portal'); 
+      // NUEVO: Conectar Realtime
+      if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
     } else {
       goTo('s-portal');
     }

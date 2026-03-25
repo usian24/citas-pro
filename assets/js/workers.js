@@ -80,11 +80,19 @@ function initWorkerPanel() {
   renderWorkerTodayAppts(todayA);
   renderWorkerServices();
   renderWorkerGallery();
+  
+  // Llamada a finanzas antiguas por si acaso
   renderWorkerFinances();
+  
   renderWorkerHorario();
   renderWorkerCalendar();
   initWorkerAgenda();
   renderWorkerProfile();
+
+  // Llamadas al nuevo script de Real Data para el Home (si existe)
+  if (typeof renderWorkerHomeStats === 'function') {
+      renderWorkerHomeStats();
+  }
 
   workerTab('home');
 }
@@ -101,7 +109,22 @@ function workerTab(tab) {
   
   if (tab === 'agenda')   initWorkerAgenda();
   if (tab === 'notif')    renderWorkerNotifications();
-  if (tab === 'finanzas') renderWorkerFinances();
+  
+  // NUEVO: Hook para cargar los datos reales en Finanzas
+  if (tab === 'finanzas') {
+      if (typeof renderWorkerFinanzas === 'function') {
+          renderWorkerFinanzas();
+      } else {
+          renderWorkerFinances(); // Fallback
+      }
+  }
+  
+  // NUEVO: Hook para actualizar los datos reales en Home al volver a esa pestaña
+  if (tab === 'home') {
+      if (typeof renderWorkerHomeStats === 'function') {
+          renderWorkerHomeStats();
+      }
+  }
 }
 
 /* ══════════════════════════
@@ -195,6 +218,7 @@ function updateWorkerApptStatus(id, status) {
   renderWorkerTodayAppts(); 
   initWorkerAgenda(); 
   renderWorkerFinances();
+  if (typeof renderWorkerFinanzas === 'function') renderWorkerFinanzas(); // actualiza grafico real
   toast(status === 'completed' ? 'Cita completada' : 'Cita cancelada', status === 'completed' ? '#22C55E' : '#EF4444');
 }
 
