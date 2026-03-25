@@ -214,11 +214,10 @@ function syncAppointmentsToCloud(biz) {
 
   if (allAppts.length === 0) return;
 
-  // Enviamos en lotes para no saturar
-  fetch('/api/sync-appointments', {
+  fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ business_id: biz.id, appointments: allAppts })
+    body: JSON.stringify({ type: 'appointments', business_id: biz.id, appointments: allAppts })
   }).catch(function(e) {
     console.error('Error sync appointments:', e);
   });
@@ -244,10 +243,10 @@ function syncServicesToCloud(biz) {
 
   if (allSvcs.length === 0) return;
 
-  fetch('/api/sync-services', {
+  fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ business_id: biz.id, services: allSvcs })
+    body: JSON.stringify({ type: 'services', business_id: biz.id, services: allSvcs })
   }).catch(function(e) {
     console.error('Error sync services:', e);
   });
@@ -257,10 +256,11 @@ function syncServicesToCloud(biz) {
 function syncClientToCloud(bizId, client) {
   if (!bizId || !client) return;
 
-  fetch('/api/sync-client', {
+  fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      type:        'client',
       id:          'cl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
       business_id: bizId,
       name:        client.name || '',
@@ -277,10 +277,11 @@ function syncClientToCloud(bizId, client) {
 function syncProductToCloud(bizId, product) {
   if (!bizId || !product) return;
 
-  fetch('/api/sync-product', {
+  fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      type:          'product',
       id:            product.id || ('prod_' + Date.now()),
       business_id:   bizId,
       name:          product.name || '',
