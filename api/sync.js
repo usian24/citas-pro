@@ -94,29 +94,25 @@ module.exports = async (req, res) => {
         return res.status(400).json({ success: false, error: 'Falta business_id' });
       }
 
+      // SOLO guardamos los datos personales del cliente (El "Quién")
       const payload = {
         id:            data.id || ('cl_' + Date.now()),
         business_id:   data.business_id,
         name:          data.name || '',
         email:         data.email || '',
-        phone:         data.phone || '',
-        worker_id:     data.worker_id || '',
-        worker_name:   data.worker_name || '',
-        service_name:  data.service_name || '',
-        service_price: parseFloat(data.service_price) || 0,
-        date:          data.date || '',
-        time:          data.time || ''
+        phone:         data.phone || ''
       };
 
+      // MAGIA DE FIDELIZACIÓN: 
+      // Buscamos si este cliente ya vino antes (usando su número de teléfono)
       const { data: existing } = await supabase
         .from('clients')
         .select('id')
         .eq('business_id', data.business_id)
         .eq('phone', data.phone)
-        .eq('date', data.date)
-        .eq('time', data.time)
         .limit(1);
 
+      // Si ya existe en tu barbería, no creamos un clon. Actualizamos su registro.
       if (existing && existing.length > 0) {
         payload.id = existing[0].id;
       }
@@ -126,7 +122,7 @@ module.exports = async (req, res) => {
         return res.status(400).json({ success: false, error: error.message });
       }
 
-      return res.status(200).json({ success: true });
+      return res.status(200).json({ success: true, client_id: payload.id });
     }
 
     // ═══════════════════════════════════════
