@@ -133,9 +133,11 @@ function handleAppointmentChange(payload, workerId, bizId) {
   var newData   = payload.new || {};
   var oldData   = payload.old || {};
 
+  // Evitar procesar si la UI no pertenece a este worker
+  if (!CUR_WORKER || CUR_WORKER.id !== workerId) return;
+
   // ─── 1. NOTIFICACIÓN INSTANTÁNEA ───
   if (eventType === 'INSERT') {
-    // Nueva cita creada
     createRealtimeNotification(workerId, bizId, {
       type: 'new_booking',
       title: '📅 Nueva cita: ' + (newData.client_name || 'Cliente'),
@@ -147,14 +149,12 @@ function handleAppointmentChange(payload, workerId, bizId) {
 
   if (eventType === 'UPDATE') {
     if (newData.status === 'cancelled' && oldData.status !== 'cancelled') {
-      // Cita cancelada
       createRealtimeNotification(workerId, bizId, {
         type: 'booking_cancel',
         title: '❌ Cita cancelada: ' + (newData.client_name || oldData.client_name || 'Cliente'),
         detail: (newData.service_name || '') + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '')
       });
     } else if (newData.date !== oldData.date || newData.time !== oldData.time) {
-      // Cita reprogramada
       createRealtimeNotification(workerId, bizId, {
         type: 'booking_modify',
         title: '✏️ Cita modificada: ' + (newData.client_name || 'Cliente'),
@@ -172,7 +172,8 @@ function handleAppointmentChange(payload, workerId, bizId) {
   }
 
   // ─── 2. ACTUALIZAR DATOS LOCALES Y UI ───
-  refreshWorkerDataFromCloud(workerId, bizId);
+  // Descargamos de forma segura sin disparar saveDB() localmente
+  safeRefreshWorkerUI(workerId, bizId);
 }
 
 /* ══════════════════════════
@@ -182,8 +183,7 @@ function handleBizAppointmentChange(payload, bizId) {
   var eventType = payload.eventType;
   var newData   = payload.new || {};
 
-  // Refrescar datos del dueño
-  refreshBizDataFromCloud(bizId);
+  if (!CUR || CUR.id !== bizId) return;
 
   // Toast informativo para el dueño
   if (eventType === 'INSERT') {
@@ -191,6 +191,9 @@ function handleBizAppointmentChange(payload, bizId) {
   } else if (eventType === 'UPDATE' && newData.status === 'cancelled') {
     toast('❌ Cita cancelada: ' + (newData.client_name || ''), '#EF4444');
   }
+  
+  // Descargamos de forma segura sin disparar saveDB() localmente
+  safeRefreshBizUI(bizId);
 }
 
 /* ══════════════════════════
@@ -198,38 +201,49 @@ function handleBizAppointmentChange(payload, bizId) {
    (Push visual + sonido + guardar en worker)
 ══════════════════════════ */
 function createRealtimeNotification(workerId, bizId, notif) {
-  // 1. Guardar en el worker local
-  if (typeof addNotificationToWorker === 'function') {
-    addNotificationToWorker(bizId, workerId, {
-      type:  notif.type,
-      title: notif.title,
-      msg:   notif.title,
-      body:  notif.detail,
-      data:  { detail: notif.detail }
-    });
+  // 1. Añadir a la memoria local sin disparar saveDB completo
+  if (CUR_WORKER) {
+      if (!CUR_WORKER.notifications) CUR_WORKER.notifications = [];
+      var d = new Date();
+      CUR_WORKER.notifications.unshift({
+          title: notif.title,
+          body: notif.detail,
+          date: String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),
+          read: false
+      });
+      // Solo mantenemos las últimas 50 para no saturar
+      if(CUR_WORKER.notifications.length > 50) CUR_WORKER.notifications.pop();
+      
+      // Intentar guardar en local storage de forma silenciosa si existe la función
+      if (typeof localStorage !== 'undefined') {
+          try { localStorage.setItem('citaspro_db', JSON.stringify(DB)); } catch(e){}
+      }
   }
 
-  // 2. Actualizar badge
-  if (typeof renderWorkerNotifBadge === 'function') {
-    renderWorkerNotifBadge();
+  // 2. Actualizar badge visual
+  if (typeof renderWorkerNotifBadge === 'function') renderWorkerNotifBadge();
+  if (document.querySelector('#s-worker .pane.on').id === 'wp-notif' && typeof renderWorkerNotifications === 'function') {
+      renderWorkerNotifications();
   }
 
-  // 3. Toast con color según tipo
-  var colors = {
-    new_booking:    '#22C55E',
-    booking_cancel: '#EF4444',
-    booking_modify: '#F59E0B'
-  };
-  toast(notif.title, colors[notif.type] || '#4A7FD4');
-
-  // 4. Push visual flotante (notificación que se desliza desde arriba)
+  // 3. Push visual flotante (notificación que se desliza desde arriba)
   showFloatingNotification(notif);
 
-  // 5. Sonido de notificación (si está habilitado)
+  // 4. Sonido de notificación (si está habilitado)
   playNotificationSound(notif.type);
 
-  // 6. Browser Notification API (si el usuario dio permiso)
-  sendBrowserNotification(notif.title, notif.detail);
+  // 5. Browser Notification API (si el usuario dio permiso)
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification(notif.title, {
+        body: notif.detail || '',
+        icon: 'assets/img/logocitas barber2.png',
+        badge: 'assets/img/logocitas barber2.png',
+        tag: 'citaspro-' + Date.now(),
+        renotify: true
+      });
+    } catch (e) {}
+  }
 }
 
 /* ══════════════════════════
@@ -335,22 +349,6 @@ function requestNotificationPermission() {
   }
 }
 
-function sendBrowserNotification(title, body) {
-  if ('Notification' in window && Notification.permission === 'granted') {
-    try {
-      new Notification(title, {
-        body: body || '',
-        icon: 'assets/img/logocitas barber2.png',
-        badge: 'assets/img/logocitas barber2.png',
-        tag: 'citaspro-' + Date.now(),
-        renotify: true
-      });
-    } catch (e) {
-      // Silencioso
-    }
-  }
-}
-
 /* ══════════════════════════
    INDICADOR REALTIME (punto verde)
 ══════════════════════════ */
@@ -360,7 +358,7 @@ function showRealtimeIndicator(connected) {
 
   if (!connected) return;
 
-  var topbar = document.querySelector('#s-worker .topbar');
+  var topbar = document.querySelector('#s-worker .topbar') || document.querySelector('#s-biz .topbar');
   if (!topbar) return;
 
   var dot = document.createElement('div');
@@ -382,55 +380,77 @@ function showRealtimeIndicator(connected) {
 }
 
 /* ══════════════════════════
-   REFRESCAR DATOS DESDE LA NUBE
+   ACTUALIZACIÓN SEGURA DE UI (SIN BUCLE)
 ══════════════════════════ */
-function refreshWorkerDataFromCloud(workerId, bizId) {
-  if (typeof forceCloudSync === 'function') {
-    forceCloudSync().then(function () {
-      // Una vez sincronizado, re-renderizar la UI del worker
-      if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR_WORKER.id === workerId) {
-        // Refrescar paneles activos
-        var activePane = document.querySelector('#s-worker .pane.on');
-        if (activePane) {
-          var paneId = activePane.id;
-          if (paneId === 'wp-home' && typeof initWorkerPanel === 'function') {
-            initWorkerPanel();
-          }
-          if (paneId === 'wp-agenda' && typeof renderWorkerCalendar === 'function') {
-            renderWorkerCalendar();
-          }
-          if (paneId === 'wp-finanzas' && typeof renderWorkerFinanzas === 'function') {
-            renderWorkerFinanzas();
-          }
-          if (paneId === 'wp-notif' && typeof renderWorkerNotifications === 'function') {
-            renderWorkerNotifications();
-          }
+async function safeRefreshWorkerUI(workerId, bizId) {
+    if (typeof fetchBizFromCloud !== 'function') return;
+    
+    // Descargar datos frescos de la base de datos de Supabase sin disparar guardado
+    const freshData = await fetchBizFromCloud(bizId);
+    if (!freshData) return;
+    
+    // Actualizar datos en memoria pero SIN llamar a saveDB()
+    let index = DB.businesses.findIndex(b => b.id === bizId);
+    if (index >= 0) DB.businesses[index] = freshData;
+    CUR = freshData;
+    
+    let freshWorker = CUR.workers.find(w => w.id === workerId);
+    if (freshWorker) {
+        // Preservamos las notificaciones locales (ya que no se sincronizan arriba)
+        var localNotifs = CUR_WORKER.notifications || [];
+        freshWorker.notifications = localNotifs;
+        CUR_WORKER = freshWorker;
+    }
+    
+    // Actualizar solo las vistas necesarias dependiendo de qué pestaña está abierta
+    var activePane = document.querySelector('#s-worker .pane.on');
+    if (activePane) {
+        var pid = activePane.id;
+        if (pid === 'wp-home') {
+            if (typeof renderWorkerTodayAppts === 'function') renderWorkerTodayAppts();
+            if (typeof renderWorkerHomeStats === 'function') renderWorkerHomeStats();
+        } else if (pid === 'wp-agenda') {
+            if (typeof initWorkerAgenda === 'function') initWorkerAgenda();
+            if (typeof renderWorkerCalendar === 'function') renderWorkerCalendar();
+        } else if (pid === 'wp-finanzas') {
+            if (typeof renderWorkerFinanzas === 'function') {
+                renderWorkerFinanzas();
+            } else if (typeof renderWorkerFinances === 'function') {
+                renderWorkerFinances();
+            }
         }
-      }
-    });
-  }
+    }
 }
 
-function refreshBizDataFromCloud(bizId) {
-  if (typeof forceCloudSync === 'function') {
-    forceCloudSync().then(function () {
-      if (typeof CUR !== 'undefined' && CUR && CUR.id === bizId) {
-        var activePane = document.querySelector('#s-biz .pane.on');
-        if (activePane) {
-          var paneId = activePane.id;
-          if (paneId === 'bp-home' && typeof initBizPanel === 'function') {
-            initBizPanel();
-          }
-          if (paneId === 'bp-agenda' && typeof renderBizCalendar === 'function') {
-            renderBizCalendar();
-          }
-          if (paneId === 'bp-finanzas' && typeof renderBizFinanzas === 'function') {
-            renderBizFinanzas();
-          }
+async function safeRefreshBizUI(bizId) {
+    if (typeof fetchBizFromCloud !== 'function') return;
+    
+    // Descargar datos frescos sin guardar localmente
+    const freshData = await fetchBizFromCloud(bizId);
+    if (!freshData) return;
+    
+    let index = DB.businesses.findIndex(b => b.id === bizId);
+    if (index >= 0) DB.businesses[index] = freshData;
+    CUR = freshData;
+    
+    // Actualizar interfaz del dueño visualmente
+    var activePane = document.querySelector('#s-biz .pane.on');
+    if (activePane) {
+        var pid = activePane.id;
+        if (pid === 'bp-home') {
+            if (typeof renderTodayAppts === 'function') renderTodayAppts();
+            if (typeof renderBizHomeStats === 'function') renderBizHomeStats();
+        } else if (pid === 'bp-agenda') {
+            if (typeof initAgenda === 'function') initAgenda();
+            if (typeof renderCalendar === 'function') renderCalendar();
+        } else if (pid === 'bp-finanzas') {
+            if (typeof renderBizFinanzas === 'function') {
+                renderBizFinanzas();
+            } else if (typeof renderBizFinances === 'function') {
+                renderBizFinances();
+            }
         }
-      }
-    });
-  }
+    }
 }
 
 /* ══════════════════════════
