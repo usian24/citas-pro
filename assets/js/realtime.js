@@ -1,7 +1,7 @@
 'use strict';
 
 /* ══════════════════════════════════════════════════
-   REALTIME.JS — Supabase Realtime (VERSIÓN FINAL)
+   REALTIME.JS — Supabase Realtime (VERSIÓN DEFINITIVA)
 ══════════════════════════════════════════════════ */
 
 var SUPABASE_RT_URL  = 'https://fcbbquvuffpmudvwqgbg.supabase.co';   
@@ -88,13 +88,18 @@ function handleAppointmentChange(payload, workerId, bizId) {
   var notifTitle = '';
   var notifDetail = '';
 
+  // Capturar datos adaptados a las columnas reales de Supabase
+  var clientName = newData.client_name || newData.client || 'Cliente';
+  var serviceName = newData.service_name || newData.svc || 'Servicio';
+  var servicePrice = newData.service_price !== undefined ? newData.service_price : (newData.price || 0);
+
   // 1. EVALUAR SI ES UN CAMBIO REAL
   if (eventType === 'INSERT') {
     if (!localAppt) {
       isRealChange = true;
       notifType = 'new_booking';
-      notifTitle = '📅 Nueva cita: ' + (newData.client || 'Cliente');
-      notifDetail = (newData.svc || 'Servicio') + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') + ' • ' + money(newData.price || 0);
+      notifTitle = '📅 Nueva cita: ' + clientName;
+      notifDetail = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') + ' • ' + money(servicePrice);
     }
   } else if (eventType === 'UPDATE') {
     if (localAppt) {
@@ -104,12 +109,12 @@ function handleAppointmentChange(payload, workerId, bizId) {
       if (changedStatus && newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
         isRealChange = true;
         notifType = 'booking_cancel';
-        notifTitle = '❌ Cita cancelada: ' + (newData.client || 'Cliente');
-        notifDetail = (newData.svc || '') + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '');
+        notifTitle = '❌ Cita cancelada: ' + clientName;
+        notifDetail = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '');
       } else if (changedDateOrTime) {
         isRealChange = true;
         notifType = 'booking_modify';
-        notifTitle = '✏️ Cita modificada: ' + (newData.client || 'Cliente');
+        notifTitle = '✏️ Cita modificada: ' + clientName;
         notifDetail = 'Nuevo horario: ' + (newData.date || '') + ' a las ' + (newData.time || '');
       }
     }
@@ -152,14 +157,16 @@ function handleBizAppointmentChange(payload, bizId) {
       var found = (CUR.appointments || []).find(a => String(a.id) === String(newData.id));
       if (found) localAppt = found;
   }
+  
+  var clientName = newData.client_name || newData.client || 'Cliente';
 
   if (eventType === 'INSERT') {
-    if (!localAppt) toast('📅 Nueva cita: ' + (newData.client || 'Cliente'), '#22C55E');
+    if (!localAppt) toast('📅 Nueva cita: ' + clientName, '#22C55E');
   } else if (eventType === 'UPDATE') {
     if (localAppt) {
         var changedStatus = (newData.status !== localAppt.status);
         if (changedStatus && newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
-            toast('❌ Cita cancelada: ' + (newData.client || ''), '#EF4444');
+            toast('❌ Cita cancelada: ' + clientName, '#EF4444');
         }
     }
   }
@@ -175,25 +182,18 @@ function handleBizAppointmentChange(payload, bizId) {
 ══════════════════════════ */
 function createRealtimeNotification(workerId, bizId, notif) {
   
-  // USAMOS TU FUNCIÓN ORIGINAL PARA EL FORMATO PERFECTO
-  if (typeof addNotificationToWorker === 'function') {
-    addNotificationToWorker(bizId, workerId, {
-      type:  notif.type,
-      title: notif.title,
-      msg:   notif.title,
-      body:  notif.detail,
-      data:  { detail: notif.detail }
-    });
-  } else if (CUR_WORKER) {
-      // Fallback por si acaso
+  // Objeto estructurado PERFECTAMENTE para tu notifications.js
+  var notifObj = {
+      type: notif.type,
+      msg: notif.title,               // Titulo principal
+      data: { detail: notif.detail }, // Texto secundario
+      date: new Date().toISOString(), // Fecha ISO válida para evitar el "NaN"
+      read: false
+  };
+
+  if (CUR_WORKER) {
       if (!CUR_WORKER.notifications) CUR_WORKER.notifications = [];
-      var d = new Date();
-      CUR_WORKER.notifications.unshift({
-          title: notif.title,
-          body: notif.detail,
-          date: String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),
-          read: false
-      });
+      CUR_WORKER.notifications.unshift(notifObj);
       if(CUR_WORKER.notifications.length > 50) CUR_WORKER.notifications.pop();
       if (typeof saveDB === 'function') saveDB();
   }
