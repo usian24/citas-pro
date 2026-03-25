@@ -254,7 +254,7 @@ function syncServicesToCloud(biz) {
   });
 }
 
-// Sincroniza un cliente nuevo a la tabla "clients"
+// Sincroniza un cliente nuevo a la tabla "clients" con todos los datos de su reserva
 function syncClientToCloud(bizId, client) {
   if (!bizId || !client) return;
 
@@ -262,13 +262,18 @@ function syncClientToCloud(bizId, client) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      type:        'client',
-      id:          'cl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
-      business_id: bizId,
-      name:        client.name || '',
-      email:       client.email || '',
-      phone:       client.phone || '',
-      avatar:      ''
+      type:          'client',
+      id:            'cl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      business_id:   bizId,
+      name:          client.name || '',
+      email:         client.email || '',
+      phone:         client.phone || '',
+      worker_id:     client.worker_id || '',
+      worker_name:   client.worker_name || '',
+      service_name:  client.service_name || '',
+      service_price: client.service_price || 0,
+      date:          client.date || '',
+      time:          client.time || ''
     })
   }).catch(function(e) {
     console.error('Error sync client:', e);

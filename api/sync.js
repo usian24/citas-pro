@@ -78,20 +78,27 @@ module.exports = async (req, res) => {
       }
 
       const payload = {
-        id:          data.id || ('cl_' + Date.now()),
-        business_id: data.business_id,
-        name:        data.name || '',
-        email:       data.email || '',
-        phone:       data.phone || '',
-        avatar:      data.avatar || ''
+        id:            data.id || ('cl_' + Date.now()),
+        business_id:   data.business_id,
+        name:          data.name || '',
+        email:         data.email || '',
+        phone:         data.phone || '',
+        worker_id:     data.worker_id || '',
+        worker_name:   data.worker_name || '',
+        service_name:  data.service_name || '',
+        service_price: parseFloat(data.service_price) || 0,
+        date:          data.date || '',
+        time:          data.time || ''
       };
 
-      // Evitar duplicados por teléfono
+      // Evitar duplicados por teléfono + fecha + hora
       const { data: existing } = await supabase
         .from('clients')
         .select('id')
         .eq('business_id', data.business_id)
         .eq('phone', data.phone)
+        .eq('date', data.date)
+        .eq('time', data.time)
         .limit(1);
 
       if (existing && existing.length > 0) {

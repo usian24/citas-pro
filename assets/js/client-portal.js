@@ -370,6 +370,21 @@ function confirmBooking() {
 
   /* 2. GUARDAMOS LOCAL */
   saveDB(); 
+  
+  /* 2.5 SINCRONIZAR CLIENTE A SUPABASE */
+  if (typeof syncClientToCloud === 'function') {
+    syncClientToCloud(CSEL.bizId, {
+      name:          name,
+      phone:         phone,
+      email:         email,
+      worker_id:     worker.id,
+      worker_name:   worker.name,
+      service_name:  CSEL.svc,
+      service_price: CSEL.svcPrice,
+      date:          CSEL.date,
+      time:          CSEL.time
+    });
+  }
 
   // Sincronizar cliente a Supabase
   if (typeof syncClientToCloud === 'function') {
