@@ -555,4 +555,4 @@ function restaurarSesion() {
   if (typeof goTo === 'function') goTo('s-portal');
 }
 
-window('DOMContentLoaded', restaurarSesion);
+document.addEventListener('DOMContentLoaded', restaurarSesion);
