@@ -275,44 +275,63 @@ function showFloatingNotification(notif) {
    SONIDO DE NOTIFICACIÓN
 ══════════════════════════ */
 var _lastSoundTime = 0;
+var _audioCtx = null;
+
+// Inicializamos el motor de audio en el primer clic que haga el usuario en la pantalla
+function initAudioOnFirstInteraction() {
+  if (!_audioCtx) {
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) {
+      _audioCtx = new AudioContext();
+      // Algunos navegadores lo crean pausado, así que lo reanudamos
+      if (_audioCtx.state === 'suspended') {
+          _audioCtx.resume();
+      }
+    }
+  }
+  // Una vez iniciado, quitamos los escuchadores para no repetir el proceso
+  document.removeEventListener('click', initAudioOnFirstInteraction);
+  document.removeEventListener('touchstart', initAudioOnFirstInteraction);
+}
+
+// Escuchamos el primer clic en cualquier lado
+document.addEventListener('click', initAudioOnFirstInteraction);
+document.addEventListener('touchstart', initAudioOnFirstInteraction);
+
 function playNotificationSound(type) {
   var now = Date.now();
   if (now - _lastSoundTime < 1000) return; 
   _lastSoundTime = now;
 
   try {
-    var AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    var ctx = new AudioContext();
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
+    if (!_audioCtx) return; // Si aún no ha hecho clic, no podemos sonar
+    
+    // Asegurarnos de que el contexto esté activo
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+
+    var osc = _audioCtx.createOscillator();
+    var gain = _audioCtx.createGain();
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(_audioCtx.destination);
 
     if (type === 'new_booking') {
-      osc.frequency.setValueAtTime(523, ctx.currentTime);       
-      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.15); 
-      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.3);  
+      osc.frequency.setValueAtTime(523, _audioCtx.currentTime);       
+      osc.frequency.setValueAtTime(659, _audioCtx.currentTime + 0.15); 
+      osc.frequency.setValueAtTime(784, _audioCtx.currentTime + 0.3);  
     } else if (type === 'booking_cancel') {
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.setValueAtTime(330, ctx.currentTime + 0.2);
+      osc.frequency.setValueAtTime(440, _audioCtx.currentTime);
+      osc.frequency.setValueAtTime(330, _audioCtx.currentTime + 0.2);
     } else {
-      osc.frequency.setValueAtTime(587, ctx.currentTime);
-      osc.frequency.setValueAtTime(523, ctx.currentTime + 0.15);
+      osc.frequency.setValueAtTime(587, _audioCtx.currentTime);
+      osc.frequency.setValueAtTime(523, _audioCtx.currentTime + 0.15);
     }
 
     osc.type = 'sine';
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.5);
+    gain.gain.setValueAtTime(0.15, _audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.5);
+    osc.start(_audioCtx.currentTime);
+    osc.stop(_audioCtx.currentTime + 0.5);
   } catch (e) {}
-}
-
-function requestNotificationPermission() {
-  if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission();
-  }
 }
 
 /* ══════════════════════════
