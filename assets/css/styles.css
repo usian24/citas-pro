@@ -492,7 +492,7 @@ body.light-mode .fu.d4 > div > div:nth-child(3) > div:nth-child(1),
 body.light .fu.d4 > div > div:nth-child(3) > div:nth-child(1),
 body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(1),
 [data-theme="light"] .fu.d4 > div > div:nth-child(3) > div:nth-child(1) {
-  color: #c89106 !important; 
+  color: #0920b5 !important; 
 }
 
 /* 3. Cambiar "30 Días Gratis" a negro */
@@ -500,7 +500,7 @@ body.light-mode .fu.d4 > div > div:nth-child(3) > div:nth-child(2),
 body.light .fu.d4 > div > div:nth-child(3) > div:nth-child(2),
 body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(2),
 [data-theme="light"] .fu.d4 > div > div:nth-child(3) > div:nth-child(2) {
-  color: #07090F !important; 
+  color: #fb520a !important; 
 }
 
 /* 4. Cambiar "Sin compromiso..." a gris oscuro */
@@ -508,7 +508,7 @@ body.light-mode .fu.d4 > div > div:nth-child(3) > div:nth-child(3),
 body.light .fu.d4 > div > div:nth-child(3) > div:nth-child(3),
 body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(3),
 [data-theme="light"] .fu.d4 > div > div:nth-child(3) > div:nth-child(3) {
-  color: #64748B !important; 
+  color: #2e67b5 !important; 
 }
 
 /* 5. Cambiar el precio "10€/mes" a negro */
