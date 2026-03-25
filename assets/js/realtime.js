@@ -2,30 +2,22 @@
 
 /* ══════════════════════════════════════════════════
    REALTIME.JS — Supabase Realtime
-   
-   Funcionalidades:
-   1. Notificaciones INSTANTÁNEAS al barbero cuando
-      un cliente reserva, modifica o cancela.
-   2. Actualización automática de la agenda/citas
-      sin necesidad de recargar la página.
-   
-   Requiere: Supabase JS SDK cargado via CDN
 ══════════════════════════════════════════════════ */
 
 /* ══════════════════════════
    CONFIGURACIÓN SUPABASE CLIENT
 ══════════════════════════ */
-var SUPABASE_RT_URL  = 'https://fcbbquvuffpmudvwqgbg.supabase.co';   // ← Reemplazar con tu URL de Supabase
-var SUPABASE_RT_KEY  = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF'; // ← Reemplazar con tu anon key
+var SUPABASE_RT_URL  = 'https://fcbbquvuffpmudvwqgbg.supabase.co';   
+var SUPABASE_RT_KEY  = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF'; 
 
-var _supaRT = null;     // Cliente Supabase para Realtime
-var _rtChannel = null;  // Canal activo de Realtime
-var _rtBizChannel = null; // Canal del negocio (para el dueño)
+var _supaRT = null;     
+var _rtChannel = null;  
+var _rtBizChannel = null; 
 
-/**
- * Inicializa el cliente Supabase para Realtime.
- * Se llama una sola vez al cargar la app.
- */
+// Timers para evitar bucles (Antirrebote / Debounce)
+var _refreshTimerWorker = null;
+var _refreshTimerBiz = null;
+
 function initSupabaseRealtime() {
   if (_supaRT) return _supaRT;
 
@@ -36,134 +28,100 @@ function initSupabaseRealtime() {
 
   try {
     _supaRT = supabase.createClient(SUPABASE_RT_URL, SUPABASE_RT_KEY, {
-      realtime: {
-        params: { eventsPerSecond: 10 }
-      }
+      realtime: { params: { eventsPerSecond: 10 } }
     });
-    console.log('✅ Supabase Realtime inicializado');
     return _supaRT;
   } catch (e) {
-    console.error('❌ Error inicializando Supabase Realtime:', e);
     return null;
   }
 }
 
 /* ══════════════════════════
    SUSCRIPCIÓN PARA TRABAJADORES
-   Escucha cambios en la tabla "appointments"
-   filtrado por worker_id
 ══════════════════════════ */
 function subscribeWorkerRealtime(workerId, bizId) {
   if (!workerId || !bizId) return;
-
   var client = initSupabaseRealtime();
   if (!client) return;
 
-  // Limpiar suscripción anterior si existe
   unsubscribeRealtime();
-
   var channelName = 'worker-appointments-' + workerId;
 
   _rtChannel = client
     .channel(channelName)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',           // INSERT, UPDATE, DELETE
-        schema: 'public',
-        table: 'appointments',
-        filter: 'worker_id=eq.' + workerId
-      },
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: 'worker_id=eq.' + workerId },
       function (payload) {
-        console.log('📡 Realtime appointment:', payload.eventType, payload);
         handleAppointmentChange(payload, workerId, bizId);
       }
     )
     .subscribe(function (status) {
-      console.log('📡 Worker Realtime status:', status);
-      if (status === 'SUBSCRIBED') {
-        showRealtimeIndicator(true);
-      }
+      if (status === 'SUBSCRIBED') showRealtimeIndicator(true);
     });
 }
 
-/**
- * Suscripción para DUEÑOS de negocio.
- * Escucha TODOS los cambios de appointments del negocio.
- */
+/* ══════════════════════════
+   SUSCRIPCIÓN PARA DUEÑOS
+══════════════════════════ */
 function subscribeBizRealtime(bizId) {
   if (!bizId) return;
-
   var client = initSupabaseRealtime();
   if (!client) return;
 
-  // Limpiar canal de negocio anterior
-  if (_rtBizChannel) {
-    _rtBizChannel.unsubscribe();
-    _rtBizChannel = null;
-  }
+  if (_rtBizChannel) { _rtBizChannel.unsubscribe(); _rtBizChannel = null; }
 
   var channelName = 'biz-appointments-' + bizId;
 
   _rtBizChannel = client
     .channel(channelName)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'appointments',
-        filter: 'business_id=eq.' + bizId
-      },
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: 'business_id=eq.' + bizId },
       function (payload) {
-        console.log('📡 Realtime biz appointment:', payload.eventType, payload);
         handleBizAppointmentChange(payload, bizId);
       }
     )
-    .subscribe(function (status) {
-      console.log('📡 Biz Realtime status:', status);
-    });
+    .subscribe();
 }
 
 /* ══════════════════════════
    HANDLER: Cambio en appointment (WORKER)
 ══════════════════════════ */
 function handleAppointmentChange(payload, workerId, bizId) {
-  var eventType = payload.eventType; // INSERT, UPDATE, DELETE
+  var eventType = payload.eventType;
   var newData   = payload.new || {};
   var oldData   = payload.old || {};
 
-  // Evitar procesar si la UI no pertenece a este worker
   if (!CUR_WORKER || CUR_WORKER.id !== workerId) return;
 
-  // ─── 1. NOTIFICACIÓN INSTANTÁNEA ───
+  var isRealChange = false;
+
+  // 1. EVALUAR SI ES UN CAMBIO REAL
   if (eventType === 'INSERT') {
+    isRealChange = true;
     createRealtimeNotification(workerId, bizId, {
       type: 'new_booking',
       title: '📅 Nueva cita: ' + (newData.client_name || 'Cliente'),
-      detail: (newData.service_name || 'Servicio') + ' • ' 
-            + (newData.date || '') + ' a las ' + (newData.time || '') 
-            + ' • ' + money(newData.service_price || 0)
+      detail: (newData.service_name || 'Servicio') + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') 
     });
-  }
+  } else if (eventType === 'UPDATE') {
+    var changedStatus = (newData.status !== oldData.status);
+    var changedDateOrTime = (newData.date !== oldData.date) || (newData.time !== oldData.time);
 
-  if (eventType === 'UPDATE') {
-    if (newData.status === 'cancelled' && oldData.status !== 'cancelled') {
+    if (changedStatus && newData.status === 'cancelled' && oldData.status !== 'cancelled') {
+      isRealChange = true;
       createRealtimeNotification(workerId, bizId, {
         type: 'booking_cancel',
         title: '❌ Cita cancelada: ' + (newData.client_name || oldData.client_name || 'Cliente'),
         detail: (newData.service_name || '') + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '')
       });
-    } else if (newData.date !== oldData.date || newData.time !== oldData.time) {
+    } else if (changedDateOrTime) {
+      isRealChange = true;
       createRealtimeNotification(workerId, bizId, {
         type: 'booking_modify',
         title: '✏️ Cita modificada: ' + (newData.client_name || 'Cliente'),
         detail: 'Nuevo horario: ' + (newData.date || '') + ' a las ' + (newData.time || '')
       });
     }
-  }
-
-  if (eventType === 'DELETE') {
+  } else if (eventType === 'DELETE') {
+    isRealChange = true;
     createRealtimeNotification(workerId, bizId, {
       type: 'booking_cancel',
       title: '🗑️ Cita eliminada: ' + (oldData.client_name || 'Cliente'),
@@ -171,9 +129,17 @@ function handleAppointmentChange(payload, workerId, bizId) {
     });
   }
 
-  // ─── 2. ACTUALIZAR DATOS LOCALES Y UI ───
-  // Descargamos de forma segura sin disparar saveDB() localmente
-  safeRefreshWorkerUI(workerId, bizId);
+  // Solo mostrar en consola si fue un cambio de verdad (silencia los falsos updates)
+  if (isRealChange) {
+      console.log('🔔 Cambio real detectado:', eventType, newData.id);
+  }
+
+  // 2. ACTUALIZAR UI CON ANTIRREBOTE (Freno de bucles)
+  // Si llegan 50 avisos de golpe, el temporizador se reinicia y solo se ejecuta UNA vez al final.
+  if (_refreshTimerWorker) clearTimeout(_refreshTimerWorker);
+  _refreshTimerWorker = setTimeout(function() {
+      safeRefreshWorkerUI(workerId, bizId);
+  }, 800); // Espera 0.8 segundos a que pase el "ruido" antes de refrescar
 }
 
 /* ══════════════════════════
@@ -182,26 +148,41 @@ function handleAppointmentChange(payload, workerId, bizId) {
 function handleBizAppointmentChange(payload, bizId) {
   var eventType = payload.eventType;
   var newData   = payload.new || {};
+  var oldData   = payload.old || {};
 
   if (!CUR || CUR.id !== bizId) return;
 
-  // Toast informativo para el dueño
+  var isRealChange = false;
+
   if (eventType === 'INSERT') {
+    isRealChange = true;
     toast('📅 Nueva cita: ' + (newData.client_name || 'Cliente'), '#22C55E');
-  } else if (eventType === 'UPDATE' && newData.status === 'cancelled') {
-    toast('❌ Cita cancelada: ' + (newData.client_name || ''), '#EF4444');
+  } else if (eventType === 'UPDATE') {
+    if (newData.status === 'cancelled' && oldData.status !== 'cancelled') {
+        isRealChange = true;
+        toast('❌ Cita cancelada: ' + (newData.client_name || ''), '#EF4444');
+    } else if (newData.date !== oldData.date || newData.time !== oldData.time) {
+        isRealChange = true;
+    }
+  } else if (eventType === 'DELETE') {
+      isRealChange = true;
   }
-  
-  // Descargamos de forma segura sin disparar saveDB() localmente
-  safeRefreshBizUI(bizId);
+
+  if (isRealChange) {
+      console.log('🔔 Cambio real detectado en negocio:', eventType, newData.id);
+  }
+
+  // ANTIRREBOTE (Freno de bucles)
+  if (_refreshTimerBiz) clearTimeout(_refreshTimerBiz);
+  _refreshTimerBiz = setTimeout(function() {
+      safeRefreshBizUI(bizId);
+  }, 800);
 }
 
 /* ══════════════════════════
    CREAR NOTIFICACIÓN REALTIME
-   (Push visual + sonido + guardar en worker)
 ══════════════════════════ */
 function createRealtimeNotification(workerId, bizId, notif) {
-  // 1. Añadir a la memoria local sin disparar saveDB completo
   if (CUR_WORKER) {
       if (!CUR_WORKER.notifications) CUR_WORKER.notifications = [];
       var d = new Date();
@@ -211,34 +192,29 @@ function createRealtimeNotification(workerId, bizId, notif) {
           date: String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),
           read: false
       });
-      // Solo mantenemos las últimas 50 para no saturar
       if(CUR_WORKER.notifications.length > 50) CUR_WORKER.notifications.pop();
       
-      // Intentar guardar en local storage de forma silenciosa si existe la función
       if (typeof localStorage !== 'undefined') {
           try { localStorage.setItem('citaspro_db', JSON.stringify(DB)); } catch(e){}
       }
   }
 
-  // 2. Actualizar badge visual
   if (typeof renderWorkerNotifBadge === 'function') renderWorkerNotifBadge();
-  if (document.querySelector('#s-worker .pane.on').id === 'wp-notif' && typeof renderWorkerNotifications === 'function') {
+  if (document.querySelector('#s-worker .pane.on') && document.querySelector('#s-worker .pane.on').id === 'wp-notif' && typeof renderWorkerNotifications === 'function') {
       renderWorkerNotifications();
   }
 
-  // 3. Push visual flotante (notificación que se desliza desde arriba)
-  showFloatingNotification(notif);
+  var colors = { new_booking: '#22C55E', booking_cancel: '#EF4444', booking_modify: '#F59E0B' };
+  toast(notif.title, colors[notif.type] || '#4A7FD4');
 
-  // 4. Sonido de notificación (si está habilitado)
+  showFloatingNotification(notif);
   playNotificationSound(notif.type);
 
-  // 5. Browser Notification API (si el usuario dio permiso)
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
       new Notification(notif.title, {
         body: notif.detail || '',
         icon: 'assets/img/logocitas barber2.png',
-        badge: 'assets/img/logocitas barber2.png',
         tag: 'citaspro-' + Date.now(),
         renotify: true
       });
@@ -250,7 +226,6 @@ function createRealtimeNotification(workerId, bizId, notif) {
    NOTIFICACIÓN FLOTANTE (BANNER)
 ══════════════════════════ */
 function showFloatingNotification(notif) {
-  // Eliminar anteriores
   var old = document.querySelectorAll('.rt-notif-banner');
   old.forEach(function(el) { el.remove(); });
 
@@ -277,7 +252,6 @@ function showFloatingNotification(notif) {
     + '</div>'
     + '<div style="font-size:11px;color:var(--muted,#666);font-weight:600">AHORA</div>';
 
-  // Al hacer click, ir a notificaciones
   banner.addEventListener('click', function () {
     banner.style.transform = 'translateY(-100%)';
     setTimeout(function () { banner.remove(); }, 400);
@@ -286,14 +260,12 @@ function showFloatingNotification(notif) {
 
   document.body.appendChild(banner);
 
-  // Animación entrada
   requestAnimationFrame(function () {
     requestAnimationFrame(function () {
       banner.style.transform = 'translateY(0)';
     });
   });
 
-  // Auto-ocultar después de 6 segundos
   setTimeout(function () {
     if (banner.parentNode) {
       banner.style.transform = 'translateY(-100%)';
@@ -316,16 +288,13 @@ function playNotificationSound(type) {
     gain.connect(ctx.destination);
 
     if (type === 'new_booking') {
-      // Sonido alegre: dos tonos ascendentes
-      osc.frequency.setValueAtTime(523, ctx.currentTime);       // C5
-      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.15); // E5
-      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.3);  // G5
+      osc.frequency.setValueAtTime(523, ctx.currentTime);       
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.15); 
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.3);  
     } else if (type === 'booking_cancel') {
-      // Sonido descendente
       osc.frequency.setValueAtTime(440, ctx.currentTime);
       osc.frequency.setValueAtTime(330, ctx.currentTime + 0.2);
     } else {
-      // Sonido neutro
       osc.frequency.setValueAtTime(587, ctx.currentTime);
       osc.frequency.setValueAtTime(523, ctx.currentTime + 0.15);
     }
@@ -335,14 +304,9 @@ function playNotificationSound(type) {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.5);
-  } catch (e) {
-    // Silencioso si no hay soporte de audio
-  }
+  } catch (e) {}
 }
 
-/* ══════════════════════════
-   BROWSER NOTIFICATION API
-══════════════════════════ */
 function requestNotificationPermission() {
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission();
@@ -370,7 +334,6 @@ function showRealtimeIndicator(connected) {
   topbar.style.position = 'relative';
   topbar.appendChild(dot);
 
-  // Añadir animación CSS si no existe
   if (!document.getElementById('rt-anim-style')) {
     var style = document.createElement('style');
     style.id = 'rt-anim-style';
@@ -380,29 +343,25 @@ function showRealtimeIndicator(connected) {
 }
 
 /* ══════════════════════════
-   ACTUALIZACIÓN SEGURA DE UI (SIN BUCLE)
+   ACTUALIZACIÓN SEGURA DE UI
 ══════════════════════════ */
 async function safeRefreshWorkerUI(workerId, bizId) {
     if (typeof fetchBizFromCloud !== 'function') return;
     
-    // Descargar datos frescos de la base de datos de Supabase sin disparar guardado
     const freshData = await fetchBizFromCloud(bizId);
     if (!freshData) return;
     
-    // Actualizar datos en memoria pero SIN llamar a saveDB()
     let index = DB.businesses.findIndex(b => b.id === bizId);
     if (index >= 0) DB.businesses[index] = freshData;
     CUR = freshData;
     
     let freshWorker = CUR.workers.find(w => w.id === workerId);
     if (freshWorker) {
-        // Preservamos las notificaciones locales (ya que no se sincronizan arriba)
         var localNotifs = CUR_WORKER.notifications || [];
         freshWorker.notifications = localNotifs;
         CUR_WORKER = freshWorker;
     }
     
-    // Actualizar solo las vistas necesarias dependiendo de qué pestaña está abierta
     var activePane = document.querySelector('#s-worker .pane.on');
     if (activePane) {
         var pid = activePane.id;
@@ -413,11 +372,8 @@ async function safeRefreshWorkerUI(workerId, bizId) {
             if (typeof initWorkerAgenda === 'function') initWorkerAgenda();
             if (typeof renderWorkerCalendar === 'function') renderWorkerCalendar();
         } else if (pid === 'wp-finanzas') {
-            if (typeof renderWorkerFinanzas === 'function') {
-                renderWorkerFinanzas();
-            } else if (typeof renderWorkerFinances === 'function') {
-                renderWorkerFinances();
-            }
+            if (typeof renderWorkerFinanzas === 'function') renderWorkerFinanzas();
+            else if (typeof renderWorkerFinances === 'function') renderWorkerFinances();
         }
     }
 }
@@ -425,7 +381,6 @@ async function safeRefreshWorkerUI(workerId, bizId) {
 async function safeRefreshBizUI(bizId) {
     if (typeof fetchBizFromCloud !== 'function') return;
     
-    // Descargar datos frescos sin guardar localmente
     const freshData = await fetchBizFromCloud(bizId);
     if (!freshData) return;
     
@@ -433,7 +388,6 @@ async function safeRefreshBizUI(bizId) {
     if (index >= 0) DB.businesses[index] = freshData;
     CUR = freshData;
     
-    // Actualizar interfaz del dueño visualmente
     var activePane = document.querySelector('#s-biz .pane.on');
     if (activePane) {
         var pid = activePane.id;
@@ -444,11 +398,8 @@ async function safeRefreshBizUI(bizId) {
             if (typeof initAgenda === 'function') initAgenda();
             if (typeof renderCalendar === 'function') renderCalendar();
         } else if (pid === 'bp-finanzas') {
-            if (typeof renderBizFinanzas === 'function') {
-                renderBizFinanzas();
-            } else if (typeof renderBizFinances === 'function') {
-                renderBizFinances();
-            }
+            if (typeof renderBizFinanzas === 'function') renderBizFinanzas();
+            else if (typeof renderBizFinances === 'function') renderBizFinances();
         }
     }
 }
@@ -457,30 +408,17 @@ async function safeRefreshBizUI(bizId) {
    DESUSCRIBIR (limpieza)
 ══════════════════════════ */
 function unsubscribeRealtime() {
-  if (_rtChannel) {
-    _rtChannel.unsubscribe();
-    _rtChannel = null;
-  }
-  if (_rtBizChannel) {
-    _rtBizChannel.unsubscribe();
-    _rtBizChannel = null;
-  }
+  if (_rtChannel) { _rtChannel.unsubscribe(); _rtChannel = null; }
+  if (_rtBizChannel) { _rtBizChannel.unsubscribe(); _rtBizChannel = null; }
   showRealtimeIndicator(false);
-  console.log('📡 Realtime desconectado');
 }
 
-/* ══════════════════════════
-   AUTO-CONECTAR AL INICIAR SESIÓN
-══════════════════════════ */
 function connectRealtimeForCurrentUser() {
-  // Para trabajadores
   if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && DB && DB.currentWorker) {
     subscribeWorkerRealtime(CUR_WORKER.id, DB.currentWorker.bizId);
     requestNotificationPermission();
     return;
   }
-
-  // Para dueños de negocio
   if (typeof CUR !== 'undefined' && CUR && CUR.id && DB && DB.currentBiz) {
     subscribeBizRealtime(CUR.id);
     requestNotificationPermission();
@@ -488,24 +426,9 @@ function connectRealtimeForCurrentUser() {
   }
 }
 
-/* ══════════════════════════
-   HOOK EN WINDOW LOAD
-══════════════════════════ */
-window.addEventListener('load', function () {
-  // Esperar a que la sesión se restaure, luego conectar
-  setTimeout(function () {
-    connectRealtimeForCurrentUser();
-  }, 1500);
-});
+window.addEventListener('load', function () { setTimeout(connectRealtimeForCurrentUser, 1500); });
+window.addEventListener('beforeunload', function () { unsubscribeRealtime(); });
 
-// Desconectar al cerrar/recargar
-window.addEventListener('beforeunload', function () {
-  unsubscribeRealtime();
-});
-
-/* ══════════════════════════
-   EXPORTACIONES GLOBALES
-══════════════════════════ */
 window.initSupabaseRealtime     = initSupabaseRealtime;
 window.subscribeWorkerRealtime  = subscribeWorkerRealtime;
 window.subscribeBizRealtime     = subscribeBizRealtime;
