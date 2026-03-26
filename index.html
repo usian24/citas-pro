@@ -7,6 +7,15 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://api.qrserver.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://api.qrserver.com https://i.ibb.co https://ibb.co; connect-src 'self' https://api.qrserver.com https://api.imgbb.com https://fcbbquvuffpmudvwqgbg.supabase.co wss://fcbbquvuffpmudvwqgbg.supabase.co https://cdn.jsdelivr.net;">
   <meta name="referrer" content="no-referrer"/>
   
+  <!-- PWA META TAGS -->
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Citas Pro"/>
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png"/>
+  <link rel="manifest" href="/manifest.json"/>
+  <!--  FIN PWA META TAGS -->
+
   <title>Citas Pro | Gestión Inteligente para tu Barbería</title>
   <meta name="description" content="Citas Pro es el software líder para barberías: gestiona tus citas, controla ingresos, fideliza clientes y haz crecer tu negocio de forma organizada.">
   <meta name="keywords" content="software para barberías, gestión de citas, control de ingresos barbería, agenda digital barberos, SaaS barbería">
@@ -1040,6 +1049,7 @@
     <div style="margin-top:12px"><button class="btn btn-dark btn-sm" id="qr-download-btn">Descargar QR</button></div>
   </div>
 </div>
+
 <div class="ov bot" id="ov-worker-profile">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Perfil del Trabajador</span><div class="xbtn" onclick="closeOv('ov-worker-profile')">×</div></div>
@@ -1058,6 +1068,17 @@
 <script src="assets/js/realtime.js"></script>             
 <script src="assets/js/client-portal.js"></script>
 <script src="assets/js/app.js"></script>
+
+<!-- SERVICE WORKER PWA -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/sw.js')
+        .then(function(reg) { console.log('SW registrado:', reg.scope); })
+        .catch(function(err) { console.log('SW error:', err); });
+    });
+  }
+</script>
 
 </body>
 </html>
