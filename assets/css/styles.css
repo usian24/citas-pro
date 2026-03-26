@@ -36,8 +36,8 @@ a{text-decoration:none;color:inherit}
    SCREENS
 ══════════════════════════ */
 .scr{display:none;min-height:100vh}
-.scr.on{display:block;width:100%;min-height:100vh}
-#s-portal.scr.on{display:flex;width:100%;min-height:100vh}
+.scr.on{display:block}
+#s-portal.scr.on{display:flex}
 
 /* ══════════════════════════
    INPUTS
@@ -492,7 +492,7 @@ body.light-mode .fu.d4 > div > div:nth-child(3) > div:nth-child(1),
 body.light .fu.d4 > div > div:nth-child(3) > div:nth-child(1),
 body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(1),
 [data-theme="light"] .fu.d4 > div > div:nth-child(3) > div:nth-child(1) {
-  color: #0920b5 !important; 
+  color: #c89106 !important; 
 }
 
 /* 3. Cambiar "30 Días Gratis" a negro */
@@ -500,7 +500,7 @@ body.light-mode .fu.d4 > div > div:nth-child(3) > div:nth-child(2),
 body.light .fu.d4 > div > div:nth-child(3) > div:nth-child(2),
 body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(2),
 [data-theme="light"] .fu.d4 > div > div:nth-child(3) > div:nth-child(2) {
-  color: #fb520a !important; 
+  color: #07090F !important; 
 }
 
 /* 4. Cambiar "Sin compromiso..." a gris oscuro */
@@ -508,7 +508,7 @@ body.light-mode .fu.d4 > div > div:nth-child(3) > div:nth-child(3),
 body.light .fu.d4 > div > div:nth-child(3) > div:nth-child(3),
 body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(3),
 [data-theme="light"] .fu.d4 > div > div:nth-child(3) > div:nth-child(3) {
-  color: #2e67b5 !important; 
+  color: #64748B !important; 
 }
 
 /* 5. Cambiar el precio "10€/mes" a negro */
