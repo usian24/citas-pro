@@ -271,7 +271,6 @@ function syncServicesToCloud(biz) {
       var err = await res.json();
       console.error("🔥 ERROR SUPABASE (services):", err);
       // ESTA ALERTA NOS DARÁ LA SOLUCIÓN:
-      alert("Error guardando servicios: " + (err.error || JSON.stringify(err))); 
     }
   })
   .catch(function(e) {

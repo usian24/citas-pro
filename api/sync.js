@@ -148,26 +148,36 @@ module.exports = async (req, res) => {
     // ═══════════════════════════════════════
     // SERVICES — type: "services"
     // ═══════════════════════════════════════
-    for (const svc of services) {
-      // Garantizar que siempre haya un worker_id (si no hay, se asigna al principal o queda vacío)
-      const finalWorkerId = svc.worker_id || worker_id || '';
-        
-      const { error } = await supabase.from('services').upsert({
-        id:          String(svc.id),
-        business_id: business_id,
-        worker_id:   finalWorkerId, 
-        name:        svc.name || '',
-        description: svc.description || '',
-        price:       parseFloat(svc.price) || 0,
-        duration:    parseInt(svc.duration) || 30,
-        color:       svc.color || '',
-        image:       svc.image || ''
-      });
-  
-      if (error) {
-        console.error("Error Supabase guardando servicio:", error);
-        return res.status(400).json({ success: false, error: error.message });
+    if (type === 'services') {
+      // 1. Aquí definimos la variable 'services' que estaba faltando
+      const { business_id, worker_id, services } = req.body;
+      
+      if (!business_id || !Array.isArray(services)) {
+        return res.status(400).json({ success: false, error: 'Datos incompletos' });
       }
+  
+      for (const svc of services) {
+        // 2. Garantizamos el worker_id sin fallos
+        const finalWorkerId = svc.worker_id || worker_id || '';
+
+        const { error } = await supabase.from('services').upsert({
+          id:          String(svc.id),
+          business_id: business_id,
+          worker_id:   finalWorkerId, 
+          name:        svc.name || '',
+          description: svc.description || '',
+          price:       parseFloat(svc.price) || 0,
+          duration:    parseInt(svc.duration) || 30,
+          color:       svc.color || '',
+          image:       svc.image || ''
+        });
+
+        if (error) {
+          return res.status(400).json({ success: false, error: error.message });
+        }
+      }
+  
+      return res.status(200).json({ success: true, synced: services.length });
     }
 
     // ═══════════════════════════════════════
