@@ -265,7 +265,16 @@ function syncServicesToCloud(biz) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'services', business_id: biz.id, services: allSvcs })
-  }).catch(function(e) {
+  })
+  .then(async function(res) {
+    if (!res.ok) {
+      var err = await res.json();
+      console.error("🔥 ERROR SUPABASE (services):", err);
+      // ESTA ALERTA NOS DARÁ LA SOLUCIÓN:
+      alert("Error guardando servicios: " + (err.error || JSON.stringify(err))); 
+    }
+  })
+  .catch(function(e) {
     console.error('Error sync services:', e);
   });
 }
