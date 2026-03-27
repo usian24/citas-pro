@@ -342,9 +342,10 @@ function finalizeBizReg() {
     id:slug, name:REG.name, owner:REG.owner, email:REG.email, pass:REG.pass,
     phone:REG.phone, addr:REG.addr, city:REG.city, country:REG.country,
     type:REG.type, teamSize:REG.teamSize,
-    // ✅ CORREGIDO: era "joinDate", ahora "join_date" para que coincida con Supabase
+    // "join_date" para que coincida con Supabase
     join_date:new Date().toISOString().split('T')[0],
-    plan:'trial', desc:'', logo:REG.logo||'', photos:REG.photos||[], insta:'', cover:REG.cover||'',
+    // AQUI AGREGAMOS facebook Y x_url ↓
+    plan:'trial', desc:'', logo:REG.logo||'', photos:REG.photos||[], insta:'', facebook:'', x_url:'', cover:REG.cover||'',
     horario:DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
     workers: [], 
     services: [], 
@@ -446,7 +447,13 @@ function initBizPanel() {
   var pfNm=G('pf-nm'); if(pfNm) pfNm.value=CUR.name||'';
   var pfAd=G('pf-addr'); if(pfAd) pfAd.value=CUR.addr||'';
   var pfPh=G('pf-phone'); if(pfPh) pfPh.value=CUR.phone||'';
+  
+  // AQUÍ CARGAMOS LAS REDES SOCIALES EN LOS INPUTS ↓
   var pfIn=G('pf-insta'); if(pfIn) pfIn.value=CUR.insta||'';
+  var pfFb=G('pf-facebook'); if(pfFb) pfFb.value=CUR.facebook||'';
+  var pfX=G('pf-xurl'); if(pfX) pfX.value=CUR.x_url||'';
+  // ---------------------------------------------------
+  
   var pfDs=G('pf-desc'); if(pfDs) pfDs.value=CUR.desc||'';
   var pfPs=G('pf-plan-status');
   if(pfPs) pfPs.textContent=CUR.plan==='active'?'Plan activo · Próxima factura el día 1':CUR.plan==='trial'?'En período de prueba gratuito':'Suscripción vencida — contacta soporte';
@@ -902,9 +909,21 @@ function saveAppt() {
 ══════════════════════════ */
 function saveBizProfile() {
   if(!CUR) return;
-  var nm=sanitizeText(V('pf-nm')), addr=sanitizeText(V('pf-addr')), phone=sanitizeText(V('pf-phone')), insta=sanitizeText(V('pf-insta')), desc=sanitizeText(V('pf-desc'));
+  
+  var nm=sanitizeText(V('pf-nm')), addr=sanitizeText(V('pf-addr')), phone=sanitizeText(V('pf-phone')), desc=sanitizeText(V('pf-desc'));
+  
+  // AQUÍ LEEMOS LAS 3 REDES SOCIALES ↓
+  var insta=sanitizeText(V('pf-insta')), facebook=sanitizeText(V('pf-facebook')), x_url=sanitizeText(V('pf-xurl'));
+  
   if(!nm){ toast('El nombre no puede estar vacío','#EF4444'); return; }
-  CUR.name=nm; CUR.addr=addr; CUR.phone=phone; CUR.insta=insta; CUR.desc=desc.slice(0,300);
+  
+  CUR.name=nm; CUR.addr=addr; CUR.phone=phone; CUR.desc=desc.slice(0,300);
+  
+  // AQUÍ LAS GUARDAMOS EN EL OBJETO ACTUAL ↓
+  CUR.insta=insta;
+  CUR.facebook=facebook;
+  CUR.x_url=x_url;
+  
   saveDB(); 
   initBizPanel(); 
   toast('Perfil guardado','#4A7FD4');
