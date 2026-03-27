@@ -159,7 +159,7 @@ function saveDB() {
         }).then(async function(res) {
           if (!res.ok) {
             var err = await res.json();
-            console.error("🔥 ERROR SUPABASE (update-biz):", err.detalle || err.error);
+            console.error("ERROR SUPABASE (update-biz):", err.detalle || err.error);
           }
         }).catch(function(e) {});
 
@@ -269,7 +269,7 @@ function syncServicesToCloud(biz) {
   .then(async function(res) {
     if (!res.ok) {
       var err = await res.json();
-      console.error("🔥 ERROR SUPABASE (services):", err);
+      console.error("ERROR SUPABASE (services):", err);
       // ESTA ALERTA NOS DARÁ LA SOLUCIÓN:
     }
   })
