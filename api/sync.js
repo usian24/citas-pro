@@ -145,20 +145,20 @@ module.exports = async (req, res) => {
 
       return res.status(200).json({ success: true, synced: appointments.length });
     }
-
     // ═══════════════════════════════════════
     // SERVICES — type: "services"
     // ═══════════════════════════════════════
     if (type === 'services') {
-      const { business_id, services } = req.body;
+      const { business_id, worker_id, services } = req.body;
       if (!business_id || !Array.isArray(services)) {
         return res.status(400).json({ success: false, error: 'Datos incompletos' });
       }
-
+  
       for (const svc of services) {
         const { error } = await supabase.from('services').upsert({
           id:          String(svc.id),
           business_id: business_id,
+          worker_id:   svc.worker_id || worker_id || '',  // ← nuevo
           name:        svc.name || '',
           description: svc.description || '',
           price:       parseFloat(svc.price) || 0,
@@ -170,7 +170,7 @@ module.exports = async (req, res) => {
           return res.status(400).json({ success: false, error: error.message });
         }
       }
-
+  
       return res.status(200).json({ success: true, synced: services.length });
     }
 

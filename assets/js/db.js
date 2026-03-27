@@ -248,6 +248,7 @@ function syncServicesToCloud(biz) {
       allSvcs.push({
         id:          String(s.id),
         business_id: biz.id,
+        worker_id:   w.id,
         name:        s.name || '',
         description: s.desc || '',
         price:       parseFloat(s.price) || 0,
