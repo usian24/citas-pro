@@ -191,6 +191,11 @@ function syncAppointmentsToCloud(biz) {
 
   // Citas de workers
   (biz.workers || []).forEach(function(w) {
+    // 🔥 EL ESCUDO: Si soy un trabajador, ignoro las citas de mis compañeros, solo subo las mías
+    if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR_WORKER.id !== w.id) {
+        return; 
+    }
+
     (w.appointments || []).forEach(function(a) {
       allAppts.push({
         id:            String(a.id),
@@ -211,25 +216,27 @@ function syncAppointmentsToCloud(biz) {
     });
   });
 
-  // Citas sin worker asignado
-  (biz.appointments || []).forEach(function(a) {
-    allAppts.push({
-      id:            String(a.id),
-      business_id:   biz.id,
-      worker_id:     '',
-      client_id:     '',
-      client_name:   a.client || '',
-      client_phone:  a.phone || '',
-      client_email:  a.email || '',  
-      token:         a.token || '',   
-      service_name:  a.svc || '',
-      service_price: parseFloat(a.price) || 0,
-      date:          a.date || '',
-      time:          a.time || '',
-      status:        a.status || 'confirmed',
-      notes:         a.notes || ''
+  // Citas sin worker asignado (Solo el dueño las puede subir, los trabajadores no)
+  if (typeof CUR_WORKER === 'undefined' || !CUR_WORKER) {
+    (biz.appointments || []).forEach(function(a) {
+      allAppts.push({
+        id:            String(a.id),
+        business_id:   biz.id,
+        worker_id:     '',
+        client_id:     '',
+        client_name:   a.client || '',
+        client_phone:  a.phone || '',
+        client_email:  a.email || '',  
+        token:         a.token || '',   
+        service_name:  a.svc || '',
+        service_price: parseFloat(a.price) || 0,
+        date:          a.date || '',
+        time:          a.time || '',
+        status:        a.status || 'confirmed',
+        notes:         a.notes || ''
+      });
     });
-  });
+  }
 
   if (allAppts.length === 0) return;
 
@@ -248,6 +255,11 @@ function syncServicesToCloud(biz) {
   var allSvcs = [];
 
   (biz.workers || []).forEach(function(w) {
+    // 🔥 EL ESCUDO: Si soy un trabajador, ignoro los servicios de mis compañeros, solo subo los míos
+    if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR_WORKER.id !== w.id) {
+        return; 
+    }
+
     (w.services || []).forEach(function(s) {
       allSvcs.push({
         id:          String(s.id),
