@@ -159,14 +159,6 @@ function doAdminLogout() {
     if (typeof unsubscribeRealtime === 'function') unsubscribeRealtime();
 }
 
-function showAdminPanel() { 
-    var l = G('adm-login'), p = G('adm-panel'); 
-    if (l) l.style.display = 'none'; 
-    if (p) p.style.display = 'block'; 
-    renderDash(); 
-    checkNotifications(); 
-}
-
 function admTab(tab) {
   var tabs = ['dashboard','negocios','suscripciones','ingresos','notificaciones','config'];
   for (var i = 0; i < tabs.length; i++) {

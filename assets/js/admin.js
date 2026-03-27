@@ -8,6 +8,7 @@ function doAdminLogout() {
 }
 
 function showAdminPanel() {
+  goTo('s-admin');
   var l = G('adm-login'), p = G('adm-panel');
   if (l) l.style.display = 'none';
   if (p) p.style.display = 'block';
