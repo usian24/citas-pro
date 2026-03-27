@@ -11,7 +11,6 @@ var _supaRT = null;
 var _rtChannel = null;  
 var _rtBizChannel = null; 
 
-// Timers para evitar bucles (Antirrebote / Debounce)
 var _refreshTimerWorker = null;
 var _refreshTimerBiz = null;
 
@@ -80,7 +79,6 @@ function handleAppointmentChange(payload, workerId, bizId) {
 
   if (!CUR_WORKER || CUR_WORKER.id !== workerId) return;
 
-  // Buscar la cita en nuestra memoria local para comparar
   var localAppt = (CUR_WORKER.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
   
   var isRealChange = false;
@@ -88,12 +86,10 @@ function handleAppointmentChange(payload, workerId, bizId) {
   var notifTitle = '';
   var notifDetail = '';
 
-  // Capturar datos adaptados a las columnas reales de Supabase
   var clientName = newData.client_name || newData.client || 'Cliente';
   var serviceName = newData.service_name || newData.svc || 'Servicio';
   var servicePrice = newData.service_price !== undefined ? newData.service_price : (newData.price || 0);
 
-  // 1. EVALUAR SI ES UN CAMBIO REAL
   if (eventType === 'INSERT') {
     if (!localAppt) {
       isRealChange = true;
@@ -127,12 +123,10 @@ function handleAppointmentChange(payload, workerId, bizId) {
     }
   }
 
-  // Ejecutamos la notificación si es un cambio real
   if (isRealChange) {
       createRealtimeNotification(workerId, bizId, { type: notifType, title: notifTitle, detail: notifDetail });
   }
 
-  // 2. ACTUALIZAR UI CON ANTIRREBOTE (Freno de bucles)
   if (_refreshTimerWorker) clearTimeout(_refreshTimerWorker);
   _refreshTimerWorker = setTimeout(function() {
       safeRefreshWorkerUI(workerId, bizId);
@@ -150,11 +144,11 @@ function handleBizAppointmentChange(payload, bizId) {
 
   var localAppt = null;
   (CUR.workers || []).forEach(function(w){ 
-      var found = (w.appointments || []).find(a => String(a.id) === String(newData.id));
+      var found = (w.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
       if (found) localAppt = found;
   });
   if (!localAppt) {
-      var found = (CUR.appointments || []).find(a => String(a.id) === String(newData.id));
+      var found = (CUR.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
       if (found) localAppt = found;
   }
   
@@ -182,7 +176,6 @@ function handleBizAppointmentChange(payload, bizId) {
 ══════════════════════════ */
 function createRealtimeNotification(workerId, bizId, notif) {
   
-  // Objeto estructurado PERFECTAMENTE para tu notifications.js
   var notifObj = {
       type: notif.type,
       msg: notif.title,               
@@ -191,7 +184,6 @@ function createRealtimeNotification(workerId, bizId, notif) {
       read: false
   };
 
-  // Agregar la notificación a la memoria
   if (typeof addNotificationToWorker === 'function') {
     addNotificationToWorker(bizId, workerId, notifObj);
   } else if (CUR_WORKER) {
@@ -200,10 +192,8 @@ function createRealtimeNotification(workerId, bizId, notif) {
       if(CUR_WORKER.notifications.length > 50) CUR_WORKER.notifications.pop();
   }
 
-  // ✅ ¡FUNDAMENTAL! Obligamos a guardar la notificación localmente antes de que la nube aplaste todo
   if (typeof saveDB === 'function') saveDB();
 
-  // Refrescar UI visual
   if (typeof renderWorkerNotifBadge === 'function') renderWorkerNotifBadge();
   
   var activePane = document.querySelector('#s-worker .pane.on');
@@ -211,15 +201,20 @@ function createRealtimeNotification(workerId, bizId, notif) {
       renderWorkerNotifications();
   }
 
-  // Sonidos y Banners
   var colors = { new_booking: '#22C55E', booking_cancel: '#EF4444', booking_modify: '#F59E0B' };
   toast(notif.title, colors[notif.type] || '#4A7FD4');
   showFloatingNotification(notif);
   playNotificationSound(notif.type);
 
+  // ✅ CORREGIDO: icono correcto sin doble extensión
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
-      new Notification(notif.title, { body: notif.detail || '', icon: 'assets/img/logocitas barber2.png', tag: 'citaspro-' + Date.now(), renotify: true });
+      new Notification(notif.title, { 
+        body: notif.detail || '', 
+        icon: '/assets/img/image.png', 
+        tag: 'citaspro-' + notif.type, // ✅ tag fijo por tipo para reemplazar en vez de duplicar
+        renotify: true 
+      });
     } catch (e) {}
   }
 }
@@ -281,7 +276,7 @@ function showFloatingNotification(notif) {
 ══════════════════════════ */
 function requestNotificationPermission() {
   if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission().catch(function(){}); // Silencioso si falla
+    Notification.requestPermission().catch(function(){});
   }
 }
 
@@ -300,9 +295,8 @@ function playNotificationSound(type) {
       _audioCtx = new AudioContext();
     }
 
-    if (_audioCtx.state === 'suspended') {
-      _audioCtx.resume().catch(function(){});
-    }
+    // ✅ CORREGIDO: si está suspendido no forzamos, esperamos interacción del usuario
+    if (_audioCtx.state === 'suspended') return;
 
     var osc = _audioCtx.createOscillator();
     var gain = _audioCtx.createGain();
@@ -328,6 +322,13 @@ function playNotificationSound(type) {
     osc.stop(_audioCtx.currentTime + 0.5);
   } catch (e) { }
 }
+
+// ✅ Activar AudioContext en primera interacción del usuario
+document.addEventListener('click', function activateAudio() {
+  if (_audioCtx && _audioCtx.state === 'suspended') {
+    _audioCtx.resume().catch(function(){});
+  }
+}, { once: false });
 
 /* ══════════════════════════
    INDICADOR REALTIME
@@ -359,7 +360,7 @@ function showRealtimeIndicator(connected) {
 }
 
 /* ══════════════════════════
-   ACTUALIZACIÓN SEGURA DE UI (🛡️ ESCUDO DE NOTIFICACIONES)
+   ACTUALIZACIÓN SEGURA DE UI
 ══════════════════════════ */
 async function safeRefreshWorkerUI(workerId, bizId) {
     if (typeof fetchBizFromCloud !== 'function') return;
@@ -367,30 +368,21 @@ async function safeRefreshWorkerUI(workerId, bizId) {
     const freshData = await fetchBizFromCloud(bizId);
     if (!freshData) return;
     
-    let index = DB.businesses.findIndex(b => b.id === bizId);
+    let index = DB.businesses.findIndex(function(b) { return b.id === bizId; });
     if (index >= 0) {
         let oldBiz = DB.businesses[index];
-        
-        // 🛡️ ESCUDO: Antes de sobrescribir, rescatamos las notificaciones locales de TODOS
         if (oldBiz.notifications) freshData.notifications = oldBiz.notifications;
-        
-        (freshData.workers || []).forEach(fw => {
-            let oldW = (oldBiz.workers || []).find(ow => ow.id === fw.id);
-            if (oldW && oldW.notifications) {
-                fw.notifications = oldW.notifications;
-            }
+        (freshData.workers || []).forEach(function(fw) {
+            let oldW = (oldBiz.workers || []).find(function(ow) { return ow.id === fw.id; });
+            if (oldW && oldW.notifications) fw.notifications = oldW.notifications;
         });
-        
         DB.businesses[index] = freshData;
     }
     CUR = freshData;
     
-    let freshWorker = CUR.workers.find(w => w.id === workerId);
-    if (freshWorker) {
-        CUR_WORKER = freshWorker;
-    }
+    let freshWorker = CUR.workers.find(function(w) { return w.id === workerId; });
+    if (freshWorker) CUR_WORKER = freshWorker;
     
-    // ✅ ¡GUARDAMOS EL RESCATE EN LOCAL! Para que si das F5, no se pierdan.
     if (typeof saveDB === 'function') saveDB();
     
     var activePane = document.querySelector('#s-worker .pane.on');
@@ -415,17 +407,14 @@ async function safeRefreshBizUI(bizId) {
     const freshData = await fetchBizFromCloud(bizId);
     if (!freshData) return;
     
-    let index = DB.businesses.findIndex(b => b.id === bizId);
+    let index = DB.businesses.findIndex(function(b) { return b.id === bizId; });
     if (index >= 0) {
         let oldBiz = DB.businesses[index];
-        
-        // 🛡️ ESCUDO
         if (oldBiz.notifications) freshData.notifications = oldBiz.notifications;
-        (freshData.workers || []).forEach(fw => {
-            let oldW = (oldBiz.workers || []).find(ow => ow.id === fw.id);
+        (freshData.workers || []).forEach(function(fw) {
+            let oldW = (oldBiz.workers || []).find(function(ow) { return ow.id === fw.id; });
             if (oldW && oldW.notifications) fw.notifications = oldW.notifications;
         });
-        
         DB.businesses[index] = freshData;
     }
     CUR = freshData;
@@ -473,9 +462,9 @@ function connectRealtimeForCurrentUser() {
 window.addEventListener('load', function () { setTimeout(connectRealtimeForCurrentUser, 1500); });
 window.addEventListener('beforeunload', function () { unsubscribeRealtime(); });
 
-window.initSupabaseRealtime     = initSupabaseRealtime;
-window.subscribeWorkerRealtime  = subscribeWorkerRealtime;
-window.subscribeBizRealtime     = subscribeBizRealtime;
-window.unsubscribeRealtime      = unsubscribeRealtime;
+window.initSupabaseRealtime          = initSupabaseRealtime;
+window.subscribeWorkerRealtime       = subscribeWorkerRealtime;
+window.subscribeBizRealtime          = subscribeBizRealtime;
+window.unsubscribeRealtime           = unsubscribeRealtime;
 window.connectRealtimeForCurrentUser = connectRealtimeForCurrentUser;
 window.requestNotificationPermission = requestNotificationPermission;
