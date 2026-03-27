@@ -83,6 +83,32 @@
         gap: 5px;
         backdrop-filter: blur(4px);
     }
+    /* --- PARCHE MAGICO PARA EL MODO CLARO (CLIENTE) --- */
+    
+    /* 1. Hacer que los inputs se vean (Borde gris sutil) */
+    [data-theme="light"] .inp {
+        border: 1px solid #d1d5db !important;
+        background: #ffffff !important;
+        color: #1f2937 !important;
+    }
+    
+    /* 2. Quitar el cuadrado blanco feo de los profesionales */
+    #cl-workers-list > div {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* 3. Enmarcar en azul FUERTE cuando seleccionas un servicio/profesional en modo claro */
+    [data-theme="light"] .sel {
+        border: 2px solid var(--blue) !important;
+        background: rgba(74,127,212,0.05) !important;
+    }
+    
+    /* 4. Darle un borde normal a los servicios sin seleccionar para que se vean */
+    [data-theme="light"] #cl-svc-list > div:not(.sel) {
+        border: 1px solid #e5e7eb !important;
+    }
   </style>
 </head>
 <body>
@@ -745,7 +771,9 @@
     
     <div id="cl-cover-bg" style="width: 100%; height: 160px; background-color: var(--bg3); background-size: cover; background-position: center; position: relative; border-bottom: 1px solid var(--b);">
         <button id="cl-back-btn" style="position:absolute;top:16px;left:16px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:var(--rpill);padding:8px 14px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600;z-index:10;">Inicio</button>
-        
+
+        <button onclick="toggleTheme()" style="position:absolute;top:16px;right:16px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;z-index:10;"></button>
+
         <div id="ch-av" style="position: absolute; bottom: -45px; left: 50%; transform: translateX(-50%); width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #4A7FD4, #2855C8); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; color: #fff; overflow: hidden; border: 5px solid #07090F; box-shadow: 0 4px 20px rgba(0,0,0,.4); z-index: 5;"></div>
     </div>
     
