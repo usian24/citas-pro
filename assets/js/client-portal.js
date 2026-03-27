@@ -214,13 +214,13 @@ function buildTimes(bizId, workerId) {
   var horDay = horario.filter(function(h){ return h.day===dayNames[d.getDay()]; })[0] || {open:true,from1:'09:00',to1:'20:00'};
 
   var times=[];
-  var interval = CSEL.svcDur || 30;
 
   function addInterval(startStr, endStr) {
     if(!startStr || !endStr) return;
     var fp=startStr.split(':').map(Number), tp=endStr.split(':').map(Number);
     var fm=fp[0]*60+fp[1], tm=tp[0]*60+tp[1];
-    for(var m=fm; m <= tm-interval; m+=30){
+    // Siempre generamos todos los slots de 30 en 30 minutos
+    for(var m=fm; m < tm; m+=30){
       var h=Math.floor(m/60), mn=m%60;
       times.push(String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0'));
     }
@@ -235,27 +235,88 @@ function buildTimes(bizId, workerId) {
     }
   }
 
-  var booked = [];
+  // ✅ Calcular cuántos slots ocupa el servicio seleccionado
+  // 1-30 min  → 1 slot
+  // 31-60 min → 2 slots
+  // 61-90 min → 3 slots
+  var svcDur   = CSEL.svcDur || 30;
+  var slotsNeeded = Math.ceil(svcDur / 30); // 30→1, 60→2, 90→3
+
+  // ✅ Construir set de minutos bloqueados por citas existentes
+  var blockedMinutes = {};
   if (worker && worker.appointments) {
     worker.appointments.forEach(function(a) {
       if (a.date === CSEL.date && a.status !== 'cancelled') {
         if (CSEL.editingToken && a.token === CSEL.editingToken) return;
-        booked.push(a.time);
+
+        // Buscar duración del servicio de esa cita
+        var existingDur = 30;
+        if (worker.services) {
+          var existingSvc = worker.services.find(function(s) { return s.name === a.svc; });
+          if (existingSvc) existingDur = existingSvc.dur || 30;
+        }
+        var existingSlots = Math.ceil(existingDur / 30);
+
+        // Bloquear los slots que ocupa esa cita
+        var parts = a.time.split(':').map(Number);
+        var startMin = parts[0] * 60 + parts[1];
+        for (var i = 0; i < existingSlots; i++) {
+          blockedMinutes[startMin + (i * 30)] = true;
+        }
       }
     });
   }
 
-  var available = times.filter(function(t){ return booked.indexOf(t)<0; }).length;
-  var availEl=G('cl-time-available');
-  if(availEl) availEl.textContent = times.length ? (available>0 ? available+' horarios disponibles' : 'Sin horarios disponibles') : '';
+  // ✅ Un slot está disponible si él y los siguientes (según duración) están libres
+  function isSlotAvailable(timeStr) {
+    var parts = timeStr.split(':').map(Number);
+    var startMin = parts[0] * 60 + parts[1];
+    for (var i = 0; i < slotsNeeded; i++) {
+      var checkMin = startMin + (i * 30);
+      if (blockedMinutes[checkMin]) return false;
+      // Verificar que el slot existe en el horario
+      var checkH = Math.floor(checkMin / 60);
+      var checkM = checkMin % 60;
+      var checkStr = String(checkH).padStart(2,'0') + ':' + String(checkM).padStart(2,'0');
+      if (i > 0 && times.indexOf(checkStr) < 0) return false;
+    }
+    return true;
+  }
 
-  if (!times.length) {
+  // ✅ Filtrar slots que no tienen suficiente espacio para el servicio
+  var validTimes = times.filter(function(t) {
+    var parts = t.split(':').map(Number);
+    var startMin = parts[0] * 60 + parts[1];
+    // Verificar que hay suficiente tiempo antes del fin del turno
+    var endMin = startMin + svcDur;
+    // Obtener el fin del turno
+    var turnoEnd = 0;
+    if (horDay.open) {
+      var tp1 = (horDay.to1 || horDay.to || '20:00').split(':').map(Number);
+      turnoEnd = tp1[0] * 60 + tp1[1];
+      // Si tiene descanso y el slot está en el segundo turno
+      if (horDay.hasBreak && horDay.from2 && horDay.to2) {
+        var fp2 = horDay.from2.split(':').map(Number);
+        var tp2 = horDay.to2.split(':').map(Number);
+        var from2Min = fp2[0] * 60 + fp2[1];
+        var to2Min   = tp2[0] * 60 + tp2[1];
+        if (startMin >= from2Min) turnoEnd = to2Min;
+      }
+    }
+    return endMin <= turnoEnd;
+  });
+
+  var available = validTimes.filter(function(t){ return isSlotAvailable(t); }).length;
+  var availEl = G('cl-time-available');
+  if(availEl) availEl.textContent = validTimes.length ? (available > 0 ? available + ' horarios disponibles' : 'Sin horarios disponibles') : '';
+
+  if (!validTimes.length) {
     H('cl-times','<div style="text-align:center;padding:24px;color:var(--muted);background:var(--card);border-radius:var(--r);border:1px solid var(--b)"><div style="font-size:13px">Cerrado este día</div></div>');
     return;
   }
 
-  H('cl-times', times.map(function(t){
-    var busy = booked.indexOf(t) >= 0;
+  H('cl-times', validTimes.map(function(t){
+    var busy = !isSlotAvailable(t);
     return '<div class="topt'+(busy?' busy':'')+'" data-tm="'+t+'">'+t+'</div>';
   }).join(''));
 
