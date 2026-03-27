@@ -4,20 +4,48 @@
 window._cloudApptCache = window._cloudApptCache || null;
 var _cloudApptCache = null;
 
+/* ══════════════════════════
+   MAPA DE ZONAS HORARIAS POR PAÍS
+══════════════════════════ */
+var COUNTRY_TIMEZONES = {
+  ES: 'Europe/Madrid',
+  CO: 'America/Bogota',
+  MX: 'America/Mexico_City',
+  AR: 'America/Argentina/Buenos_Aires',
+  PE: 'America/Lima',
+  CL: 'America/Santiago',
+  VE: 'America/Caracas',
+  EC: 'America/Guayaquil',
+  DO: 'America/Santo_Domingo',
+  US: 'America/New_York',
+  BR: 'America/Sao_Paulo',
+  DE: 'Europe/Berlin',
+  NL: 'Europe/Amsterdam',
+  FR: 'Europe/Paris'
+};
+
+function getNowInBizTimezone(country) {
+  var tz = COUNTRY_TIMEZONES[country] || 'Europe/Madrid';
+  try {
+    var now = new Date();
+    var formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    });
+    var parts = formatter.formatToParts(now);
+    var p = {};
+    parts.forEach(function(x) { p[x.type] = x.value; });
+    return new Date(p.year + '-' + p.month + '-' + p.day + 'T' + p.hour + ':' + p.minute + ':00');
+  } catch(e) {
+    return new Date();
+  }
+}
+
 /* ══════════════════════════════════════════════════
    CLIENT-PORTAL.JS
-   Flujo de reserva del cliente:
-   1. Bienvenida de la barbería
-   2. Nombre + teléfono
-   3. Seleccionar trabajador (tarjetas)
-   4. Seleccionar servicio del trabajador
-   5. Seleccionar fecha y hora
-   6. Confirmar → WhatsApp + notificación al worker
 ══════════════════════════════════════════════════ */
 
-/* ══════════════════════════
-   CARGAR BARBERÍA POR ID
-══════════════════════════ */
 function loadBizDirect(bizId) {
   var biz = getBizById(bizId);
   if (!biz) { toast('Negocio no encontrado', '#EF4444'); return; }
@@ -30,11 +58,8 @@ function loadBizDirect(bizId) {
 
   var coverBg = G('cl-cover-bg');
   if (coverBg) {
-    if (biz.cover) {
-      coverBg.style.backgroundImage = 'url(' + sanitizeImageDataURL(biz.cover) + ')';
-    } else {
-      coverBg.style.backgroundImage = 'none';
-    }
+    if (biz.cover) coverBg.style.backgroundImage = 'url(' + sanitizeImageDataURL(biz.cover) + ')';
+    else coverBg.style.backgroundImage = 'none';
   }
 
   var av = G('ch-av');
@@ -49,9 +74,6 @@ function loadBizDirect(bizId) {
   window.scrollTo(0, 0);
 }
 
-/* ══════════════════════════
-   NAVEGACIÓN POR PASOS
-══════════════════════════ */
 function clGoStep(n) {
   document.querySelectorAll('.bstep').forEach(function(s) { s.classList.remove('on'); });
   var s = G('cs-' + n); if (s) s.classList.add('on');
@@ -166,100 +188,110 @@ function clStep4() {
 
 /* ══════════════════════════
    PASO 4 — Fecha y hora
+   ✅ Usa timezone del país del negocio
 ══════════════════════════ */
 function buildDates(bizId, workerId) {
   var biz = getBizById(bizId);
   if (!biz) return;
-  var worker = (biz.workers||[]).filter(function(w){ return w.id===workerId; })[0];
+  var worker  = (biz.workers||[]).filter(function(w){ return w.id===workerId; })[0];
   var horario = (worker && worker.horario) ? worker.horario : (biz.horario || DEFAULT_HORARIO);
 
-  var dates=[], now=new Date();
-  var dayNames=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  for (var i=0;i<14;i++) {
-    var d=new Date(now); d.setDate(now.getDate()+i);
-    var hn=dayNames[d.getDay()];
-    var hd=horario.filter(function(h){ return h.day===hn; })[0];
-    if (!hd||hd.open) dates.push(d);
-    if (dates.length>=7) break;
+  // ✅ Hora actual en el país de la barbería
+  var now      = getNowInBizTimezone(biz.country || 'ES');
+  var dates    = [];
+  var dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  for (var i = 0; i < 14; i++) {
+    var d = new Date(now);
+    d.setDate(now.getDate() + i);
+    var hn = dayNames[d.getDay()];
+    var hd = horario.filter(function(h){ return h.day===hn; })[0];
+    if (!hd || hd.open) dates.push(d);
+    if (dates.length >= 7) break;
   }
 
-  var days=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  H('cl-dates', dates.map(function(d,i){
-    return '<div class="dateopt'+(i===0?' sel':'')+'" data-dt="'+d.toISOString().split('T')[0]+'">'
+  var days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  H('cl-dates', dates.map(function(d, i){
+    var ds = d.getFullYear() + '-'
+      + String(d.getMonth()+1).padStart(2,'0') + '-'
+      + String(d.getDate()).padStart(2,'0');
+    return '<div class="dateopt'+(i===0?' sel':'')+'" data-dt="'+ds+'">'
       +'<div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">'+days[d.getDay()]+'</div>'
       +'<div style="font-size:20px;font-weight:900">'+d.getDate()+'</div>'
       +'<div style="font-size:9px;color:var(--muted)">'+MONTHS_SHORT[d.getMonth()]+'</div>'
       +'</div>';
   }).join(''));
 
-  CSEL.date = dates.length ? dates[0].toISOString().split('T')[0] : now.toISOString().split('T')[0];
+  var firstDs = dates.length
+    ? dates[0].getFullYear() + '-' + String(dates[0].getMonth()+1).padStart(2,'0') + '-' + String(dates[0].getDate()).padStart(2,'0')
+    : now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+
+  CSEL.date       = firstDs;
+  CSEL.bizCountry = biz.country || 'ES';
+
   document.querySelectorAll('.dateopt').forEach(function(o) {
     o.addEventListener('click', function() {
       document.querySelectorAll('.dateopt').forEach(function(x){ x.classList.remove('sel'); });
-      o.classList.add('sel'); CSEL.date=o.getAttribute('data-dt');
+      o.classList.add('sel');
+      CSEL.date = o.getAttribute('data-dt');
       buildTimes(bizId, workerId);
     });
   });
   buildTimes(bizId, workerId);
 }
 
+/* ══════════════════════════
+   PASO 4 — Horas disponibles
+   ✅ Bloqueo multi-slot por duración del servicio
+══════════════════════════ */
 function buildTimes(bizId, workerId) {
   var biz = getBizById(bizId);
   if (!biz || !CSEL.date) return;
-  var worker = (biz.workers||[]).filter(function(w){ return w.id===workerId; })[0];
+  var worker  = (biz.workers||[]).filter(function(w){ return w.id===workerId; })[0];
   var horario = (worker && worker.horario) ? worker.horario : (biz.horario || DEFAULT_HORARIO);
 
-  var d = new Date(CSEL.date+'T12:00');
-  var dayNames=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  var horDay = horario.filter(function(h){ return h.day===dayNames[d.getDay()]; })[0] || {open:true,from1:'09:00',to1:'20:00'};
+  var d        = new Date(CSEL.date+'T12:00');
+  var dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var horDay   = horario.filter(function(h){ return h.day===dayNames[d.getDay()]; })[0] || {open:true,from1:'09:00',to1:'20:00'};
 
-  var times=[];
-
+  var times = [];
   function addInterval(startStr, endStr) {
-    if(!startStr || !endStr) return;
-    var fp=startStr.split(':').map(Number), tp=endStr.split(':').map(Number);
-    var fm=fp[0]*60+fp[1], tm=tp[0]*60+tp[1];
-    // Siempre generamos todos los slots de 30 en 30 minutos
-    for(var m=fm; m < tm; m+=30){
-      var h=Math.floor(m/60), mn=m%60;
+    if (!startStr || !endStr) return;
+    var fp = startStr.split(':').map(Number), tp = endStr.split(':').map(Number);
+    var fm = fp[0]*60+fp[1], tm = tp[0]*60+tp[1];
+    for (var m = fm; m < tm; m += 30) {
+      var h = Math.floor(m/60), mn = m%60;
       times.push(String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0'));
     }
   }
 
   if (horDay.open) {
     var f1 = horDay.from1 || horDay.from || '09:00';
-    var t1 = horDay.to1 || horDay.to || '20:00';
+    var t1 = horDay.to1   || horDay.to   || '20:00';
     addInterval(f1, t1);
     if (horDay.hasBreak && horDay.from2 && horDay.to2) {
       addInterval(horDay.from2, horDay.to2);
     }
   }
 
-  // ✅ Calcular cuántos slots ocupa el servicio seleccionado
-  // 1-30 min  → 1 slot
-  // 31-60 min → 2 slots
-  // 61-90 min → 3 slots
-  var svcDur   = CSEL.svcDur || 30;
-  var slotsNeeded = Math.ceil(svcDur / 30); // 30→1, 60→2, 90→3
+  // ✅ Slots que necesita el servicio: 30min→1, 60min→2, 90min→3
+  var svcDur      = CSEL.svcDur || 30;
+  var slotsNeeded = Math.ceil(svcDur / 30);
 
-  // ✅ Construir set de minutos bloqueados por citas existentes
+  // ✅ Minutos bloqueados por citas existentes (respetando su duración)
   var blockedMinutes = {};
   if (worker && worker.appointments) {
     worker.appointments.forEach(function(a) {
       if (a.date === CSEL.date && a.status !== 'cancelled') {
         if (CSEL.editingToken && a.token === CSEL.editingToken) return;
-
-        // Buscar duración del servicio de esa cita
-        var existingDur = 30;
+        var existingDur   = 30;
         if (worker.services) {
-          var existingSvc = worker.services.find(function(s) { return s.name === a.svc; });
+          var existingSvc = worker.services.find(function(s){ return s.name === a.svc; });
           if (existingSvc) existingDur = existingSvc.dur || 30;
         }
         var existingSlots = Math.ceil(existingDur / 30);
-
-        // Bloquear los slots que ocupa esa cita
-        var parts = a.time.split(':').map(Number);
-        var startMin = parts[0] * 60 + parts[1];
+        var pts           = a.time.split(':').map(Number);
+        var startMin      = pts[0]*60 + pts[1];
         for (var i = 0; i < existingSlots; i++) {
           blockedMinutes[startMin + (i * 30)] = true;
         }
@@ -267,39 +299,37 @@ function buildTimes(bizId, workerId) {
     });
   }
 
-  // ✅ Un slot está disponible si él y los siguientes (según duración) están libres
+  // ✅ Slot disponible solo si él y los siguientes necesarios están libres y en horario
   function isSlotAvailable(timeStr) {
-    var parts = timeStr.split(':').map(Number);
-    var startMin = parts[0] * 60 + parts[1];
+    var pts      = timeStr.split(':').map(Number);
+    var startMin = pts[0]*60 + pts[1];
     for (var i = 0; i < slotsNeeded; i++) {
       var checkMin = startMin + (i * 30);
       if (blockedMinutes[checkMin]) return false;
-      // Verificar que el slot existe en el horario
-      var checkH = Math.floor(checkMin / 60);
-      var checkM = checkMin % 60;
-      var checkStr = String(checkH).padStart(2,'0') + ':' + String(checkM).padStart(2,'0');
-      if (i > 0 && times.indexOf(checkStr) < 0) return false;
+      if (i > 0) {
+        var checkH   = Math.floor(checkMin / 60);
+        var checkM   = checkMin % 60;
+        var checkStr = String(checkH).padStart(2,'0') + ':' + String(checkM).padStart(2,'0');
+        if (times.indexOf(checkStr) < 0) return false;
+      }
     }
     return true;
   }
 
-  // ✅ Filtrar slots que no tienen suficiente espacio para el servicio
+  // ✅ Eliminar slots sin suficiente tiempo antes del fin del turno
   var validTimes = times.filter(function(t) {
-    var parts = t.split(':').map(Number);
-    var startMin = parts[0] * 60 + parts[1];
-    // Verificar que hay suficiente tiempo antes del fin del turno
-    var endMin = startMin + svcDur;
-    // Obtener el fin del turno
+    var pts      = t.split(':').map(Number);
+    var startMin = pts[0]*60 + pts[1];
+    var endMin   = startMin + svcDur;
     var turnoEnd = 0;
     if (horDay.open) {
       var tp1 = (horDay.to1 || horDay.to || '20:00').split(':').map(Number);
-      turnoEnd = tp1[0] * 60 + tp1[1];
-      // Si tiene descanso y el slot está en el segundo turno
+      turnoEnd = tp1[0]*60 + tp1[1];
       if (horDay.hasBreak && horDay.from2 && horDay.to2) {
-        var fp2 = horDay.from2.split(':').map(Number);
-        var tp2 = horDay.to2.split(':').map(Number);
-        var from2Min = fp2[0] * 60 + fp2[1];
-        var to2Min   = tp2[0] * 60 + tp2[1];
+        var fp2      = horDay.from2.split(':').map(Number);
+        var tp2      = horDay.to2.split(':').map(Number);
+        var from2Min = fp2[0]*60 + fp2[1];
+        var to2Min   = tp2[0]*60 + tp2[1];
         if (startMin >= from2Min) turnoEnd = to2Min;
       }
     }
@@ -307,8 +337,8 @@ function buildTimes(bizId, workerId) {
   });
 
   var available = validTimes.filter(function(t){ return isSlotAvailable(t); }).length;
-  var availEl = G('cl-time-available');
-  if(availEl) availEl.textContent = validTimes.length ? (available > 0 ? available + ' horarios disponibles' : 'Sin horarios disponibles') : '';
+  var availEl   = G('cl-time-available');
+  if (availEl) availEl.textContent = validTimes.length ? (available > 0 ? available+' horarios disponibles' : 'Sin horarios disponibles') : '';
 
   if (!validTimes.length) {
     H('cl-times','<div style="text-align:center;padding:24px;color:var(--muted);background:var(--card);border-radius:var(--r);border:1px solid var(--b)"><div style="font-size:13px">Cerrado este día</div></div>');
@@ -323,7 +353,7 @@ function buildTimes(bizId, workerId) {
   document.querySelectorAll('.topt:not(.busy)').forEach(function(o){
     o.addEventListener('click', function(){
       document.querySelectorAll('.topt').forEach(function(x){ x.classList.remove('sel'); });
-      o.classList.add('sel'); CSEL.time=o.getAttribute('data-tm');
+      o.classList.add('sel'); CSEL.time = o.getAttribute('data-tm');
     });
   });
 }
@@ -341,7 +371,7 @@ function clStep5() {
    PASO 5 — Resumen y confirmar
 ══════════════════════════ */
 function buildSummary() {
-  var biz = getBizById(CSEL.bizId);
+  var biz    = getBizById(CSEL.bizId);
   var worker = biz ? (biz.workers||[]).filter(function(w){ return w.id===CSEL.workerId; })[0] : null;
   H('cl-summary',
     '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Resumen de tu reserva</div>'
@@ -367,7 +397,7 @@ function confirmBooking() {
     toast('Faltan datos. Vuelve atrás y completa todo.','#EF4444'); return;
   }
 
-  var biz = getBizById(CSEL.bizId); if (!biz) return;
+  var biz    = getBizById(CSEL.bizId); if (!biz) return;
   var worker = (biz.workers||[]).filter(function(w){ return w.id===CSEL.workerId; })[0]; if (!worker) return;
 
   var isModifying = !!CSEL.editingToken;
@@ -462,7 +492,7 @@ function confirmBooking() {
     syncClientToCloud(CSEL.bizId, { name: name, phone: phone, email: email });
   }
 
-  /* 5. GUARDAR BIZ PARA NOTIFICACIONES */
+  /* 5. GUARDAR BIZ */
   fetch('/api/update-biz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -479,7 +509,6 @@ function confirmBooking() {
       })
     }).catch(function(e){ console.error(e); });
   }
-
   if (email) {
     fetch('/api/send-email', {
       method: 'POST', headers: {'Content-Type':'application/json'},
@@ -531,7 +560,6 @@ async function checkManageAccess() {
     var token = parts.length === 3 ? parts[2] : parts[1];
     var bizId = parts.length === 3 ? parts[1] : null;
 
-    // 1. Cargar biz desde cloud SIN pisar DB activa
     if (bizId && typeof fetchBizFromCloud === 'function') {
       try {
         var cloudBiz = await fetchBizFromCloud(bizId);
@@ -540,61 +568,38 @@ async function checkManageAccess() {
           var fresh = loadDB();
           DB.businesses = fresh.businesses;
         }
-      } catch(e) {
-        console.error('Error cargando biz desde cloud:', e);
-      }
+      } catch(e) { console.error('Error cargando biz desde cloud:', e); }
     }
 
     if (token) {
-      // 2. Buscar en local primero
       var found = findApptByToken(token);
-
-      // 3. Si no está local, buscar en Supabase por token
       if (!found) {
         try {
           var resp = await fetch('/api/get-appointment-by-token?token=' + encodeURIComponent(token));
           if (resp.ok) {
             var data = await resp.json();
             if (data && data.appointment) {
-              var a = data.appointment;
-              var biz = getBizById(a.business_id);
-              if (!biz) {
-                biz = { id: a.business_id, name: 'Tu barbería', workers: [] };
-              }
+              var a      = data.appointment;
+              var biz    = getBizById(a.business_id);
+              if (!biz)  biz = { id: a.business_id, name: 'Tu barbería', workers: [] };
               var worker = null;
-              if (biz.workers) {
-                worker = biz.workers.find(function(w) { return w.id === a.worker_id; }) || null;
-              }
+              if (biz.workers) worker = biz.workers.find(function(w){ return w.id === a.worker_id; }) || null;
               var normalizedAppt = {
-                id:     a.id,
-                token:  a.token,
-                client: a.client_name,
-                phone:  a.client_phone,
-                email:  a.client_email || '',
-                svc:    a.service_name,
-                price:  parseFloat(a.service_price) || 0,
-                date:   a.date,
-                time:   a.time,
-                status: a.status,
-                notes:  a.notes || ''
+                id: a.id, token: a.token,
+                client: a.client_name, phone: a.client_phone, email: a.client_email || '',
+                svc: a.service_name, price: parseFloat(a.service_price) || 0,
+                date: a.date, time: a.time, status: a.status, notes: a.notes || ''
               };
               found = { biz: biz, worker: worker, appt: normalizedAppt };
-              // Guardar en cache global
               window._cloudApptCache = found;
               _cloudApptCache = found;
             }
           }
-        } catch(e) {
-          console.error('Error buscando cita por token:', e);
-        }
+        } catch(e) { console.error('Error buscando cita por token:', e); }
       }
 
-      if (found) {
-        openManageModal(found.biz, found.worker, found.appt);
-        return true;
-      } else {
-        toast('Cita no encontrada o ya expirada', '#EF4444');
-      }
+      if (found) { openManageModal(found.biz, found.worker, found.appt); return true; }
+      else toast('Cita no encontrada o ya expirada', '#EF4444');
     }
   }
   return false;
@@ -605,15 +610,11 @@ function findApptByToken(token) {
   DB.businesses.forEach(function(biz) {
     (biz.workers||[]).forEach(function(w) {
       (w.appointments||[]).forEach(function(a) {
-        if (a.token === token && a.status !== 'cancelled') {
-          result = { biz:biz, worker:w, appt:a };
-        }
+        if (a.token === token && a.status !== 'cancelled') result = { biz:biz, worker:w, appt:a };
       });
     });
     (biz.appointments||[]).forEach(function(a) {
-      if (a.token === token && a.status !== 'cancelled') {
-        result = { biz:biz, worker:null, appt:a };
-      }
+      if (a.token === token && a.status !== 'cancelled') result = { biz:biz, worker:null, appt:a };
     });
   });
   return result;
@@ -658,7 +659,7 @@ function reprogramarCita(token) {
   CSEL.svcDur       = 30;
 
   if (found.worker && found.worker.services) {
-    var sObj = found.worker.services.find(function(s) { return s.name === found.appt.svc; });
+    var sObj = found.worker.services.find(function(s){ return s.name === found.appt.svc; });
     if (sObj) CSEL.svcDur = sObj.dur || 30;
   }
 
@@ -666,16 +667,11 @@ function reprogramarCita(token) {
   _cloudApptCache = null;
   closeOv('ov-manage');
 
-  // Asegurar que el biz esté en DB para que buildDates funcione
   var localBiz = getBizById(found.biz.id);
-  if (!localBiz) {
-    DB.businesses.push(found.biz);
-  }
+  if (!localBiz) DB.businesses.push(found.biz);
 
   goTo('s-client');
-  if (found.worker) {
-    buildDates(found.biz.id, found.worker.id);
-  }
+  if (found.worker) buildDates(found.biz.id, found.worker.id);
   clGoStep(4);
 }
 
@@ -689,14 +685,7 @@ function cancelApptByToken(token) {
   if (!found) { toast('Cita no encontrada', '#EF4444'); return; }
 
   found.appt.status = 'cancelled';
-  
-  console.log('DATOS QUE SE MANDAN:', JSON.stringify({
-  id: found.appt.id,
-  token: found.appt.token,
-  business_id: found.biz.id
-}));
 
-  // 1. Cancelar en Supabase
   fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -719,11 +708,10 @@ function cancelApptByToken(token) {
         notes:         found.appt.notes || ''
       }]
     })
-  }).then(function(r) { return r.json(); })
-    .then(function(d) { console.log('Sync cancel result:', JSON.stringify(d)); })
-    .catch(function(e) { console.error('Error cancelando en Supabase:', e); });
+  }).then(function(r){ return r.json(); })
+    .then(function(d){ console.log('Sync cancel result:', JSON.stringify(d)); })
+    .catch(function(e){ console.error('Error cancelando en Supabase:', e); });
 
-  // 2. Notificar al worker
   if (found.worker) {
     if (!found.worker.notifications) found.worker.notifications = [];
     found.worker.notifications.unshift({
@@ -754,27 +742,21 @@ function cancelApptByToken(token) {
           role:        found.worker.spec || 'barber'
         }
       })
-    }).catch(function(e) { console.error('Error guardando worker:', e); });
+    }).catch(function(e){ console.error('Error guardando worker:', e); });
   }
 
-  // 3. Marcar como cancelada en local y guardar — una sola var localBiz
   var localBiz = getBizById(found.biz.id);
   if (localBiz) {
     (localBiz.workers || []).forEach(function(w) {
-      (w.appointments || []).forEach(function(a) {
-        if (a.token === token) a.status = 'cancelled';
-      });
+      (w.appointments || []).forEach(function(a){ if (a.token === token) a.status = 'cancelled'; });
     });
-    (localBiz.appointments || []).forEach(function(a) {
-      if (a.token === token) a.status = 'cancelled';
-    });
+    (localBiz.appointments || []).forEach(function(a){ if (a.token === token) a.status = 'cancelled'; });
     var prevCUR = CUR;
     CUR = localBiz;
     saveDB();
     CUR = prevCUR;
   }
 
-  // 4. Email al worker
   if (found.worker && found.worker.email) {
     fetch('/api/send-email', {
       method: 'POST',
@@ -782,50 +764,37 @@ function cancelApptByToken(token) {
       body: JSON.stringify({
         type: 'booking_cancel',
         to:   found.worker.email,
-        data: {
-          clientName: found.appt.client,
-          service:    found.appt.svc,
-          date:       found.appt.date,
-          time:       found.appt.time
-        }
+        data: { clientName: found.appt.client, service: found.appt.svc, date: found.appt.date, time: found.appt.time }
       })
-    }).catch(function(e) { console.error('Error email:', e); });
+    }).catch(function(e){ console.error('Error email:', e); });
   }
 
   window._cloudApptCache = null;
   _cloudApptCache = null;
   closeOv('ov-manage');
   toast('Tu cita ha sido cancelada', '#22C55E');
-  setTimeout(function() { window.location.hash = ''; }, 1500);
+  setTimeout(function(){ window.location.hash = ''; }, 1500);
 }
 
 /* ══════════════════════════
-   HASH ROUTING GLOBALS
+   HASH ROUTING
 ══════════════════════════ */
 async function checkLinkAccess() {
   var hash = window.location.hash;
 
-  if (hash && hash.indexOf('#manage/') === 0) {
-    return await checkManageAccess();
-  }
+  if (hash && hash.indexOf('#manage/') === 0) return await checkManageAccess();
 
   if (hash && hash.indexOf('#b/') === 0) {
     var bizId = hash.slice(3);
     if (bizId) {
       DB = loadDB();
       var biz = getBizById(bizId);
-
       if (!biz && typeof fetchBizFromCloud === 'function') {
         biz = await fetchBizFromCloud(bizId);
         if (biz && typeof syncBizToLocal === 'function') syncBizToLocal(biz);
       }
-
-      if (biz) {
-        loadBizDirect(bizId);
-        return true;
-      } else {
-        toast('Negocio no encontrado', '#EF4444');
-      }
+      if (biz) { loadBizDirect(bizId); return true; }
+      else toast('Negocio no encontrado', '#EF4444');
     }
   }
   return false;
