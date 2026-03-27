@@ -176,6 +176,8 @@ a{text-decoration:none;color:inherit}
 .cal-day.today{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff;box-shadow:0 2px 12px rgba(74,127,212,.4)}
 .cal-day.has-appts::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--gold)}
 .cal-day.other-month{opacity:.2;pointer-events:none}
+.cal-day.sel{outline:2px solid #EF4444;outline-offset:-2px;border-radius:10px;}
+.cal-day.today.sel{outline:2px solid #EF4444;outline-offset:-2px;}
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .sec-ttl{font-size:16px;font-weight:800;letter-spacing:-.3px}
 .toggle-wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--b)}

@@ -251,7 +251,7 @@ function renderWorkerCalendar() {
     var ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     var cls = 'cal-day';
     if (ds === today) cls += ' today';
-    if (ds === workerCalDay && ds !== today) cls += ' sel';
+    if (ds === workerCalDay) cls += ' sel'; 
     if (apptDates[ds]) cls += ' has-appts';
     
     html += '<div class="' + cls + '" onclick="selectWorkerCalDay(\'' + ds + '\')">' + d + '</div>';
