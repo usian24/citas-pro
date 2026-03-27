@@ -665,7 +665,7 @@ function saveWorkerPassword() {
 }
 
 /* ══════════════════════════
-   ✅ SYNC WORKER A SUPABASE
+   SYNC WORKER A SUPABASE
    Función centralizada para enviar datos del worker
 ══════════════════════════ */
 function syncWorkerToCloud() {
@@ -685,14 +685,15 @@ function syncWorkerToCloud() {
         phone:       CUR_WORKER.phone || '',
         avatar:      CUR_WORKER.photo || '',
         cover:       CUR_WORKER.cover || '',
-        role:        CUR_WORKER.spec || 'barber'
+        role:        CUR_WORKER.spec || 'barber',
+        horario:     CUR_WORKER.horario || []
       }
     })
   }).catch(function(e) { console.error('Error sync worker:', e); });
 }
 
 /* ══════════════════════════
-   ARCHIVOS FOTO — ✅ ACTUALIZADO CON IMGBB
+   ARCHIVOS FOTO —  ACTUALIZADO CON IMGBB
 ══════════════════════════ */
 function setupWorkerPhotoUpload() {
   
@@ -703,7 +704,7 @@ function setupWorkerPhotoUpload() {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
       
-      toast('Subiendo portada a la nube... ⏳', '#F59E0B');
+      toast('...', '#F59E0B');
       var url = await uploadToImgBB(f);
       if (url && CUR_WORKER) { 
         CUR_WORKER.cover = url; 
@@ -722,7 +723,7 @@ function setupWorkerPhotoUpload() {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
       
-      toast('Subiendo foto de perfil... ⏳', '#F59E0B');
+      toast('... ', '#F59E0B');
       var url = await uploadToImgBB(f);
       if (url && CUR_WORKER) { 
         CUR_WORKER.photo = url; 
@@ -742,7 +743,7 @@ function setupWorkerPhotoUpload() {
       var files = Array.from(e.target.files);
       if (files.length === 0) return;
       
-      toast('Subiendo ' + files.length + ' foto(s)... ⏳', '#F59E0B');
+      toast('Subiendo ' + files.length + ' foto(s)...', '#F59E0B');
       for (var i = 0; i < files.length; i++) {
         var f = files[i];
         if (!validImageType(f)) continue;
@@ -766,7 +767,7 @@ function setupWorkerPhotoUpload() {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) return;
       
-      toast('Subiendo foto del servicio... ⏳', '#F59E0B');
+      toast('...', '#F59E0B');
       var url = await uploadToImgBB(f);
       if (url) { 
         window._wkSvcPhoto = url; 
@@ -790,7 +791,7 @@ function copyWorkerLink() {
   tempInput.select();
   document.execCommand('copy');
   document.body.removeChild(tempInput);
-  toast('¡Link copiado correctamente!', '#4A7FD4');
+  toast('Link copiado', '#4A7FD4');
 }
 window.copyWorkerLink = copyWorkerLink;
 

@@ -707,6 +707,7 @@ window.onload = async function() {
   });
   on('save-wk-horario-btn', 'click', function() { 
       if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER) { 
+          syncWorkerToCloud();
           saveDB(); 
           toast('Horario guardado', '#4A7FD4'); 
       } 

@@ -242,7 +242,7 @@ function buildDates(bizId, workerId) {
 
 /* ══════════════════════════
    PASO 4 — Horas disponibles
-   ✅ Bloqueo multi-slot por duración del servicio
+   Bloqueo multi-slot por duración del servicio
 ══════════════════════════ */
 function buildTimes(bizId, workerId) {
   var biz = getBizById(bizId);
@@ -274,11 +274,11 @@ function buildTimes(bizId, workerId) {
     }
   }
 
-  // ✅ Slots que necesita el servicio: 30min→1, 60min→2, 90min→3
+  // Slots que necesita el servicio: 30min→1, 60min→2, 90min→3
   var svcDur      = CSEL.svcDur || 30;
   var slotsNeeded = Math.ceil(svcDur / 30);
 
-  // ✅ Minutos bloqueados por citas existentes (respetando su duración)
+  // Minutos bloqueados por citas existentes (respetando su duración)
   var blockedMinutes = {};
   if (worker && worker.appointments) {
     worker.appointments.forEach(function(a) {
@@ -299,7 +299,7 @@ function buildTimes(bizId, workerId) {
     });
   }
 
-  // ✅ Slot disponible solo si él y los siguientes necesarios están libres y en horario
+  // Slot disponible solo si él y los siguientes necesarios están libres y en horario
   function isSlotAvailable(timeStr) {
     var pts      = timeStr.split(':').map(Number);
     var startMin = pts[0]*60 + pts[1];
@@ -316,11 +316,21 @@ function buildTimes(bizId, workerId) {
     return true;
   }
 
-  // ✅ Eliminar slots sin suficiente tiempo antes del fin del turno
+  // Eliminar slots sin suficiente tiempo antes del fin del turno
+  // ✅ Eliminar slots en el pasado o sin tiempo antes del fin del turno
+  var currentNow = getNowInBizTimezone(biz.country || 'ES');
+  var isToday = (CSEL.date === currentNow.toISOString().split('T')[0]);
+  var currentMinutes = currentNow.getHours() * 60 + currentNow.getMinutes();
+
   var validTimes = times.filter(function(t) {
     var pts      = t.split(':').map(Number);
     var startMin = pts[0]*60 + pts[1];
     var endMin   = startMin + svcDur;
+    
+    // ⏳ 1. REGLA DEL PASADO: Si es hoy, bloqueamos las horas que ya pasaron
+    if (isToday && startMin <= currentMinutes) return false;
+
+    // ⏳ 2. REGLA DEL TURNO: Verificar que alcance a terminar antes de cerrar/almorzar
     var turnoEnd = 0;
     if (horDay.open) {
       var tp1 = (horDay.to1 || horDay.to || '20:00').split(':').map(Number);

@@ -29,7 +29,8 @@ module.exports = async (req, res) => {
       phone:       worker.phone || '',
       avatar:      worker.avatar || '',
       cover:       worker.cover || '',
-      role:        worker.role || 'barber'
+      role:        worker.role || 'barber',
+      horario:     Array.isArray(worker.horario) ? worker.horario : []
     };
 
     const { error } = await supabase.from('workers').upsert(payload);
