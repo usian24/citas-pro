@@ -14,8 +14,8 @@ const PRECACHE = [
   '/assets/js/realtime.js',
   '/assets/js/client-portal.js',
   '/assets/js/app.js',
-  '/assets/img/icon-192.png',
-  '/assets/img/icon-512.png'
+  '/assets/img/image.png',
+  '/assets/img/image.png'
 ];
 
 // Instalar y cachear archivos principales
