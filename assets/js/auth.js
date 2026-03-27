@@ -20,19 +20,21 @@ function openLoginModal() {
 
 /* ── Login principal (Unificado) ── */
 async function doLogin() {
-  var email = V('li-email').trim().toLowerCase();
-  var pass  = V('li-pass');
+  var inputUser = V('li-email').trim();
+  var pass      = V('li-pass');
   hideErr('li-err');
 
-  if(!email || !validEmail(email)) { showErr('li-err','Introduce un correo electrónico válido.'); return; }
-  if(!pass)                        { showErr('li-err','Introduce tu contraseña.'); return; }
+  // Quitamos la validación estricta de email para que acepte "lucian@admin" sin problemas
+  if(!inputUser) { showErr('li-err','Introduce tu usuario o correo.'); return; }
+  if(!pass)      { showErr('li-err','Introduce tu contraseña.'); return; }
 
-  var key = 'login_' + email;
+  var inputLower = inputUser.toLowerCase(); 
+  var key = 'login_' + inputLower;
   if(!checkRateLimit(key)) { showErr('li-err','Demasiados intentos. Espera 5 minutos.'); return; }
 
   /* 1 — Buscar como dueño de negocio (Local) */
   var biz = DB.businesses.filter(function(b){
-    return (b.email||'').toLowerCase() === email && ((b.pass || b.password || '') === pass);
+    return (b.email||'').toLowerCase() === inputLower && ((b.pass || b.password || '') === pass);
   })[0];
 
   if(biz) {
@@ -51,7 +53,7 @@ async function doLogin() {
   var foundWorker = null, foundBiz = null;
   DB.businesses.forEach(function(b) {
     (b.workers||[]).forEach(function(w) {
-      if((w.email||'').toLowerCase() === email && ((w.pass || w.password || '') === pass) && w.active) {
+      if((w.email||'').toLowerCase() === inputLower && ((w.pass || w.password || '') === pass) && w.active) {
         foundWorker = w;
         foundBiz    = b;
       }
@@ -76,30 +78,32 @@ async function doLogin() {
     var originalText = btn ? btn.textContent : 'Acceder';
     if(btn) btn.textContent = 'Verificando...';
 
-    // Llamamos a tu endpoint de login de admin (ajusta la ruta si se llama diferente)
-    var resp = await fetch('/api/admin-login', {
+    // Mandamos las credenciales al "Guardia" en Netlify
+    let res = await fetch('/api/admin-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: email, password: pass }) 
+      body: JSON.stringify({ username: inputLower, password: pass })
     });
     
-    var data = await resp.json();
     if(btn) btn.textContent = originalText;
 
-    if (data.success) {
-       resetRateLimit(key);
+    if (res.ok) {
+       resetRateLimit(key); 
+       DB.admin.auth = true; 
+       saveDB(); 
        closeOv('ov-login');
        toast('Bienvenido, Super Admin', '#4A7FD4');
        
-       // Aquí redirigimos a la pantalla de admin. 
-       // Ajusta "goTo('s-admin')" según cómo llamabas a tu panel de admin antes.
        setTimeout(function(){
-           goTo('s-admin'); // <-- Cambia esto si tu función para abrir el panel maestro se llama distinto (ej. initAdmin())
+           showAdminPanel(); // <-- AHORA SÍ, ESTA ES LA PUERTA AL PANEL REAL
+           
+           // Conectar Realtime si existe
+           if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
        }, 300);
        return;
     }
-  } catch (e) {
-     console.error('Error al intentar login de admin:', e);
+  } catch (error) {
+     console.error('Error al intentar login de admin:', error);
      var btn = G('li-btn-login');
      if(btn) btn.textContent = 'Acceder';
   }
