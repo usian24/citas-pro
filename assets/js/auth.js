@@ -113,6 +113,23 @@ async function doLogin() {
   var p = G('li-pass'); if(p) p.value='';
 }
 
+/* ══════════════════════════
+   REDIRECCIÓN SUPER ADMIN
+══════════════════════════ */
+window.showAdminPanel = function() {
+  // 1. Cambiamos la pantalla a s-admin
+  if (typeof goTo === 'function') goTo('s-admin');
+  
+  // 2. Ocultamos el viejo login negro y mostramos el panel real
+  var l = G('adm-login'), p = G('adm-panel');
+  if (l) l.style.display = 'none';
+  if (p) p.style.display = 'block';
+  
+  // 3. Renderizamos datos (con validación por si admin.js carga un milisegundo después)
+  if (typeof renderDash === 'function') renderDash();
+  if (typeof checkNotifications === 'function') checkNotifications();
+};
+
 /* ── Logout dueño ── */
 function bizLogout() {
   openConfirmModal(
