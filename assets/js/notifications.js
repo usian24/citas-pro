@@ -2,13 +2,54 @@
 
 /* ══════════════════════════════════════════════════
    NOTIFICATIONS.JS
-   Bandeja de notificaciones para trabajadores.
-   Las notificaciones se guardan en:
-   business.workers[i].notifications[]
+   Las notificaciones ahora se guardan en Supabase
+   y se eliminan automáticamente después de 30 días.
 ══════════════════════════════════════════════════ */
 
 /* ══════════════════════════
-   BADGE — punto rojo en el tab
+   CARGAR DESDE SUPABASE
+══════════════════════════ */
+async function loadWorkerNotificationsFromCloud(workerId) {
+  if (!workerId) return [];
+  try {
+    var res = await fetch('/api/save-notification?worker_id=' + encodeURIComponent(workerId));
+    if (!res.ok) return [];
+    var data = await res.json();
+    return (data || []).map(function(n) {
+      return {
+        id:   n.id,
+        type: n.type,
+        msg:  n.msg,
+        data: { detail: n.detail || '' },
+        read: n.read,
+        date: n.created_at ? n.created_at : new Date().toISOString()
+      };
+    });
+  } catch (e) {
+    return [];
+  }
+}
+
+/* ══════════════════════════
+   GUARDAR EN SUPABASE
+══════════════════════════ */
+function saveNotificationToCloud(workerId, bizId, notif) {
+  if (!workerId || !bizId) return;
+  fetch('/api/save-notification', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      worker_id:   workerId,
+      business_id: bizId,
+      type:        notif.type || 'new_booking',
+      msg:         notif.msg || notif.title || '',
+      detail:      (notif.data && notif.data.detail) ? notif.data.detail : (notif.detail || '')
+    })
+  }).catch(function(e) { console.error('Error guardando notif:', e); });
+}
+
+/* ══════════════════════════
+   BADGE
 ══════════════════════════ */
 function renderWorkerNotifBadge() {
   if (!CUR_WORKER) return;
@@ -18,7 +59,6 @@ function renderWorkerNotifBadge() {
     badge.textContent = notifs.length > 0 ? (notifs.length > 9 ? '9+' : notifs.length) : '';
     badge.style.display = notifs.length > 0 ? 'flex' : 'none';
   }
-  /* Badge en el tab de navegación */
   var tabBadge = G('wn-notif-badge');
   if (tabBadge) {
     tabBadge.style.display = notifs.length > 0 ? 'inline-flex' : 'none';
@@ -27,13 +67,20 @@ function renderWorkerNotifBadge() {
 }
 
 /* ══════════════════════════
-   RENDER LISTA NOTIFICACIONES
+   RENDER — carga de Supabase si no hay locales
 ══════════════════════════ */
-function renderWorkerNotifications() {
+async function renderWorkerNotifications() {
   if (!CUR_WORKER) return;
+
+  // Cargar desde Supabase siempre para tener las más recientes
+  var cloud = await loadWorkerNotificationsFromCloud(CUR_WORKER.id);
+  if (cloud.length > 0) {
+    CUR_WORKER.notifications = cloud;
+  }
+
   var notifs = CUR_WORKER.notifications || [];
 
-  /* Marcar todas como leídas al abrir */
+  // Marcar todas como leídas al abrir
   var hasUnread = false;
   notifs.forEach(function(n){ if(!n.read){ n.read=true; hasUnread=true; } });
   if (hasUnread) { saveDB(); renderWorkerNotifBadge(); }
@@ -69,7 +116,6 @@ function notifCardH(n) {
     + '</div></div>';
 }
 
-/* ── Iconos SVG para notificaciones ── */
 function notifIconBooking() {
   return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>';
 }
@@ -84,20 +130,17 @@ function notifIconInfo() {
 }
 
 /* ══════════════════════════
-   CREAR NOTIFICACIÓN
-   Llamar desde client-portal.js cuando
-   el cliente confirma, modifica o cancela
+   NOTIFICACIÓN MANUAL
 ══════════════════════════ */
 function notifyWorker(bizId, workerId, type, msg, data) {
   addNotificationToWorker(bizId, workerId, { type: type, msg: msg, data: data || {} });
-  /* Si el trabajador está activo en este momento, actualizar badge */
   if (CUR_WORKER && CUR_WORKER.id === workerId) {
     renderWorkerNotifBadge();
   }
 }
 
 /* ══════════════════════════
-   LIMPIAR NOTIFICACIONES
+   LIMPIAR
 ══════════════════════════ */
 function clearWorkerNotifications() {
   if (!CUR_WORKER) return;
@@ -113,3 +156,6 @@ function clearWorkerNotifications() {
     }
   );
 }
+
+window.saveNotificationToCloud          = saveNotificationToCloud;
+window.loadWorkerNotificationsFromCloud = loadWorkerNotificationsFromCloud;

@@ -17,7 +17,6 @@ var _refreshTimerBiz = null;
 function initSupabaseRealtime() {
   if (_supaRT) return _supaRT;
   if (typeof supabase === 'undefined' || !supabase.createClient) return null;
-
   try {
     _supaRT = supabase.createClient(SUPABASE_RT_URL, SUPABASE_RT_KEY, {
       realtime: { params: { eventsPerSecond: 10 } }
@@ -40,9 +39,7 @@ function subscribeWorkerRealtime(workerId, bizId) {
   _rtChannel = client
     .channel(channelName)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: 'worker_id=eq.' + workerId },
-      function (payload) {
-        handleAppointmentChange(payload, workerId, bizId);
-      }
+      function (payload) { handleAppointmentChange(payload, workerId, bizId); }
     )
     .subscribe(function (status) {
       if (status === 'SUBSCRIBED') showRealtimeIndicator(true);
@@ -63,15 +60,13 @@ function subscribeBizRealtime(bizId) {
   _rtBizChannel = client
     .channel(channelName)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: 'business_id=eq.' + bizId },
-      function (payload) {
-        handleBizAppointmentChange(payload, bizId);
-      }
+      function (payload) { handleBizAppointmentChange(payload, bizId); }
     )
     .subscribe();
 }
 
 /* ══════════════════════════
-   HANDLER: Cambio en appointment (WORKER)
+   HANDLER WORKER
 ══════════════════════════ */
 function handleAppointmentChange(payload, workerId, bizId) {
   var eventType = payload.eventType;
@@ -80,61 +75,56 @@ function handleAppointmentChange(payload, workerId, bizId) {
   if (!CUR_WORKER || CUR_WORKER.id !== workerId) return;
 
   var localAppt = (CUR_WORKER.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
-  
-  var isRealChange = false;
-  var notifType = '';
-  var notifTitle = '';
-  var notifDetail = '';
 
-  var clientName = newData.client_name || newData.client || 'Cliente';
-  var serviceName = newData.service_name || newData.svc || 'Servicio';
+  var isRealChange = false;
+  var notifType = '', notifTitle = '', notifDetail = '';
+
+  var clientName   = newData.client_name || newData.client || 'Cliente';
+  var serviceName  = newData.service_name || newData.svc || 'Servicio';
   var servicePrice = newData.service_price !== undefined ? newData.service_price : (newData.price || 0);
 
   if (eventType === 'INSERT') {
     if (!localAppt) {
       isRealChange = true;
-      notifType = 'new_booking';
-      notifTitle = 'Nueva cita: ' + clientName;
-      notifDetail = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') + ' • ' + money(servicePrice);
+      notifType    = 'new_booking';
+      notifTitle   = 'Nueva cita: ' + clientName;
+      notifDetail  = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') + ' • ' + money(servicePrice);
     }
   } else if (eventType === 'UPDATE') {
     if (localAppt) {
-      var changedStatus = (newData.status !== localAppt.status);
-      var changedDateOrTime = (newData.date !== localAppt.date) || (newData.time !== localAppt.time);
-
+      var changedStatus      = (newData.status !== localAppt.status);
+      var changedDateOrTime  = (newData.date !== localAppt.date) || (newData.time !== localAppt.time);
       if (changedStatus && newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
         isRealChange = true;
-        notifType = 'booking_cancel';
-        notifTitle = 'Cita cancelada: ' + clientName;
-        notifDetail = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '');
+        notifType    = 'booking_cancel';
+        notifTitle   = 'Cita cancelada: ' + clientName;
+        notifDetail  = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '');
       } else if (changedDateOrTime) {
         isRealChange = true;
-        notifType = 'booking_modify';
-        notifTitle = 'Cita modificada: ' + clientName;
-        notifDetail = 'Nuevo horario: ' + (newData.date || '') + ' a las ' + (newData.time || '');
+        notifType    = 'booking_modify';
+        notifTitle   = 'Cita modificada: ' + clientName;
+        notifDetail  = 'Nuevo horario: ' + (newData.date || '') + ' a las ' + (newData.time || '');
       }
     }
   } else if (eventType === 'DELETE') {
     if (localAppt) {
       isRealChange = true;
-      notifType = 'booking_cancel';
-      notifTitle = '🗑️ Cita eliminada: ' + (localAppt.client || 'Cliente');
-      notifDetail = (localAppt.svc || '') + ' • ' + (localAppt.date || '');
+      notifType    = 'booking_cancel';
+      notifTitle   = '🗑️ Cita eliminada: ' + (localAppt.client || 'Cliente');
+      notifDetail  = (localAppt.svc || '') + ' • ' + (localAppt.date || '');
     }
   }
 
   if (isRealChange) {
-      createRealtimeNotification(workerId, bizId, { type: notifType, title: notifTitle, detail: notifDetail });
+    createRealtimeNotification(workerId, bizId, { type: notifType, title: notifTitle, detail: notifDetail });
   }
 
   if (_refreshTimerWorker) clearTimeout(_refreshTimerWorker);
-  _refreshTimerWorker = setTimeout(function() {
-      safeRefreshWorkerUI(workerId, bizId);
-  }, 1000);
+  _refreshTimerWorker = setTimeout(function() { safeRefreshWorkerUI(workerId, bizId); }, 1000);
 }
 
 /* ══════════════════════════
-   HANDLER: Cambio en appointment (DUEÑO)
+   HANDLER DUEÑO
 ══════════════════════════ */
 function handleBizAppointmentChange(payload, bizId) {
   var eventType = payload.eventType;
@@ -143,84 +133,83 @@ function handleBizAppointmentChange(payload, bizId) {
   if (!CUR || CUR.id !== bizId) return;
 
   var localAppt = null;
-  (CUR.workers || []).forEach(function(w){ 
-      var found = (w.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
-      if (found) localAppt = found;
+  (CUR.workers || []).forEach(function(w) {
+    var found = (w.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
+    if (found) localAppt = found;
   });
   if (!localAppt) {
-      var found = (CUR.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
-      if (found) localAppt = found;
+    var found = (CUR.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
+    if (found) localAppt = found;
   }
-  
-  var clientName = newData.client_name || newData.client || 'Cliente';
 
-  if (eventType === 'INSERT') {
-    if (!localAppt) toast('📅 Nueva cita: ' + clientName, '#22C55E');
-  } else if (eventType === 'UPDATE') {
-    if (localAppt) {
-        var changedStatus = (newData.status !== localAppt.status);
-        if (changedStatus && newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
-            toast('Cita cancelada: ' + clientName, '#EF4444');
-        }
+  var clientName = newData.client_name || newData.client || 'Cliente';
+  if (eventType === 'INSERT' && !localAppt) toast('📅 Nueva cita: ' + clientName, '#22C55E');
+  else if (eventType === 'UPDATE' && localAppt) {
+    if (newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
+      toast('Cita cancelada: ' + clientName, '#EF4444');
     }
   }
 
   if (_refreshTimerBiz) clearTimeout(_refreshTimerBiz);
-  _refreshTimerBiz = setTimeout(function() {
-      safeRefreshBizUI(bizId);
-  }, 1000);
+  _refreshTimerBiz = setTimeout(function() { safeRefreshBizUI(bizId); }, 1000);
 }
 
 /* ══════════════════════════
    CREAR NOTIFICACIÓN REALTIME
+   ✅ Guarda en Supabase para que persista 30 días
 ══════════════════════════ */
 function createRealtimeNotification(workerId, bizId, notif) {
-  
+
   var notifObj = {
-      type: notif.type,
-      msg: notif.title,               
-      data: { detail: notif.detail }, 
-      date: new Date().toISOString(), 
-      read: false
+    type: notif.type,
+    msg:  notif.title,
+    data: { detail: notif.detail },
+    date: new Date().toISOString(),
+    read: false
   };
 
+  // 1. Guardar en memoria local
   if (typeof addNotificationToWorker === 'function') {
     addNotificationToWorker(bizId, workerId, notifObj);
   } else if (CUR_WORKER) {
-      if (!CUR_WORKER.notifications) CUR_WORKER.notifications = [];
-      CUR_WORKER.notifications.unshift(notifObj);
-      if(CUR_WORKER.notifications.length > 50) CUR_WORKER.notifications.pop();
+    if (!CUR_WORKER.notifications) CUR_WORKER.notifications = [];
+    CUR_WORKER.notifications.unshift(notifObj);
+    if (CUR_WORKER.notifications.length > 50) CUR_WORKER.notifications.pop();
   }
 
+  // 2. ✅ Guardar en Supabase — persiste 30 días aunque se recargue
+  if (typeof saveNotificationToCloud === 'function') {
+    saveNotificationToCloud(workerId, bizId, notifObj);
+  }
+
+  // 3. Guardar localStorage
   if (typeof saveDB === 'function') saveDB();
 
+  // 4. Refrescar UI
   if (typeof renderWorkerNotifBadge === 'function') renderWorkerNotifBadge();
-  
   var activePane = document.querySelector('#s-worker .pane.on');
   if (activePane && activePane.id === 'wp-notif' && typeof renderWorkerNotifications === 'function') {
-      renderWorkerNotifications();
+    renderWorkerNotifications();
   }
 
+  // 5. Banner + sonido + notificación del sistema
   var colors = { new_booking: '#22C55E', booking_cancel: '#EF4444', booking_modify: '#F59E0B' };
   toast(notif.title, colors[notif.type] || '#4A7FD4');
   showFloatingNotification(notif);
   playNotificationSound(notif.type);
 
-  // ✅ CORREGIDO: icono correcto sin doble extensión
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
-      new Notification(notif.title, { 
-        body: notif.detail || '', 
-        icon: '/assets/img/image.png', 
-        tag: 'citaspro-' + notif.type, // ✅ tag fijo por tipo para reemplazar en vez de duplicar
-        renotify: true 
+      new Notification(notif.title, {
+        body: notif.detail || '', icon: '/assets/img/image.png',
+        tag: 'citaspro-' + notif.type, renotify: true
       });
     } catch (e) {}
   }
 }
 
 /* ══════════════════════════
-   NOTIFICACIÓN FLOTANTE (BANNER)
+   BANNER FLOTANTE
 ══════════════════════════ */
 function showFloatingNotification(notif) {
   var old = document.querySelectorAll('.rt-notif-banner');
@@ -239,8 +228,7 @@ function showFloatingNotification(notif) {
     + 'padding:16px 20px;display:flex;align-items:center;gap:14px;'
     + 'background:' + style.bg + ';backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);'
     + 'border-bottom:2px solid ' + style.border + ';'
-    + 'transform:translateY(-100%);transition:transform .4s cubic-bezier(.22,1,.36,1);'
-    + 'cursor:pointer;';
+    + 'transform:translateY(-100%);transition:transform .4s cubic-bezier(.22,1,.36,1);cursor:pointer;';
 
   banner.innerHTML = '<div style="font-size:28px;flex-shrink:0">' + style.icon + '</div>'
     + '<div style="flex:1">'
@@ -256,13 +244,9 @@ function showFloatingNotification(notif) {
   });
 
   document.body.appendChild(banner);
-
   requestAnimationFrame(function () {
-    requestAnimationFrame(function () {
-      banner.style.transform = 'translateY(0)';
-    });
+    requestAnimationFrame(function () { banner.style.transform = 'translateY(0)'; });
   });
-
   setTimeout(function () {
     if (banner.parentNode) {
       banner.style.transform = 'translateY(-100%)';
@@ -272,7 +256,7 @@ function showFloatingNotification(notif) {
 }
 
 /* ══════════════════════════
-   SONIDO DE NOTIFICACIÓN Y PERMISOS 
+   SONIDO
 ══════════════════════════ */
 function requestNotificationPermission() {
   if ('Notification' in window && Notification.permission === 'default') {
@@ -285,28 +269,23 @@ var _audioCtx = null;
 
 function playNotificationSound(type) {
   var now = Date.now();
-  if (now - _lastSoundTime < 1000) return; 
+  if (now - _lastSoundTime < 1000) return;
   _lastSoundTime = now;
-
   try {
     if (!_audioCtx) {
       var AudioContext = window.AudioContext || window.webkitAudioContext;
       if (!AudioContext) return;
       _audioCtx = new AudioContext();
     }
-
-    // ✅ CORREGIDO: si está suspendido no forzamos, esperamos interacción del usuario
     if (_audioCtx.state === 'suspended') return;
-
     var osc = _audioCtx.createOscillator();
     var gain = _audioCtx.createGain();
     osc.connect(gain);
     gain.connect(_audioCtx.destination);
-
     if (type === 'new_booking') {
-      osc.frequency.setValueAtTime(523, _audioCtx.currentTime);       
-      osc.frequency.setValueAtTime(659, _audioCtx.currentTime + 0.15); 
-      osc.frequency.setValueAtTime(784, _audioCtx.currentTime + 0.3);  
+      osc.frequency.setValueAtTime(523, _audioCtx.currentTime);
+      osc.frequency.setValueAtTime(659, _audioCtx.currentTime + 0.15);
+      osc.frequency.setValueAtTime(784, _audioCtx.currentTime + 0.3);
     } else if (type === 'booking_cancel') {
       osc.frequency.setValueAtTime(440, _audioCtx.currentTime);
       osc.frequency.setValueAtTime(330, _audioCtx.currentTime + 0.2);
@@ -314,20 +293,16 @@ function playNotificationSound(type) {
       osc.frequency.setValueAtTime(587, _audioCtx.currentTime);
       osc.frequency.setValueAtTime(523, _audioCtx.currentTime + 0.15);
     }
-
     osc.type = 'sine';
     gain.gain.setValueAtTime(0.15, _audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.5);
     osc.start(_audioCtx.currentTime);
     osc.stop(_audioCtx.currentTime + 0.5);
-  } catch (e) { }
+  } catch (e) {}
 }
 
-// ✅ Activar AudioContext en primera interacción del usuario
-document.addEventListener('click', function activateAudio() {
-  if (_audioCtx && _audioCtx.state === 'suspended') {
-    _audioCtx.resume().catch(function(){});
-  }
+document.addEventListener('click', function() {
+  if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume().catch(function(){});
 }, { once: false });
 
 /* ══════════════════════════
@@ -336,12 +311,9 @@ document.addEventListener('click', function activateAudio() {
 function showRealtimeIndicator(connected) {
   var existing = G('rt-indicator');
   if (existing) existing.remove();
-
   if (!connected) return;
-
   var topbar = document.querySelector('#s-worker .topbar') || document.querySelector('#s-biz .topbar');
   if (!topbar) return;
-
   var dot = document.createElement('div');
   dot.id = 'rt-indicator';
   dot.title = 'Conectado en tiempo real';
@@ -350,7 +322,6 @@ function showRealtimeIndicator(connected) {
     + 'position:absolute;top:8px;right:8px;';
   topbar.style.position = 'relative';
   topbar.appendChild(dot);
-
   if (!document.getElementById('rt-anim-style')) {
     var style = document.createElement('style');
     style.id = 'rt-anim-style';
@@ -360,85 +331,76 @@ function showRealtimeIndicator(connected) {
 }
 
 /* ══════════════════════════
-   ACTUALIZACIÓN SEGURA DE UI
+   REFRESH UI SEGURO
 ══════════════════════════ */
 async function safeRefreshWorkerUI(workerId, bizId) {
-    if (typeof fetchBizFromCloud !== 'function') return;
-    
-    const freshData = await fetchBizFromCloud(bizId);
-    if (!freshData) return;
-    
-    let index = DB.businesses.findIndex(function(b) { return b.id === bizId; });
-    if (index >= 0) {
-        let oldBiz = DB.businesses[index];
-        if (oldBiz.notifications) freshData.notifications = oldBiz.notifications;
-        (freshData.workers || []).forEach(function(fw) {
-            let oldW = (oldBiz.workers || []).find(function(ow) { return ow.id === fw.id; });
-            if (oldW && oldW.notifications) fw.notifications = oldW.notifications;
-        });
-        DB.businesses[index] = freshData;
+  if (typeof fetchBizFromCloud !== 'function') return;
+  const freshData = await fetchBizFromCloud(bizId);
+  if (!freshData) return;
+  let index = DB.businesses.findIndex(function(b) { return b.id === bizId; });
+  if (index >= 0) {
+    let oldBiz = DB.businesses[index];
+    if (oldBiz.notifications) freshData.notifications = oldBiz.notifications;
+    (freshData.workers || []).forEach(function(fw) {
+      let oldW = (oldBiz.workers || []).find(function(ow) { return ow.id === fw.id; });
+      if (oldW && oldW.notifications) fw.notifications = oldW.notifications;
+    });
+    DB.businesses[index] = freshData;
+  }
+  CUR = freshData;
+  let freshWorker = CUR.workers.find(function(w) { return w.id === workerId; });
+  if (freshWorker) CUR_WORKER = freshWorker;
+  if (typeof saveDB === 'function') saveDB();
+  var activePane = document.querySelector('#s-worker .pane.on');
+  if (activePane) {
+    var pid = activePane.id;
+    if (pid === 'wp-home') {
+      if (typeof renderWorkerTodayAppts === 'function') renderWorkerTodayAppts();
+      if (typeof renderWorkerHomeStats === 'function') renderWorkerHomeStats();
+    } else if (pid === 'wp-agenda') {
+      if (typeof initWorkerAgenda === 'function') initWorkerAgenda();
+      if (typeof renderWorkerCalendar === 'function') renderWorkerCalendar();
+    } else if (pid === 'wp-finanzas') {
+      if (typeof renderWorkerFinanzas === 'function') renderWorkerFinanzas();
+      else if (typeof renderWorkerFinances === 'function') renderWorkerFinances();
     }
-    CUR = freshData;
-    
-    let freshWorker = CUR.workers.find(function(w) { return w.id === workerId; });
-    if (freshWorker) CUR_WORKER = freshWorker;
-    
-    if (typeof saveDB === 'function') saveDB();
-    
-    var activePane = document.querySelector('#s-worker .pane.on');
-    if (activePane) {
-        var pid = activePane.id;
-        if (pid === 'wp-home') {
-            if (typeof renderWorkerTodayAppts === 'function') renderWorkerTodayAppts();
-            if (typeof renderWorkerHomeStats === 'function') renderWorkerHomeStats();
-        } else if (pid === 'wp-agenda') {
-            if (typeof initWorkerAgenda === 'function') initWorkerAgenda();
-            if (typeof renderWorkerCalendar === 'function') renderWorkerCalendar();
-        } else if (pid === 'wp-finanzas') {
-            if (typeof renderWorkerFinanzas === 'function') renderWorkerFinanzas();
-            else if (typeof renderWorkerFinances === 'function') renderWorkerFinances();
-        }
-    }
+  }
 }
 
 async function safeRefreshBizUI(bizId) {
-    if (typeof fetchBizFromCloud !== 'function') return;
-    
-    const freshData = await fetchBizFromCloud(bizId);
-    if (!freshData) return;
-    
-    let index = DB.businesses.findIndex(function(b) { return b.id === bizId; });
-    if (index >= 0) {
-        let oldBiz = DB.businesses[index];
-        if (oldBiz.notifications) freshData.notifications = oldBiz.notifications;
-        (freshData.workers || []).forEach(function(fw) {
-            let oldW = (oldBiz.workers || []).find(function(ow) { return ow.id === fw.id; });
-            if (oldW && oldW.notifications) fw.notifications = oldW.notifications;
-        });
-        DB.businesses[index] = freshData;
+  if (typeof fetchBizFromCloud !== 'function') return;
+  const freshData = await fetchBizFromCloud(bizId);
+  if (!freshData) return;
+  let index = DB.businesses.findIndex(function(b) { return b.id === bizId; });
+  if (index >= 0) {
+    let oldBiz = DB.businesses[index];
+    if (oldBiz.notifications) freshData.notifications = oldBiz.notifications;
+    (freshData.workers || []).forEach(function(fw) {
+      let oldW = (oldBiz.workers || []).find(function(ow) { return ow.id === fw.id; });
+      if (oldW && oldW.notifications) fw.notifications = oldW.notifications;
+    });
+    DB.businesses[index] = freshData;
+  }
+  CUR = freshData;
+  if (typeof saveDB === 'function') saveDB();
+  var activePane = document.querySelector('#s-biz .pane.on');
+  if (activePane) {
+    var pid = activePane.id;
+    if (pid === 'bp-home') {
+      if (typeof renderTodayAppts === 'function') renderTodayAppts();
+      if (typeof renderBizHomeStats === 'function') renderBizHomeStats();
+    } else if (pid === 'bp-agenda') {
+      if (typeof initAgenda === 'function') initAgenda();
+      if (typeof renderCalendar === 'function') renderCalendar();
+    } else if (pid === 'bp-finanzas') {
+      if (typeof renderBizFinanzas === 'function') renderBizFinanzas();
+      else if (typeof renderBizFinances === 'function') renderBizFinances();
     }
-    CUR = freshData;
-    
-    if (typeof saveDB === 'function') saveDB();
-    
-    var activePane = document.querySelector('#s-biz .pane.on');
-    if (activePane) {
-        var pid = activePane.id;
-        if (pid === 'bp-home') {
-            if (typeof renderTodayAppts === 'function') renderTodayAppts();
-            if (typeof renderBizHomeStats === 'function') renderBizHomeStats();
-        } else if (pid === 'bp-agenda') {
-            if (typeof initAgenda === 'function') initAgenda();
-            if (typeof renderCalendar === 'function') renderCalendar();
-        } else if (pid === 'bp-finanzas') {
-            if (typeof renderBizFinanzas === 'function') renderBizFinanzas();
-            else if (typeof renderBizFinances === 'function') renderBizFinances();
-        }
-    }
+  }
 }
 
 /* ══════════════════════════
-   DESUSCRIBIR
+   DESUSCRIBIR Y CONECTAR
 ══════════════════════════ */
 function unsubscribeRealtime() {
   if (_rtChannel) { _rtChannel.unsubscribe(); _rtChannel = null; }
