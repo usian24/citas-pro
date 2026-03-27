@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
     // Traer workers
     const { data: workers } = await supabase
       .from('workers')
-      .select('id, business_id, created_at, name, email, password, phone, avatar, cover, role')
+      .select('id, business_id, created_at, name, email, password, phone, avatar, cover, role, horario')
       .eq('business_id', bizId);
 
     // Traer appointments
@@ -65,7 +65,7 @@ module.exports = async (req, res) => {
             photo: s.image || ''
           };
         }),
-        horario: biz.horario || [],
+        horario: (w.horario && Array.isArray(w.horario) && w.horario.length > 0) ? w.horario : (biz.horario || []),
         appointments: wAppts.map(function(a) {
           return {
             id: a.id,
