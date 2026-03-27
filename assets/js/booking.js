@@ -10,6 +10,13 @@ function loadBizDirect(bizId) {
   goTo('s-client');
   var av = G('ch-av');
   if (av) { if (b.logo) av.innerHTML = '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">'; else av.textContent = (b.name || '?').charAt(0); }
+
+  // ✅ Cargar portada del negocio
+  var coverBg = G('cl-cover-bg');
+  if (coverBg && b.cover) {
+    coverBg.style.backgroundImage = 'url(' + sanitizeImageDataURL(b.cover) + ')';
+  }
+
   T('ch-nm', b.name);
   T('ch-meta', '📍 ' + sanitizeText((b.addr || '') + ' ' + (b.city || '')) + ' · ' + sanitizeText(b.type || 'Negocio'));
   H('cl-svc-list', (b.services || []).map(function(s) {
@@ -158,7 +165,46 @@ function buildSummary() {
   );
 }
 
-// Email de confirmación al cliente
+/* ══════════════════════════
+   ENVIAR NOTIFICACIÓN PUSH AL TRABAJADOR
+   type: 'new' | 'cancelled'
+   appt: objeto de la cita
+   worker: objeto del trabajador
+══════════════════════════ */
+function sendPushToWorker(type, appt, worker) {
+  if (!worker || !worker.fcmToken) return;
+
+  var title, body, tag;
+
+  if (type === 'new') {
+    title = '📅 Nueva cita reservada';
+    body  = appt.client + ' · ' + appt.svc + ' · ' + appt.date + ' a las ' + appt.time;
+    tag   = 'appt-' + appt.id;
+  } else if (type === 'cancelled') {
+    title = '❌ Cita cancelada';
+    body  = appt.client + ' canceló su cita de ' + appt.svc + ' el ' + appt.date + ' a las ' + appt.time;
+    tag   = 'appt-' + appt.id; // mismo tag → reemplaza la notificación anterior
+  }
+
+  fetch('/api/send-notification', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token: worker.fcmToken,
+      title: title,
+      body:  body,
+      data: {
+        tag:    tag,
+        apptId: String(appt.id),
+        type:   type
+      }
+    })
+  }).catch(function(e) { console.error('Push notification error:', e); });
+}
+
+/* ══════════════════════════
+   CONFIRMAR RESERVA
+══════════════════════════ */
 function confirmBooking() {
   var name  = CSEL.clientName  || sanitizeText(V('cl-name'));
   var phone = CSEL.clientPhone || sanitizeText(V('cl-phone'));
@@ -178,26 +224,45 @@ function confirmBooking() {
   if (dup) { toast('Esa hora ya está ocupada. Elige otra.', '#EF4444'); clGoStep(3); return; }
 
   if (!biz.appointments) biz.appointments = [];
+
   var appt = {
-    id: Date.now(),
+    id:     Date.now(),
     client: name,
-    phone: phone,
-    email: email,
-    date: CSEL.date,
-    time: CSEL.time,
-    svc: CSEL.svc,
-    barber: 'Cualquiera',
-    price: CSEL.svcPrice || 0,
+    phone:  phone,
+    email:  email,
+    date:   CSEL.date,
+    time:   CSEL.time,
+    svc:    CSEL.svc,
+    barber: CSEL.workerId || 'Cualquiera',
+    price:  CSEL.svcPrice || 0,
     status: 'confirmed',
-    notes: ''
+    notes:  ''
   };
-  biz.appointments.push(appt);
+
+  // ✅ Si hay trabajador seleccionado, guardar en sus citas
+  if (CSEL.workerId) {
+    var worker = (biz.workers || []).filter(function(w) { return w.id === CSEL.workerId; })[0];
+    if (worker) {
+      if (!worker.appointments) worker.appointments = [];
+      worker.appointments.push(appt);
+
+      // ✅ Notificación push al trabajador — NUEVA CITA
+      sendPushToWorker('new', appt, worker);
+    }
+  } else {
+    biz.appointments.push(appt);
+
+    // ✅ Notificar a todos los trabajadores si no hay uno específico
+    (biz.workers || []).forEach(function(w) {
+      sendPushToWorker('new', appt, w);
+    });
+  }
+
   saveDB();
   if (CUR && CUR.id === biz.id) initBizPanel();
 
   /* ── Emails ──────────────────────────────────────── */
 
-  // Email de confirmación al cliente
   if (email) {
     fetch('/api/send-email', {
       method: 'POST',
@@ -216,7 +281,6 @@ function confirmBooking() {
     }).catch(function(e) { console.error('Email cliente:', e); });
   }
 
-  // Email de aviso al negocio
   if (biz.email) {
     fetch('/api/send-email', {
       method: 'POST',
@@ -258,6 +322,49 @@ function confirmBooking() {
   );
 
   clGoStep(5);
+}
+
+/* ══════════════════════════
+   CANCELAR CITA (desde panel del trabajador o dueño)
+   Llama a esta función cuando se cancela una cita
+══════════════════════════ */
+function cancelApptWithNotification(apptId, bizId, workerId) {
+  var biz = DB.businesses.filter(function(b) { return b.id === bizId; })[0];
+  if (!biz) return;
+
+  var appt = null;
+  var worker = null;
+
+  // Buscar cita en workers
+  (biz.workers || []).forEach(function(w) {
+    (w.appointments || []).forEach(function(a) {
+      if (String(a.id) === String(apptId)) {
+        appt   = a;
+        worker = w;
+      }
+    });
+  });
+
+  // Buscar en citas del negocio si no se encontró en workers
+  if (!appt) {
+    appt = (biz.appointments || []).filter(function(a) { return String(a.id) === String(apptId); })[0];
+  }
+
+  if (!appt) return;
+
+  // Cambiar estado
+  appt.status = 'cancelled';
+  saveDB();
+
+  // ✅ Notificación push — CITA CANCELADA (reemplaza la anterior por el mismo tag)
+  if (worker) {
+    sendPushToWorker('cancelled', appt, worker);
+  } else {
+    // Notificar a todos los trabajadores
+    (biz.workers || []).forEach(function(w) {
+      sendPushToWorker('cancelled', appt, w);
+    });
+  }
 }
 
 function resetBooking() {

@@ -22,6 +22,7 @@ function showWorkerPanel() {
   goTo('s-worker');
   initWorkerPanel();
 }
+if (typeof registerFCMToken === 'function') registerFCMToken();
 
 function initWorkerPanel() {
   if (!CUR_WORKER || !CUR) return;
