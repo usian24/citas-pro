@@ -495,16 +495,6 @@ window.onload = async function() {
 
   /* Toggle tema día/noche */
   on('theme-toggle', 'click', toggleTheme);
-
-  /* Portal principal */
-  on('dots-btn', 'click', function() {
-    var em = G('dots-email'), ps = G('dots-pass');
-    if (em) em.value = ''; 
-    if (ps) ps.value = '';
-    hideErr('dots-err'); 
-    openOv('ov-admin');
-    setTimeout(function() { var e = G('dots-email'); if (e) e.focus(); }, 250);
-  });
   
   on('btn-crear', 'click', function() { openRegModal(); });
   on('btn-login', 'click', function() { openLoginModal(); });
@@ -560,11 +550,6 @@ window.onload = async function() {
   on('fp-btn-send', 'click',  doForgot);
   on('fp-email', 'keydown',   function(e) { if (e.key === 'Enter') doForgot(); });
   on('fp-btn-back', 'click',  function() { closeOv('ov-forgot'); openLoginModal(); });
-
-  /* Modal admin 3 puntitos */
-  on('dots-cancel-btn', 'click', function() { closeOv('ov-admin'); });
-  on('dots-login-btn', 'click', dotsLogin);
-  on('dots-pass', 'keydown',    function(e) { if (e.key === 'Enter') dotsLogin(); });
 
   /* Admin panel */
   on('adm-login-btn', 'click', doAdminLogin);

@@ -117,12 +117,7 @@
   <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:280px;background:radial-gradient(ellipse at 50% 0%,rgba(74,127,212,.16),transparent 70%);pointer-events:none;z-index:0"></div>
 
   <div style="position:absolute;top:18px;right:18px;z-index:20;display:flex;gap:8px;align-items:center">
-    <button id="theme-toggle" style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.7)"></button>
-    <button id="dots-btn" aria-label="Panel Admin" style="width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;gap:3px;cursor:pointer">
-      <span style="width:4px;height:4px;background:rgba(255,255,255,.45);border-radius:50%;display:block;pointer-events:none"></span>
-      <span style="width:4px;height:4px;background:rgba(255,255,255,.45);border-radius:50%;display:block;pointer-events:none"></span>
-      <span style="width:4px;height:4px;background:rgba(255,255,255,.45);border-radius:50%;display:block;pointer-events:none"></span>
-    </button>
+      <button id="theme-toggle" style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.7)"></button>
   </div>
 
   <div style="display:flex;flex-direction:column;align-items:center;padding-top:80px;margin-bottom:36px;text-align:center;width:100%;z-index:1">
@@ -458,7 +453,7 @@
       <div style="font-size:26px;font-weight:900;margin-bottom:8px">¡Bienvenido a Citas Pro!</div>
       <div style="font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.8">Tu negocio está registrado.<br>Tienes <strong style="color:var(--blue3)">1 mes gratis</strong>.<br>Después solo 10€/mes.</div>
       <div class="link-box" style="margin-bottom:22px;text-align:left">
-        <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🔗 Tu link de reservas</div>
+        <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Tu link de reservas</div>
         <div style="font-size:13px;color:var(--blue3);font-weight:700;word-break:break-all;margin-bottom:12px" id="biz-link-display">...</div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-dark btn-sm" style="flex:1" id="copy-link-reg">Copiar</button>
@@ -990,29 +985,6 @@
     </div>
     <button class="btn btn-blue" id="fp-btn-send" style="margin-bottom:10px">Enviar instrucciones</button>
     <button class="btn btn-ghost" id="fp-btn-back">← Volver al inicio de sesión</button>
-  </div>
-</div>
-
-<div class="ov" id="ov-admin">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="mhdr"><div><div style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.8px;margin-bottom:4px">ACCESO EXCLUSIVO</div><span class="mttl">Panel de administración</span></div></div>
-    <div style="text-align:center;margin-bottom:20px">
-      <div style="width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px">👑</div>
-      <div style="font-size:13px;color:var(--muted)">Solo para el creador de Citas Pro</div>
-    </div>
-    <div class="field"><label>Email</label><input class="inp" id="dots-email" type="email" placeholder="tu@email.com" autocomplete="email"/></div>
-    <div class="field">
-      <label>Contraseña</label>
-      <div style="position:relative">
-        <input class="inp" id="dots-pass" type="password" placeholder="••••••••" style="padding-right:50px" autocomplete="current-password"/>
-        <button type="button" onclick="togglePassEye('dots-pass', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-        </button>
-      </div>
-    </div>
-    <div id="dots-err" class="err-box"></div>
-    <button class="btn btn-blue" id="dots-login-btn" style="margin-bottom:10px">Acceder</button>
-    <button class="btn btn-ghost" id="dots-cancel-btn">Cancelar</button>
   </div>
 </div>
 

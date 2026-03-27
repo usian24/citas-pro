@@ -18,8 +18,8 @@ function openLoginModal() {
   setTimeout(function(){ var e=G('li-email'); if(e) e.focus(); }, 250);
 }
 
-/* ── Login principal ── */
-function doLogin() {
+/* ── Login principal (Unificado) ── */
+async function doLogin() {
   var email = V('li-email').trim().toLowerCase();
   var pass  = V('li-pass');
   hideErr('li-err');
@@ -30,8 +30,7 @@ function doLogin() {
   var key = 'login_' + email;
   if(!checkRateLimit(key)) { showErr('li-err','Demasiados intentos. Espera 5 minutos.'); return; }
 
-  /* 1 — Buscar como dueño de negocio */
-  // ✅ CORREGIDO: busca en "pass" Y en "password" (por si vino de Supabase)
+  /* 1 — Buscar como dueño de negocio (Local) */
   var biz = DB.businesses.filter(function(b){
     return (b.email||'').toLowerCase() === email && ((b.pass || b.password || '') === pass);
   })[0];
@@ -48,11 +47,10 @@ function doLogin() {
     return;
   }
 
-  /* 2 — Buscar como trabajador */
+  /* 2 — Buscar como trabajador (Local) */
   var foundWorker = null, foundBiz = null;
   DB.businesses.forEach(function(b) {
     (b.workers||[]).forEach(function(w) {
-      // ✅ CORREGIDO: busca en "pass" Y en "password"
       if((w.email||'').toLowerCase() === email && ((w.pass || w.password || '') === pass) && w.active) {
         foundWorker = w;
         foundBiz    = b;
@@ -72,7 +70,41 @@ function doLogin() {
     return;
   }
 
-  /* 3 — Credenciales incorrectas */
+  /* 3 — Buscar como SUPER ADMIN en Supabase (API) */
+  try {
+    var btn = G('li-btn-login');
+    var originalText = btn ? btn.textContent : 'Acceder';
+    if(btn) btn.textContent = 'Verificando...';
+
+    // Llamamos a tu endpoint de login de admin (ajusta la ruta si se llama diferente)
+    var resp = await fetch('/api/admin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: email, password: pass }) 
+    });
+    
+    var data = await resp.json();
+    if(btn) btn.textContent = originalText;
+
+    if (data.success) {
+       resetRateLimit(key);
+       closeOv('ov-login');
+       toast('Bienvenido, Super Admin', '#4A7FD4');
+       
+       // Aquí redirigimos a la pantalla de admin. 
+       // Ajusta "goTo('s-admin')" según cómo llamabas a tu panel de admin antes.
+       setTimeout(function(){
+           goTo('s-admin'); // <-- Cambia esto si tu función para abrir el panel maestro se llama distinto (ej. initAdmin())
+       }, 300);
+       return;
+    }
+  } catch (e) {
+     console.error('Error al intentar login de admin:', e);
+     var btn = G('li-btn-login');
+     if(btn) btn.textContent = 'Acceder';
+  }
+
+  /* 4 — Si nada funcionó: Credenciales incorrectas */
   showErr('li-err','Email o contraseña incorrectos.');
   var p = G('li-pass'); if(p) p.value='';
 }
