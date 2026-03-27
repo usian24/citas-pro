@@ -12,7 +12,7 @@
 async function loadWorkerNotificationsFromCloud(workerId) {
   if (!workerId) return [];
   try {
-    var res = await fetch('/api/save-notification?worker_id=' + encodeURIComponent(workerId));
+    var res = await fetch('/api/sync?worker_id=' + encodeURIComponent(workerId));
     if (!res.ok) return [];
     var data = await res.json();
     return (data || []).map(function(n) {
@@ -35,16 +35,17 @@ async function loadWorkerNotificationsFromCloud(workerId) {
 ══════════════════════════ */
 function saveNotificationToCloud(workerId, bizId, notif) {
   if (!workerId || !bizId) return;
-  fetch('/api/save-notification', {
+  fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      worker_id:   workerId,
-      business_id: bizId,
-      type:        notif.type || 'new_booking',
-      msg:         notif.msg || notif.title || '',
-      detail:      (notif.data && notif.data.detail) ? notif.data.detail : (notif.detail || '')
-    })
+    type:        'notification',
+    type_notif:  notif.type || 'new_booking',
+    worker_id:   workerId,
+    business_id: bizId,
+    msg:         notif.msg || notif.title || '',
+    detail:      (notif.data && notif.data.detail) ? notif.data.detail : (notif.detail || '')
+  })
   }).catch(function(e) { console.error('Error guardando notif:', e); });
 }
 

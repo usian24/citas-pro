@@ -2,6 +2,31 @@
 const { createClient } = require('@supabase/supabase-js');
 
 module.exports = async (req, res) => {
+
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+
+  // ═══════════════════════════════════════
+  // GET — Cargar notificaciones de un worker
+  // ═══════════════════════════════════════
+  if (req.method === 'GET') {
+    const worker_id = req.query.worker_id;
+    if (!worker_id) return res.status(400).json({ error: 'worker_id requerido' });
+
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('worker_id', worker_id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(200).json(data || []);
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Método no permitido' });
   }
@@ -12,85 +37,113 @@ module.exports = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Falta el campo "type"' });
     }
 
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    // ═══════════════════════════════════════
+    // NOTIFICATION — type: "notification"
+    // ═══════════════════════════════════════
+    if (type === 'notification') {
+      const { worker_id, business_id, msg, detail } = req.body;
+      const notifType = req.body.type_notif || req.body.notif_type || 'new_booking';
+
+      if (!worker_id || !business_id) {
+        return res.status(400).json({ success: false, error: 'Faltan worker_id o business_id' });
+      }
+
+      // Eliminar notificaciones de más de 30 días automáticamente
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      await supabase
+        .from('notifications')
+        .delete()
+        .lt('created_at', thirtyDaysAgo.toISOString())
+        .catch(() => {});
+
+      const { error } = await supabase
+        .from('notifications')
+        .insert({
+          worker_id:   worker_id,
+          business_id: business_id,
+          type:        notifType,
+          msg:         msg || '',
+          detail:      detail || '',
+          read:        false
+        });
+
+      if (error) return res.status(500).json({ success: false, error: error.message });
+      return res.status(200).json({ success: true });
+    }
 
     // ═══════════════════════════════════════
     // APPOINTMENTS — type: "appointments"
     // ═══════════════════════════════════════
     if (type === 'appointments') {
-  const { business_id, appointments } = req.body;
-  if (!business_id || !Array.isArray(appointments)) {
-    return res.status(400).json({ success: false, error: 'Datos incompletos' });
-  }
+      const { business_id, appointments } = req.body;
+      if (!business_id || !Array.isArray(appointments)) {
+        return res.status(400).json({ success: false, error: 'Datos incompletos' });
+      }
 
-  var apptErrors = [];
-  for (const appt of appointments) {
-    
-    // Si viene con status cancelled y tiene token, actualizar por TOKEN
-    if (appt.status === 'cancelled' && appt.token) {
-  // Intentar por token primero
-  const { data: updated, error } = await supabase
-    .from('appointments')
-    .update({ status: 'cancelled' })
-    .eq('token', appt.token)
-    .eq('business_id', business_id);
+      var apptErrors = [];
+      for (const appt of appointments) {
 
-  // Si no encontró por token, buscar por date+time+worker_id
-  if (!error) {
-    const { data: check } = await supabase
-      .from('appointments')
-      .select('id')
-      .eq('token', appt.token)
-      .eq('business_id', business_id);
-    
-    if (!check || check.length === 0) {
-      // Fallback: cancelar por date + time + worker_id
-      await supabase
-        .from('appointments')
-        .update({ status: 'cancelled' })
-        .eq('business_id', business_id)
-        .eq('worker_id', appt.worker_id || '')
-        .eq('date', appt.date)
-        .eq('time', appt.time)
-        .neq('status', 'cancelled');
+        if (appt.status === 'cancelled' && appt.token) {
+          const { error } = await supabase
+            .from('appointments')
+            .update({ status: 'cancelled' })
+            .eq('token', appt.token)
+            .eq('business_id', business_id);
+
+          if (!error) {
+            const { data: check } = await supabase
+              .from('appointments')
+              .select('id')
+              .eq('token', appt.token)
+              .eq('business_id', business_id);
+
+            if (!check || check.length === 0) {
+              await supabase
+                .from('appointments')
+                .update({ status: 'cancelled' })
+                .eq('business_id', business_id)
+                .eq('worker_id', appt.worker_id || '')
+                .eq('date', appt.date)
+                .eq('time', appt.time)
+                .neq('status', 'cancelled');
+            }
+          }
+
+          if (error) {
+            apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
+          }
+          continue;
+        }
+
+        const { error } = await supabase.from('appointments').upsert({
+          id:            String(appt.id),
+          business_id:   business_id,
+          worker_id:     appt.worker_id || '',
+          client_id:     appt.client_id || '',
+          client_name:   appt.client_name || '',
+          client_phone:  appt.client_phone || '',
+          client_email:  appt.client_email || appt.email || '',
+          notes:         appt.notes || '',
+          token:         appt.token || '',
+          service_name:  appt.service_name || '',
+          service_price: parseFloat(appt.service_price) || 0,
+          date:          appt.date || '',
+          time:          appt.time || '',
+          status:        appt.status || 'confirmed'
+        }).select();
+
+        if (error) {
+          apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
+        }
+      }
+
+      if (apptErrors.length > 0) {
+        return res.status(400).json({ success: false, errors: apptErrors });
+      }
+
+      return res.status(200).json({ success: true, synced: appointments.length });
     }
-  }
-
-  if (error) {
-    apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
-  }
-  continue;
-}
-
-    // Para el resto (crear/modificar), upsert normal por id
-    const { data, error } = await supabase.from('appointments').upsert({
-      id:            String(appt.id),
-      business_id:   business_id,
-      worker_id:     appt.worker_id || '',
-      client_id:     appt.client_id || '',
-      client_name:   appt.client_name || '',
-      client_phone:  appt.client_phone || '',
-      client_email:  appt.client_email || appt.email || '',
-      notes:         appt.notes || '',
-      token:         appt.token || '',
-      service_name:  appt.service_name || '',
-      service_price: parseFloat(appt.service_price) || 0,
-      date:          appt.date || '',
-      time:          appt.time || '',
-      status:        appt.status || 'confirmed'
-    }).select();
-
-    if (error) {
-      apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
-    }
-  }
-
-  if (apptErrors.length > 0) {
-    return res.status(400).json({ success: false, errors: apptErrors });
-  }
-
-  return res.status(200).json({ success: true, synced: appointments.length });
-}
 
     // ═══════════════════════════════════════
     // SERVICES — type: "services"
@@ -129,17 +182,14 @@ module.exports = async (req, res) => {
         return res.status(400).json({ success: false, error: 'Falta business_id' });
       }
 
-      // SOLO guardamos los datos personales del cliente (El "Quién")
       const payload = {
-        id:            data.id || ('cl_' + Date.now()),
-        business_id:   data.business_id,
-        name:          data.name || '',
-        email:         data.email || '',
-        phone:         data.phone || ''
+        id:          data.id || ('cl_' + Date.now()),
+        business_id: data.business_id,
+        name:        data.name || '',
+        email:       data.email || '',
+        phone:       data.phone || ''
       };
 
-      // MAGIA DE FIDELIZACIÓN: 
-      // Buscamos si este cliente ya vino antes (usando su número de teléfono)
       const { data: existing } = await supabase
         .from('clients')
         .select('id')
@@ -147,7 +197,6 @@ module.exports = async (req, res) => {
         .eq('phone', data.phone)
         .limit(1);
 
-      // Si ya existe en tu barbería, no creamos un clon. Actualizamos su registro.
       if (existing && existing.length > 0) {
         payload.id = existing[0].id;
       }
