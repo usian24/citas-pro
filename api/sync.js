@@ -51,11 +51,12 @@ module.exports = async (req, res) => {
       // Eliminar notificaciones de más de 30 días automáticamente
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      await supabase
-        .from('notifications')
-        .delete()
-        .lt('created_at', thirtyDaysAgo.toISOString())
-        .catch(() => {});
+      try {
+          await supabase
+            .from('notifications')
+            .delete()
+            .lt('created_at', thirtyDaysAgo.toISOString());
+        } catch(e) {};
 
       const { error } = await supabase
         .from('notifications')
