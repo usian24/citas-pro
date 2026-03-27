@@ -578,5 +578,32 @@ function restaurarSesion() {
 
   if (typeof goTo === 'function') goTo('s-portal');
 }
+/* ══════════════════════════
+   TOGGLE DE OJITOS UNIVERSAL (ACTUALIZADO CON CAMBIO DE ICONO VISUAL)
+   Cambia el tipo de input y actualiza el icono SVG (tachado/abierto)
+══════════════════════════ */
+function togglePassEye(inputId, btnEl) {
+    var inp = document.getElementById(inputId);
+    if (!inp) return;
+    
+    // Definimos los SVGs exactos y limpios de espacios innecesarios
+    
+    // Icono OJO ABIERTO (Lucide: Eye) - Muestra lo que escribes
+    var svgMostrar = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    
+    // Icono OJO TACHADO (Lucide: EyeOff) - Oculta lo que escribes
+    var svgOcultar = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+
+    if (inp.type === 'password') {
+        inp.type = 'text'; // Mostramos texto
+        btnEl.innerHTML = svgOcultar; // Cambiamos al icono "tachado" (Indica que el próximo clic OCULTARÁ)
+        btnEl.style.color = 'var(--blue)'; // Opcional: azul cuando se muestra
+    } else {
+        inp.type = 'password'; // Volvemos a puntitos
+        btnEl.innerHTML = svgMostrar; //Cambiamos al icono "abierto" (Indica que el próximo clic MOSTRARÁ)
+        btnEl.style.color = 'var(--muted)'; // Vuelve a gris
+    }
+}
+window.togglePassEye = togglePassEye;
 
 window.addEventListener('DOMContentLoaded', restaurarSesion);

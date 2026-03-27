@@ -7,15 +7,12 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://api.qrserver.com https://cdn.jsdelivr.net https://www.gstatic.com https://firebasestorage.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.gstatic.com; img-src 'self' data: blob: https://api.qrserver.com https://i.ibb.co https://ibb.co; connect-src 'self' https://api.qrserver.com https://api.imgbb.com https://fcbbquvuffpmudvwqgbg.supabase.co wss://fcbbquvuffpmudvwqgbg.supabase.co https://cdn.jsdelivr.net https://fcm.googleapis.com https://firebase.googleapis.com https://www.gstatic.com;">
   <meta name="referrer" content="no-referrer"/>
   
-  <!-- PWA META TAGS -->
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="Citas Pro"/>
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png"/>
   <link rel="manifest" href="/manifest.json"/>
-  <!--  FIN PWA META TAGS -->
-
   <title>Citas Pro | Gestión Inteligente para tu Barbería</title>
   <meta name="description" content="Citas Pro es el software líder para barberías: gestiona tus citas, controla ingresos, fideliza clientes y haz crecer tu negocio de forma organizada.">
   <meta name="keywords" content="software para barberías, gestión de citas, control de ingresos barbería, agenda digital barberos, SaaS barbería">
@@ -177,7 +174,9 @@
         <label>Contraseña</label>
         <div style="position:relative">
           <input class="inp" id="adm-pass" type="password" placeholder="••••••••" style="padding-right:50px" autocomplete="current-password"/>
-          <button id="adm-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px"></button>
+          <button type="button" onclick="togglePassEye('adm-pass', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
         </div>
       </div>
       <div id="adm-err" class="err-box"></div>
@@ -267,12 +266,37 @@
           <div class="toggle-wrap"><div><div style="font-weight:600">Modo mantenimiento</div><div style="font-size:12px;color:var(--muted)">Ocultar app a nuevos usuarios</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
         </div>
         <div class="card" style="margin-bottom:14px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
-          <div class="field"><label>Nueva contraseña</label><input class="inp" id="cfg-pass1" type="password" placeholder="Mínimo 8 caracteres"/></div>
-          <div class="field"><label>Confirmar</label><input class="inp" id="cfg-pass2" type="password" placeholder="Repetir contraseña"/></div>
-          <div id="cfg-pass-err" class="err-box"></div>
-          <button class="btn btn-blue" id="cfg-pass-btn">Actualizar contraseña</button>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
+
+        <div class="field">
+          <label>Nueva contraseña</label>
+          <div style="position:relative">
+            <input class="inp" id="cfg-pass1" type="password" placeholder="Mínimo 8 caracteres" style="padding-right:50px"/>
+            <button type="button" onclick="togglePassEye('cfg-pass1', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
         </div>
+      
+        <div class="field">
+          <label>Confirmar</label>
+          <div style="position:relative">
+            <input class="inp" id="cfg-pass2" type="password" placeholder="Repetir contraseña" style="padding-right:50px"/>
+            <button type="button" onclick="togglePassEye('cfg-pass2', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+      
+        <div id="cfg-pass-err" class="err-box"></div>
+        <button class="btn btn-blue" id="cfg-pass-btn">Actualizar contraseña</button>
+      </div>
         <button class="btn btn-ghost" id="cfg-save-btn">Guardar configuración</button>
       </div>
     </div>
@@ -319,7 +343,9 @@
         <label>Contraseña (mín. 6 caracteres)</label>
         <div style="position:relative">
           <input class="inp" id="br-pass" type="password" placeholder="Crea tu contraseña" style="padding-right:50px" maxlength="100" autocomplete="new-password"/>
-          <button id="br-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px"></button>
+          <button type="button" onclick="togglePassEye('br-pass', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
         </div>
         <div id="pass-strength" class="pass-bar"></div>
         <div id="pass-strength-lbl" style="font-size:11px;color:var(--muted);margin-top:5px"></div>
@@ -668,18 +694,36 @@
       </div>
 
       <div class="card" style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
-        <div class="field">
-          <label>Nueva contraseña</label>
-          <div style="position:relative">
-            <input class="inp" id="wk-pass-new" type="password" placeholder="Mínimo 6 caracteres" style="padding-right:50px"/>
-            <button id="wk-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px"></button>
-          </div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
+
+      <div class="field">
+        <label>Nueva contraseña</label>
+        <div style="position:relative">
+          <input class="inp" id="wk-pass-new" type="password" placeholder="Mínimo 6 caracteres" style="padding-right:50px"/>
+          <button type="button" onclick="togglePassEye('wk-pass-new', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
         </div>
-        <div class="field"><label>Confirmar contraseña</label><input class="inp" id="wk-pass-confirm" type="password" placeholder="Repetir contraseña"/></div>
-        <div id="wk-pass-err" class="err-box"></div>
-        <button class="btn btn-dark" id="save-wk-pass-btn">Actualizar contraseña</button>
       </div>
+    
+      <div class="field">
+        <label>Confirmar contraseña</label>
+        <div style="position:relative">
+          <input class="inp" id="wk-pass-confirm" type="password" placeholder="Repetir contraseña" style="padding-right:50px"/>
+          <button type="button" onclick="togglePassEye('wk-pass-confirm', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="wk-pass-err" class="err-box"></div>
+      <button class="btn btn-dark" id="save-wk-pass-btn">Actualizar contraseña</button>
+    </div>
       <div class="card">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Mi barbería</div>
         <div style="font-size:15px;font-weight:700;margin-bottom:4px" id="wk-pf-biz-name"></div>
@@ -801,25 +845,47 @@
       <div style="height:3px;background:rgba(74,127,212,.12);border-radius:2px;margin-bottom:20px;overflow:hidden"><div style="width:50%;height:100%;background:linear-gradient(90deg,var(--blue),var(--blue3));border-radius:2px"></div></div>
       <div class="field"><label>Correo electrónico *</label><input class="inp" id="rm-email" type="email" placeholder="tu@empresa.com" maxlength="100" autocomplete="email"/></div>
       <div class="field"><label>Teléfono / WhatsApp *</label><input class="inp" id="rm-phone" type="tel" placeholder="+34 600 000 000" maxlength="20" autocomplete="tel"/></div>
+      
       <div class="field">
         <label>Contraseña (más de 6 caracteres)</label>
-        <div style="position:relative">
+        <div style="position:relative; width:100%;">
           <input class="inp" id="rm-pass" type="password" placeholder="Crea tu contraseña" maxlength="100" style="padding-right:50px" autocomplete="new-password"/>
-          <button id="rm-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px"></button>
+          <button type="button" onclick="togglePassEye('rm-pass', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
         </div>
         <div id="rm-pass-bar" class="pass-bar"></div>
         <div id="rm-pass-lbl" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
       </div>
-      <div class="field"><label>Confirmar contraseña</label><input class="inp" id="rm-pass2" type="password" placeholder="Repite tu contraseña" maxlength="100" autocomplete="new-password"/></div>
+      
+      <div class="field">
+        <label>Confirmar contraseña</label>
+        <div style="position:relative; width:100%;">
+          <input class="inp" id="rm-pass2" type="password" placeholder="Repite tu contraseña" maxlength="100" style="padding-right:50px" autocomplete="new-password"/>
+          <button type="button" onclick="togglePassEye('rm-pass2', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:18px">
         <input type="checkbox" id="rm-terms" style="width:18px;height:18px;margin-top:3px;accent-color:var(--blue);flex-shrink:0;cursor:pointer"/>
-        <label for="rm-terms" style="font-size:12px;color:var(--t2);line-height:1.6;cursor:pointer">Acepto los <strong style="color:var(--blue3)">Términos y Condiciones</strong> y la <strong style="color:var(--blue3)">Política de Privacidad</strong> de Citas Pro</label>
+        <label for="rm-terms" style="font-size:12px;color:var(--t2);line-height:1.6;cursor:pointer">
+          Acepto los <strong style="color:var(--blue3); cursor:pointer; text-decoration:underline;" onclick="event.preventDefault(); openOv('ov-terminos')">Términos y Condiciones</strong> y la <strong style="color:var(--blue3); cursor:pointer; text-decoration:underline;" onclick="event.preventDefault(); openOv('ov-privacidad')">Política de Privacidad</strong> de Citas Pro
+        </label>
       </div>
       <div id="rm-err1" class="err-box"></div>
       <button class="btn btn-blue" id="rm-btn-next" style="margin-bottom:12px">Continuar</button>
       <div class="divider-text">o</div>
       <div style="text-align:center;font-size:13px;color:var(--t2)">¿Ya tienes cuenta? <span id="rm-go-login" style="color:var(--blue3);font-weight:700;cursor:pointer">Iniciar sesión</span></div>
     </div>
+    
     <div id="rm-step2" style="display:none">
       <div class="mhdr">
         <div><div style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.8px;margin-bottom:4px">PASO 2 DE 2</div><span class="mttl">Verificar tu email</span></div>
@@ -860,7 +926,12 @@
       <label>Contraseña</label>
       <div style="position:relative">
         <input class="inp" id="li-pass" type="password" placeholder="Tu contraseña" maxlength="100" style="padding-right:50px" autocomplete="current-password"/>
-        <button id="li-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px"></button>
+        <button type="button" onclick="togglePassEye('li-pass', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
       </div>
     </div>
     <div style="text-align:right;margin-bottom:16px"><span id="li-forgot" style="font-size:12px;color:var(--blue3);font-weight:600;cursor:pointer">¿Olvidaste tu contraseña?</span></div>
@@ -901,7 +972,9 @@
       <label>Contraseña</label>
       <div style="position:relative">
         <input class="inp" id="dots-pass" type="password" placeholder="••••••••" style="padding-right:50px" autocomplete="current-password"/>
-        <button id="dots-pass-eye" type="button" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px"></button>
+        <button type="button" onclick="togglePassEye('dots-pass', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
       </div>
     </div>
     <div id="dots-err" class="err-box"></div>
@@ -913,18 +986,34 @@
 <div class="ov bot" id="ov-barber">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl" id="bar-ttl">Añadir trabajador</span><div class="xbtn" id="close-bar">×</div></div>
+    
     <div class="field"><label>Nombre *</label><input class="inp" id="bar-name" placeholder="Nombre del trabajador" maxlength="60"/></div>
     <div class="field"><label>Especialidad</label><input class="inp" id="bar-spec" placeholder="Ej: Cortes clásicos, barba..." maxlength="80"/></div>
     <div class="field"><label>Teléfono</label><input class="inp" id="bar-phone" type="tel" placeholder="+34..." maxlength="20"/></div>
+    
     <div id="bar-cred-section">
       <div class="field"><label>Email (para acceso) *</label><input class="inp" id="bar-email" type="email" placeholder="trabajador@email.com" maxlength="100"/></div>
-      <div class="field"><label>Contraseña *</label><input class="inp" id="bar-pass" type="password" placeholder="Mínimo 6 caracteres" maxlength="100"/></div>
+      
+      <div class="field">
+        <label>Contraseña</label>
+        <div style="position:relative; width:100%;">
+          <input class="inp" id="bar-pass" type="password" placeholder="Mínimo 6 caracteres" maxlength="100" style="padding-right:50px"/>
+          <button type="button" onclick="togglePassEye('bar-pass', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
+    
     <div class="field">
       <label>Foto (opcional)</label>
       <div id="bar-photo-preview" class="photo-upload" onclick="document.getElementById('bar-photo-input').click()"><div style="font-size:13px;color:var(--muted)">Añadir foto</div></div>
       <input type="file" id="bar-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
     </div>
+    
     <button class="btn btn-blue" id="save-bar-btn">Guardar trabajador</button>
   </div>
 </div>
@@ -1056,6 +1145,45 @@
     <div id="worker-profile-content"></div>
   </div>
 </div>
+<div class="ov" id="ov-terminos">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:500px">
+    <div class="mhdr"><span class="mttl">Términos y Condiciones</span><div class="xbtn" onclick="closeOv('ov-terminos')">×</div></div>
+    <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px; font-size: 13px; color: var(--t2); line-height: 1.6; text-align: left;">
+      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">1. Descripción del Servicio</h3>
+      <p style="margin-bottom: 12px;">Citas Pro es un software de gestión (SaaS) diseñado para barberías, peluquerías y salones de belleza. Proporcionamos herramientas digitales para la agenda, gestión de equipo y finanzas. No somos responsables de los servicios físicos prestados por los negocios registrados en nuestra plataforma.</p>
+      
+      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">2. Pagos y Suscripciones</h3>
+      <p style="margin-bottom: 12px;">Ofrecemos un período de prueba gratuito de 30 días. Finalizado este período, el coste del servicio será de 10€ mensuales (IVA incluido). No hay permanencia; puedes cancelar tu suscripción en cualquier momento desde tu panel de control.</p>
+
+      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">3. Responsabilidad del Usuario</h3>
+      <p style="margin-bottom: 12px;">El negocio es el único responsable de la veracidad de la información publicada (precios, horarios, servicios) y de cumplir con las citas reservadas por sus clientes. Citas Pro no actúa como intermediario en disputas entre clientes y profesionales.</p>
+
+      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">4. Disponibilidad del Sistema</h3>
+      <p style="margin-bottom: 12px;">Trabajamos para mantener Citas Pro activo 24/7, pero no garantizamos el 100% de disponibilidad debido a posibles mantenimientos o fallos técnicos de servidores de terceros.</p>
+    </div>
+    <button class="btn btn-blue" onclick="closeOv('ov-terminos')" style="margin-top: 16px;">Entendido</button>
+  </div>
+</div>
+
+<div class="ov" id="ov-privacidad">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:500px">
+    <div class="mhdr"><span class="mttl">Política de Privacidad</span><div class="xbtn" onclick="closeOv('ov-privacidad')">×</div></div>
+    <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px; font-size: 13px; color: var(--t2); line-height: 1.6; text-align: left;">
+      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">1. Datos que Recopilamos</h3>
+      <p style="margin-bottom: 12px;">Recopilamos información básica para el funcionamiento del servicio: nombre, correo electrónico, número de teléfono y datos de las reservas. Los clientes finales proporcionan sus datos únicamente con el fin de agendar citas en los negocios registrados.</p>
+      
+      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">2. Uso de la Información</h3>
+      <p style="margin-bottom: 12px;">Usamos tus datos para gestionar tu cuenta, permitir el acceso a la plataforma, enviar confirmaciones/recordatorios de citas y procesar pagos. No vendemos, alquilamos ni compartimos tus datos personales con terceros para fines publicitarios.</p>
+
+      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">3. Seguridad de los Datos</h3>
+      <p style="margin-bottom: 12px;">Implementamos medidas de seguridad estándar de la industria y almacenamos la información en bases de datos cifradas en la nube (Supabase) para proteger tu información contra accesos no autorizados.</p>
+
+      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">4. Tus Derechos</h3>
+      <p style="margin-bottom: 12px;">Puedes solicitar en cualquier momento el acceso, rectificación o eliminación total de tus datos personales y los de tus clientes almacenados en nuestra plataforma contactando a nuestro soporte.</p>
+    </div>
+    <button class="btn btn-blue" onclick="closeOv('ov-privacidad')" style="margin-top: 16px;">Entendido</button>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
@@ -1067,7 +1195,6 @@
 <script src="assets/js/finanzas-realdata.js"></script>  
 <script src="assets/js/realtime.js"></script>             
 <script src="assets/js/client-portal.js"></script>
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
 <script>
@@ -1083,7 +1210,6 @@
 <script src="assets/js/fcm.js"></script>
 <script src="assets/js/app.js"></script>
 
-<!-- SERVICE WORKER PWA -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
