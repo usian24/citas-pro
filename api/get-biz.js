@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
     // Mapear workers con sus citas y servicios
     biz.workers = (workers || []).map(function(w) {
       var wAppts = (appointments || []).filter(function(a) { return a.worker_id === w.id; });
-      var wSvcs = (services || []).filter(function(s) { return s.business_id === bizId; });
+      var wSvcs = (services || []).filter(function(s) { return s.worker_id === w.id; });
 
       return {
         id: w.id,
