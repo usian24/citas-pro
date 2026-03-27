@@ -49,7 +49,8 @@ module.exports = async (req, res) => {
       biz.workers = (workers || []).map(function(w) {
         // Buscar las citas y servicios de este worker
         var wAppts = (appointments || []).filter(function(a) { return a.worker_id === w.id; });
-        var wSvcs = (services || []).filter(function(s) { return s.business_id === biz.id; });
+        // AHORA filtramos por worker_id para que cada quien tenga sus servicios
+        var wSvcs = (services || []).filter(function(s) { return s.worker_id === w.id; });
 
         return {
           id: w.id,
