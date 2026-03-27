@@ -39,12 +39,16 @@ function sanitizeText(s) {
   return String(s).replace(/[<>"'`\/\\]/g, '').trim().slice(0, 300);
 }
 
+// ✅ CORRECCIÓN APLICADA: Ahora acepta comas y puntos sin romper el guardado de servicios
 function safeNum(v, def) { 
-    var n = parseFloat(v); 
+    if (v === null || v === undefined || v === '') return def || 0;
+    var str = String(v).replace(',', '.');
+    var n = parseFloat(str); 
     return isNaN(n) ? (def || 0) : Math.min(Math.max(n, 0), 999999); 
 }
 
 function safeInt(v, def) { 
+    if (v === null || v === undefined || v === '') return def || 0;
     var n = parseInt(v);   
     return isNaN(n) ? (def || 0) : Math.min(Math.max(n, 0), 99999); 
 }
@@ -270,7 +274,6 @@ function syncServicesToCloud(biz) {
     if (!res.ok) {
       var err = await res.json();
       console.error("ERROR SUPABASE (services):", err);
-      // ESTA ALERTA NOS DARÁ LA SOLUCIÓN:
     }
   })
   .catch(function(e) {
