@@ -255,9 +255,16 @@ window._activateBizId = null;
 // 2. Esta función SOLO abre la ventanita
 function activateBiz(id) {
   window._activateBizId = id; // Guardamos el ID
-  var inp = G('act-months');
-  if(inp) inp.value = '1';    // 1 mes por defecto
-  openOv('ov-activate');      // Abrimos el modal oscuro
+  
+  // 1. Ocultamos el perfil del negocio inmediatamente
+  closeOv('ov-biz-profile');  
+
+  // 2. Esperamos una fracción de segundo (150ms) para que la animación se vea fluida y abrimos la nueva
+  setTimeout(function() {
+    var inp = G('act-months');
+    if(inp) inp.value = '1';    // 1 mes por defecto
+    openOv('ov-activate');      // Abrimos el modal oscuro
+  }, 150);
 }
 
 // 3. Esta función se ejecuta cuando haces clic en "Activar plan" dentro de la ventanita
