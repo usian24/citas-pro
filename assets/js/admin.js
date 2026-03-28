@@ -189,12 +189,23 @@ function renderNotifications() {
 /* Función ayudante para guardar en Supabase desde el panel Admin */
 async function updateBizOnCloud(biz) {
   try {
-    await fetch('/api/update-biz', {
+    let res = await fetch('/api/update-biz', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(biz)
     });
-  } catch(e) { console.error('Error guardando en nube', e); }
+    
+    let data = await res.json();
+    
+    // Si Supabase rechaza el guardado, ¡ahora te avisará!
+    if (!data.success) {
+      console.error('Error exacto de Supabase:', data);
+      toast('Error en Base de Datos: ' + (data.error || 'Desconocido'), '#EF4444');
+    }
+  } catch(e) { 
+    console.error('Error de red:', e); 
+    toast('Error de conexión al guardar en la nube', '#EF4444');
+  }
 }
 
 async function extendTrial(id) {
