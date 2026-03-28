@@ -250,36 +250,48 @@ async function extendTrial(id) {
 }
 
 async function activateBiz(id) {
-  var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
-  if (b) { 
-    var mesesStr = prompt("¿Cuántos meses pagó el cliente? (Ej: 1, 3, 6, 12)");
-    if (!mesesStr) return; // Si cancelas, no hace nada
-    var meses = parseInt(mesesStr);
-    if (isNaN(meses) || meses <= 0) { toast('Número de meses inválido', '#EF4444'); return; }
+  var b = DB.businesses.find(function(x) { return x.id === id; });
+  if (!b) return;
 
-    // Calcula la fecha exacta sumando los meses
-    var baseDate = (b.plan === 'active' && b.expires_at && new Date(b.expires_at) > new Date()) ? new Date(b.expires_at) : new Date();
-    baseDate.setMonth(baseDate.getMonth() + meses);
-    
-    b.expires_at = baseDate.toISOString().split('T')[0];
-    b.plan = 'active'; 
+  // 1. Abrimos la ventanita elegante en vez del prompt feo
+  var inp = G('act-months');
+  if(inp) inp.value = '1'; // Ponemos 1 mes por defecto
+  openOv('ov-activate');
 
-    // Mensaje de agradecimiento automático en la campana de la barbería
-    if (!b.notifications) b.notifications = [];
-    b.notifications.unshift({
-      id: Date.now(), type: 'system', title: '¡Suscripción Activada! 🎉',
-      msg: 'Suscripción Activada', body: 'Tu cuenta ha sido activada hasta el ' + b.expires_at + '. ¡Gracias por confiar en Citas Pro!',
-      read: false, date: new Date().toISOString()
-    });
+  // 2. Le decimos al botón verde "Activar plan" qué debe hacer al darle clic
+  var btn = G('act-confirm-btn');
+  if(btn) {
+    btn.onclick = async function() {
+      var mesesStr = G('act-months').value;
+      var meses = parseInt(mesesStr);
+      if (isNaN(meses) || meses <= 0) { toast('Número de meses inválido', '#EF4444'); return; }
 
-    saveDB(); 
-    toast('Activando y guardando...', '#F59E0B');
-    
-    // Usamos el método quirúrgico
-    await updateBizStatusOnly(id, 'active', b.expires_at);
-    
-    toast('Negocio activado por ' + meses + ' mes(es)', '#22C55E'); 
-    checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); 
+      // Cerramos la ventanita
+      closeOv('ov-activate');
+
+      // Calculamos la fecha
+      var baseDate = (b.plan === 'active' && b.expires_at && new Date(b.expires_at) > new Date()) ? new Date(b.expires_at) : new Date();
+      baseDate.setMonth(baseDate.getMonth() + meses);
+      b.expires_at = baseDate.toISOString().split('T')[0];
+      b.plan = 'active'; 
+
+      // Mensaje de campana para la barbería
+      if (!b.notifications) b.notifications = [];
+      b.notifications.unshift({
+        id: Date.now(), type: 'system', title: '¡Suscripción Activada! 🎉',
+        msg: 'Suscripción Activada', body: 'Tu cuenta ha sido activada hasta el ' + b.expires_at + '. ¡Gracias por confiar en Citas Pro!',
+        read: false, date: new Date().toISOString()
+      });
+
+      saveDB(); 
+      toast('Activando y guardando...', '#F59E0B');
+      
+      // Enviamos a Supabase
+      await updateBizStatusOnly(id, 'active', b.expires_at);
+      
+      toast('Negocio activado por ' + meses + ' mes(es)', '#22C55E'); 
+      checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); 
+    };
   }
 }
 

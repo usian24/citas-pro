@@ -1104,6 +1104,22 @@
   </div>
 </div>
 
+<div class="ov" id="ov-activate">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:340px;text-align:center">
+    <div class="mhdr"><span class="mttl">Activar Suscripción</span><div class="xbtn" onclick="closeOv('ov-activate')">×</div></div>
+    <div style="font-size:42px;margin-bottom:10px">💳</div>
+    <div style="font-size:17px;font-weight:800;margin-bottom:8px">Renovar plan</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:16px">¿Cuántos meses pagó el cliente?</div>
+    
+    <input type="number" id="act-months" class="inp" placeholder="Ej: 1, 3, 6, 12" min="1" max="60" style="margin-bottom:20px;text-align:center;font-size:20px;font-weight:900;color:var(--blue)" value="1" />
+    
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeOv('ov-activate')">Cancelar</button>
+      <button class="btn btn-green" style="flex:1" id="act-confirm-btn">Activar plan</button>
+    </div>
+  </div>
+</div>
+
 <div class="ov bot" id="ov-notif">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Notificaciones</span><div class="xbtn" id="close-notif">×</div></div>
@@ -1228,7 +1244,7 @@
  
 // por el momento 
 <script>
-  // 💥 SCRIPT PARA DESTRUIR EL CACHÉ Y EL SERVICE WORKER 💥
+  //  SCRIPT PARA DESTRUIR EL CACHÉ Y EL SERVICE WORKER 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(function(registrations) {
       for(let registration of registrations) {
