@@ -249,50 +249,55 @@ async function extendTrial(id) {
   }
 }
 
-async function activateBiz(id) {
-  var b = DB.businesses.find(function(x) { return x.id === id; });
+// 1. Esta variable guarda el ID temporalmente para que la ventanita sepa a quién activar
+window._activateBizId = null;
+
+// 2. Esta función SOLO abre la ventanita
+function activateBiz(id) {
+  window._activateBizId = id; // Guardamos el ID
+  var inp = G('act-months');
+  if(inp) inp.value = '1';    // 1 mes por defecto
+  openOv('ov-activate');      // Abrimos el modal oscuro
+}
+
+// 3. Esta función se ejecuta cuando haces clic en "Activar plan" dentro de la ventanita
+async function confirmActivateBiz() {
+  var id = window._activateBizId;
+  if (!id) return;
+  
+  var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
   if (!b) return;
 
-  // 1. Abrimos la ventanita elegante en vez del prompt feo
-  var inp = G('act-months');
-  if(inp) inp.value = '1'; // Ponemos 1 mes por defecto
-  openOv('ov-activate');
+  var mesesStr = G('act-months').value;
+  var meses = parseInt(mesesStr);
+  if (isNaN(meses) || meses <= 0) { toast('Número de meses inválido', '#EF4444'); return; }
 
-  // 2. Le decimos al botón verde "Activar plan" qué debe hacer al darle clic
-  var btn = G('act-confirm-btn');
-  if(btn) {
-    btn.onclick = async function() {
-      var mesesStr = G('act-months').value;
-      var meses = parseInt(mesesStr);
-      if (isNaN(meses) || meses <= 0) { toast('Número de meses inválido', '#EF4444'); return; }
+  // Cerramos ambas ventanas para que no estorben
+  closeOv('ov-activate');
+  closeOv('ov-biz-profile');
 
-      // Cerramos la ventanita
-      closeOv('ov-activate');
+  // Calculamos la nueva fecha
+  var baseDate = (b.plan === 'active' && b.expires_at && new Date(b.expires_at) > new Date()) ? new Date(b.expires_at) : new Date();
+  baseDate.setMonth(baseDate.getMonth() + meses);
+  b.expires_at = baseDate.toISOString().split('T')[0];
+  b.plan = 'active'; 
 
-      // Calculamos la fecha
-      var baseDate = (b.plan === 'active' && b.expires_at && new Date(b.expires_at) > new Date()) ? new Date(b.expires_at) : new Date();
-      baseDate.setMonth(baseDate.getMonth() + meses);
-      b.expires_at = baseDate.toISOString().split('T')[0];
-      b.plan = 'active'; 
+  // Mensaje de campana
+  if (!b.notifications) b.notifications = [];
+  b.notifications.unshift({
+    id: Date.now(), type: 'system', title: '¡Suscripción Activada! 🎉',
+    msg: 'Suscripción Activada', body: 'Tu cuenta ha sido activada hasta el ' + b.expires_at + '. ¡Gracias por confiar en Citas Pro!',
+    read: false, date: new Date().toISOString()
+  });
 
-      // Mensaje de campana para la barbería
-      if (!b.notifications) b.notifications = [];
-      b.notifications.unshift({
-        id: Date.now(), type: 'system', title: '¡Suscripción Activada! 🎉',
-        msg: 'Suscripción Activada', body: 'Tu cuenta ha sido activada hasta el ' + b.expires_at + '. ¡Gracias por confiar en Citas Pro!',
-        read: false, date: new Date().toISOString()
-      });
-
-      saveDB(); 
-      toast('Activando y guardando...', '#F59E0B');
-      
-      // Enviamos a Supabase
-      await updateBizStatusOnly(id, 'active', b.expires_at);
-      
-      toast('Negocio activado por ' + meses + ' mes(es)', '#22C55E'); 
-      checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); 
-    };
-  }
+  saveDB(); 
+  toast('Activando y guardando...', '#F59E0B');
+  
+  // Enviamos al "cocinero" (Supabase) con la función anti-caché
+  await updateBizStatusOnly(id, 'active', b.expires_at);
+  
+  toast('Negocio activado por ' + meses + ' mes(es)', '#22C55E'); 
+  checkNotifications(); renderBizListAdmin(filterBiz()); renderDash(); 
 }
 
 async function suspendBiz(id) {
