@@ -278,7 +278,7 @@ function showPaywall(bizName) {
     div.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
     
     // AQUÍ CAMBIA EL NÚMERO DE WHATSAPP POR EL TUYO
-    var tuNumeroWhatsApp = "+34 611 20 09 84"; 
+    var tuNumeroWhatsApp = "953767924"; 
     
     div.innerHTML = `
         <div style="background:#07090F;border:1px solid rgba(74,127,212,.3);border-radius:24px;padding:30px;max-width:400px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.5)">
