@@ -370,18 +370,7 @@ function renderNotifications() {
   }).join('') : '<div style="text-align:center;color:var(--muted);padding:36px"><div style="font-size:13px">Sin notificaciones</div></div>');
 }
 
-function extendTrial(id) { 
-    var b = DB.businesses.filter(function(x) { return x.id === id; })[0]; 
-    if (b) { b.plan = 'trial'; saveDB(); toast('Prueba extendida', '#F59E0B'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); } 
-}
-function activateBiz(id) { 
-    var b = DB.businesses.filter(function(x) { return x.id === id; })[0]; 
-    if (b) { b.plan = 'active'; saveDB(); toast('Negocio activado', '#22C55E'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); } 
-}
-function suspendBiz(id) { 
-    var b = DB.businesses.filter(function(x) { return x.id === id; })[0]; 
-    if (b) { b.plan = 'expired'; saveDB(); toast('Negocio suspendido', '#EF4444'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); } 
-}
+
 
 /* ══════════════════════════
    ELIMINAR BARBERÍA (Super Admin) - 
