@@ -19,58 +19,46 @@ module.exports = async (req, res) => {
     // REGLA DE ORO: Los nombres aquí DEBEN coincidir EXACTAMENTE
     // con los nombres de las columnas en tu tabla de Supabase.
     // PostgreSQL usa snake_case (guiones bajos), NO camelCase.
-    //
-    // Si en Supabase tu columna se llama "join_date" → aquí pones "join_date"
-    // Si en Supabase tu columna se llama "desc_text" → aquí pones "desc_text"
     // ══════════════════════════════════════════════════════════════
 
-    const payload = {
-      id:        data.id,
-      name:      data.name || 'Sin nombre',
-      owner:     data.owner || '',
-      email:     data.email || '',
-      password:  data.pass || data.password || '',
-      phone:     data.phone || '',
-      addr:      data.addr || '',
-      city:      data.city || '',
-      country:   data.country || '',
-      type:      data.type || '',
-      plan:      data.plan || 'trial',
-      join_date:  data.joinDate || data.join_date || new Date().toISOString().split('T')[0],
-      expires_at: data.expires_at || null,
-      desc_text: data.desc || data.desc_text || '',
-      logo:      data.logo || '',
-      cover:     data.cover || '',
-      insta:     data.insta || '',
-      facebook:  data.facebook || '',
-      x_url:     data.x_url || '', 
-      horario:   Array.isArray(data.horario) ? data.horario : [],
-      photos:    Array.isArray(data.photos)  ? data.photos  : []
-    };
+    // Solo preparamos las cosas que SÍ nos enviaron, sin sobreescribir con espacios en blanco.
+    const payload = {};
+    if (data.name !== undefined) payload.name = data.name;
+    if (data.owner !== undefined) payload.owner = data.owner;
+    if (data.email !== undefined) payload.email = data.email;
+    if (data.pass || data.password !== undefined) payload.password = data.pass || data.password;
+    if (data.phone !== undefined) payload.phone = data.phone;
+    if (data.addr !== undefined) payload.addr = data.addr;
+    if (data.city !== undefined) payload.city = data.city;
+    if (data.country !== undefined) payload.country = data.country;
+    if (data.type !== undefined) payload.type = data.type;
+    if (data.plan !== undefined) payload.plan = data.plan;
+    if (data.join_date || data.joinDate !== undefined) payload.join_date = data.join_date || data.joinDate;
+    if (data.expires_at !== undefined) payload.expires_at = data.expires_at;
+    if (data.desc_text || data.desc !== undefined) payload.desc_text = data.desc_text || data.desc;
+    if (data.logo !== undefined) payload.logo = data.logo;
+    if (data.cover !== undefined) payload.cover = data.cover;
+    if (data.insta !== undefined) payload.insta = data.insta;
+    if (data.facebook !== undefined) payload.facebook = data.facebook;
+    if (data.x_url !== undefined) payload.x_url = data.x_url;
 
-    // ══════════════════════════════════════════════════════════════
-    // NUEVO: LÓGICA SEGURA (No eliminé tu código, solo lo comenté)
-    // ══════════════════════════════════════════════════════════════
-    // const { error } = await supabase.from('businesses').upsert(payload);
-    
     let error = null;
     
     // 1. Verificamos si el negocio ya existe
-    const { data: checkExist } = await supabase.from('businesses').select('id').eq('id', payload.id);
+    const { data: checkExist } = await supabase.from('businesses').select('id').eq('id', data.id).single();
     
-    if (checkExist && checkExist.length > 0) {
-      // 2. Si existe, lo ACTUALIZAMOS (Más seguro que upsert)
-      const resUpdate = await supabase.from('businesses').update(payload).eq('id', payload.id);
+    if (checkExist) {
+      // 2. Si existe, lo ACTUALIZAMOS
+      const resUpdate = await supabase.from('businesses').update(payload).eq('id', data.id);
       error = resUpdate.error;
     } else {
       // 3. Si no existe, lo CREAMOS
-      const resInsert = await supabase.from('businesses').insert(payload);
+      const resInsert = await supabase.from('businesses').insert({ id: data.id, ...payload });
       error = resInsert.error;
     }
 
     if (error) {
-      // Log detallado para debugging (solo visible en Vercel logs)
-      console.error('Supabase upsert/update error:', JSON.stringify(error));
+      console.error('Supabase update/insert error:', JSON.stringify(error));
       return res.status(400).json({
         success: false,
         error: 'Rechazo Supabase: ' + error.message,

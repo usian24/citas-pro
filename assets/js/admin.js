@@ -187,11 +187,11 @@ function renderNotifications() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   NUEVO: Función ayudante con ALERTAS en caso de error
+   NUEVO: Función ayudante con ALERTAS en caso de error y Anti-Caché
 ══════════════════════════════════════════════════════════════ */
 async function updateBizOnCloud(biz) {
   try {
-    let res = await fetch('/api/update-biz', {
+    let res = await fetch('/api/update-biz?t=' + Date.now(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(biz)
@@ -214,6 +214,24 @@ async function updateBizOnCloud(biz) {
   }
 }
 
+/* Función ayudante "Anti-Caché" EXCLUSIVA para estados (solo envía ID, plan y fecha) */
+async function updateBizStatusOnly(id, plan, expires_at) {
+  try {
+    let res = await fetch('/api/update-biz?t=' + Date.now(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id, plan: plan, expires_at: expires_at })
+    });
+    
+    let data = await res.json();
+    if (!data.success) {
+      alert("❌ Supabase rechazó el guardado: " + data.error);
+    }
+  } catch(e) { 
+    alert("❌ Error de red, no se pudo conectar.");
+  }
+}
+
 async function extendTrial(id) {
   var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
   if (b) { 
@@ -222,7 +240,10 @@ async function extendTrial(id) {
     b.plan = 'trial'; 
     saveDB(); 
     toast('Guardando en la nube... ⏳', '#F59E0B');
-    await updateBizOnCloud(b);
+    
+    // Usamos el método quirúrgico para que no borre nada más
+    await updateBizStatusOnly(id, 'trial', b.expires_at);
+    
     toast('Prueba extendida 15 días', '#22C55E'); 
     checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); 
   }
@@ -253,7 +274,10 @@ async function activateBiz(id) {
 
     saveDB(); 
     toast('Activando y guardando...', '#F59E0B');
-    await updateBizOnCloud(b);
+    
+    // Usamos el método quirúrgico
+    await updateBizStatusOnly(id, 'active', b.expires_at);
+    
     toast('Negocio activado por ' + meses + ' mes(es)', '#22C55E'); 
     checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); 
   }
@@ -265,7 +289,10 @@ async function suspendBiz(id) {
     b.plan = 'expired'; // Expired actúa como el candado para bloquearlos
     saveDB(); 
     toast('Suspendiendo en la nube...', '#F59E0B');
-    await updateBizOnCloud(b);
+    
+    // Usamos el método quirúrgico
+    await updateBizStatusOnly(id, 'expired', b.expires_at || null);
+    
     toast('Negocio suspendido', '#EF4444'); 
     checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); 
   }
