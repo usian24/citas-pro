@@ -1218,7 +1218,7 @@
 <script src="assets/js/client-portal.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
- <script>
+<script>
   firebase.initializeApp({
     apiKey: "AIzaSyDgZrfTP-6W0gZNUrqa8woorpxxqJ-tNcs",
     authDomain: "citas-pro-36cb7.firebaseapp.com",
@@ -1232,19 +1232,8 @@
 <script src="assets/js/admin.js?v=999"></script>
 <script src="assets/js/app.js"></script>
 
-<!-- <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js')
-        .then(function(reg) { console.log('SW registrado:', reg.scope); })
-        .catch(function(err) { console.log('SW error:', err); });
-    });
-  }
-</script> -->
- 
-<!-- por el momento  -->
 <script>
-  //  SCRIPT PARA DESTRUIR EL CACHÉ Y EL SERVICE WORKER 
+  // 💥 SCRIPT PARA DESTRUIR EL CACHÉ Y EL SERVICE WORKER 💥
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(function(registrations) {
       for(let registration of registrations) {

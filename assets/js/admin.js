@@ -153,7 +153,7 @@ function renderRevenue() {
     { l: 'Mes actual (' + active + ' activos)', v: m,       c: 'var(--green)' },
     { l: 'En 3 meses (estimado)',               v: m * 1.3, c: 'var(--blue)'  },
     { l: 'En 6 meses (estimado)',               v: m * 1.8, c: 'var(--gold)'  },
-    { l: 'En 1 año (estimado)',                 v: m * 2.5, c: 'var(--green)' }
+    { l: 'En 1 year (estimado)',                 v: m * 2.5, c: 'var(--green)' }
   ].map(function(r) {
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">' + r.l + '</span><span style="font-weight:800;font-size:17px;color:' + r.c + '">' + money(r.v) + '</span></div>';
   }).join(''));
@@ -187,7 +187,7 @@ function renderNotifications() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   NUEVO: Función ayudante con ALERTAS en caso de error y Anti-Caché
+   FUNCIONES DE SUPABASE Y ACTIVACIÓN (ANTI-CACHÉ Y MODAL)
 ══════════════════════════════════════════════════════════════ */
 async function updateBizOnCloud(biz) {
   try {
@@ -199,7 +199,6 @@ async function updateBizOnCloud(biz) {
     
     let data = await res.json();
     
-    // Si Supabase rechaza el guardado, ¡te avisará con una alerta GIGANTE!
     if (!data.success) {
       console.error('Error exacto de Supabase:', data);
       toast('Error en Base de Datos: ' + (data.error || 'Desconocido'), '#EF4444');
@@ -210,11 +209,9 @@ async function updateBizOnCloud(biz) {
   } catch(e) { 
     console.error('Error de red:', e); 
     toast('Error de conexión al guardar en la nube', '#EF4444');
-    alert('ERROR DE RED: Vercel no respondió. Sube tus cambios a GitHub.');
   }
 }
 
-/* Función ayudante "Anti-Caché" EXCLUSIVA para estados (solo envía ID, plan y fecha) */
 async function updateBizStatusOnly(id, plan, expires_at) {
   try {
     let res = await fetch('/api/update-biz?t=' + Date.now(), {
@@ -235,13 +232,12 @@ async function updateBizStatusOnly(id, plan, expires_at) {
 async function extendTrial(id) {
   var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
   if (b) { 
-    var d = new Date(); d.setDate(d.getDate() + 15); // Suma 15 días desde hoy
+    var d = new Date(); d.setDate(d.getDate() + 15); 
     b.expires_at = d.toISOString().split('T')[0];
     b.plan = 'trial'; 
     saveDB(); 
     toast('Guardando en la nube... ⏳', '#F59E0B');
     
-    // Usamos el método quirúrgico para que no borre nada más
     await updateBizStatusOnly(id, 'trial', b.expires_at);
     
     toast('Prueba extendida 15 días', '#22C55E'); 
@@ -249,25 +245,20 @@ async function extendTrial(id) {
   }
 }
 
-// 1. Esta variable guarda el ID temporalmente para que la ventanita sepa a quién activar
+// LÓGICA DE ACTIVACIÓN (Ventana Elegante)
 window._activateBizId = null;
 
-// 2. Esta función SOLO abre la ventanita
 function activateBiz(id) {
-  window._activateBizId = id; // Guardamos el ID
-  
-  // 1. Ocultamos el perfil del negocio inmediatamente
+  window._activateBizId = id; 
   closeOv('ov-biz-profile');  
-
-  // 2. Esperamos una fracción de segundo (150ms) para que la animación se vea fluida y abrimos la nueva
+  
   setTimeout(function() {
     var inp = G('act-months');
-    if(inp) inp.value = '1';    // 1 mes por defecto
-    openOv('ov-activate');      // Abrimos el modal oscuro
+    if(inp) inp.value = '1';    
+    openOv('ov-activate');      
   }, 150);
 }
 
-// 3. Esta función se ejecuta cuando haces clic en "Activar plan" dentro de la ventanita
 async function confirmActivateBiz() {
   var id = window._activateBizId;
   if (!id) return;
@@ -279,17 +270,14 @@ async function confirmActivateBiz() {
   var meses = parseInt(mesesStr);
   if (isNaN(meses) || meses <= 0) { toast('Número de meses inválido', '#EF4444'); return; }
 
-  // Cerramos ambas ventanas para que no estorben
   closeOv('ov-activate');
   closeOv('ov-biz-profile');
 
-  // Calculamos la nueva fecha
   var baseDate = (b.plan === 'active' && b.expires_at && new Date(b.expires_at) > new Date()) ? new Date(b.expires_at) : new Date();
   baseDate.setMonth(baseDate.getMonth() + meses);
   b.expires_at = baseDate.toISOString().split('T')[0];
   b.plan = 'active'; 
 
-  // Mensaje de campana
   if (!b.notifications) b.notifications = [];
   b.notifications.unshift({
     id: Date.now(), type: 'system', title: '¡Suscripción Activada! 🎉',
@@ -300,21 +288,20 @@ async function confirmActivateBiz() {
   saveDB(); 
   toast('Activando y guardando...', '#F59E0B');
   
-  // Enviamos al "cocinero" (Supabase) con la función anti-caché
   await updateBizStatusOnly(id, 'active', b.expires_at);
   
   toast('Negocio activado por ' + meses + ' mes(es)', '#22C55E'); 
   checkNotifications(); renderBizListAdmin(filterBiz()); renderDash(); 
+  openBizProfile(id); 
 }
 
 async function suspendBiz(id) {
   var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
   if (b) { 
-    b.plan = 'expired'; // Expired actúa como el candado para bloquearlos
+    b.plan = 'expired'; 
     saveDB(); 
     toast('Suspendiendo en la nube...', '#F59E0B');
     
-    // Usamos el método quirúrgico
     await updateBizStatusOnly(id, 'expired', b.expires_at || null);
     
     toast('Negocio suspendido', '#EF4444'); 
