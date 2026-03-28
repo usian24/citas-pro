@@ -43,11 +43,10 @@ module.exports = async (req, res) => {
       facebook:  data.facebook || '',
       x_url:     data.x_url || '', 
 
-      // fin nuevas redes
-      join_date: data.joinDate || data.join_date || new Date().toISOString().split('T')[0],
       //CORRECCIÓN PRINCIPAL: era "joinDate", ahora es "join_date"
-      join_date: data.joinDate || data.join_date || new Date().toISOString().split('T')[0],
       //Los campos JSON/JSONB se envían como arrays, Supabase los acepta directo
+      join_date: data.joinDate || data.join_date || new Date().toISOString().split('T')[0],
+      expires_at: data.expires_at || null, 
       horario:   Array.isArray(data.horario) ? data.horario : [],
       photos:    Array.isArray(data.photos)  ? data.photos  : []
     };

@@ -186,19 +186,72 @@ function renderNotifications() {
     : '<div style="text-align:center;color:var(--muted);padding:36px"><div style="font-size:32px;margin-bottom:10px">🎉</div><div>Sin notificaciones</div></div>');
 }
 
-function extendTrial(id) {
-  var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
-  if (b) { b.plan = 'trial'; saveDB(); toast('Prueba extendida', '#F59E0B'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); }
+/* Función ayudante para guardar en Supabase desde el panel Admin */
+async function updateBizOnCloud(biz) {
+  try {
+    await fetch('/api/update-biz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(biz)
+    });
+  } catch(e) { console.error('Error guardando en nube', e); }
 }
 
-function activateBiz(id) {
+async function extendTrial(id) {
   var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
-  if (b) { b.plan = 'active'; saveDB(); toast('Negocio activado', '#22C55E'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); }
+  if (b) { 
+    var d = new Date(); d.setDate(d.getDate() + 15); // Suma 15 días desde hoy
+    b.expires_at = d.toISOString().split('T')[0];
+    b.plan = 'trial'; 
+    saveDB(); 
+    toast('Guardando en la nube... ⏳', '#F59E0B');
+    await updateBizOnCloud(b);
+    toast('Prueba extendida 15 días', '#22C55E'); 
+    checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); 
+  }
 }
 
-function suspendBiz(id) {
+async function activateBiz(id) {
   var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
-  if (b) { b.plan = 'expired'; saveDB(); toast('Negocio suspendido', '#EF4444'); checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); }
+  if (b) { 
+    var mesesStr = prompt("¿Cuántos meses pagó el cliente? (Ej: 1, 3, 6, 12)");
+    if (!mesesStr) return; // Si cancelas, no hace nada
+    var meses = parseInt(mesesStr);
+    if (isNaN(meses) || meses <= 0) { toast('Número de meses inválido', '#EF4444'); return; }
+
+    // Calcula la fecha exacta sumando los meses
+    var baseDate = (b.plan === 'active' && b.expires_at && new Date(b.expires_at) > new Date()) ? new Date(b.expires_at) : new Date();
+    baseDate.setMonth(baseDate.getMonth() + meses);
+    
+    b.expires_at = baseDate.toISOString().split('T')[0];
+    b.plan = 'active'; 
+
+    // Mensaje de agradecimiento automático en la campana de la barbería
+    if (!b.notifications) b.notifications = [];
+    b.notifications.unshift({
+      id: Date.now(), type: 'system', title: '¡Suscripción Activada! 🎉',
+      msg: 'Suscripción Activada', body: 'Tu cuenta ha sido activada hasta el ' + b.expires_at + '. ¡Gracias por confiar en Citas Pro!',
+      read: false, date: new Date().toISOString()
+    });
+
+    saveDB(); 
+    toast('Activando y guardando...', '#F59E0B');
+    await updateBizOnCloud(b);
+    toast('Negocio activado por ' + meses + ' mes(es)', '#22C55E'); 
+    checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); 
+  }
+}
+
+async function suspendBiz(id) {
+  var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
+  if (b) { 
+    b.plan = 'expired'; // Expired actúa como el candado para bloquearlos
+    saveDB(); 
+    toast('Suspendiendo en la nube...', '#F59E0B');
+    await updateBizOnCloud(b);
+    toast('Negocio suspendido', '#EF4444'); 
+    checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); 
+  }
 }
 
 function copyText(txt) {

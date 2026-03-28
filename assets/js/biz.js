@@ -338,13 +338,21 @@ function delGalleryPhoto(idx) {
 function finalizeBizReg() {
   if (DB.businesses.filter(function(b){ return (b.email||'').toLowerCase()===REG.email.toLowerCase(); })[0]) { toast('Email ya registrado','#EF4444'); showRegStep(2); return; }
   var slug = (REG.name||'negocio').toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').slice(0,20)+'-'+Date.now().toString(36);
+  
+  // NUEVO: Cálculo automático de los 30 días de prueba
+  var hoy = new Date();
+  var trialEnd = new Date(hoy);
+  trialEnd.setDate(trialEnd.getDate() + 30); 
+  // --------------------------------------------------------
+
   var biz = {
     id:slug, name:REG.name, owner:REG.owner, email:REG.email, pass:REG.pass,
     phone:REG.phone, addr:REG.addr, city:REG.city, country:REG.country,
     type:REG.type, teamSize:REG.teamSize,
-    // "join_date" para que coincida con Supabase
-    join_date:new Date().toISOString().split('T')[0],
-    // AQUI AGREGAMOS facebook Y x_url ↓
+    // "join_date" para coincidir con Supabase y "expires_at" para el límite
+    join_date: hoy.toISOString().split('T')[0],
+    expires_at: trialEnd.toISOString().split('T')[0], // <- INYECCIÓN DE LA FECHA LÍMITE
+    // Redes sociales y demás configuraciones
     plan:'trial', desc:'', logo:REG.logo||'', photos:REG.photos||[], insta:'', facebook:'', x_url:'', cover:REG.cover||'',
     horario:DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
     workers: [], 
@@ -367,6 +375,7 @@ function finalizeBizReg() {
 }
 
 function completeBizReg() { CUR=DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0]; if(CUR) showBizPanel(); else showRegStep(0); }
+
 function copyLink() {
   var link = 'https://citasproonline.com/#b/' + (CUR ? CUR.id : DB.currentBiz || 'mi-negocio');
   try { navigator.clipboard.writeText(link); } catch(e) {}
