@@ -36,17 +36,14 @@ module.exports = async (req, res) => {
       country:   data.country || '',
       type:      data.type || '',
       plan:      data.plan || 'trial',
+      join_date:  data.joinDate || data.join_date || new Date().toISOString().split('T')[0],
+      expires_at: data.expires_at || null,
       desc_text: data.desc || data.desc_text || '',
       logo:      data.logo || '',
       cover:     data.cover || '',
       insta:     data.insta || '',
       facebook:  data.facebook || '',
       x_url:     data.x_url || '', 
-
-      //CORRECCIÓN PRINCIPAL: era "joinDate", ahora es "join_date"
-      //Los campos JSON/JSONB se envían como arrays, Supabase los acepta directo
-      join_date: data.joinDate || data.join_date || new Date().toISOString().split('T')[0],
-      expires_at: data.expires_at || null, 
       horario:   Array.isArray(data.horario) ? data.horario : [],
       photos:    Array.isArray(data.photos)  ? data.photos  : []
     };
