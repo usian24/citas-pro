@@ -186,7 +186,9 @@ function renderNotifications() {
     : '<div style="text-align:center;color:var(--muted);padding:36px"><div style="font-size:32px;margin-bottom:10px">🎉</div><div>Sin notificaciones</div></div>');
 }
 
-/* Función ayudante para guardar en Supabase desde el panel Admin */
+/* ══════════════════════════════════════════════════════════════
+   NUEVO: Función ayudante con ALERTAS en caso de error
+══════════════════════════════════════════════════════════════ */
 async function updateBizOnCloud(biz) {
   try {
     let res = await fetch('/api/update-biz', {
@@ -197,14 +199,18 @@ async function updateBizOnCloud(biz) {
     
     let data = await res.json();
     
-    // Si Supabase rechaza el guardado, ¡ahora te avisará!
+    // Si Supabase rechaza el guardado, ¡te avisará con una alerta GIGANTE!
     if (!data.success) {
       console.error('Error exacto de Supabase:', data);
       toast('Error en Base de Datos: ' + (data.error || 'Desconocido'), '#EF4444');
+      alert('❌ ALERTA: Supabase rechazó el guardado.\nMotivo: ' + (data.error || 'Desconocido') + '\nRevisa que todas las columnas existan en tu tabla.');
+    } else {
+      toast('¡Guardado en Supabase exitoso!', '#22C55E');
     }
   } catch(e) { 
     console.error('Error de red:', e); 
     toast('Error de conexión al guardar en la nube', '#EF4444');
+    alert('ERROR DE RED: Vercel no respondió. Sube tus cambios a GitHub.');
   }
 }
 
