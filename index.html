@@ -272,7 +272,7 @@
   </button>
   
   <div id="bp-cover" style="width:100%; height:320px; background-size:cover; background-position:center; position:relative;">
-    <div style="position:absolute; bottom:0; left:0; right:0; height:180px; background:linear-gradient(to bottom, transparent 0%, var(--bg) 100%);"></div>
+    <div style="position:absolute; bottom:0; left:0; right:0; height:260px; background:linear-gradient(to bottom, transparent 0%, rgba(7, 9, 15, 0.4) 40%, var(--bg) 95%, var(--bg) 100%);"></div>
   </div>
   
   <div style="margin-top:-60px; position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; text-align:center; padding:0 22px;">
@@ -1389,7 +1389,8 @@
       item.addEventListener('click', function() {
         searchResults.style.display = 'none';
         searchInput.value = '';
-        loadBarberPortal(biz.id);
+        // CORRECCIÓN: Forzamos a que el ID sea texto para evitar errores de búsqueda
+        loadBarberPortal(String(biz.id));
       });
 
       searchResults.appendChild(item);
@@ -1404,8 +1405,14 @@
 
   window.loadBarberPortal = function(bizId) {
     var biz = null;
-    if (typeof getBizById === 'function') biz = getBizById(bizId);
-    else if (typeof DB !== 'undefined') biz = DB.businesses.find(b => b.id === bizId);
+    
+    // CORRECCIÓN: Búsqueda estricta para asegurar que carga la barbería correcta
+    if (typeof DB !== 'undefined' && DB.businesses) {
+      biz = DB.businesses.find(function(b) { return String(b.id) === String(bizId); });
+    }
+    if (!biz && typeof getBizById === 'function') {
+      biz = getBizById(bizId);
+    }
     
     if (!biz) return;
 
@@ -1461,7 +1468,6 @@
       "¿En qué podemos ayudarte? ",
       "Busca tu barbería favorita arriba 👆",
       "Contáctate con nosotros por WhatsApp dando clic aquí 💬"
-      
     ];
     
     var msgIndex = 0;
@@ -1470,7 +1476,7 @@
     bubble.style.opacity = '1';
     bubble.style.transform = 'translateY(0)';
 
-    // Bucle para cambiar el mensaje automáticamente cada 3 segundos
+    // Bucle para cambiar el mensaje automáticamente
     setInterval(function() {
       // 1. Ocultar suavemente
       bubble.style.opacity = '0';
