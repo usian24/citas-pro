@@ -724,17 +724,52 @@ function reprogramarCita(token) {
   clGoStep(4);
 }
 
-function cancelApptByToken(token) {
-  var found = findApptByToken(token);
-  if (!found) {
-    if (window._cloudApptCache && window._cloudApptCache.appt && window._cloudApptCache.appt.token === token) {
-      found = window._cloudApptCache;
-    }
-  }
-  if (!found) { toast('Cita no encontrada', '#EF4444'); return; }
+// ═══════════════════════════════════════════════════════════
+// REEMPLAZA SOLO LA FUNCIÓN cancelApptByToken
+// en assets/js/client-portal.js
+// ═══════════════════════════════════════════════════════════
 
+function cancelApptByToken(token) {
+  // Buscar primero en local
+  var found = findApptByToken(token);
+
+  // Si no está en local, intentar del caché de nube
+  if (!found && window._cloudApptCache 
+      && window._cloudApptCache.appt 
+      && window._cloudApptCache.appt.token === token) {
+    found = window._cloudApptCache;
+  }
+
+  if (!found) { 
+    toast('Cita no encontrada', '#EF4444'); 
+    return; 
+  }
+
+  // ── 1. Marcar como cancelada en memoria local ─────────────
   found.appt.status = 'cancelled';
 
+  // Actualizar también dentro de DB.businesses para que saveDB persista
+  DB.businesses.forEach(function(biz) {
+    (biz.workers || []).forEach(function(w) {
+      (w.appointments || []).forEach(function(a) {
+        if (a.token === token) a.status = 'cancelled';
+      });
+    });
+    (biz.appointments || []).forEach(function(a) {
+      if (a.token === token) a.status = 'cancelled';
+    });
+  });
+
+  // Guardar localmente
+  var localBiz = getBizById(found.biz.id);
+  if (localBiz) {
+    var prevCUR = CUR;
+    CUR = localBiz;
+    saveDB();
+    CUR = prevCUR;
+  }
+
+  // ── 2. Cancelar en Supabase ───────────────────────────────
   fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -742,25 +777,27 @@ function cancelApptByToken(token) {
       type: 'appointments',
       business_id: found.biz.id,
       appointments: [{
-        id:            found.appt.id,
+        id:            found.appt.id    || '',
         business_id:   found.biz.id,
         worker_id:     found.worker ? found.worker.id : '',
-        client_name:   found.appt.client,
-        client_phone:  found.appt.phone || '',
-        client_email:  found.appt.email || '',
-        token:         found.appt.token || '',
-        service_name:  found.appt.svc,
-        service_price: found.appt.price || 0,
-        date:          found.appt.date,
-        time:          found.appt.time,
+        client_name:   found.appt.client  || '',
+        client_phone:  found.appt.phone   || '',
+        client_email:  found.appt.email   || '',
+        token:         found.appt.token   || token,
+        service_name:  found.appt.svc     || '',
+        service_price: found.appt.price   || 0,
+        date:          found.appt.date    || '',
+        time:          found.appt.time    || '',
         status:        'cancelled',
-        notes:         found.appt.notes || ''
+        notes:         found.appt.notes   || ''
       }]
     })
-  }).then(function(r){ return r.json(); })
-    .then(function(d){ console.log('Sync cancel result:', JSON.stringify(d)); })
-    .catch(function(e){ console.error('Error cancelando en Supabase:', e); });
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) { console.log('Cancel sync:', JSON.stringify(d)); })
+  .catch(function(e) { console.error('Error cancelando en Supabase:', e); });
 
+  // ── 3. Notificación al barbero ────────────────────────────
   if (found.worker) {
     if (!found.worker.notifications) found.worker.notifications = [];
     found.worker.notifications.unshift({
@@ -782,30 +819,19 @@ function cancelApptByToken(token) {
         worker: {
           id:          found.worker.id,
           business_id: found.biz.id,
-          name:        found.worker.name || '',
-          email:       found.worker.email || '',
-          password:    found.worker.pass || found.worker.password || '',
-          phone:       found.worker.phone || '',
-          avatar:      found.worker.photo || '',
-          cover:       found.worker.cover || '',
-          role:        found.worker.spec || 'barber'
+          name:        found.worker.name     || '',
+          email:       found.worker.email    || '',
+          password:    found.worker.pass     || found.worker.password || '',
+          phone:       found.worker.phone    || '',
+          avatar:      found.worker.photo    || '',
+          cover:       found.worker.cover    || '',
+          role:        found.worker.spec     || 'barber'
         }
       })
-    }).catch(function(e){ console.error('Error guardando worker:', e); });
+    }).catch(function(e) { console.error('Error guardando worker:', e); });
   }
 
-  var localBiz = getBizById(found.biz.id);
-  if (localBiz) {
-    (localBiz.workers || []).forEach(function(w) {
-      (w.appointments || []).forEach(function(a){ if (a.token === token) a.status = 'cancelled'; });
-    });
-    (localBiz.appointments || []).forEach(function(a){ if (a.token === token) a.status = 'cancelled'; });
-    var prevCUR = CUR;
-    CUR = localBiz;
-    saveDB();
-    CUR = prevCUR;
-  }
-
+  // ── 4. Email al barbero ───────────────────────────────────
   if (found.worker && found.worker.email) {
     fetch('/api/send-email', {
       method: 'POST',
@@ -813,16 +839,22 @@ function cancelApptByToken(token) {
       body: JSON.stringify({
         type: 'booking_cancel',
         to:   found.worker.email,
-        data: { clientName: found.appt.client, service: found.appt.svc, date: found.appt.date, time: found.appt.time }
+        data: {
+          clientName: found.appt.client,
+          service:    found.appt.svc,
+          date:       found.appt.date,
+          time:       found.appt.time
+        }
       })
-    }).catch(function(e){ console.error('Error email:', e); });
+    }).catch(function(e) { console.error('Error email:', e); });
   }
 
+  // ── 5. Limpiar y cerrar ───────────────────────────────────
   window._cloudApptCache = null;
-  _cloudApptCache = null;
+  _cloudApptCache        = null;
   closeOv('ov-manage');
   toast('Tu cita ha sido cancelada', '#22C55E');
-  setTimeout(function(){ window.location.hash = ''; }, 1500);
+  setTimeout(function() { window.location.hash = ''; }, 1500);
 }
 
 /* ══════════════════════════
