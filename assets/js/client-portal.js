@@ -1,5 +1,5 @@
 'use strict';
-
+// client-portal.js 
 // Cache global para citas cargadas desde Supabase
 window._cloudApptCache = window._cloudApptCache || null;
 var _cloudApptCache = null;

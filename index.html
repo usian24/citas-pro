@@ -6,7 +6,6 @@
   <meta name="theme-color" content="#07090F"/>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://api.qrserver.com https://cdn.jsdelivr.net https://www.gstatic.com https://firebasestorage.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.gstatic.com; img-src 'self' data: blob: https://api.qrserver.com https://i.ibb.co https://ibb.co; connect-src 'self' https://api.qrserver.com https://api.imgbb.com https://fcbbquvuffpmudvwqgbg.supabase.co wss://fcbbquvuffpmudvwqgbg.supabase.co https://cdn.jsdelivr.net https://fcm.googleapis.com https://firebase.googleapis.com https://www.gstatic.com;">
   <meta name="referrer" content="no-referrer"/>
-  
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -18,21 +17,17 @@
   <meta name="keywords" content="software para barberías, gestión de citas, control de ingresos barbería, agenda digital barberos, SaaS barbería">
   <meta name="author" content="Citas Pro">
   <link rel="canonical" href="https://citasproonline.com/">
-
   <link rel="icon" type="image/x-icon" href="assets/img/image.png">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
-
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://citasproonline.com/"> 
   <meta property="og:title" content="Citas Pro - Control Total de tu Barbería">
   <meta property="og:description" content="Lleva tu barbería al siguiente nivel. Control de citas, finanzas y clientes en un solo lugar.">
   <meta property="og:image" content="https://citasproonline.com/assets/img/og-image.jpg"> 
-
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Citas Pro | Software para Barberías">
   <meta name="twitter:description" content="Optimiza tu tiempo y aumenta tus ganancias con Citas Pro. La herramienta que todo barbero necesita.">
   <meta name="twitter:image" content="https://citasproonline.com/assets/img/og-image.jpg">
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="assets/css/styles.css?v=2"/>
   
@@ -83,46 +78,126 @@
         gap: 5px;
         backdrop-filter: blur(4px);
     }
-    /* --- PARCHE MAGICO PARA EL MODO CLARO (CLIENTE) --- */
-    
-    /* 1. Hacer que los inputs se vean (Borde gris sutil) */
     [data-theme="light"] .inp {
         border: 1px solid #d1d5db !important;
         background: #ffffff !important;
         color: #1f2937 !important;
     }
-    
-    /* 2. Quitar el cuadrado blanco feo de los profesionales */
     #cl-workers-list > div {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
     }
-    
-    /* 3. Enmarcar en azul FUERTE cuando seleccionas un servicio/profesional en modo claro */
     [data-theme="light"] .sel {
         border: 2px solid var(--blue) !important;
         background: rgba(74,127,212,0.05) !important;
     }
-    
-    /* 4. Darle un borde normal a los servicios sin seleccionar para que se vean */
     [data-theme="light"] #cl-svc-list > div:not(.sel) {
         border: 1px solid #e5e7eb !important;
+    }
+
+    /* ── BUSCADOR ── */
+    .portal-search-wrap {
+      width: 100%;
+      max-width: 380px;
+      padding: 0 22px;
+      margin-bottom: 20px;
+      z-index: 1;
+    }
+    .portal-search-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,.06);
+      border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 18px;
+      padding: 14px 18px;
+      transition: border-color .2s;
+    }
+    .portal-search-box:focus-within {
+      border-color: rgba(74,127,212,.5);
+      background: rgba(74,127,212,.06);
+    }
+    .portal-search-box input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      color: var(--text);
+      font-family: var(--font);
+      font-weight: 500;
+    }
+    .portal-search-box input::placeholder { color: var(--muted); }
+    .portal-search-results {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .portal-search-result-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background .18s, border-color .18s;
+    }
+    .portal-search-result-item:hover {
+      background: rgba(74,127,212,.1);
+      border-color: rgba(74,127,212,.25);
+    }
+    .portal-search-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #4A7FD4, #2855C8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .portal-search-empty {
+      text-align: center;
+      padding: 18px 0 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .portal-search-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: 0 4px 6px;
     }
   </style>
 </head>
 <body>
 
-<div class="scr on" id="s-portal" style="min-height:100vh;background:#07090F;flex-direction:column;align-items:center;padding:0 0 60px;position:relative">
+<!-- ══════════════════════════════════════
+     PORTAL PRINCIPAL
+══════════════════════════════════════ -->
+<div class="scr on" id="s-portal" style="min-height:100vh;background:#07090F;flex-direction:column;align-items:center;padding:0 0 80px;position:relative">
+
+  <!-- Glow de fondo -->
   <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:280px;background:radial-gradient(ellipse at 50% 0%,rgba(74,127,212,.16),transparent 70%);pointer-events:none;z-index:0"></div>
 
+  <!-- Botón tema -->
   <div style="position:absolute;top:18px;right:18px;z-index:20;display:flex;gap:8px;align-items:center">
-      <button id="theme-toggle" style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.7)"></button>
+    <button id="theme-toggle" style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.7)"></button>
   </div>
 
-  <div style="display:flex;flex-direction:column;align-items:center;padding-top:80px;margin-bottom:36px;text-align:center;width:100%;z-index:1">
-    
-     <div class="fu" style="width:100px;height:100px;border-radius:28px;background:linear-gradient(145deg,#5B8FE8,#3060D4);display:flex;align-items:center;justify-content:center;margin-bottom:22px;animation:glow 4s ease infinite">
+  <!-- 1. LOGO + TÍTULO + SUBTÍTULO -->
+  <div style="display:flex;flex-direction:column;align-items:center;padding-top:80px;margin-bottom:28px;text-align:center;width:100%;z-index:1">
+    <div class="fu" style="width:100px;height:100px;border-radius:28px;background:linear-gradient(145deg,#5B8FE8,#3060D4);display:flex;align-items:center;justify-content:center;margin-bottom:22px;animation:glow 4s ease infinite">
       <svg width="56" height="56" viewBox="0 0 46 46" fill="none">
         <rect x="7" y="12" width="32" height="26" rx="5" fill="rgba(255,255,255,.15)"/>
         <rect x="7" y="12" width="32" height="26" rx="5" stroke="rgba(255,255,255,.5)" stroke-width="1.8"/>
@@ -132,54 +207,55 @@
         <path d="M15.5 28 L21 33.5 L30.5 22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       </svg>
     </div>
-        
     <h1 class="fu d1" style="font-size:52px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#fff 25%,#7EB8FF 65%,#4A7FD4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:10px">CITAS PRO</h1>
     <p class="fu d2" style="font-size:11px;font-weight:700;color:#5B8FE8;letter-spacing:3.5px;text-transform:uppercase;margin-bottom:12px">APP PARA BARBERÍA Y PELUQUERÍA</p>
     <p class="fu d3" style="font-size:15px;color:var(--t2);max-width:300px;line-height:1.65">La app más completa para gestionar tu barbería o peluquería.</p>
   </div>
 
-  <div class="fu d3" style="width:100%;max-width:380px;padding:0 22px;display:flex;flex-direction:column;gap:12px;margin-bottom:24px;z-index:1">
-    <button class="btn btn-blue" id="btn-crear" style="font-size:16px;font-weight:800;padding:18px">Crear cuenta de empresa</button>
-    <button class="btn btn-dark"  id="btn-login" style="font-size:15px">Iniciar sesión</button>
-  </div>
-
-  <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;margin-bottom:20px;z-index:1">
-    
-  <div style="background: linear-gradient(145deg, #1A1D24, #0D0F14); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 20px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">  
-    <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,215,0,0.05) 0%, transparent 50%); pointer-events: none;"></div>
-    <div style="width: 50px; height: 50px; border-radius: 14px; background: linear-gradient(135deg, #FFD700, #DAA520); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 15px rgba(218, 165, 32, 0.4);">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1A1D24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+  <!-- 2. BUSCADOR -->
+  <div class="portal-search-wrap fu d3">
+    <div class="portal-search-label">Busca tu barbería favorita</div>
+    <div class="portal-search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
+      <input id="portal-search-input" type="text" placeholder="Nombre del negocio..." autocomplete="off" maxlength="60"/>
+      <!-- spinner oculto por defecto -->
+      <div id="portal-search-spinner" style="display:none;width:16px;height:16px;border:2px solid rgba(74,127,212,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
     </div>
-    
-    <div style="z-index: 1;">
-      <div style="font-size: 13px; font-weight: 800; color: #FFD700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px;">Oferta de Lanzamiento</div>
-      <div style="font-size: 18px; font-weight: 900; color: white; margin-bottom: 2px;">30 Días Gratis</div>
-      <div style="font-size: 12px; color: rgba(255,255,255,0.6);">Sin compromiso. Luego solo <strong style="color: white;">10€/mes</strong></div>
-    </div>
-  </div>
-</div>
-
-  <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;z-index:1">
-    <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:var(--rpill);padding:8px 16px;font-size:12px;font-weight:700;color:#22C55E">Incluye IVA</div>
-    <div style="background:rgba(74,127,212,.1);border:1px solid rgba(74,127,212,.2);border-radius:var(--rpill);padding:8px 16px;font-size:12px;font-weight:700;color:var(--blue3)">Equipo ilimitado</div>
-    <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:var(--rpill);padding:8px 16px;font-size:12px;font-weight:700;color:#F59E0B">Sin permanencia</div>
-    <div style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:var(--rpill);padding:8px 16px;font-size:12px;font-weight:700;color:var(--purple)">Reservas 24/7</div>
+    <div class="portal-search-results" id="portal-search-results" style="display:none"></div>
   </div>
 
-  <div class="fu d6" style="width:100%;max-width:380px;padding:0 22px;z-index:1">
-    <a href="https://wa.me/34611200984?text=Hola%2C%20necesito%20ayuda%20con%20Citas%20Pro" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(37,211,102,.18),rgba(18,140,126,.1));border:1px solid rgba(37,211,102,.2);border-radius:22px;padding:16px 20px">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:800;color:#fff">Soporte por WhatsApp</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:1px">¿Dudas? Respondemos en minutos</div>
+  <!-- 3. BANNER OFERTA 30 DÍAS -->
+  <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;margin-bottom:16px;z-index:1">
+    <div style="background:linear-gradient(145deg,#1A1D24,#0D0F14);border:1px solid rgba(255,215,0,.3);border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5)">
+      <div style="position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,215,0,.05) 0%,transparent 50%);pointer-events:none"></div>
+      <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#FFD700,#DAA520);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 15px rgba(218,165,32,.4)">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1A1D24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
       </div>
-      <span style="color:rgba(255,255,255,.3);font-size:20px">›</span>
-    </a>
+      <div style="z-index:1">
+        <div style="font-size:13px;font-weight:800;color:#FFD700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Oferta de Lanzamiento</div>
+        <div style="font-size:18px;font-weight:900;color:white;margin-bottom:2px">30 Días Gratis</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6)">Sin compromiso. Luego solo <strong style="color:white">10€/mes</strong></div>
+      </div>
+    </div>
   </div>
-</div>
 
+  <!-- 4. INICIAR SESIÓN  /  5. CREAR CUENTA -->
+  <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;display:flex;flex-direction:column;gap:12px;z-index:1">
+    <button class="btn btn-dark"  id="btn-login"  style="font-size:15px">Iniciar sesión</button>
+    <button class="btn btn-blue"  id="btn-crear"  style="font-size:16px;font-weight:800;padding:18px">Crear cuenta de barbería</button>
+  </div>
+
+</div>
+<!-- FIN s-portal -->
+
+
+<!-- ══════════════════════════════════════
+     ADMIN
+══════════════════════════════════════ -->
 <div class="scr" id="s-admin">
 
   <div id="adm-login" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 22px;background:#07090F;position:relative">
@@ -287,43 +363,37 @@
           <div class="toggle-wrap"><div><div style="font-weight:600">Modo mantenimiento</div><div style="font-size:12px;color:var(--muted)">Ocultar app a nuevos usuarios</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
         </div>
         <div class="card" style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
-
-        <div class="field">
-          <label>Nueva contraseña</label>
-          <div style="position:relative">
-            <input class="inp" id="cfg-pass1" type="password" placeholder="Mínimo 8 caracteres" style="padding-right:50px"/>
-            <button type="button" onclick="togglePassEye('cfg-pass1', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
+          <div class="field">
+            <label>Nueva contraseña</label>
+            <div style="position:relative">
+              <input class="inp" id="cfg-pass1" type="password" placeholder="Mínimo 8 caracteres" style="padding-right:50px"/>
+              <button type="button" onclick="togglePassEye('cfg-pass1', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
           </div>
-        </div>
-      
-        <div class="field">
-          <label>Confirmar</label>
-          <div style="position:relative">
-            <input class="inp" id="cfg-pass2" type="password" placeholder="Repetir contraseña" style="padding-right:50px"/>
-            <button type="button" onclick="togglePassEye('cfg-pass2', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
+          <div class="field">
+            <label>Confirmar</label>
+            <div style="position:relative">
+              <input class="inp" id="cfg-pass2" type="password" placeholder="Repetir contraseña" style="padding-right:50px"/>
+              <button type="button" onclick="togglePassEye('cfg-pass2', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
           </div>
+          <div id="cfg-pass-err" class="err-box"></div>
+          <button class="btn btn-blue" id="cfg-pass-btn">Actualizar contraseña</button>
         </div>
-      
-        <div id="cfg-pass-err" class="err-box"></div>
-        <button class="btn btn-blue" id="cfg-pass-btn">Actualizar contraseña</button>
-      </div>
         <button class="btn btn-ghost" id="cfg-save-btn">Guardar configuración</button>
       </div>
     </div>
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     NEGOCIO (registro + panel)
+══════════════════════════════════════ -->
 <div class="scr" id="s-biz">
 
   <div id="biz-reg" style="min-height:100vh;padding:32px 22px;max-width:460px;margin:0 auto">
@@ -424,14 +494,12 @@
       <div class="progbar"><div class="progfill" style="width:75%"></div></div>
       <button class="btn btn-ghost btn-sm btn-icon" id="back-5" style="margin-bottom:22px;border-radius:50%">←</button>
       <div style="font-size:24px;font-weight:900;margin-bottom:6px">Foto de Portada y Logo</div>
-      
       <div style="margin-bottom:18px">
         <div id="biz-cover-preview" style="width:100%;height:100px;border-radius:16px;background:rgba(74,127,212,.08);border:2px dashed rgba(74,127,212,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:24px;overflow:hidden;transition:all .2s" onclick="document.getElementById('biz-cover-input').click()">
           📸 <div style="font-size:10px;color:var(--muted);margin-top:4px">Subir portada (Fondo)</div>
         </div>
         <input type="file" id="biz-cover-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
       </div>
-      
       <div style="margin-bottom:18px">
         <div id="logo-preview" style="width:90px;height:90px;border-radius:24px;background:rgba(74,127,212,.08);border:2px dashed rgba(74,127,212,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:28px;overflow:hidden;transition:all .2s" onclick="document.getElementById('logo-input').click()">
           <div style="font-size:10px;color:var(--muted);margin-top:4px">Subir logo</div>
@@ -552,20 +620,15 @@
         <div class="sec-hdr"><span class="sec-ttl">Historial</span></div>
         <div id="biz-appts-fin"></div>
       </div>
-      
       <div class="pane" id="bp-perfil">
         <div class="sec-hdr"><span class="sec-ttl">Mi perfil</span></div>
         <div class="card" style="margin-bottom:12px; padding: 0;">
-          
           <div id="biz-profile-cover" class="cover-container">
              <button class="cover-btn" onclick="document.getElementById('biz-profile-cover-input').click()">Editar portada</button>
              <input type="file" id="biz-profile-cover-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
-             <div id="biz-profile-logo" class="cover-avatar" onclick="document.getElementById('biz-profile-logo-input').click()" style="cursor:pointer" title="Cambiar Logo">
-                B
-             </div>
+             <div id="biz-profile-logo" class="cover-avatar" onclick="document.getElementById('biz-profile-logo-input').click()" style="cursor:pointer" title="Cambiar Logo">B</div>
              <input type="file" id="biz-profile-logo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
           </div>
-          
           <div style="padding: 40px 14px 14px;">
               <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px; text-align:center">Información del negocio</div>
               <div class="field"><label>Nombre negocio</label><input class="inp" id="pf-nm" maxlength="80"/></div>
@@ -592,6 +655,9 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     TRABAJADOR
+══════════════════════════════════════ -->
 <div class="scr" id="s-worker">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:10px">
@@ -695,17 +761,13 @@
     </div>
     <div class="pane" id="wp-perfil">
       <div class="sec-hdr"><span class="sec-ttl">Mi perfil</span></div>
-      
       <div class="card" style="margin-bottom:12px; padding: 0;">
         <div id="wk-profile-cover" class="cover-container">
            <button class="cover-btn" onclick="document.getElementById('wk-profile-cover-input').click()">Editar portada</button>
            <input type="file" id="wk-profile-cover-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
-           <div id="wk-profile-photo-preview" class="cover-avatar" onclick="document.getElementById('wk-profile-photo-input').click()" style="cursor:pointer" title="Cambiar foto">
-             T
-           </div>
+           <div id="wk-profile-photo-preview" class="cover-avatar" onclick="document.getElementById('wk-profile-photo-input').click()" style="cursor:pointer" title="Cambiar foto">T</div>
            <input type="file" id="wk-profile-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
         </div>
-        
         <div style="padding: 40px 14px 14px;">
             <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px; text-align:center">Datos Personales</div>
             <div class="field"><label>Nombre</label><input class="inp" id="wk-pf-nm" maxlength="60"/></div>
@@ -715,38 +777,29 @@
             <button class="btn btn-blue" id="save-wk-profile-btn">Guardar perfil</button>
         </div>
       </div>
-
       <div class="card" style="margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
-
-      <div class="field">
-        <label>Nueva contraseña</label>
-        <div style="position:relative">
-          <input class="inp" id="wk-pass-new" type="password" placeholder="Mínimo 6 caracteres" style="padding-right:50px"/>
-          <button type="button" onclick="togglePassEye('wk-pass-new', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-          </button>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
+        <div class="field">
+          <label>Nueva contraseña</label>
+          <div style="position:relative">
+            <input class="inp" id="wk-pass-new" type="password" placeholder="Mínimo 6 caracteres" style="padding-right:50px"/>
+            <button type="button" onclick="togglePassEye('wk-pass-new', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
         </div>
-      </div>
-    
-      <div class="field">
-        <label>Confirmar contraseña</label>
-        <div style="position:relative">
-          <input class="inp" id="wk-pass-confirm" type="password" placeholder="Repetir contraseña" style="padding-right:50px"/>
-          <button type="button" onclick="togglePassEye('wk-pass-confirm', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-          </button>
+        <div class="field">
+          <label>Confirmar contraseña</label>
+          <div style="position:relative">
+            <input class="inp" id="wk-pass-confirm" type="password" placeholder="Repetir contraseña" style="padding-right:50px"/>
+            <button type="button" onclick="togglePassEye('wk-pass-confirm', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
         </div>
+        <div id="wk-pass-err" class="err-box"></div>
+        <button class="btn btn-dark" id="save-wk-pass-btn">Actualizar contraseña</button>
       </div>
-      <div id="wk-pass-err" class="err-box"></div>
-      <button class="btn btn-dark" id="save-wk-pass-btn">Actualizar contraseña</button>
-    </div>
       <div class="card">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Mi barbería</div>
         <div style="font-size:15px;font-weight:700;margin-bottom:4px" id="wk-pf-biz-name"></div>
@@ -763,25 +816,21 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     PORTAL CLIENTE
+══════════════════════════════════════ -->
 <div class="scr" id="s-client">
   <div style="max-width:500px;margin:0 auto;padding-bottom:60px">
-    
     <div id="cl-cover-bg" style="width: 100%; height: 160px; background-color: var(--bg3); background-size: cover; background-position: center; position: relative; border-bottom: 1px solid var(--b);">
         <button id="cl-back-btn" style="position:absolute;top:16px;left:16px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:var(--rpill);padding:8px 14px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600;z-index:10;">Inicio</button>
-
         <button onclick="toggleTheme()" style="position:absolute;top:16px;right:16px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;z-index:10;"></button>
-
         <div id="ch-av" style="position: absolute; bottom: -45px; left: 50%; transform: translateX(-50%); width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #4A7FD4, #2855C8); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; color: #fff; overflow: hidden; border: 5px solid #07090F; box-shadow: 0 4px 20px rgba(0,0,0,.4); z-index: 5;"></div>
     </div>
-    
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding: 55px 20px 20px; background: linear-gradient(180deg, rgba(74,127,212,.05), transparent);">
       <div style="font-size:24px;font-weight:900;margin-bottom:4px" id="ch-nm">Negocio</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:6px" id="ch-meta"></div>
-      
       <div id="ch-socials" style="display: flex; gap: 14px; justify-content: center; margin-top: 10px;"></div>
-      
     </div>
-
     <div style="display:flex;background:var(--bg3)">
       <div id="bk-p1" style="height:4px;flex:1;background:var(--blue);transition:all .4s"></div>
       <div id="bk-p2" style="height:4px;flex:1;background:var(--b);transition:all .4s"></div>
@@ -796,7 +845,6 @@
       <div id="bk-lbl4" style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--muted)">FECHA/HORA</div>
       <div id="bk-lbl5" style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--muted)">CONFIRMAR</div>
     </div>
-
     <div class="bstep on" id="cs-1" style="padding:24px 20px">
       <div style="font-size:22px;font-weight:900;margin-bottom:6px">¡Bienvenido!</div>
       <div style="font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.6">Ingresa tus datos para reservar tu cita.</div>
@@ -809,7 +857,6 @@
       <div id="cl-err1" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px;padding:12px 14px;background:rgba(239,68,68,.07);border-radius:14px;border:1px solid rgba(239,68,68,.15)"></div>
       <button class="btn btn-blue" id="cs1-next" style="font-size:16px;padding:18px">Continuar</button>
     </div>
-
     <div class="bstep" id="cs-2" style="padding:20px">
       <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige tu profesional</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:18px">¿Con quién quieres tu cita?</div>
@@ -817,7 +864,6 @@
       <div id="cl-err-worker" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px;padding:12px 14px;background:rgba(239,68,68,.07);border-radius:14px;border:1px solid rgba(239,68,68,.15)"></div>
       <button class="btn btn-ghost" id="cs2-back" style="font-size:13px;margin-top:8px">Atrás</button>
     </div>
-
     <div class="bstep" id="cs-3" style="padding:20px">
       <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige el servicio</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:4px">Servicios de <strong id="cl-worker-name"></strong></div>
@@ -826,7 +872,6 @@
       <button class="btn btn-blue" id="cs2-next" style="font-size:16px;padding:18px;margin-bottom:10px">Continuar</button>
       <button class="btn btn-ghost" id="cs3-back" style="font-size:13px">Atrás</button>
     </div>
-
     <div class="bstep" id="cs-4" style="padding:20px">
       <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige fecha y hora</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:18px">Selecciona el día y la hora disponible</div>
@@ -839,7 +884,6 @@
       <button class="btn btn-blue" id="cs4-next" style="font-size:16px;padding:18px;margin-bottom:10px">Continuar</button>
       <button class="btn btn-ghost" id="cs4-back" style="font-size:13px">Atrás</button>
     </div>
-
     <div class="bstep" id="cs-5" style="padding:20px">
       <div style="font-size:20px;font-weight:900;margin-bottom:4px">Confirma tu cita</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:18px">Revisa los detalles antes de confirmar</div>
@@ -847,7 +891,6 @@
       <button class="btn btn-blue" id="cs5-confirm" style="font-size:16px;padding:18px;font-weight:800">Confirmar mi cita</button>
       <button class="btn btn-ghost" id="cs5-back" style="margin-top:10px;font-size:13px">Atrás</button>
     </div>
-
     <div class="bstep" id="cs-6">
       <div style="display:flex;flex-direction:column;align-items:center;min-height:60vh;padding:50px 20px;text-align:center">
         <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#22C55E,#16A34A);display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:20px;animation:popIn .5s ease;box-shadow:0 0 50px rgba(34,197,94,.35)">✅</div>
@@ -863,6 +906,9 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     MODALES Y OVERLAYS (sin cambios)
+══════════════════════════════════════ -->
 <div class="ov" id="ov-registro">
   <div class="modal" onclick="event.stopPropagation()">
     <div id="rm-step1">
@@ -873,35 +919,26 @@
       <div style="height:3px;background:rgba(74,127,212,.12);border-radius:2px;margin-bottom:20px;overflow:hidden"><div style="width:50%;height:100%;background:linear-gradient(90deg,var(--blue),var(--blue3));border-radius:2px"></div></div>
       <div class="field"><label>Correo electrónico *</label><input class="inp" id="rm-email" type="email" placeholder="tu@empresa.com" maxlength="100" autocomplete="email"/></div>
       <div class="field"><label>Teléfono / WhatsApp *</label><input class="inp" id="rm-phone" type="tel" placeholder="+34 600 000 000" maxlength="20" autocomplete="tel"/></div>
-      
       <div class="field">
         <label>Contraseña (más de 6 caracteres)</label>
         <div style="position:relative; width:100%;">
           <input class="inp" id="rm-pass" type="password" placeholder="Crea tu contraseña" maxlength="100" style="padding-right:50px" autocomplete="new-password"/>
           <button type="button" onclick="togglePassEye('rm-pass', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
           </button>
         </div>
         <div id="rm-pass-bar" class="pass-bar"></div>
         <div id="rm-pass-lbl" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
       </div>
-      
       <div class="field">
         <label>Confirmar contraseña</label>
         <div style="position:relative; width:100%;">
           <input class="inp" id="rm-pass2" type="password" placeholder="Repite tu contraseña" maxlength="100" style="padding-right:50px" autocomplete="new-password"/>
           <button type="button" onclick="togglePassEye('rm-pass2', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
           </button>
         </div>
       </div>
-      
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:18px">
         <input type="checkbox" id="rm-terms" style="width:18px;height:18px;margin-top:3px;accent-color:var(--blue);flex-shrink:0;cursor:pointer"/>
         <label for="rm-terms" style="font-size:12px;color:var(--t2);line-height:1.6;cursor:pointer">
@@ -913,7 +950,6 @@
       <div class="divider-text">o</div>
       <div style="text-align:center;font-size:13px;color:var(--t2)">¿Ya tienes cuenta? <span id="rm-go-login" style="color:var(--blue3);font-weight:700;cursor:pointer">Iniciar sesión</span></div>
     </div>
-    
     <div id="rm-step2" style="display:none">
       <div class="mhdr">
         <div><div style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.8px;margin-bottom:4px">PASO 2 DE 2</div><span class="mttl">Verificar tu email</span></div>
@@ -955,10 +991,7 @@
       <div style="position:relative">
         <input class="inp" id="li-pass" type="password" placeholder="Tu contraseña" maxlength="100" style="padding-right:50px" autocomplete="current-password"/>
         <button type="button" onclick="togglePassEye('li-pass', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
         </button>
       </div>
     </div>
@@ -991,34 +1024,26 @@
 <div class="ov bot" id="ov-barber">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl" id="bar-ttl">Añadir trabajador</span><div class="xbtn" id="close-bar">×</div></div>
-    
     <div class="field"><label>Nombre *</label><input class="inp" id="bar-name" placeholder="Nombre del trabajador" maxlength="60"/></div>
     <div class="field"><label>Especialidad</label><input class="inp" id="bar-spec" placeholder="Ej: Cortes clásicos, barba..." maxlength="80"/></div>
     <div class="field"><label>Teléfono</label><input class="inp" id="bar-phone" type="tel" placeholder="+34..." maxlength="20"/></div>
-    
     <div id="bar-cred-section">
       <div class="field"><label>Email (para acceso) *</label><input class="inp" id="bar-email" type="email" placeholder="trabajador@email.com" maxlength="100"/></div>
-      
       <div class="field">
         <label>Contraseña</label>
         <div style="position:relative; width:100%;">
           <input class="inp" id="bar-pass" type="password" placeholder="Mínimo 6 caracteres" maxlength="100" style="padding-right:50px"/>
           <button type="button" onclick="togglePassEye('bar-pass', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
           </button>
         </div>
       </div>
     </div>
-    
     <div class="field">
       <label>Foto (opcional)</label>
       <div id="bar-photo-preview" class="photo-upload" onclick="document.getElementById('bar-photo-input').click()"><div style="font-size:13px;color:var(--muted)">Añadir foto</div></div>
       <input type="file" id="bar-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
     </div>
-    
     <button class="btn btn-blue" id="save-bar-btn">Guardar trabajador</button>
   </div>
 </div>
@@ -1110,9 +1135,7 @@
     <div style="font-size:42px;margin-bottom:10px">💳</div>
     <div style="font-size:17px;font-weight:800;margin-bottom:8px">Renovar plan</div>
     <div style="font-size:13px;color:var(--t2);margin-bottom:16px">¿Cuántos meses pagó el cliente?</div>
-    
-    <input type="number" id="act-months" class="inp" placeholder="Ej: 1, 3, 6, 12" min="1" max="60" style="margin-bottom:20px;text-align:center;font-size:20px;font-weight:900;color:var(--blue)" value="1" />
-    
+    <input type="number" id="act-months" class="inp" placeholder="Ej: 1, 3, 6, 12" min="1" max="60" style="margin-bottom:20px;text-align:center;font-size:20px;font-weight:900;color:var(--blue)" value="1"/>
     <div style="display:flex;gap:10px">
       <button class="btn btn-ghost" style="flex:1" onclick="closeOv('ov-activate')">Cancelar</button>
       <button class="btn btn-green" style="flex:1" onclick="confirmActivateBiz()">Activar plan</button>
@@ -1166,19 +1189,17 @@
     <div id="worker-profile-content"></div>
   </div>
 </div>
+
 <div class="ov" id="ov-terminos">
   <div class="modal" onclick="event.stopPropagation()" style="max-width:500px">
     <div class="mhdr"><span class="mttl">Términos y Condiciones</span><div class="xbtn" onclick="closeOv('ov-terminos')">×</div></div>
     <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px; font-size: 13px; color: var(--t2); line-height: 1.6; text-align: left;">
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">1. Descripción del Servicio</h3>
       <p style="margin-bottom: 12px;">Citas Pro es un software de gestión (SaaS) diseñado para barberías, peluquerías y salones de belleza. Proporcionamos herramientas digitales para la agenda, gestión de equipo y finanzas. No somos responsables de los servicios físicos prestados por los negocios registrados en nuestra plataforma.</p>
-      
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">2. Pagos y Suscripciones</h3>
       <p style="margin-bottom: 12px;">Ofrecemos un período de prueba gratuito de 30 días. Finalizado este período, el coste del servicio será de 10€ mensuales (IVA incluido). No hay permanencia; puedes cancelar tu suscripción en cualquier momento desde tu panel de control.</p>
-
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">3. Responsabilidad del Usuario</h3>
       <p style="margin-bottom: 12px;">El negocio es el único responsable de la veracidad de la información publicada (precios, horarios, servicios) y de cumplir con las citas reservadas por sus clientes. Citas Pro no actúa como intermediario en disputas entre clientes y profesionales.</p>
-
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">4. Disponibilidad del Sistema</h3>
       <p style="margin-bottom: 12px;">Trabajamos para mantener Citas Pro activo 24/7, pero no garantizamos el 100% de disponibilidad debido a posibles mantenimientos o fallos técnicos de servidores de terceros.</p>
     </div>
@@ -1192,13 +1213,10 @@
     <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px; font-size: 13px; color: var(--t2); line-height: 1.6; text-align: left;">
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">1. Datos que Recopilamos</h3>
       <p style="margin-bottom: 12px;">Recopilamos información básica para el funcionamiento del servicio: nombre, correo electrónico, número de teléfono y datos de las reservas. Los clientes finales proporcionan sus datos únicamente con el fin de agendar citas en los negocios registrados.</p>
-      
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">2. Uso de la Información</h3>
       <p style="margin-bottom: 12px;">Usamos tus datos para gestionar tu cuenta, permitir el acceso a la plataforma, enviar confirmaciones/recordatorios de citas y procesar pagos. No vendemos, alquilamos ni compartimos tus datos personales con terceros para fines publicitarios.</p>
-
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">3. Seguridad de los Datos</h3>
       <p style="margin-bottom: 12px;">Implementamos medidas de seguridad estándar de la industria y almacenamos la información en bases de datos cifradas en la nube (Supabase) para proteger tu información contra accesos no autorizados.</p>
-
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">4. Tus Derechos</h3>
       <p style="margin-bottom: 12px;">Puedes solicitar en cualquier momento el acceso, rectificación o eliminación total de tus datos personales y los de tus clientes almacenados en nuestra plataforma contactando a nuestro soporte.</p>
     </div>
@@ -1206,8 +1224,10 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
 <script src="assets/js/db.js"></script>
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/biz.js"></script>
@@ -1232,13 +1252,132 @@
 <script src="assets/js/admin.js?v=999"></script>
 <script src="assets/js/app.js"></script>
 
+<!-- ══════════════════════════════════════
+     LÓGICA DEL BUSCADOR DEL PORTAL
+     Corre DESPUÉS de que app.js cargó DB
+══════════════════════════════════════ -->
 <script>
-  // 💥 SCRIPT PARA DESTRUIR EL CACHÉ Y EL SERVICE WORKER 💥
+(function() {
+  'use strict';
+
+  var searchInput   = document.getElementById('portal-search-input');
+  var searchResults = document.getElementById('portal-search-results');
+  var searchSpinner = document.getElementById('portal-search-spinner');
+  var searchTimer   = null;
+
+  if (!searchInput) return;
+
+  searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    var q = searchInput.value.trim();
+
+    if (!q || q.length < 2) {
+      searchResults.style.display = 'none';
+      searchResults.innerHTML = '';
+      searchSpinner.style.display = 'none';
+      return;
+    }
+
+    // Pequeño debounce de 250ms
+    searchTimer = setTimeout(function() {
+      doSearch(q);
+    }, 250);
+  });
+
+  function sanitizeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function doSearch(q) {
+    searchSpinner.style.display = 'block';
+
+    // Buscar en DB local primero (disponible después de que app.js carga)
+    var businesses = (typeof DB !== 'undefined' && DB.businesses) ? DB.businesses : [];
+    var ql = q.toLowerCase();
+
+    var results = businesses.filter(function(biz) {
+      if (!biz || !biz.name) return false;
+      return biz.name.toLowerCase().indexOf(ql) >= 0
+          || (biz.city  && biz.city.toLowerCase().indexOf(ql)  >= 0)
+          || (biz.addr  && biz.addr.toLowerCase().indexOf(ql)  >= 0);
+    }).slice(0, 6); // máximo 6 resultados
+
+    searchSpinner.style.display = 'none';
+    renderResults(results, q);
+  }
+
+  function renderResults(results, q) {
+    searchResults.style.display = 'block';
+    searchResults.innerHTML = '';
+
+    if (!results.length) {
+      searchResults.innerHTML =
+        '<div class="portal-search-empty">No se encontró ninguna barbería con ese nombre 🤷</div>';
+      return;
+    }
+
+    results.forEach(function(biz) {
+      var item = document.createElement('div');
+      item.className = 'portal-search-result-item';
+
+      // Avatar: logo o inicial
+      var avatarHtml;
+      if (biz.logo) {
+        avatarHtml = '<img src="' + sanitizeHtml(biz.logo) + '" '
+          + 'style="width:100%;height:100%;object-fit:cover;border-radius:14px" alt="Logo"/>';
+      } else {
+        avatarHtml = '<span style="font-size:20px;font-weight:900;color:#fff">'
+          + sanitizeHtml((biz.name || '?').charAt(0).toUpperCase()) + '</span>';
+      }
+
+      var meta = [biz.type, biz.city].filter(Boolean).join(' · ');
+
+      item.innerHTML =
+        '<div class="portal-search-avatar">' + avatarHtml + '</div>'
+        + '<div style="flex:1;min-width:0">'
+        +   '<div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+        +     sanitizeHtml(biz.name)
+        +   '</div>'
+        +   '<div style="font-size:12px;color:var(--t2);margin-top:2px">' + sanitizeHtml(meta) + '</div>'
+        + '</div>'
+        + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+
+      item.addEventListener('click', function() {
+        // Navegar al portal de reservas del negocio
+        if (typeof loadBizDirect === 'function') {
+          searchResults.style.display = 'none';
+          searchInput.value = '';
+          loadBizDirect(biz.id);
+        } else {
+          window.location.hash = '#b/' + biz.id;
+        }
+      });
+
+      searchResults.appendChild(item);
+    });
+  }
+
+  // Cerrar resultados al hacer clic fuera
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.portal-search-wrap')) {
+      searchResults.style.display = 'none';
+    }
+  });
+
+})();
+</script>
+
+<script>
+  // Destruir caché y Service Worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(function(registrations) {
-      for(let registration of registrations) {
-        registration.unregister();
-        console.log('Service Worker eliminado con éxito. Caché limpio.');
+      for(var i = 0; i < registrations.length; i++) {
+        registrations[i].unregister();
       }
     });
   }
