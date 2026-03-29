@@ -101,8 +101,12 @@
     if (!biz) return;
 
     var cover = document.getElementById('bp-cover');
-    if (biz.cover) cover.style.backgroundImage = 'url(' + sanitizeHtml(biz.cover) + ')';
-    else cover.style.backgroundColor = 'var(--bg3)';
+    if (biz.cover) {
+      cover.style.backgroundImage = 'url(' + sanitizeHtml(biz.cover) + ')';
+    } else {
+      cover.style.backgroundImage = 'none'; 
+      cover.style.backgroundColor = 'var(--bg3)';
+    }
 
     var logo = document.getElementById('bp-logo');
     if (biz.logo) logo.innerHTML = '<img src="' + sanitizeHtml(biz.logo) + '" style="width:100%;height:100%;object-fit:cover;" alt="Logo"/>';
