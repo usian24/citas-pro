@@ -592,65 +592,73 @@ function confirmBooking() {
 /* ══════════════════════════
    GESTIÓN DE CITA EXISTENTE (OPTIMIZADO)
 ══════════════════════════ */
+
 async function checkManageAccess() {
   var hash = window.location.hash;
-  if (hash && hash.indexOf('#manage/') === 0) {
-    var parts = hash.split('/');
-    var token = parts.length === 3 ? parts[2] : parts[1];
-    var bizId = parts.length === 3 ? parts[1] : null;
+  if (!(hash && hash.indexOf('#manage/') === 0)) return false;
 
-    var found = null;
+  var parts = hash.split('/');
+  var token = parts.length === 3 ? parts[2] : parts[1];
+  var bizId = parts.length === 3 ? parts[1] : null;
 
-    // 1. Buscar en memoria local PRIMERO (para que sea instantáneo)
-    if (token) {
-      found = findApptByToken(token);
-      if (!found && window._cloudApptCache && window._cloudApptCache.appt && window._cloudApptCache.appt.token === token) {
-        found = window._cloudApptCache;
-      }
+  var found = null;
+
+  // 1. Buscar en local primero (si el cliente acaba de reservar en el mismo browser)
+  if (token) {
+    found = findApptByToken(token);
+    if (!found && window._cloudApptCache
+        && window._cloudApptCache.appt
+        && window._cloudApptCache.appt.token === token) {
+      found = window._cloudApptCache;
     }
-
-    // 2. Si no se encontró en local, buscamos en la nube
-    if (!found && bizId && typeof fetchBizFromCloud === 'function') {
-      try {
-        var cloudBiz = await fetchBizFromCloud(bizId);
-        if (cloudBiz && typeof syncBizToLocal === 'function') {
-          syncBizToLocal(cloudBiz);
-          var fresh = loadDB();
-          DB.businesses = fresh.businesses;
-          found = findApptByToken(token); // Re-buscar tras sincronizar
-        }
-      } catch(e) { console.error('Error cargando biz desde cloud:', e); }
-    }
-
-    // 3. Rescate directo a la base de datos si sigue sin aparecer
-    if (!found && token) {
-      try {
-        var resp = await fetch('/api/get-appointment-by-token?token=' + encodeURIComponent(token));
-        if (resp.ok) {
-          var data = await resp.json();
-          if (data && data.appointment) {
-            var a      = data.appointment;
-            var biz    = getBizById(a.business_id);
-            if (!biz)  biz = { id: a.business_id, name: 'Tu barbería', workers: [] };
-            var worker = null;
-            if (biz.workers) worker = biz.workers.find(function(w){ return w.id === a.worker_id; }) || null;
-            var normalizedAppt = {
-              id: a.id, token: a.token,
-              client: a.client_name, phone: a.client_phone, email: a.client_email || '',
-              svc: a.service_name, price: parseFloat(a.service_price) || 0,
-              date: a.date, time: a.time, status: a.status, notes: a.notes || ''
-            };
-            found = { biz: biz, worker: worker, appt: normalizedAppt };
-            window._cloudApptCache = found;
-            _cloudApptCache = found;
-          }
-        }
-      } catch(e) { console.error('Error buscando cita por token:', e); }
-    }
-
-    if (found) { openManageModal(found.biz, found.worker, found.appt); return true; }
-    else toast('Cita no encontrada o ya expirada', '#EF4444');
   }
+
+  // 2. Buscar directo en Supabase (caso normal: cliente abre link desde email/whatsapp)
+  if (!found && token) {
+    try {
+      var resp = await fetch('/api/get-appointment-by-token?token=' + encodeURIComponent(token));
+      var data = await resp.json();
+
+      if (data && data.already_cancelled) {
+        toast('Esta cita ya fue cancelada', '#F59E0B');
+        setTimeout(function() { window.location.hash = ''; }, 2500);
+        return true;
+      }
+
+      if (data && data.appointment) {
+        var a      = data.appointment;
+        var biz    = getBizById(a.business_id) || { id: a.business_id, name: 'Tu barbería', workers: [] };
+        var worker = (biz.workers || []).find(function(w) { return w.id === a.worker_id; }) || null;
+
+        var normalizedAppt = {
+          id:     a.id,
+          token:  a.token,
+          client: a.client_name,
+          phone:  a.client_phone,
+          email:  a.client_email || '',
+          svc:    a.service_name,
+          price:  parseFloat(a.service_price) || 0,
+          date:   a.date,
+          time:   a.time,
+          status: a.status,
+          notes:  a.notes || ''
+        };
+
+        found = { biz: biz, worker: worker, appt: normalizedAppt };
+        window._cloudApptCache = found;
+        _cloudApptCache = found;
+      }
+    } catch(e) {
+      console.error('Error buscando cita por token:', e);
+    }
+  }
+
+  if (found) {
+    openManageModal(found.biz, found.worker, found.appt);
+    return true;
+  }
+
+  toast('Cita no encontrada o ya expirada', '#EF4444');
   return false;
 }
 
