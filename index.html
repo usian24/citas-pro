@@ -249,6 +249,63 @@
     <button class="btn btn-blue"  id="btn-crear"  style="font-size:16px;font-weight:800;padding:18px">Crear cuenta de barbería</button>
   </div>
 
+  <div id="robot-container" class="eve-wrapper">
+    <div id="robot-bubble" class="eve-bubble" style="opacity: 1; transform: translateY(0);">
+      ¡Hola! Bienvenido a Citas Pro Barber 💈
+    </div>
+    <a href="https://wa.me/34611200984" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+      <div id="robot-icon" class="eve-bot">
+        <div class="eve-head">
+          <div class="eve-face">
+            <div class="eve-eye"></div>
+            <div class="eve-eye"></div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+</div>
+<div class="scr" id="s-barber-portal" style="min-height:100vh; background:var(--bg); position:relative; padding-bottom:80px;">
+  <button onclick="goTo('s-portal')" style="position:absolute; top:20px; left:20px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(4px); border-radius:var(--rpill); padding:8px 16px; font-size:13px; font-weight:600; color:#fff; z-index:10; display:flex; align-items:center; gap:6px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Atrás
+  </button>
+  
+  <div id="bp-cover" style="width:100%; height:320px; background-size:cover; background-position:center; position:relative;">
+    <div style="position:absolute; bottom:0; left:0; right:0; height:180px; background:linear-gradient(to bottom, transparent 0%, var(--bg) 100%);"></div>
+  </div>
+  
+  <div style="margin-top:-60px; position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; text-align:center; padding:0 22px;">
+    <div id="bp-logo" style="width:120px; height:120px; border-radius:50%; background:linear-gradient(135deg,#4A7FD4,#2855C8); display:flex; align-items:center; justify-content:center; font-size:42px; font-weight:900; color:#fff; overflow:hidden; border:6px solid var(--bg); box-shadow:0 8px 24px rgba(0,0,0,0.3); margin-bottom:16px;"></div>
+    <h2 id="bp-name" style="font-size:28px; font-weight:900; margin-bottom:6px;">Nombre Barbería</h2>
+    <p id="bp-desc" style="font-size:14px; color:var(--t2); margin-bottom:24px;"></p>
+    <div id="bp-socials" style="display:flex; gap:16px; justify-content:center; margin-bottom:32px;"></div>
+    
+    <div style="width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px;">
+      <button id="bp-btn-book" class="btn btn-blue" style="font-size:16px; font-weight:800; padding:18px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        Registrar cita
+      </button>
+      <button id="bp-btn-shop" class="btn btn-dark" style="font-size:16px; font-weight:800; padding:18px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+        Ver tienda
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="scr" id="s-barber-shop" style="min-height:100vh; background:var(--bg); padding:20px;">
+  <button onclick="goTo('s-barber-portal')" style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:var(--rpill); padding:10px 18px; font-size:13px; font-weight:600; color:var(--text); margin-bottom:40px; display:flex; align-items:center; gap:6px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Volver a la barbería
+  </button>
+  
+  <div style="text-align:center; padding-top:40px;">
+    <div style="width:90px; height:90px; border-radius:28px; background:rgba(74,127,212,0.1); border:2px dashed var(--blue); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+    </div>
+    <h2 style="font-size:26px; font-weight:900; margin-bottom:12px;">Tienda en construcción</h2>
+    <p style="color:var(--t2); font-size:14px; max-width:300px; margin:0 auto; line-height:1.6;">Próximamente podrás ver y comprar los productos de <strong id="bs-name" style="color:var(--text);">esta barbería</strong> directamente desde aquí.</p>
+  </div>
 </div>
 <!-- FIN s-portal -->
 
@@ -1277,35 +1334,23 @@
       searchSpinner.style.display = 'none';
       return;
     }
-
-    // Pequeño debounce de 250ms
-    searchTimer = setTimeout(function() {
-      doSearch(q);
-    }, 250);
+    searchTimer = setTimeout(function() { doSearch(q); }, 250);
   });
 
   function sanitizeHtml(str) {
     if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   function doSearch(q) {
     searchSpinner.style.display = 'block';
-
-    // Buscar en DB local primero (disponible después de que app.js carga)
     var businesses = (typeof DB !== 'undefined' && DB.businesses) ? DB.businesses : [];
     var ql = q.toLowerCase();
 
     var results = businesses.filter(function(biz) {
       if (!biz || !biz.name) return false;
-      return biz.name.toLowerCase().indexOf(ql) >= 0
-          || (biz.city  && biz.city.toLowerCase().indexOf(ql)  >= 0)
-          || (biz.addr  && biz.addr.toLowerCase().indexOf(ql)  >= 0);
-    }).slice(0, 6); // máximo 6 resultados
+      return biz.name.toLowerCase().indexOf(ql) >= 0 || (biz.city && biz.city.toLowerCase().indexOf(ql) >= 0);
+    }).slice(0, 6);
 
     searchSpinner.style.display = 'none';
     renderResults(results, q);
@@ -1316,8 +1361,7 @@
     searchResults.innerHTML = '';
 
     if (!results.length) {
-      searchResults.innerHTML =
-        '<div class="portal-search-empty">No se encontró ninguna barbería con ese nombre 🤷</div>';
+      searchResults.innerHTML = '<div class="portal-search-empty">Barbería no encontrada</div>';
       return;
     }
 
@@ -1325,14 +1369,11 @@
       var item = document.createElement('div');
       item.className = 'portal-search-result-item';
 
-      // Avatar: logo o inicial
       var avatarHtml;
       if (biz.logo) {
-        avatarHtml = '<img src="' + sanitizeHtml(biz.logo) + '" '
-          + 'style="width:100%;height:100%;object-fit:cover;border-radius:14px" alt="Logo"/>';
+        avatarHtml = '<img src="' + sanitizeHtml(biz.logo) + '" style="width:100%;height:100%;object-fit:cover;border-radius:14px" alt="Logo"/>';
       } else {
-        avatarHtml = '<span style="font-size:20px;font-weight:900;color:#fff">'
-          + sanitizeHtml((biz.name || '?').charAt(0).toUpperCase()) + '</span>';
+        avatarHtml = '<span style="font-size:20px;font-weight:900;color:#fff">' + sanitizeHtml((biz.name || '?').charAt(0).toUpperCase()) + '</span>';
       }
 
       var meta = [biz.type, biz.city].filter(Boolean).join(' · ');
@@ -1340,34 +1381,113 @@
       item.innerHTML =
         '<div class="portal-search-avatar">' + avatarHtml + '</div>'
         + '<div style="flex:1;min-width:0">'
-        +   '<div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
-        +     sanitizeHtml(biz.name)
-        +   '</div>'
+        +   '<div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + sanitizeHtml(biz.name) + '</div>'
         +   '<div style="font-size:12px;color:var(--t2);margin-top:2px">' + sanitizeHtml(meta) + '</div>'
         + '</div>'
         + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"></polyline></svg>';
 
       item.addEventListener('click', function() {
-        // Navegar al portal de reservas del negocio
-        if (typeof loadBizDirect === 'function') {
-          searchResults.style.display = 'none';
-          searchInput.value = '';
-          loadBizDirect(biz.id);
-        } else {
-          window.location.hash = '#b/' + biz.id;
-        }
+        searchResults.style.display = 'none';
+        searchInput.value = '';
+        loadBarberPortal(biz.id);
       });
 
       searchResults.appendChild(item);
     });
   }
 
-  // Cerrar resultados al hacer clic fuera
   document.addEventListener('click', function(e) {
     if (!e.target.closest('.portal-search-wrap')) {
       searchResults.style.display = 'none';
     }
   });
+
+  window.loadBarberPortal = function(bizId) {
+    var biz = null;
+    if (typeof getBizById === 'function') biz = getBizById(bizId);
+    else if (typeof DB !== 'undefined') biz = DB.businesses.find(b => b.id === bizId);
+    
+    if (!biz) return;
+
+    var cover = document.getElementById('bp-cover');
+    if (biz.cover) cover.style.backgroundImage = 'url(' + sanitizeHtml(biz.cover) + ')';
+    else cover.style.backgroundColor = 'var(--bg3)';
+
+    var logo = document.getElementById('bp-logo');
+    if (biz.logo) logo.innerHTML = '<img src="' + sanitizeHtml(biz.logo) + '" style="width:100%;height:100%;object-fit:cover;" alt="Logo"/>';
+    else logo.textContent = (biz.name || '?').charAt(0).toUpperCase();
+
+    document.getElementById('bp-name').textContent = biz.name || 'Barbería';
+    document.getElementById('bp-desc').textContent = (biz.addr || '') + (biz.city ? ', ' + biz.city : '');
+    document.getElementById('bs-name').textContent = biz.name || 'Barbería';
+
+    var socialsContainer = document.getElementById('bp-socials');
+    var socialsHtml = '';
+    
+    if (biz.insta) {
+      var igUrl = biz.insta.startsWith('http') ? biz.insta : 'https://instagram.com/' + biz.insta.replace('@', '');
+      socialsHtml += '<a href="' + sanitizeHtml(igUrl) + '" target="_blank" style="color:var(--text); transition:opacity 0.2s" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>';
+    }
+    if (biz.facebook) {
+      var fbUrl = biz.facebook.startsWith('http') ? biz.facebook : 'https://facebook.com/' + biz.facebook;
+      socialsHtml += '<a href="' + sanitizeHtml(fbUrl) + '" target="_blank" style="color:var(--text); transition:opacity 0.2s" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>';
+    }
+    if (biz.x_url) {
+      var xUrl = biz.x_url.startsWith('http') ? biz.x_url : 'https://x.com/' + biz.x_url.replace('@', '');
+      socialsHtml += '<a href="' + sanitizeHtml(xUrl) + '" target="_blank" style="color:var(--text); transition:opacity 0.2s" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg></a>';
+    }
+    socialsContainer.innerHTML = socialsHtml;
+
+    document.getElementById('bp-btn-book').onclick = function() {
+      if (typeof loadBizDirect === 'function') loadBizDirect(bizId);
+    };
+    
+    document.getElementById('bp-btn-shop').onclick = function() {
+      if (typeof goTo === 'function') goTo('s-barber-shop');
+    };
+
+    if (typeof goTo === 'function') goTo('s-barber-portal');
+  };
+
+  // -----------------------------------------
+  // LÓGICA DEL AGENTE FELIZ EVA (WHATSAPP Y TEXTOS)
+  // -----------------------------------------
+  var bubble = document.getElementById('robot-bubble');
+  
+  if (bubble) {
+    // Lista de los mensajes que dirá EVA
+    var mensajes = [
+      "¡Hola! Bienvenido a Citas Pro Barber 💈",
+      "¿En qué podemos ayudarte? ",
+      "Busca tu barbería favorita arriba 👆",
+      "Contáctate con nosotros por WhatsApp dando clic aquí 💬"
+      
+    ];
+    
+    var msgIndex = 0;
+
+    // Mostrar el primer mensaje al cargar
+    bubble.style.opacity = '1';
+    bubble.style.transform = 'translateY(0)';
+
+    // Bucle para cambiar el mensaje automáticamente cada 3 segundos
+    setInterval(function() {
+      // 1. Ocultar suavemente
+      bubble.style.opacity = '0';
+      bubble.style.transform = 'translateY(10px)';
+      
+      // 2. Esperar un momento y cambiar el texto
+      setTimeout(function() {
+        msgIndex = (msgIndex + 1) % mensajes.length;
+        bubble.textContent = mensajes[msgIndex];
+        
+        // 3. Volver a mostrar suavemente
+        bubble.style.opacity = '1';
+        bubble.style.transform = 'translateY(0)';
+      }, 900); // milisegundos de transición
+      
+    }, 3000); // 3000 = 3 segundos o 2000 a dos segundos
+  }
 
 })();
 </script>
