@@ -175,8 +175,9 @@ function saveDB() {
       }
     }
   } catch(e) { 
-    toast('Almacenamiento lleno', '#EF4444'); 
-  }
+  console.error('saveDB error real:', e.message, e.stack);
+  toast('Almacenamiento lleno', '#EF4444'); 
+}
 }
 
 /* ══════════════════════════
