@@ -723,12 +723,6 @@ function reprogramarCita(token) {
   if (found.worker) buildDates(found.biz.id, found.worker.id);
   clGoStep(4);
 }
-
-// ═══════════════════════════════════════════════════════════
-// REEMPLAZA SOLO LA FUNCIÓN cancelApptByToken
-// en assets/js/client-portal.js
-// ═══════════════════════════════════════════════════════════
-
 function cancelApptByToken(token) {
   // Buscar primero en local
   var found = findApptByToken(token);
@@ -745,10 +739,19 @@ function cancelApptByToken(token) {
     return; 
   }
 
+  // ── LOG DE DIAGNÓSTICO ────────────────────────────────────
+  console.log('CANCEL DEBUG:', JSON.stringify({
+    biz_id:   found.biz.id,
+    token:    found.appt.token,
+    appt_id:  found.appt.id,
+    worker_id: found.worker ? found.worker.id : 'sin_worker',
+    date:     found.appt.date,
+    time:     found.appt.time
+  }));
+
   // ── 1. Marcar como cancelada en memoria local ─────────────
   found.appt.status = 'cancelled';
 
-  // Actualizar también dentro de DB.businesses para que saveDB persista
   DB.businesses.forEach(function(biz) {
     (biz.workers || []).forEach(function(w) {
       (w.appointments || []).forEach(function(a) {
@@ -760,7 +763,6 @@ function cancelApptByToken(token) {
     });
   });
 
-  // Guardar localmente
   var localBiz = getBizById(found.biz.id);
   if (localBiz) {
     var prevCUR = CUR;
@@ -770,31 +772,35 @@ function cancelApptByToken(token) {
   }
 
   // ── 2. Cancelar en Supabase ───────────────────────────────
+  var cancelPayload = {
+    type: 'appointments',
+    business_id: found.biz.id,
+    appointments: [{
+      id:            found.appt.id    || '',
+      business_id:   found.biz.id,
+      worker_id:     found.worker ? found.worker.id : '',
+      client_name:   found.appt.client  || '',
+      client_phone:  found.appt.phone   || '',
+      client_email:  found.appt.email   || '',
+      token:         found.appt.token   || token,
+      service_name:  found.appt.svc     || '',
+      service_price: found.appt.price   || 0,
+      date:          found.appt.date    || '',
+      time:          found.appt.time    || '',
+      status:        'cancelled',
+      notes:         found.appt.notes   || ''
+    }]
+  };
+
+  console.log('CANCEL PAYLOAD:', JSON.stringify(cancelPayload));
+
   fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type: 'appointments',
-      business_id: found.biz.id,
-      appointments: [{
-        id:            found.appt.id    || '',
-        business_id:   found.biz.id,
-        worker_id:     found.worker ? found.worker.id : '',
-        client_name:   found.appt.client  || '',
-        client_phone:  found.appt.phone   || '',
-        client_email:  found.appt.email   || '',
-        token:         found.appt.token   || token,
-        service_name:  found.appt.svc     || '',
-        service_price: found.appt.price   || 0,
-        date:          found.appt.date    || '',
-        time:          found.appt.time    || '',
-        status:        'cancelled',
-        notes:         found.appt.notes   || ''
-      }]
-    })
+    body: JSON.stringify(cancelPayload)
   })
   .then(function(r) { return r.json(); })
-  .then(function(d) { console.log('Cancel sync:', JSON.stringify(d)); })
+  .then(function(d) { console.log('Cancel sync result:', JSON.stringify(d)); })
   .catch(function(e) { console.error('Error cancelando en Supabase:', e); });
 
   // ── 3. Notificación al barbero ────────────────────────────
