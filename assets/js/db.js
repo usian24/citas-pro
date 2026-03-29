@@ -183,20 +183,21 @@ function saveDB() {
    SINCRONIZACIÓN GRANULAR CON SUPABASE
    Cada tabla se sincroniza por separado
 ══════════════════════════ */
+// ═══════════════════════════════════════════════════════════
+// REEMPLAZA SOLO syncAppointmentsToCloud en db.js
+// ═══════════════════════════════════════════════════════════
 
-// Sincroniza TODAS las citas del negocio a la tabla "appointments"
 function syncAppointmentsToCloud(biz) {
   if (!biz || !biz.id) return;
   var allAppts = [];
 
-  // Citas de workers
   (biz.workers || []).forEach(function(w) {
-    // 🔥 EL ESCUDO: Si soy un trabajador, ignoro las citas de mis compañeros, solo subo las mías
-    if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR_WORKER.id !== w.id) {
-        return; 
-    }
+    if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR_WORKER.id !== w.id) return;
 
     (w.appointments || []).forEach(function(a) {
+      // ✅ NUNCA upsertear citas canceladas — evita sobreescribir cancelaciones reales
+      if (a.status === 'cancelled') return;
+
       allAppts.push({
         id:            String(a.id),
         business_id:   biz.id,
@@ -216,9 +217,11 @@ function syncAppointmentsToCloud(biz) {
     });
   });
 
-  // Citas sin worker asignado (Solo el dueño las puede subir, los trabajadores no)
   if (typeof CUR_WORKER === 'undefined' || !CUR_WORKER) {
     (biz.appointments || []).forEach(function(a) {
+      // ✅ NUNCA upsertear citas canceladas
+      if (a.status === 'cancelled') return;
+
       allAppts.push({
         id:            String(a.id),
         business_id:   biz.id,
@@ -226,8 +229,8 @@ function syncAppointmentsToCloud(biz) {
         client_id:     '',
         client_name:   a.client || '',
         client_phone:  a.phone || '',
-        client_email:  a.email || '',  
-        token:         a.token || '',   
+        client_email:  a.email || '',
+        token:         a.token || '',
         service_name:  a.svc || '',
         service_price: parseFloat(a.price) || 0,
         date:          a.date || '',
@@ -246,101 +249,6 @@ function syncAppointmentsToCloud(biz) {
     body: JSON.stringify({ type: 'appointments', business_id: biz.id, appointments: allAppts })
   }).catch(function(e) {
     console.error('Error sync appointments:', e);
-  });
-}
-
-// Sincroniza TODOS los servicios del negocio a la tabla "services"
-function syncServicesToCloud(biz) {
-  if (!biz || !biz.id) return;
-  var allSvcs = [];
-
-  (biz.workers || []).forEach(function(w) {
-    // 🔥 EL ESCUDO: Si soy un trabajador, ignoro los servicios de mis compañeros, solo subo los míos
-    if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR_WORKER.id !== w.id) {
-        return; 
-    }
-
-    (w.services || []).forEach(function(s) {
-      allSvcs.push({
-        id:          String(s.id),
-        business_id: biz.id,
-        worker_id:   w.id,
-        name:        s.name || '',
-        description: s.desc || '',
-        price:       parseFloat(s.price) || 0,
-        duration:    parseInt(s.dur) || 30,
-        color:       s.color || '',
-        image:       s.photo || ''
-      });
-    });
-  });
-
-  if (allSvcs.length === 0) return;
-
-  fetch('/api/sync', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'services', business_id: biz.id, services: allSvcs })
-  })
-  .then(async function(res) {
-    if (!res.ok) {
-      var err = await res.json();
-      console.error("ERROR SUPABASE (services):", err);
-    }
-  })
-  .catch(function(e) {
-    console.error('Error sync services:', e);
-  });
-}
-
-// Sincroniza un cliente nuevo a la tabla "clients" con todos los datos de su reserva
-function syncClientToCloud(bizId, client) {
-  if (!bizId || !client) return;
-
-  fetch('/api/sync', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type:          'client',
-      id:            'cl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
-      business_id:   bizId,
-      name:          client.name || '',
-      email:         client.email || '',
-      phone:         client.phone || '',
-      worker_id:     client.worker_id || '',
-      worker_name:   client.worker_name || '',
-      service_name:  client.service_name || '',
-      service_price: client.service_price || 0,
-      date:          client.date || '',
-      time:          client.time || ''
-    })
-  }).catch(function(e) {
-    console.error('Error sync client:', e);
-  });
-}
-
-// Sincroniza un producto a la tabla "products"
-function syncProductToCloud(bizId, product) {
-  if (!bizId || !product) return;
-
-  fetch('/api/sync', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type:          'product',
-      id:            product.id || ('prod_' + Date.now()),
-      business_id:   bizId,
-      name:          product.name || '',
-      description:   product.description || '',
-      price:         parseFloat(product.price) || 0,
-      stock:         parseInt(product.stock) || 0,
-      image:         product.image || '',
-      category:      product.category || '',
-      rating:        parseFloat(product.rating) || 0,
-      reviews_count: parseInt(product.reviews_count) || 0
-    })
-  }).catch(function(e) {
-    console.error('Error sync product:', e);
   });
 }
 
