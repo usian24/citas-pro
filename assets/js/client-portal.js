@@ -723,35 +723,26 @@ function reprogramarCita(token) {
   if (found.worker) buildDates(found.biz.id, found.worker.id);
   clGoStep(4);
 }
+// ═══════════════════════════════════════════════════════════
+// REEMPLAZA cancelApptByToken en assets/js/client-portal.js
+// ═══════════════════════════════════════════════════════════
+
 function cancelApptByToken(token) {
-  // Buscar primero en local
   var found = findApptByToken(token);
 
-  // Si no está en local, intentar del caché de nube
-  if (!found && window._cloudApptCache 
-      && window._cloudApptCache.appt 
+  if (!found && window._cloudApptCache
+      && window._cloudApptCache.appt
       && window._cloudApptCache.appt.token === token) {
     found = window._cloudApptCache;
   }
 
-  if (!found) { 
-    toast('Cita no encontrada', '#EF4444'); 
-    return; 
+  if (!found) {
+    toast('Cita no encontrada', '#EF4444');
+    return;
   }
 
-  // ── LOG DE DIAGNÓSTICO ────────────────────────────────────
-  console.log('CANCEL DEBUG:', JSON.stringify({
-    biz_id:   found.biz.id,
-    token:    found.appt.token,
-    appt_id:  found.appt.id,
-    worker_id: found.worker ? found.worker.id : 'sin_worker',
-    date:     found.appt.date,
-    time:     found.appt.time
-  }));
-
-  // ── 1. Marcar como cancelada en memoria local ─────────────
+  // ── 1. Marcar local ───────────────────────────────────────
   found.appt.status = 'cancelled';
-
   DB.businesses.forEach(function(biz) {
     (biz.workers || []).forEach(function(w) {
       (w.appointments || []).forEach(function(a) {
@@ -762,46 +753,26 @@ function cancelApptByToken(token) {
       if (a.token === token) a.status = 'cancelled';
     });
   });
-
   var localBiz = getBizById(found.biz.id);
   if (localBiz) {
-    var prevCUR = CUR;
-    CUR = localBiz;
-    saveDB();
-    CUR = prevCUR;
+    var prevCUR = CUR; CUR = localBiz; saveDB(); CUR = prevCUR;
   }
 
-  // ── 2. Cancelar en Supabase ───────────────────────────────
-  var cancelPayload = {
-    type: 'appointments',
-    business_id: found.biz.id,
-    appointments: [{
-      id:            found.appt.id    || '',
-      business_id:   found.biz.id,
-      worker_id:     found.worker ? found.worker.id : '',
-      client_name:   found.appt.client  || '',
-      client_phone:  found.appt.phone   || '',
-      client_email:  found.appt.email   || '',
-      token:         found.appt.token   || token,
-      service_name:  found.appt.svc     || '',
-      service_price: found.appt.price   || 0,
-      date:          found.appt.date    || '',
-      time:          found.appt.time    || '',
-      status:        'cancelled',
-      notes:         found.appt.notes   || ''
-    }]
-  };
-
-  console.log('CANCEL PAYLOAD:', JSON.stringify(cancelPayload));
-
-  fetch('/api/sync', {
+  // ── 2. Cancelar en Supabase vía endpoint dedicado ─────────
+  fetch('/api/cancel-appointment', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cancelPayload)
+    body: JSON.stringify({ token: token, business_id: found.biz.id })
   })
   .then(function(r) { return r.json(); })
-  .then(function(d) { console.log('Cancel sync result:', JSON.stringify(d)); })
-  .catch(function(e) { console.error('Error cancelando en Supabase:', e); });
+  .then(function(d) {
+    if (d.success) {
+      console.log('Cita cancelada en Supabase OK');
+    } else {
+      console.error('Error cancelando en Supabase:', d.error);
+    }
+  })
+  .catch(function(e) { console.error('Error cancel-appointment:', e); });
 
   // ── 3. Notificación al barbero ────────────────────────────
   if (found.worker) {
@@ -825,13 +796,13 @@ function cancelApptByToken(token) {
         worker: {
           id:          found.worker.id,
           business_id: found.biz.id,
-          name:        found.worker.name     || '',
-          email:       found.worker.email    || '',
-          password:    found.worker.pass     || found.worker.password || '',
-          phone:       found.worker.phone    || '',
-          avatar:      found.worker.photo    || '',
-          cover:       found.worker.cover    || '',
-          role:        found.worker.spec     || 'barber'
+          name:        found.worker.name  || '',
+          email:       found.worker.email || '',
+          password:    found.worker.pass  || found.worker.password || '',
+          phone:       found.worker.phone || '',
+          avatar:      found.worker.photo || '',
+          cover:       found.worker.cover || '',
+          role:        found.worker.spec  || 'barber'
         }
       })
     }).catch(function(e) { console.error('Error guardando worker:', e); });
@@ -855,7 +826,7 @@ function cancelApptByToken(token) {
     }).catch(function(e) { console.error('Error email:', e); });
   }
 
-  // ── 5. Limpiar y cerrar ───────────────────────────────────
+  // ── 5. Cerrar ─────────────────────────────────────────────
   window._cloudApptCache = null;
   _cloudApptCache        = null;
   closeOv('ov-manage');
