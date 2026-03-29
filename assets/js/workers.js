@@ -396,10 +396,22 @@ function saveWorkerSvc() {
 
 function delWorkerService(id) {
   if (!CUR_WORKER) return;
+  
+  // 1. Borramos de la pantalla (memoria local)
   CUR_WORKER.services = (CUR_WORKER.services || []).filter(function(s) { return String(s.id) !== String(id); });
   saveDB(); 
   renderWorkerServices(); 
   toast('Servicio eliminado', '#475569');
+
+  // 2. Mandamos la orden de destrucción total a la base de datos
+  fetch('/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      type: 'delete_service', 
+      service_id: id 
+    })
+  }).catch(function(e) { console.error('Error borrando servicio en la nube:', e); });
 }
 
 /* ══════════════════════════
