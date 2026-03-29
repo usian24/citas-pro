@@ -732,24 +732,19 @@ function reprogramarCita(token) {
   clGoStep(4);
 }
 // ═══════════════════════════════════════════════════════════
-// REEMPLAZA cancelApptByToken en assets/js/client-portal.js
+// REEMPLAZA SOLO cancelApptByToken en client-portal.js
 // ═══════════════════════════════════════════════════════════
 
 function cancelApptByToken(token) {
   var found = findApptByToken(token);
-
   if (!found && window._cloudApptCache
       && window._cloudApptCache.appt
       && window._cloudApptCache.appt.token === token) {
     found = window._cloudApptCache;
   }
+  if (!found) { toast('Cita no encontrada', '#EF4444'); return; }
 
-  if (!found) {
-    toast('Cita no encontrada', '#EF4444');
-    return;
-  }
-
-  // ── 1. Marcar local ───────────────────────────────────────
+  // ── 1. Marcar cancelled en memoria local ──────────────────
   found.appt.status = 'cancelled';
   DB.businesses.forEach(function(biz) {
     (biz.workers || []).forEach(function(w) {
@@ -761,12 +756,12 @@ function cancelApptByToken(token) {
       if (a.token === token) a.status = 'cancelled';
     });
   });
-  var localBiz = getBizById(found.biz.id);
-  if (localBiz) {
-    var prevCUR = CUR; CUR = localBiz; saveDB(); CUR = prevCUR;
-  }
 
-  // ── 2. Cancelar en Supabase vía endpoint dedicado ─────────
+  // ── 2. Guardar solo en localStorage SIN sincronizar a Supabase ──
+  // (evitar que syncAppointmentsToCloud sobreescriba el cancelled)
+  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch(e) {}
+
+  // ── 3. Cancelar en Supabase vía endpoint dedicado ─────────
   fetch('/api/cancel-appointment', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -774,15 +769,12 @@ function cancelApptByToken(token) {
   })
   .then(function(r) { return r.json(); })
   .then(function(d) {
-    if (d.success) {
-      console.log('Cita cancelada en Supabase OK');
-    } else {
-      console.error('Error cancelando en Supabase:', d.error);
-    }
+    if (d.success) { console.log('Cancelada en Supabase OK'); }
+    else { console.error('Error cancelando:', d.error); }
   })
   .catch(function(e) { console.error('Error cancel-appointment:', e); });
 
-  // ── 3. Notificación al barbero ────────────────────────────
+  // ── 4. Notificación al barbero ────────────────────────────
   if (found.worker) {
     if (!found.worker.notifications) found.worker.notifications = [];
     found.worker.notifications.unshift({
@@ -795,7 +787,6 @@ function cancelApptByToken(token) {
       read:  false,
       date:  new Date().toISOString()
     });
-
     fetch('/api/save-worker', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -816,7 +807,7 @@ function cancelApptByToken(token) {
     }).catch(function(e) { console.error('Error guardando worker:', e); });
   }
 
-  // ── 4. Email al barbero ───────────────────────────────────
+  // ── 5. Email al barbero ───────────────────────────────────
   if (found.worker && found.worker.email) {
     fetch('/api/send-email', {
       method: 'POST',
@@ -824,24 +815,18 @@ function cancelApptByToken(token) {
       body: JSON.stringify({
         type: 'booking_cancel',
         to:   found.worker.email,
-        data: {
-          clientName: found.appt.client,
-          service:    found.appt.svc,
-          date:       found.appt.date,
-          time:       found.appt.time
-        }
+        data: { clientName: found.appt.client, service: found.appt.svc, date: found.appt.date, time: found.appt.time }
       })
     }).catch(function(e) { console.error('Error email:', e); });
   }
 
-  // ── 5. Cerrar ─────────────────────────────────────────────
+  // ── 6. Cerrar ─────────────────────────────────────────────
   window._cloudApptCache = null;
-  _cloudApptCache        = null;
+  _cloudApptCache = null;
   closeOv('ov-manage');
   toast('Tu cita ha sido cancelada', '#22C55E');
   setTimeout(function() { window.location.hash = ''; }, 1500);
 }
-
 /* ══════════════════════════
    HASH ROUTING
 ══════════════════════════ */
