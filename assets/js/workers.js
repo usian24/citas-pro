@@ -81,16 +81,12 @@ function initWorkerPanel() {
   renderWorkerTodayAppts(todayA);
   renderWorkerServices();
   renderWorkerGallery();
-  
-  // Llamada a finanzas antiguas por si acaso
   renderWorkerFinances();
-  
   renderWorkerHorario();
   renderWorkerCalendar();
   initWorkerAgenda();
   renderWorkerProfile();
 
-  // Llamadas al nuevo script de Real Data para el Home (si existe)
   if (typeof renderWorkerHomeStats === 'function') {
       renderWorkerHomeStats();
   }
@@ -110,17 +106,16 @@ function workerTab(tab) {
   
   if (tab === 'agenda')   initWorkerAgenda();
   if (tab === 'notif')    renderWorkerNotifications();
+  if (tab === 'horario')  renderWorkerHorario();
   
-  // NUEVO: Hook para cargar los datos reales en Finanzas
   if (tab === 'finanzas') {
       if (typeof renderWorkerFinanzas === 'function') {
           renderWorkerFinanzas();
       } else {
-          renderWorkerFinances(); // Fallback
+          renderWorkerFinances();
       }
   }
   
-  // NUEVO: Hook para actualizar los datos reales en Home al volver a esa pestaña
   if (tab === 'home') {
       if (typeof renderWorkerHomeStats === 'function') {
           renderWorkerHomeStats();
@@ -134,7 +129,9 @@ function workerTab(tab) {
 function renderWorkerTodayAppts(appts) {
   if (!appts && CUR_WORKER) {
     var today = new Date().toISOString().split('T')[0];
-    appts = (CUR_WORKER.appointments || []).filter(function(a) { return a.date === today; });
+    appts = (CUR_WORKER.appointments || []).filter(function(a) { 
+       return a.date === today && a.status !== 'cancelled'; 
+    });
   }
   
   if (appts && appts.length) {
@@ -219,15 +216,15 @@ function updateWorkerApptStatus(id, status) {
   renderWorkerTodayAppts(); 
   initWorkerAgenda(); 
   renderWorkerFinances();
-  if (typeof renderWorkerFinanzas === 'function') renderWorkerFinanzas(); // actualiza grafico real
+  if (typeof renderWorkerFinanzas === 'function') renderWorkerFinanzas();
   toast(status === 'completed' ? 'Cita completada' : 'Cita cancelada', status === 'completed' ? '#22C55E' : '#EF4444');
 }
 
 /* ══════════════════════════
    AGENDA TRABAJADOR
 ══════════════════════════ */
-var workerCalDate   = new Date();
-var workerCalDay    = new Date().toISOString().split('T')[0];
+var workerCalDate = new Date();
+var workerCalDay  = new Date().toISOString().split('T')[0];
 
 function renderWorkerCalendar() {
   var now = workerCalDate, year = now.getFullYear(), month = now.getMonth();
@@ -244,35 +241,32 @@ function renderWorkerCalendar() {
   });
 
   var html = '';
-  for (var i = 0; i < firstDay; i++) {
-      html += '<div class="cal-day other-month"></div>';
-  }
+  for (var i = 0; i < firstDay; i++) html += '<div class="cal-day other-month"></div>';
   for (var d = 1; d <= daysInMonth; d++) {
     var ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     var cls = 'cal-day';
     if (ds === today) cls += ' today';
     if (ds === workerCalDay) cls += ' sel'; 
     if (apptDates[ds]) cls += ' has-appts';
-    
     html += '<div class="' + cls + '" onclick="selectWorkerCalDay(\'' + ds + '\')">' + d + '</div>';
   }
   H('wk-cal-grid', html);
 }
 
 function selectWorkerCalDay(ds) { 
-    workerCalDay = ds; 
-    renderWorkerCalendar(); 
-    initWorkerAgenda(); 
+  workerCalDay = ds; 
+  renderWorkerCalendar(); 
+  initWorkerAgenda(); 
 }
 
 function prevWorkerMonth() { 
-    workerCalDate.setMonth(workerCalDate.getMonth() - 1); 
-    renderWorkerCalendar(); 
+  workerCalDate.setMonth(workerCalDate.getMonth() - 1); 
+  renderWorkerCalendar(); 
 }
 
 function nextWorkerMonth() { 
-    workerCalDate.setMonth(workerCalDate.getMonth() + 1); 
-    renderWorkerCalendar(); 
+  workerCalDate.setMonth(workerCalDate.getMonth() + 1); 
+  renderWorkerCalendar(); 
 }
 
 function initWorkerAgenda() {
@@ -343,7 +337,6 @@ function openWorkerSvcModal(id) {
       if (pr) pr.value = s.price; 
       if (dr) dr.value = s.dur; 
       if (ds) ds.value = s.desc || '';
-      
       var pv = G('wk-sv-photo-preview');
       if (pv && s.photo) {
           pv.innerHTML = '<img src="' + sanitizeImageDataURL(s.photo) + '" class="photo-preview" alt="Servicio"/>'; 
@@ -376,10 +369,7 @@ function saveWorkerSvc() {
   if (editWorkerSvc) {
     var s = CUR_WORKER.services.filter(function(x) { return String(x.id) === String(editWorkerSvc); })[0];
     if (s) { 
-        s.name = name; 
-        s.price = price; 
-        s.dur = dur; 
-        s.desc = desc; 
+        s.name = name; s.price = price; s.dur = dur; s.desc = desc; 
         if (photo) s.photo = photo; 
     }
   } else {
@@ -396,21 +386,15 @@ function saveWorkerSvc() {
 
 function delWorkerService(id) {
   if (!CUR_WORKER) return;
-  
-  // 1. Borramos de la pantalla (memoria local)
   CUR_WORKER.services = (CUR_WORKER.services || []).filter(function(s) { return String(s.id) !== String(id); });
   saveDB(); 
   renderWorkerServices(); 
   toast('Servicio eliminado', '#475569');
 
-  // 2. Mandamos la orden de destrucción total a la base de datos
   fetch('/api/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      type: 'delete_service', 
-      service_id: id 
-    })
+    body: JSON.stringify({ type: 'delete_service', service_id: id })
   }).catch(function(e) { console.error('Error borrando servicio en la nube:', e); });
 }
 
@@ -450,9 +434,7 @@ function renderWorkerFinances() {
   var monthRev = monthAppts.reduce(function(s, a) { return s + (a.price || 0); }, 0);
   
   var clients = []; 
-  appts.forEach(function(a) { 
-      if (a.client && clients.indexOf(a.client) < 0) clients.push(a.client); 
-  });
+  appts.forEach(function(a) { if (a.client && clients.indexOf(a.client) < 0) clients.push(a.client); });
   
   var svcCount = {}; 
   appts.filter(function(a) { return a.status !== 'cancelled'; }).forEach(function(a) { 
@@ -503,39 +485,106 @@ function renderWorkerFinances() {
   H('wk-appts-fin', paid.slice().sort(function(a, b) { return b.date.localeCompare(a.date); }).slice(0, 20).map(function(a) { return workerApptRowH(a); }).join(''));
 }
 
-/* ══════════════════════════
-   HORARIO TRABAJADOR
-══════════════════════════ */
+/* ══════════════════════════════════════════════
+   HORARIO TRABAJADOR  ← AQUÍ ESTABA EL BUG
+   
+   Problema: DEFAULT_HORARIO no tenía las props
+   from1/to1/hasBreak/from2/to2, así que al hacer
+   CUR_WORKER.horario || DEFAULT_HORARIO.map(...)
+   el horario quedaba vacío o sin campos válidos.
+   
+   Fix: definimos un horario seguro DENTRO de esta
+   función. Si el worker ya tiene horario guardado
+   lo usamos tal cual. Si no, creamos uno completo
+   con todos los campos necesarios y lo asignamos
+   a CUR_WORKER.horario para que persista.
+══════════════════════════════════════════════ */
+function getHorarioSeguro() {
+  var plantilla = [
+    { day: 'Lunes',     open: true,  from1: '09:00', to1: '14:00', hasBreak: true,  from2: '16:00', to2: '20:00' },
+    { day: 'Martes',    open: true,  from1: '09:00', to1: '14:00', hasBreak: true,  from2: '16:00', to2: '20:00' },
+    { day: 'Miércoles', open: true,  from1: '09:00', to1: '14:00', hasBreak: true,  from2: '16:00', to2: '20:00' },
+    { day: 'Jueves',    open: true,  from1: '09:00', to1: '14:00', hasBreak: true,  from2: '16:00', to2: '20:00' },
+    { day: 'Viernes',   open: true,  from1: '09:00', to1: '14:00', hasBreak: true,  from2: '16:00', to2: '20:00' },
+    { day: 'Sábado',    open: true,  from1: '09:00', to1: '14:00', hasBreak: false, from2: '',      to2: '' },
+    { day: 'Domingo',   open: false, from1: '09:00', to1: '14:00', hasBreak: false, from2: '',      to2: '' }
+  ];
+
+  // Si el worker no tiene horario, asignarle la plantilla completa
+  if (!CUR_WORKER.horario || !Array.isArray(CUR_WORKER.horario) || CUR_WORKER.horario.length === 0) {
+    CUR_WORKER.horario = plantilla.map(function(h) { return Object.assign({}, h); });
+    return CUR_WORKER.horario;
+  }
+
+  // Si tiene horario pero faltan propiedades en algún día, rellenarlas
+  var diasPlantilla = plantilla.map(function(p) { return p.day; });
+  diasPlantilla.forEach(function(dia, idx) {
+    var existente = CUR_WORKER.horario.filter(function(h) { return h.day === dia; })[0];
+    if (!existente) {
+      // Día faltante: añadirlo
+      CUR_WORKER.horario.push(Object.assign({}, plantilla[idx]));
+    } else {
+      // Rellenar props que falten sin machacar las que ya existen
+      if (existente.from1  === undefined) existente.from1  = plantilla[idx].from1;
+      if (existente.to1    === undefined) existente.to1    = plantilla[idx].to1;
+      if (existente.from   === undefined) existente.from   = existente.from1;
+      if (existente.to     === undefined) existente.to     = existente.to1;
+      if (existente.hasBreak === undefined) existente.hasBreak = plantilla[idx].hasBreak;
+      if (existente.from2  === undefined) existente.from2  = plantilla[idx].from2;
+      if (existente.to2    === undefined) existente.to2    = plantilla[idx].to2;
+    }
+  });
+
+  // Ordenar para que siempre salga en orden L-D
+  CUR_WORKER.horario.sort(function(a, b) {
+    return diasPlantilla.indexOf(a.day) - diasPlantilla.indexOf(b.day);
+  });
+
+  return CUR_WORKER.horario;
+}
+
 function renderWorkerHorario() {
   if (!CUR_WORKER) return;
-  var horario = CUR_WORKER.horario || DEFAULT_HORARIO.map(function(h) { return Object.assign({}, h); });
-  
+
+  var horario = getHorarioSeguro();
+
   H('wk-horario-days', horario.map(function(day, i) {
     var f1 = day.from1 || day.from || '09:00';
-    var t1 = day.to1 || day.to || '14:00';
-    var hb = day.hasBreak === true || (day.from2 ? true : false);
-    var f2 = day.from2 || '15:00';
-    var t2 = day.to2 || '20:00';
+    var t1 = day.to1   || day.to   || '14:00';
+    var hb = !!day.hasBreak;
+    var f2 = day.from2 || '16:00';
+    var t2 = day.to2   || '20:00';
 
     var content = '';
     if (day.open) {
       content = '<div style="margin-top:12px">'
+
+        // Turno principal
         + '<div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">'
-        + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px">INICIO TURNO</div><input class="inp" type="time" value="' + san(f1) + '" data-wfrom1="' + i + '" style="padding:9px 12px"/></div>'
-        + '<div style="color:var(--muted);font-size:16px;padding-top:18px">—</div>'
-        + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px">FIN TURNO</div><input class="inp" type="time" value="' + san(t1) + '" data-wto1="' + i + '" style="padding:9px 12px"/></div>'
+        + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;text-transform:uppercase">Inicio turno</div>'
+        + '<input class="inp" type="time" value="' + san(f1) + '" data-wfrom1="' + i + '" onchange="window._wkHorarioChange(this)" style="padding:9px 12px"/></div>'
+        + '<div style="color:var(--muted);font-size:16px;padding-top:22px">—</div>'
+        + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;text-transform:uppercase">Fin turno</div>'
+        + '<input class="inp" type="time" value="' + san(t1) + '" data-wto1="' + i + '" onchange="window._wkHorarioChange(this)" style="padding:9px 12px"/></div>'
         + '</div>'
-        
+
+        // Toggle descanso
         + '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg3);padding:10px 14px;border-radius:12px;margin-bottom:12px">'
-        + '<div style="font-size:12px;font-weight:700;color:var(--t2)">Agregar descanso (Almuerzo)</div>'
+        + '<div style="font-size:12px;font-weight:700;color:var(--t2)">Descanso / Almuerzo</div>'
         + '<div class="toggle ' + (hb ? 'on' : '') + '" onclick="window.toggleWorkerBreak(' + i + ')"></div>'
         + '</div>'
-        
-        + (hb ? '<div style="display:flex;gap:10px;align-items:center;animation:popIn .3s ease">'
-        + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px">REINICIO TURNO</div><input class="inp" type="time" value="' + san(f2) + '" data-wfrom2="' + i + '" style="padding:9px 12px"/></div>'
-        + '<div style="color:var(--muted);font-size:16px;padding-top:18px">—</div>'
-        + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px">FIN JORNADA</div><input class="inp" type="time" value="' + san(t2) + '" data-wto2="' + i + '" style="padding:9px 12px"/></div>'
-        + '</div>' : '')
+
+        // Segundo turno (solo si hasBreak)
+        + (hb
+          ? '<div style="display:flex;gap:10px;align-items:center;animation:popIn .3s ease">'
+          + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;text-transform:uppercase">Reinicio turno</div>'
+          + '<input class="inp" type="time" value="' + san(f2) + '" data-wfrom2="' + i + '" onchange="window._wkHorarioChange(this)" style="padding:9px 12px"/></div>'
+          + '<div style="color:var(--muted);font-size:16px;padding-top:22px">—</div>'
+          + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;text-transform:uppercase">Fin jornada</div>'
+          + '<input class="inp" type="time" value="' + san(t2) + '" data-wto2="' + i + '" onchange="window._wkHorarioChange(this)" style="padding:9px 12px"/></div>'
+          + '</div>'
+          : '')
+
         + '</div>';
     }
 
@@ -547,63 +596,44 @@ function renderWorkerHorario() {
       + content
       + '</div>';
   }).join(''));
-
-  document.querySelectorAll('[data-wfrom1]').forEach(function(el) { 
-      el.addEventListener('change', function() { 
-          var i = parseInt(el.getAttribute('data-wfrom1')); 
-          if (CUR_WORKER.horario && CUR_WORKER.horario[i]) { 
-              CUR_WORKER.horario[i].from1 = el.value; 
-              CUR_WORKER.horario[i].from = el.value;
-          } 
-      }); 
-  });
-  
-  document.querySelectorAll('[data-wto1]').forEach(function(el) {   
-      el.addEventListener('change', function() { 
-          var i = parseInt(el.getAttribute('data-wto1'));   
-          if (CUR_WORKER.horario && CUR_WORKER.horario[i]) { 
-              CUR_WORKER.horario[i].to1 = el.value; 
-              CUR_WORKER.horario[i].to = el.value; 
-          } 
-      }); 
-  });
-  
-  document.querySelectorAll('[data-wfrom2]').forEach(function(el) { 
-      el.addEventListener('change', function() { 
-          var i = parseInt(el.getAttribute('data-wfrom2')); 
-          if (CUR_WORKER.horario && CUR_WORKER.horario[i]) {
-              CUR_WORKER.horario[i].from2 = el.value; 
-          }
-      }); 
-  });
-  
-  document.querySelectorAll('[data-wto2]').forEach(function(el) {   
-      el.addEventListener('change', function() { 
-          var i = parseInt(el.getAttribute('data-wto2'));   
-          if (CUR_WORKER.horario && CUR_WORKER.horario[i]) {
-              CUR_WORKER.horario[i].to2 = el.value; 
-          }
-      }); 
-  });
 }
 
-window.toggleWorkerBreak = function(i) {
+// Manejador centralizado de cambios en inputs de horario
+window._wkHorarioChange = function(el) {
   if (!CUR_WORKER || !CUR_WORKER.horario) return;
+  var val = el.value;
+
+  if (el.hasAttribute('data-wfrom1')) {
+    var i = parseInt(el.getAttribute('data-wfrom1'));
+    CUR_WORKER.horario[i].from1 = val;
+    CUR_WORKER.horario[i].from  = val;
+  }
+  if (el.hasAttribute('data-wto1')) {
+    var i = parseInt(el.getAttribute('data-wto1'));
+    CUR_WORKER.horario[i].to1 = val;
+    CUR_WORKER.horario[i].to  = val;
+  }
+  if (el.hasAttribute('data-wfrom2')) {
+    var i = parseInt(el.getAttribute('data-wfrom2'));
+    CUR_WORKER.horario[i].from2 = val;
+  }
+  if (el.hasAttribute('data-wto2')) {
+    var i = parseInt(el.getAttribute('data-wto2'));
+    CUR_WORKER.horario[i].to2 = val;
+  }
+};
+
+window.toggleWorkerBreak = function(i) {
+  if (!CUR_WORKER || !CUR_WORKER.horario || !CUR_WORKER.horario[i]) return;
   var h = CUR_WORKER.horario[i];
   h.hasBreak = !h.hasBreak;
-  if (h.hasBreak && !h.from2) { 
-      h.from2 = '15:00'; 
-      h.to2 = '20:00'; 
-  }
-  if (!h.hasBreak) {
-      h.from2 = '';
-      h.to2 = '';
-  }
+  if (h.hasBreak && !h.from2) { h.from2 = '16:00'; h.to2 = '20:00'; }
+  if (!h.hasBreak) { h.from2 = ''; h.to2 = ''; }
   renderWorkerHorario();
 };
 
 window.toggleWorkerHorarioDay = function(i) {
-  if (!CUR_WORKER || !CUR_WORKER.horario) return;
+  if (!CUR_WORKER || !CUR_WORKER.horario || !CUR_WORKER.horario[i]) return;
   CUR_WORKER.horario[i].open = !CUR_WORKER.horario[i].open;
   renderWorkerHorario();
 };
@@ -646,9 +676,7 @@ function saveWorkerProfile() {
   CUR_WORKER.phone = sanitizeText(V('wk-pf-phone')); 
   CUR_WORKER.spec  = sanitizeText(V('wk-pf-spec'));
   
-  // ✅ Sincronizar cambios del perfil a Supabase
   syncWorkerToCloud();
-  
   saveDB(); 
   initWorkerPanel(); 
   toast('Perfil guardado', '#4A7FD4');
@@ -663,10 +691,7 @@ function saveWorkerPassword() {
   if (!CUR_WORKER) return;
   
   CUR_WORKER.pass = p1; 
-  
-  // ✅ Sincronizar nueva contraseña a Supabase
   syncWorkerToCloud();
-  
   saveDB();
   
   var f1 = G('wk-pass-new'), f2 = G('wk-pass-confirm'); 
@@ -678,7 +703,6 @@ function saveWorkerPassword() {
 
 /* ══════════════════════════
    SYNC WORKER A SUPABASE
-   Función centralizada para enviar datos del worker
 ══════════════════════════ */
 function syncWorkerToCloud() {
   if (!CUR_WORKER || !CUR) return;
@@ -705,17 +729,26 @@ function syncWorkerToCloud() {
 }
 
 /* ══════════════════════════
-   ARCHIVOS FOTO —  ACTUALIZADO CON IMGBB
+   BOTÓN GUARDAR HORARIO
+══════════════════════════ */
+function saveWorkerHorario() {
+  if (!CUR_WORKER) return;
+  // Los inputs ya actualizan CUR_WORKER.horario en tiempo real
+  // via _wkHorarioChange, así que solo guardamos
+  syncWorkerToCloud();
+  saveDB();
+  toast('Horario guardado', '#22C55E');
+}
+
+/* ══════════════════════════
+   ARCHIVOS FOTO
 ══════════════════════════ */
 function setupWorkerPhotoUpload() {
-  
-  // PORTADA del trabajador — sube a ImgBB y sincroniza
   var coverInp = G('wk-profile-cover-input');
   if (coverInp) {
     coverInp.addEventListener('change', async function(e) {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
-      
       toast('...', '#F59E0B');
       var url = await uploadToImgBB(f);
       if (url && CUR_WORKER) { 
@@ -728,14 +761,12 @@ function setupWorkerPhotoUpload() {
     });
   }
 
-  // FOTO DE PERFIL del trabajador — sube a ImgBB y sincroniza
   var logoInp = G('wk-profile-photo-input');
   if (logoInp) {
     logoInp.addEventListener('change', async function(e) {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
-      
-      toast('... ', '#F59E0B');
+      toast('...', '#F59E0B');
       var url = await uploadToImgBB(f);
       if (url && CUR_WORKER) { 
         CUR_WORKER.photo = url; 
@@ -748,13 +779,11 @@ function setupWorkerPhotoUpload() {
     });
   }
 
-  // GALERÍA del trabajador — sube a ImgBB
   var galInp = G('wk-gallery-input');
   if (galInp) {
     galInp.addEventListener('change', async function(e) {
       var files = Array.from(e.target.files);
       if (files.length === 0) return;
-      
       toast('Subiendo ' + files.length + ' foto(s)...', '#F59E0B');
       for (var i = 0; i < files.length; i++) {
         var f = files[i];
@@ -772,13 +801,11 @@ function setupWorkerPhotoUpload() {
     });
   }
 
-  // FOTO DE SERVICIO — sube a ImgBB
   var svcInp = G('wk-sv-photo-input');
   if (svcInp) {
     svcInp.addEventListener('change', async function(e) {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) return;
-      
       toast('...', '#F59E0B');
       var url = await uploadToImgBB(f);
       if (url) { 
@@ -811,14 +838,8 @@ function renderWorkerNotifBadge() {
   if (!CUR_WORKER) return;
   var unread = (CUR_WORKER.notifications || []).filter(function(n) { return !n.read; }).length;
   var badge1 = G('wn-notif-badge'), badge2 = G('wk-notif-badge');
-  if (badge1) { 
-      badge1.style.display = unread > 0 ? 'flex' : 'none'; 
-      badge1.textContent = unread; 
-  }
-  if (badge2) { 
-      badge2.style.display = unread > 0 ? 'inline-block' : 'none'; 
-      badge2.textContent = unread; 
-  }
+  if (badge1) { badge1.style.display = unread > 0 ? 'flex' : 'none'; badge1.textContent = unread; }
+  if (badge2) { badge2.style.display = unread > 0 ? 'inline-block' : 'none'; badge2.textContent = unread; }
 }
 
 function renderWorkerNotifications() {
@@ -829,22 +850,21 @@ function renderWorkerNotifications() {
       H('wk-notif-list', notifs.map(function(n, i) {
         var bg = n.read ? 'transparent' : 'rgba(74,127,212,.08)';
         var border = n.read ? 'var(--b)' : 'var(--blue)';
-        
-        return '<div style="padding:16px; border-bottom:1px solid var(--b); background:' + bg + '; border-left:3px solid ' + border + '; margin-bottom:8px; border-radius:0 12px 12px 0">'
-          + '<div style="display:flex; justify-content:space-between; margin-bottom:6px">'
-          + '<span style="font-weight:800; font-size:14px; color:' + (n.read ? 'var(--text)' : 'var(--blue)') + '">' + san(n.title) + '</span>'
-          + '<span style="font-size:11px; color:var(--muted)">' + san(n.date) + '</span>'
+        return '<div style="padding:16px;border-bottom:1px solid var(--b);background:' + bg + ';border-left:3px solid ' + border + ';margin-bottom:8px;border-radius:0 12px 12px 0">'
+          + '<div style="display:flex;justify-content:space-between;margin-bottom:6px">'
+          + '<span style="font-weight:800;font-size:14px;color:' + (n.read ? 'var(--text)' : 'var(--blue)') + '">' + san(n.title) + '</span>'
+          + '<span style="font-size:11px;color:var(--muted)">' + san(n.date) + '</span>'
           + '</div>'
-          + '<div style="font-size:13px; color:var(--t2); line-height:1.5">' + san(n.body) + '</div>'
-          + (!n.read ? '<div style="text-align:right; margin-top:8px"><button onclick="markWorkerNotifRead(' + i + ')" style="background:var(--bblue); border:none; color:var(--blue); font-size:11px; font-weight:700; cursor:pointer; padding:6px 12px; border-radius:12px">Marcar como leída</button></div>' : '')
+          + '<div style="font-size:13px;color:var(--t2);line-height:1.5">' + san(n.body) + '</div>'
+          + (!n.read ? '<div style="text-align:right;margin-top:8px"><button onclick="markWorkerNotifRead(' + i + ')" style="background:var(--bblue);border:none;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;padding:6px 12px;border-radius:12px">Marcar como leída</button></div>' : '')
           + '</div>';
       }).join(''));
   } else {
-      H('wk-notif-list', '<div style="text-align:center; padding:40px 20px; color:var(--muted)"><div style="font-size:32px; margin-bottom:10px">📭</div><div style="font-size:14px">No tienes notificaciones nuevas</div></div>');
+      H('wk-notif-list', '<div style="text-align:center;padding:40px 20px;color:var(--muted)"><div style="font-size:32px;margin-bottom:10px">📭</div><div style="font-size:14px">No tienes notificaciones nuevas</div></div>');
   }
   
   var clearBtn = G('clear-notif-btn');
-  if(clearBtn) {
+  if (clearBtn) {
      clearBtn.onclick = function() {
         openConfirmModal('Limpiar Notificaciones', '¿Borrar todas las notificaciones?', function() {
             CUR_WORKER.notifications = [];
