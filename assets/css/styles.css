@@ -785,6 +785,39 @@ body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(3) > strong,
         color: #fff;
         white-space: nowrap;
       }
-      
+   
+/* ════════════════════════════════════════
+   CORRECCIONES BOTONES Y PÍLDORAS (MODO CLARO)
+════════════════════════════════════════ */
+[data-theme="light"] .btn-dark {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.15) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
 
+[data-theme="light"] .btn-dark:hover {
+  background: #F8FAFC !important;
+}
+
+[data-theme="light"] .btn-ghost {
+  color: #0F172A !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+  background: transparent !important;
+}
+
+[data-theme="light"] .pill-item {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid rgba(15, 23, 42, 0.15) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03) !important;
+}
+/* ════════════════════════════════════════
+   CORRECCIÓN DEFINITIVA PARA EVA EN MODO CLARO
+════════════════════════════════════════ */
+[data-theme="light"] #s-portal .eve-wrapper a[href^="https://wa.me"] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
   
