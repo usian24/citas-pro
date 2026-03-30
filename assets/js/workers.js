@@ -143,12 +143,14 @@ function renderWorkerTodayAppts(appts) {
 
 function workerApptRowH(a) {
   var sc = {
-    confirmed: { c:'var(--blue)',  bg:'rgba(74,127,212,.1)',  l:'Conf.' },
-    pending:   { c:'var(--gold)',  bg:'rgba(245,158,11,.1)',  l:'Pend.' },
-    completed: { c:'var(--green)', bg:'rgba(34,197,94,.1)',   l:'Hecho' },
-    cancelled: { c:'var(--red)',   bg:'rgba(239,68,68,.1)',   l:'Canc.' }
+    confirmed:   { c:'var(--blue)',  bg:'rgba(74,127,212,.1)',  l:'Conf.' },
+    rescheduled: { c:'#F59E0B',      bg:'rgba(245,158,11,.15)', l:'Reag.' },
+    in_progress: { c:'#A855F7',      bg:'rgba(168,85,247,.15)', l:'En curso' },
+    pending:     { c:'var(--gold)',  bg:'rgba(245,158,11,.1)',  l:'Pend.' },
+    completed:   { c:'var(--green)', bg:'rgba(34,197,94,.1)',   l:'Hecho' },
+    cancelled:   { c:'var(--red)',   bg:'rgba(239,68,68,.1)',   l:'Canc.' }
   }[a.status] || { c:'var(--blue)', bg:'rgba(74,127,212,.1)', l:'Conf.' };
-
+ 
   var initials = san((a.client || '?').split(' ').map(function(n){ return n[0]||''; }).slice(0,2).join('').toUpperCase());
   
   return '<div class="appt-row" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')">'
