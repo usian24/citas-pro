@@ -60,45 +60,54 @@
       </svg>
     </div>
     <h1 class="fu d1" style="font-size:52px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#fff 25%,#7EB8FF 65%,#4A7FD4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:10px">CITAS PRO</h1>
-    <p class="fu d2" style="font-size:11px;font-weight:700;color:#5B8FE8;letter-spacing:3.5px;text-transform:uppercase;margin-bottom:12px">APP PARA BARBERÍA Y PELUQUERÍA</p>
-    <p class="fu d3" style="font-size:15px;color:var(--t2);max-width:300px;line-height:1.65">La app más completa para gestionar tu barbería o peluquería.</p>
+    <p class="fu d2" style="font-size:11px;font-weight:700;color:#5B8FE8;letter-spacing:3.5px;text-transform:uppercase;margin-bottom:12px">APP PARA</p>
+    <div style="width: 100%; max-width: 320px; overflow: hidden; margin-bottom: 12px; position: relative;">
+      <div style="position: absolute; top:0; left:0; width: 30px; height: 100%; background: linear-gradient(to right, #07090F, transparent); z-index: 2;"></div>
+      <div style="position: absolute; top:0; right:0; width: 30px; height: 100%; background: linear-gradient(to left, #07090F, transparent); z-index: 2;"></div>
+      
+      <div class="pills-container">
+        <div class="pill-item">💈 Barberías</div>
+        <div class="pill-item">✂️ Peluquerías</div>
+        <div class="pill-item">💅 Uñas</div>
+        <div class="pill-item">💆 Spa</div>
+        <div class="pill-item">💄 Maquillaje</div>
+        <div class="pill-item">💈 Barberías</div>
+        <div class="pill-item">✂️ Peluquerías</div>
+        <div class="pill-item">💅 Uñas</div>
+        <div class="pill-item">💆 Spa</div>
+        <div class="pill-item">💄 Maquillaje</div>
+      </div>
+    </div>
+    <p class="fu d3" style="font-size:15px;color:var(--t2);max-width:300px;line-height:1.65">La app más completa para gestionar tu negocio</p>
   </div>
-
-  <!-- 2. BUSCADOR -->
-  <div class="portal-search-wrap fu d3">
-    <div class="portal-search-label">Busca tu barbería favorita</div>
+<div class="portal-search-wrap fu d3">
+    <div class="portal-search-label">Busca tu negocio preferido</div>
     <div class="portal-search-box">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <input id="portal-search-input" type="text" placeholder="Nombre del negocio..." autocomplete="off" maxlength="60"/>
-      <!-- spinner oculto por defecto -->
       <div id="portal-search-spinner" style="display:none;width:16px;height:16px;border:2px solid rgba(74,127,212,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
     </div>
     <div class="portal-search-results" id="portal-search-results" style="display:none"></div>
   </div>
 
-  <!-- 3. BANNER OFERTA 30 DÍAS -->
+  <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;display:flex;flex-direction:column;gap:12px;z-index:1;margin-bottom:20px;">
+    <button class="btn btn-dark"  id="btn-login"  style="font-size:15px">Iniciar sesión</button>
+    <button class="btn btn-blue"  id="btn-crear"  style="font-size:16px;font-weight:800;padding:18px">Crear cuenta a tu negocio</button>
+  </div>
   <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;margin-bottom:16px;z-index:1">
     <div style="background:linear-gradient(145deg,#1A1D24,#0D0F14);border:1px solid rgba(255,215,0,.3);border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5)">
       <div style="position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,215,0,.05) 0%,transparent 50%);pointer-events:none"></div>
-      <div style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#FFD700,#DAA520);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 15px rgba(218,165,32,.4)">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1A1D24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-        </svg>
-      </div>
-      <div style="z-index:1">
-        <div style="font-size:13px;font-weight:800;color:#FFD700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Oferta de Lanzamiento</div>
+      
+      <img src="assets/img/oferta.jpg" alt="¡Oferta!" style="width:50px; height:50px; border-radius:10px; object-fit:contain; flex-shrink:0; animation: parpadeoRapido 0.35s infinite alternate; background-color: white; box-shadow:0 4px 15px rgba(255,0,0,.5); z-index:3; position:relative;">
+    
+      <div style="z-index:3; position:relative;">
+        <div style="font-size:13px;font-weight:800;color:#FFD700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px"></div>
         <div style="font-size:18px;font-weight:900;color:white;margin-bottom:2px">30 Días Gratis</div>
         <div style="font-size:12px;color:rgba(255,255,255,.6)">Sin compromiso. Luego solo <strong style="color:white">10€/mes</strong></div>
       </div>
     </div>
-  </div>
-
-  <!-- 4. INICIAR SESIÓN  /  5. CREAR CUENTA -->
-  <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;display:flex;flex-direction:column;gap:12px;z-index:1">
-    <button class="btn btn-dark"  id="btn-login"  style="font-size:15px">Iniciar sesión</button>
-    <button class="btn btn-blue"  id="btn-crear"  style="font-size:16px;font-weight:800;padding:18px">Crear cuenta de barbería</button>
   </div>
 
   <div id="robot-container" class="eve-wrapper">
@@ -146,17 +155,19 @@
   </div>
 </div>
 
-<div class="scr" id="s-barber-shop" style="min-height:100vh; background:var(--bg); padding:20px;">
-  <button onclick="goTo('s-barber-portal')" style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:var(--rpill); padding:10px 18px; font-size:13px; font-weight:600; color:var(--text); margin-bottom:40px; display:flex; align-items:center; gap:6px;">
+<div class="scr" id="s-barber-shop" style="min-height:100vh; background:var(--bg); padding:20px; display:flex; flex-direction:column;">
+  <button onclick="goTo('s-barber-portal')" style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:var(--rpill); padding:10px 18px; font-size:13px; font-weight:600; color:var(--text); margin-bottom:40px; display:flex; align-items:center; gap:6px; width: fit-content;">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Volver a la barbería
   </button>
   
-  <div style="text-align:center; padding-top:40px;">
+  <div style="text-align:center; padding-top:20px; flex:1; display:flex; flex-direction:column; align-items:center;">
     <div style="width:90px; height:90px; border-radius:28px; background:rgba(74,127,212,0.1); border:2px dashed var(--blue); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
     </div>
     <h2 style="font-size:26px; font-weight:900; margin-bottom:12px;">Tienda en construcción</h2>
     <p style="color:var(--t2); font-size:14px; max-width:300px; margin:0 auto; line-height:1.6;">Próximamente podrás ver y comprar los productos de <strong id="bs-name" style="color:var(--text);">esta barbería</strong> directamente desde aquí.</p>
+    
+    <img src="/citas_pro/assets/img/construccion.png" alt="construccion" style="width:100%; max-width:300px; margin-top:35px; object-fit:contain; -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%); -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%); mask-composite: intersect; animation: float 4s ease-in-out infinite;">
   </div>
 </div>
 <!-- FIN s-portal -->

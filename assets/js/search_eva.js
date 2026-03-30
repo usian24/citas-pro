@@ -151,10 +151,10 @@
   
   if (bubble) {
     var mensajes = [
-      "¡Hola! Bienvenido a Citas Pro Barber 💈",
+      "¡Hola! Bienvenido a Citas Pro Barber",
       "¿En qué podemos ayudarte? ",
-      "Busca tu barbería favorita arriba 👆",
-      "Contáctate con nosotros por WhatsApp dando clic aquí 💬"
+      "Busca tu barbería favorita arriba👆",
+      "Contáctate con nosotros por WhatsApp💬"
     ];
     
     var msgIndex = 0;
@@ -172,9 +172,9 @@
         
         bubble.style.opacity = '1';
         bubble.style.transform = 'translateY(0)';
-      }, 900);
+      }, 7000);
       
-    }, 3000); 
+    }, 5000); 
   }
 
 })();
