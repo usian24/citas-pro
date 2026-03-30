@@ -677,7 +677,13 @@ function findApptByToken(token) {
   return result;
 }
 
+
+window._manageToken = null;
+ 
 function openManageModal(biz, worker, appt) {
+  // Guardar token globalmente para que los botones lo encuentren siempre
+  window._manageToken = appt.token;
+ 
   H('manage-content',
     '<div style="text-align:center;margin-bottom:20px">'
     +'<div style="font-size:18px;font-weight:800;margin-bottom:6px">Gestionar tu cita</div>'
@@ -689,12 +695,13 @@ function openManageModal(biz, worker, appt) {
     +'<div style="display:flex;justify-content:space-between;padding:8px 0"><span style="color:var(--t2);font-size:13px">Hora</span><span style="font-weight:700;font-size:13px">'+san(appt.time)+'</span></div>'
     +'</div>'
     +'<div style="display:flex;flex-direction:column;gap:10px">'
-    +'<button onclick="reprogramarCita(\''+appt.token+'\')" style="width:100%;padding:14px;border-radius:var(--rpill);background:var(--bblue);border:1px solid rgba(74,127,212,.2);color:var(--blue);font-weight:700;cursor:pointer;font-family:var(--font)">Modificar fecha/hora</button>'
-    +'<button onclick="cancelApptByToken(\''+appt.token+'\')" style="width:100%;padding:14px;border-radius:var(--rpill);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar cita</button>'
+    +'<button onclick="reprogramarCita(window._manageToken)" style="width:100%;padding:14px;border-radius:var(--rpill);background:var(--bblue);border:1px solid rgba(74,127,212,.2);color:var(--blue);font-weight:700;cursor:pointer;font-family:var(--font)">Modificar fecha/hora</button>'
+    +'<button onclick="cancelApptByToken(window._manageToken)" style="width:100%;padding:14px;border-radius:var(--rpill);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);font-weight:700;cursor:pointer;font-family:var(--font)">Cancelar cita</button>'
     +'</div>'
   );
   openOv('ov-manage');
 }
+
 
 function reprogramarCita(token) {
   var found = findApptByToken(token);
