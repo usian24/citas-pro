@@ -153,8 +153,8 @@
     var mensajes = [
       "¡Hola! Bienvenido a Citas Pro Barber",
       "¿En qué podemos ayudarte? ",
-      "Busca tu barbería favorita arriba👆",
-      "Contáctate con nosotros por WhatsApp💬"
+      "Busca tu negocio favorito arriba 👆",
+      "Contáctate con nosotros por WhatsApp 💬"
     ];
     
     var msgIndex = 0;
