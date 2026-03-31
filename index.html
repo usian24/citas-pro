@@ -99,7 +99,7 @@
       <div style="z-index:3; position:relative;">
         <div style="font-size:13px;font-weight:800;color:#FFD700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px"></div>
         <div style="font-size:18px;font-weight:900;color:white;margin-bottom:2px">30 Días Gratis</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.6)">Sin compromiso. Luego solo <strong style="color:white">10/mes</strong></div>
+       <div style="font-size:12px;color:rgba(255,255,255,.6)">Sin compromiso. Luego solo <strong style="color:white" class="precio-local-mes">10€/mes</strong></div>
       </div>
     </div>
   </div>
@@ -424,7 +424,7 @@
     <div class="reg-step" id="rs-6" style="text-align:center;padding-top:24px">
       <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#22C55E,#16A34A);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 20px;animation:popIn .5s ease">🎉</div>
       <div style="font-size:26px;font-weight:900;margin-bottom:8px">¡Bienvenido a Citas Pro barber!</div>
-      <div style="font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.8">Tu negocio está registrado.<br>Tienes<strong style="color:var(--blue3)">1 mes gratis</strong>.<br>Después solo 10€/mes.</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.8">Tu negocio está registrado.<br>Tienes<strong style="color:var(--blue3)">1 mes gratis</strong>.<br>Después solo <span class="precio-local-mes" style="font-weight:700;">10€/mes</span>.</div>
       <div class="link-box" style="margin-bottom:22px;text-align:left">
         <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Tu link de reservas</div>
         <div style="font-size:13px;color:var(--blue3);font-weight:700;word-break:break-all;margin-bottom:12px" id="biz-link-display">...</div>
@@ -552,7 +552,7 @@
             <div><div style="font-weight:700;margin-bottom:3px">Plan Citas Pro</div><div style="font-size:12px;color:var(--muted)" id="pf-plan-status">Cargando...</div></div>
             <span id="pf-plan-badge"></span>
           </div>
-          <div style="font-size:24px;font-weight:900;color:var(--blue3);margin-bottom:6px">10€<span style="font-size:13px;font-weight:500;color:var(--t2)">/mes · IVA incl.</span></div>
+          <div style="font-size:24px;font-weight:900;color:var(--blue3);margin-bottom:6px"><span class="precio-local-solo">10€</span><span style="font-size:13px;font-weight:500;color:var(--t2)">/mes · IVA incl.</span></div>
         </div>
         <a href="https://wa.me/34611200984?text=Necesito%20ayuda%20con%20Citas%20Pro" target="_blank" rel="noopener noreferrer"><button class="btn btn-green">💬 Soporte por WhatsApp</button></a>
       </div>
@@ -1093,7 +1093,7 @@
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">1. Descripción del Servicio</h3>
       <p style="margin-bottom: 12px;">Citas Pro es un software de gestión (SaaS) diseñado para barberías, peluquerías y salones de belleza. Proporcionamos herramientas digitales para la agenda, gestión de equipo y finanzas. No somos responsables de los servicios físicos prestados por los negocios registrados en nuestra plataforma.</p>
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">2. Pagos y Suscripciones</h3>
-      <p style="margin-bottom: 12px;">Ofrecemos un período de prueba gratuito de 30 días. Finalizado este período, el coste del servicio será de 10€ mensuales (IVA incluido). No hay permanencia; puedes cancelar tu suscripción en cualquier momento desde tu panel de control.</p>
+      <p style="margin-bottom: 12px;">Ofrecemos un período de prueba gratuito de 30 días. Finalizado este período, el coste del servicio será de <strong class="precio-local-solo">10€</strong> mensuales (IVA incluido). No hay permanencia; puedes cancelar tu suscripción en cualquier momento desde tu panel de control.</p>
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">3. Responsabilidad del Usuario</h3>
       <p style="margin-bottom: 12px;">El negocio es el único responsable de la veracidad de la información publicada (precios, horarios, servicios) y de cumplir con las citas reservadas por sus clientes. Citas Pro no actúa como intermediario en disputas entre clientes y profesionales.</p>
       <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">4. Disponibilidad del Sistema</h3>
@@ -1145,6 +1145,7 @@
 <script src="assets/js/admin.js?v=999"></script>
 <script src="assets/js/app.js"></script>
 <script src="assets/js/search_eva.js"></script>
+<script src="assets/js/paises-precios.js"></script>
 
 <script>
   // Destruir caché y Service Worker
