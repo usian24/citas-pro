@@ -626,44 +626,45 @@ select.inp option {
    ============================================================ */
 
 /* 1. Cambiar el fondo de la tarjeta a blanco */
-body.light-mode .fu.d4 > div,
-body.light .fu.d4 > div,
-body.dia .fu.d4 > div,
-[data-theme="light"] .fu.d4 > div {
+body.light-mode .fu.d6 > div,
+body.light .fu.d6 > div,
+body.dia .fu.d6 > div,
+[data-theme="light"] .fu.d6 > div {
   background: #f7f7f7 !important;
   border: 1px solid rgba(170, 126, 15, 0.4) !important;
   box-shadow: 0 4px 15px rgba(0,0,0,0.06) !important;
 }
 
 /* 2. Cambiar "Oferta de Lanzamiento" a dorado oscuro */
-body.light-mode .fu.d4 > div > div:nth-child(3) > div:nth-child(1),
-body.light .fu.d4 > div > div:nth-child(3) > div:nth-child(1),
-body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(1),
-[data-theme="light"] .fu.d4 > div > div:nth-child(3) > div:nth-child(1) {
+body.light-mode .fu.d6 > div > div:nth-child(3) > div:nth-child(1),
+body.light .fu.d6 > div > div:nth-child(3) > div:nth-child(1),
+body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(1),
+[data-theme="light"] .fu.d6 > div > div:nth-child(3) > div:nth-child(1) {
   color: #c89106 !important; 
 }
 
 /* 3. Cambiar "30 Días Gratis" a negro */
-body.light-mode .fu.d4 > div > div:nth-child(3) > div:nth-child(2),
-body.light .fu.d4 > div > div:nth-child(3) > div:nth-child(2),
-body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(2),
-[data-theme="light"] .fu.d4 > div > div:nth-child(3) > div:nth-child(2) {
+body.light-mode .fu.d6 > div > div:nth-child(3) > div:nth-child(2),
+body.light .fu.d6 > div > div:nth-child(3) > div:nth-child(2),
+body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(2),
+[data-theme="light"] .fu.d6 > div > div:nth-child(3) > div:nth-child(2) {
   color: #07090F !important; 
 }
 
 /* 4. Cambiar "Sin compromiso..." a gris oscuro */
-body.light-mode .fu.d4 > div > div:nth-child(3) > div:nth-child(3),
-body.light .fu.d4 > div > div:nth-child(3) > div:nth-child(3),
-body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(3),
-[data-theme="light"] .fu.d4 > div > div:nth-child(3) > div:nth-child(3) {
+body.light-mode .fu.d6 > div > div:nth-child(3) > div:nth-child(3),
+body.light .fu.d6 > div > div:nth-child(3) > div:nth-child(3),
+body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3),
+[data-theme="light"] .fu.d6 > div > div:nth-child(3) > div:nth-child(3) {
   color: #64748B !important; 
 }
 
 /* 5. Cambiar el precio "10€/mes" a negro */
-body.light-mode .fu.d4 > div > div:nth-child(3) > div:nth-child(3) > strong,
-body.light .fu.d4 > div > div:nth-child(3) > div:nth-child(3) > strong,
-body.dia .fu.d4 > div > div:nth-child(3) > div:nth-child(3) > strong,
-[data-theme="light"] .fu.d4 > div > div:nth-child(3) > div:nth-child(3) > strong {
+body.light-mode .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
+body.light .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
+body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
+[data-theme="light"] .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
+[data-theme="light"] .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > span {
   color: #07090F !important; 
 }
 /* ── ROBOT ESTILO EVA (WALL-E) ── */
