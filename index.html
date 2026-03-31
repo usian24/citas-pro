@@ -54,8 +54,24 @@
       </svg>
     </div>
     <h1 class="fu d1" style="font-size:52px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#fff 25%,#7EB8FF 65%,#4A7FD4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:10px">CITAS PRO</h1>
-    <p class="fu d2" style="font-size:11px;font-weight:700;color:#5B8FE8;letter-spacing:3.5px;text-transform:uppercase;margin-bottom:12px">APP PARA</p>
-    <div style="width: 100%; max-width: 320px; overflow: hidden; margin-bottom: 12px; position: relative;">
+    <p class="fu d2" style="font-size:15px;color:var(--t2);max-width:300px;line-height:1.65;margin-bottom:0;">La app más completa para gestionar tu negocio</p>
+  </div>
+
+  <div class="portal-search-wrap fu d3">
+    <div class="portal-search-label">Busca tu negocio preferido</div>
+    <div class="portal-search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="portal-search-input" type="text" placeholder="Nombre del negocio..." autocomplete="off" maxlength="60"/>
+      <div id="portal-search-spinner" style="display:none;width:16px;height:16px;border:2px solid rgba(74,127,212,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
+    </div>
+    <div class="portal-search-results" id="portal-search-results" style="display:none"></div>
+  </div>
+
+  <div class="fu d4" style="display:flex;flex-direction:column;align-items:center;text-align:center;width:100%;z-index:1;margin-bottom:24px;">
+    <p style="font-size:11px;font-weight:700;color:#5B8FE8;letter-spacing:3.5px;text-transform:uppercase;margin-bottom:12px">APP PARA</p>
+    <div style="width: 100%; max-width: 320px; overflow: hidden; position: relative;">
       <div style="position: absolute; top:0; left:0; width: 30px; height: 100%; background: linear-gradient(to right, var(--bg), transparent); z-index: 2;"></div>
       <div style="position: absolute; top:0; right:0; width: 30px; height: 100%; background: linear-gradient(to left, var(--bg), transparent); z-index: 2;"></div>
       
@@ -72,25 +88,14 @@
         <div class="pill-item">💄 Maquillaje</div>
       </div>
     </div>
-    <p class="fu d3" style="font-size:15px;color:var(--t2);max-width:300px;line-height:1.65">La app más completa para gestionar tu negocio</p>
-  </div>
-<div class="portal-search-wrap fu d3">
-    <div class="portal-search-label">Busca tu negocio preferido</div>
-    <div class="portal-search-box">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input id="portal-search-input" type="text" placeholder="Nombre del negocio..." autocomplete="off" maxlength="60"/>
-      <div id="portal-search-spinner" style="display:none;width:16px;height:16px;border:2px solid rgba(74,127,212,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
-    </div>
-    <div class="portal-search-results" id="portal-search-results" style="display:none"></div>
   </div>
 
-  <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;display:flex;flex-direction:column;gap:12px;z-index:1;margin-bottom:20px;">
+  <div class="fu d5" style="width:100%;max-width:380px;padding:0 22px;display:flex;flex-direction:column;gap:12px;z-index:1;margin-bottom:20px;">
     <button class="btn btn-dark"  id="btn-login"  style="font-size:15px">Iniciar sesión</button>
     <button class="btn btn-blue"  id="btn-crear"  style="font-size:16px;font-weight:800;padding:18px">Crear cuenta a tu negocio</button>
   </div>
-  <div class="fu d4" style="width:100%;max-width:380px;padding:0 22px;margin-bottom:16px;z-index:1">
+
+  <div class="fu d6" style="width:100%;max-width:380px;padding:0 22px;margin-bottom:16px;z-index:1">
     <div style="background:linear-gradient(145deg,#1A1D24,#0D0F14);border:1px solid rgba(255,215,0,.3);border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5)">
       <div style="position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,215,0,.05) 0%,transparent 50%);pointer-events:none"></div>
       
@@ -99,7 +104,7 @@
       <div style="z-index:3; position:relative;">
         <div style="font-size:13px;font-weight:800;color:#FFD700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px"></div>
         <div style="font-size:18px;font-weight:900;color:white;margin-bottom:2px">30 Días Gratis</div>
-       <div style="font-size:12px;color:rgba(255,255,255,.6)">Sin compromiso. Luego solo <strong style="color:white" class="precio-local-mes">10€/mes</strong></div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6)">Sin compromiso. Luego solo <strong style="color:white" class="precio-local-mes">10€/mes</strong></div>
       </div>
     </div>
   </div>
