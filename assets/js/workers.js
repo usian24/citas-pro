@@ -869,13 +869,13 @@ window.markWorkerNotifRead = markWorkerNotifRead;
    para evitar colisiones con bucles externos
 ══════════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════════
-   MOTOR DEL HORARIO SEMANAL (VISTA MATRIZ INTELIGENTE)
+   MOTOR DEL HORARIO SEMANAL (MATRIZ INTELIGENTE 2.0)
 ══════════════════════════════════════════════════ */
 function renderWorkerWeeklySchedule() {
   var gridContainer = G('wk-weekly-grid');
   if (!gridContainer || !CUR_WORKER) return;
 
-  /* Calcular lunes de la semana actual */
+  /* 1. Calcular fechas de la semana */
   var curr = new Date();
   var dowCurr = curr.getDay();
   var diffCurr = curr.getDate() - dowCurr + (dowCurr === 0 ? -6 : 1);
@@ -890,35 +890,25 @@ function renderWorkerWeeklySchedule() {
     var wd = new Date(monday);
     wd.setDate(monday.getDate() + wi);
     weekDates.push(wd);
-    weekDatesStr.push(
-      wd.getFullYear() + '-' +
-      String(wd.getMonth() + 1).padStart(2, '0') + '-' +
-      String(wd.getDate()).padStart(2, '0')
-    );
+    weekDatesStr.push(wd.getFullYear() + '-' + String(wd.getMonth() + 1).padStart(2, '0') + '-' + String(wd.getDate()).padStart(2, '0'));
   }
 
-  var todayStr =
-    new Date().getFullYear() + '-' +
-    String(new Date().getMonth() + 1).padStart(2, '0') + '-' +
-    String(new Date().getDate()).padStart(2, '0');
+  var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0');
 
-  /* Cabecera */
+  /* 2. Renderizar Cabecera */
   var html = '<div class="wg-corner"></div>';
   for (var wi2 = 0; wi2 < 7; wi2++) {
     var isTodayCol = weekDatesStr[wi2] === todayStr ? ' wg-today' : '';
-    html += '<div class="wg-header' + isTodayCol + '">' +
-      dayNames[wi2] + '<br><span class="wg-date">' + weekDates[wi2].getDate() + '</span></div>';
+    html += '<div class="wg-header' + isTodayCol + '">' + dayNames[wi2] + '<br><span class="wg-date">' + weekDates[wi2].getDate() + '</span></div>';
   }
 
   var horario = getHorarioSeguro();
   var appts   = CUR_WORKER.appointments || [];
   
-  /* ⏱️ GENERAR HORAS DE 30 EN 30 MINUTOS (De 07:00 a 22:00) */
+  /*  GRILLA DE 1 HORA (De 07:00 a 22:00) -> Mucho más corto y limpio */
   var hoursGrid = [];
   for (var h = 7; h <= 22; h++) {
-      var hh = String(h).padStart(2, '0');
-      hoursGrid.push(hh + ':00');
-      if (h < 22) hoursGrid.push(hh + ':30'); // Agregamos la media hora (hasta 21:30)
+      hoursGrid.push(String(h).padStart(2, '0') + ':00');
   }
   
   var colors = ['w-blue','w-gold','w-green','w-purple'];
@@ -929,7 +919,6 @@ function renderWorkerWeeklySchedule() {
     return parseInt(pts[0]) * 60 + parseInt(pts[1]);
   }
 
-  /* Evalúa matemáticamente si la HORA EXACTA está dentro del turno */
   function isCellOpen(dayIdx, timeStr) {
     var hor = horario[dayIdx];
     if (!hor || !hor.open) return false;
@@ -945,9 +934,11 @@ function renderWorkerWeeklySchedule() {
     return false;
   }
 
-  /* Grid de horas × días */
+  /* 3. Renderizar Filas y Columnas */
   for (var hi = 0; hi < hoursGrid.length; hi++) {
     var timeStr   = hoursGrid[hi];
+    var hourPfx   = timeStr.split(':')[0]; // Detecta '07', '08', etc.
+    
     html += '<div class="wg-time">' + timeStr + '</div>';
 
     for (var di = 0; di < 7; di++) {
@@ -955,9 +946,9 @@ function renderWorkerWeeklySchedule() {
       var cellOpen = isCellOpen(di, timeStr);
       html += '<div class="' + (cellOpen ? 'wg-cell' : 'wg-cell wg-out') + '">';
 
-      /* Buscar citas EXACTAS a esta hora (Ej: a las 09:30) */
+      /* Buscar TODAS las citas que ocurren dentro de esta hora (Ej: 09:00, 09:15, 09:30) */
       var cellAppts = appts.filter(function(a) {
-        return a.date === dateStr && a.time === timeStr && a.status !== 'cancelled';
+        return a.date === dateStr && (a.time || '').startsWith(hourPfx + ':') && a.status !== 'cancelled';
       });
 
       if (cellAppts.length > 0) {
@@ -967,20 +958,30 @@ function renderWorkerWeeklySchedule() {
           var cClass = colors[(di + hi + idx) % colors.length];
           var pClass = cClass.replace('w-', 'pill-');
           
-          /* CÁLCULO INTELIGENTE DE ALTURA */
-          var dur = 30; // 30 mins por defecto
+          /* MATEMÁTICAS PARA POSICIÓN Y ALTURA DINÁMICA */
+          // 1. Obtener duración del servicio (por defecto 30 mins si no lo encuentra)
+          var dur = 30; 
           if (CUR_WORKER.services) {
              var sObj = CUR_WORKER.services.filter(function(s) { return s.name === a.svc; })[0];
              if (sObj && sObj.dur) dur = parseInt(sObj.dur);
           }
           
-          // Calculamos cuántos "bloques" de 30 mins necesita
-          var slots = Math.max(1, Math.ceil(dur / 30));
+          // 2. Calcular Offset de bajada (Ej: 09:30 = 30 mins = 50% de bajada)
+          var aptMins = timeToMins(a.time); 
+          var cellMins = timeToMins(timeStr);
+          var offsetMins = aptMins - cellMins;
+          var topPercent = (offsetMins / 60) * 100;
           
-          // CSS Mágico: 100% * cantidad de bloques + los pixeles del borde (gap) - el padding base
-          var hCalc = 'calc(' + (slots * 100) + '% + ' + ((slots - 1) * 1) + 'px - 8px)';
+          // 3. Calcular Altura (Ej: 60 mins = 100% de la celda)
+          var heightPercent = (dur / 60) * 100;
+          var extraGaps = Math.floor((dur - 1) / 60); // Ajuste fino para la línea del borde
+          
+          // Crear la regla CSS en línea
+          var styleStr = 'top: calc(' + topPercent + '% + 4px); ' +
+                         'height: calc(' + heightPercent + '% + ' + extraGaps + 'px - 8px); ' +
+                         'z-index: ' + (20 + idx) + ';'; // z-index dinámico por si se enciman
 
-          html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')" style="height:' + hCalc + '; z-index:20;">'
+          html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')" style="' + styleStr + '">'
             + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
             + '<div class="wg-appt-name">' + san(a.client) + '</div>'
             + '<div style="font-size:9px;font-weight:800;color:var(--blue);">' + san(a.time) + '</div>'
