@@ -152,7 +152,7 @@ function workerApptRowH(a) {
     completed:   { c:'var(--green)', bg:'rgba(34,197,94,.1)',   l:'Hecho' },
     cancelled:   { c:'var(--red)',   bg:'rgba(239,68,68,.1)',   l:'Canc.' }
   }[a.status] || { c:'var(--blue)', bg:'rgba(74,127,212,.1)', l:'Conf.' };
- 
+
   var initials = san((a.client || '?').split(' ').map(function(n){ return n[0]||''; }).slice(0,2).join('').toUpperCase());
   
   return '<div class="appt-row" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')">'
@@ -490,18 +490,7 @@ function renderWorkerFinances() {
 }
 
 /* ══════════════════════════════════════════════
-   HORARIO TRABAJADOR  ← AQUÍ ESTABA EL BUG
-   
-   Problema: DEFAULT_HORARIO no tenía las props
-   from1/to1/hasBreak/from2/to2, así que al hacer
-   CUR_WORKER.horario || DEFAULT_HORARIO.map(...)
-   el horario quedaba vacío o sin campos válidos.
-   
-   Fix: definimos un horario seguro DENTRO de esta
-   función. Si el worker ya tiene horario guardado
-   lo usamos tal cual. Si no, creamos uno completo
-   con todos los campos necesarios y lo asignamos
-   a CUR_WORKER.horario para que persista.
+   HORARIO TRABAJADOR
 ══════════════════════════════════════════════ */
 function getHorarioSeguro() {
   var plantilla = [
@@ -514,32 +503,27 @@ function getHorarioSeguro() {
     { day: 'Domingo',   open: false, from1: '09:00', to1: '14:00', hasBreak: false, from2: '',      to2: '' }
   ];
 
-  // Si el worker no tiene horario, asignarle la plantilla completa
   if (!CUR_WORKER.horario || !Array.isArray(CUR_WORKER.horario) || CUR_WORKER.horario.length === 0) {
     CUR_WORKER.horario = plantilla.map(function(h) { return Object.assign({}, h); });
     return CUR_WORKER.horario;
   }
 
-  // Si tiene horario pero faltan propiedades en algún día, rellenarlas
   var diasPlantilla = plantilla.map(function(p) { return p.day; });
   diasPlantilla.forEach(function(dia, idx) {
     var existente = CUR_WORKER.horario.filter(function(h) { return h.day === dia; })[0];
     if (!existente) {
-      // Día faltante: añadirlo
       CUR_WORKER.horario.push(Object.assign({}, plantilla[idx]));
     } else {
-      // Rellenar props que falten sin machacar las que ya existen
-      if (existente.from1  === undefined) existente.from1  = plantilla[idx].from1;
-      if (existente.to1    === undefined) existente.to1    = plantilla[idx].to1;
-      if (existente.from   === undefined) existente.from   = existente.from1;
-      if (existente.to     === undefined) existente.to     = existente.to1;
+      if (existente.from1    === undefined) existente.from1    = plantilla[idx].from1;
+      if (existente.to1      === undefined) existente.to1      = plantilla[idx].to1;
+      if (existente.from     === undefined) existente.from     = existente.from1;
+      if (existente.to       === undefined) existente.to       = existente.to1;
       if (existente.hasBreak === undefined) existente.hasBreak = plantilla[idx].hasBreak;
-      if (existente.from2  === undefined) existente.from2  = plantilla[idx].from2;
-      if (existente.to2    === undefined) existente.to2    = plantilla[idx].to2;
+      if (existente.from2    === undefined) existente.from2    = plantilla[idx].from2;
+      if (existente.to2      === undefined) existente.to2      = plantilla[idx].to2;
     }
   });
 
-  // Ordenar para que siempre salga en orden L-D
   CUR_WORKER.horario.sort(function(a, b) {
     return diasPlantilla.indexOf(a.day) - diasPlantilla.indexOf(b.day);
   });
@@ -562,8 +546,6 @@ function renderWorkerHorario() {
     var content = '';
     if (day.open) {
       content = '<div style="margin-top:12px">'
-
-        // Turno principal
         + '<div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">'
         + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;text-transform:uppercase">Inicio turno</div>'
         + '<input class="inp" type="time" value="' + san(f1) + '" data-wfrom1="' + i + '" onchange="window._wkHorarioChange(this)" style="padding:9px 12px"/></div>'
@@ -571,14 +553,10 @@ function renderWorkerHorario() {
         + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;text-transform:uppercase">Fin turno</div>'
         + '<input class="inp" type="time" value="' + san(t1) + '" data-wto1="' + i + '" onchange="window._wkHorarioChange(this)" style="padding:9px 12px"/></div>'
         + '</div>'
-
-        // Toggle descanso
         + '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg3);padding:10px 14px;border-radius:12px;margin-bottom:12px">'
         + '<div style="font-size:12px;font-weight:700;color:var(--t2)">Descanso / Almuerzo</div>'
         + '<div class="toggle ' + (hb ? 'on' : '') + '" onclick="window.toggleWorkerBreak(' + i + ')"></div>'
         + '</div>'
-
-        // Segundo turno (solo si hasBreak)
         + (hb
           ? '<div style="display:flex;gap:10px;align-items:center;animation:popIn .3s ease">'
           + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;text-transform:uppercase">Reinicio turno</div>'
@@ -588,7 +566,6 @@ function renderWorkerHorario() {
           + '<input class="inp" type="time" value="' + san(t2) + '" data-wto2="' + i + '" onchange="window._wkHorarioChange(this)" style="padding:9px 12px"/></div>'
           + '</div>'
           : '')
-
         + '</div>';
     }
 
@@ -602,27 +579,24 @@ function renderWorkerHorario() {
   }).join(''));
 }
 
-// Manejador centralizado de cambios en inputs de horario
 window._wkHorarioChange = function(el) {
   if (!CUR_WORKER || !CUR_WORKER.horario) return;
   var val = el.value;
-
+  var i;
   if (el.hasAttribute('data-wfrom1')) {
-    var i = parseInt(el.getAttribute('data-wfrom1'));
-    CUR_WORKER.horario[i].from1 = val;
-    CUR_WORKER.horario[i].from  = val;
+    i = parseInt(el.getAttribute('data-wfrom1'));
+    CUR_WORKER.horario[i].from1 = val; CUR_WORKER.horario[i].from = val;
   }
   if (el.hasAttribute('data-wto1')) {
-    var i = parseInt(el.getAttribute('data-wto1'));
-    CUR_WORKER.horario[i].to1 = val;
-    CUR_WORKER.horario[i].to  = val;
+    i = parseInt(el.getAttribute('data-wto1'));
+    CUR_WORKER.horario[i].to1 = val; CUR_WORKER.horario[i].to = val;
   }
   if (el.hasAttribute('data-wfrom2')) {
-    var i = parseInt(el.getAttribute('data-wfrom2'));
+    i = parseInt(el.getAttribute('data-wfrom2'));
     CUR_WORKER.horario[i].from2 = val;
   }
   if (el.hasAttribute('data-wto2')) {
-    var i = parseInt(el.getAttribute('data-wto2'));
+    i = parseInt(el.getAttribute('data-wto2'));
     CUR_WORKER.horario[i].to2 = val;
   }
 };
@@ -675,11 +649,9 @@ function saveWorkerProfile() {
   if (!CUR_WORKER) return;
   var nm = sanitizeText(V('wk-pf-nm'));
   if (!nm) { toast('El nombre no puede estar vacío', '#EF4444'); return; }
-  
   CUR_WORKER.name  = nm; 
   CUR_WORKER.phone = sanitizeText(V('wk-pf-phone')); 
   CUR_WORKER.spec  = sanitizeText(V('wk-pf-spec'));
-  
   syncWorkerToCloud();
   saveDB(); 
   initWorkerPanel(); 
@@ -689,19 +661,15 @@ function saveWorkerProfile() {
 function saveWorkerPassword() {
   var p1 = V('wk-pass-new'), p2 = V('wk-pass-confirm');
   hideErr('wk-pass-err');
-  
   if (!p1 || p1.length < 6) { showErr('wk-pass-err', 'Mínimo 6 caracteres.'); return; }
   if (p1 !== p2)              { showErr('wk-pass-err', 'Las contraseñas no coinciden.'); return; }
   if (!CUR_WORKER) return;
-  
   CUR_WORKER.pass = p1; 
   syncWorkerToCloud();
   saveDB();
-  
   var f1 = G('wk-pass-new'), f2 = G('wk-pass-confirm'); 
   if (f1) f1.value = ''; 
   if (f2) f2.value = '';
-  
   toast('Contraseña actualizada', '#22C55E');
 }
 
@@ -710,7 +678,6 @@ function saveWorkerPassword() {
 ══════════════════════════ */
 function syncWorkerToCloud() {
   if (!CUR_WORKER || !CUR) return;
-  
   fetch('/api/save-worker', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -734,11 +701,34 @@ function syncWorkerToCloud() {
 
 /* ══════════════════════════
    BOTÓN GUARDAR HORARIO
+   ✅ Lee los inputs antes de guardar
 ══════════════════════════ */
 function saveWorkerHorario() {
-  if (!CUR_WORKER) return;
-  // Los inputs ya actualizan CUR_WORKER.horario en tiempo real
-  // via _wkHorarioChange, así que solo guardamos
+  if (!CUR_WORKER || !CUR_WORKER.horario) return;
+
+  // Leer TODOS los inputs de tiempo antes de guardar
+  // por si el usuario no hizo blur y onchange no disparó
+  document.querySelectorAll('.inp[type="time"]').forEach(function(el) {
+    if (!CUR_WORKER.horario) return;
+    var i;
+    if (el.hasAttribute('data-wfrom1')) {
+      i = parseInt(el.getAttribute('data-wfrom1'));
+      if (CUR_WORKER.horario[i]) { CUR_WORKER.horario[i].from1 = el.value; CUR_WORKER.horario[i].from = el.value; }
+    }
+    if (el.hasAttribute('data-wto1')) {
+      i = parseInt(el.getAttribute('data-wto1'));
+      if (CUR_WORKER.horario[i]) { CUR_WORKER.horario[i].to1 = el.value; CUR_WORKER.horario[i].to = el.value; }
+    }
+    if (el.hasAttribute('data-wfrom2')) {
+      i = parseInt(el.getAttribute('data-wfrom2'));
+      if (CUR_WORKER.horario[i]) CUR_WORKER.horario[i].from2 = el.value;
+    }
+    if (el.hasAttribute('data-wto2')) {
+      i = parseInt(el.getAttribute('data-wto2'));
+      if (CUR_WORKER.horario[i]) CUR_WORKER.horario[i].to2 = el.value;
+    }
+  });
+
   syncWorkerToCloud();
   saveDB();
   toast('Horario guardado', '#22C55E');
@@ -888,6 +878,8 @@ function markWorkerNotifRead(index) {
   renderWorkerNotifications(); 
   renderWorkerNotifBadge();
 }
+window.markWorkerNotifRead = markWorkerNotifRead;
+
 /* ══════════════════════════════════════════════════
    MOTOR DEL HORARIO SEMANAL (VISTA MATRIZ)
 ══════════════════════════════════════════════════ */
@@ -895,9 +887,8 @@ function renderWorkerWeeklySchedule() {
   var gridContainer = G('wk-weekly-grid');
   if (!gridContainer || !CUR_WORKER) return;
 
-  // 1. Obtener la fecha del Lunes de la semana actual
   var curr = new Date();
-  var day = curr.getDay(); // 0 = Dom, 1 = Lun...
+  var day = curr.getDay();
   var diff = curr.getDate() - day + (day === 0 ? -6 : 1);
   var monday = new Date(curr);
   monday.setDate(diff);
@@ -906,7 +897,6 @@ function renderWorkerWeeklySchedule() {
   var weekDatesStr = [];
   var dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-  // Formato YYYY-MM-DD seguro (sin problemas de zona horaria)
   for (var i = 0; i < 7; i++) {
       var d = new Date(monday);
       d.setDate(monday.getDate() + i);
@@ -915,7 +905,6 @@ function renderWorkerWeeklySchedule() {
       weekDatesStr.push(ds);
   }
 
-  // 2. Construir la cabecera (Días de la semana)
   var html = '<div class="wg-corner"></div>';
   var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0');
   
@@ -925,11 +914,8 @@ function renderWorkerWeeklySchedule() {
       html += '<div class="wg-header' + isToday + '">' + dayNames[i] + '<br><span class="wg-date">' + dateNum + '</span></div>';
   }
 
-  // 3. Preparar los datos
   var horario = getHorarioSeguro(); 
   var appts = CUR_WORKER.appointments || [];
-  
-  // Eje Y: Horas (de 08:00 a 22:00)
   var hoursGrid = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00'];
   var colors = ['w-blue', 'w-gold', 'w-green', 'w-purple'];
 
@@ -942,13 +928,10 @@ function renderWorkerWeeklySchedule() {
   function isCellOpen(dayIndex, timeStr) {
       var h = horario[dayIndex];
       if (!h || !h.open) return false;
-      
       var tMins = timeToMins(timeStr);
       var f1 = timeToMins(h.from1 || h.from || '09:00');
       var t1 = timeToMins(h.to1 || h.to || '14:00');
-      
       if (tMins >= f1 && tMins < t1) return true; 
-      
       if (h.hasBreak && h.from2 && h.to2) {
           var f2 = timeToMins(h.from2);
           var t2 = timeToMins(h.to2);
@@ -957,52 +940,42 @@ function renderWorkerWeeklySchedule() {
       return false; 
   }
 
-  // 4. Renderizar la cuadrícula
   for (var h = 0; h < hoursGrid.length; h++) {
       var timeStr = hoursGrid[h];
       var hourPrefix = timeStr.split(':')[0]; 
-      
       html += '<div class="wg-time">' + timeStr + '</div>';
 
       for (var d = 0; d < 7; d++) {
           var dateStr = weekDatesStr[d];
           var cellOpen = isCellOpen(d, timeStr);
           var cellClass = cellOpen ? 'wg-cell' : 'wg-cell wg-out';
-          
           html += '<div class="' + cellClass + '">';
           
-          // Buscar citas de este día que correspondan a esta hora (Ej: 10:00 o 10:30)
           var cellAppts = appts.filter(function(a) {
               return a.date === dateStr && (a.time || '').startsWith(hourPrefix + ':') && a.status !== 'cancelled';
           });
 
           if (cellAppts.length > 0) {
-              // Ordenar por minutos exactos para que las citas de 10:00 salgan antes que las de 10:30
               cellAppts.sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
-
               cellAppts.forEach(function(a, idx) {
                   var cClass = colors[(d + h + idx) % colors.length]; 
                   var pClass = cClass.replace('w-', 'pill-');
-                  
-                  // Reutilizamos tu función openWorkerApptDetail que ya existe y abre tu modal!
                   html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')">'
-                        + '<div style="display:flex; justify-content:space-between; width:100%; align-items:center;">'
+                        + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
                         + '<div class="wg-appt-name">' + san(a.client) + '</div>'
-                        + '<div style="font-size:9px; font-weight:800; color:var(--blue);">' + san(a.time) + '</div>'
+                        + '<div style="font-size:9px;font-weight:800;color:var(--blue);">' + san(a.time) + '</div>'
                         + '</div>'
                         + '<div class="wg-appt-phone">' + san(a.phone || '') + '</div>'
-                        + '<div style="display:flex; justify-content:space-between; width:100%; align-items:center; margin-top:auto;">'
-                        + '<span class="' + pClass + '" style="font-size:8px; padding:2px 6px;">' + san(a.svc) + '</span>'
-                        + '<span style="font-size:10px; font-weight:800;">' + money(a.price) + '</span>'
+                        + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;margin-top:auto;">'
+                        + '<span class="' + pClass + '" style="font-size:8px;padding:2px 6px;">' + san(a.svc) + '</span>'
+                        + '<span style="font-size:10px;font-weight:800;">' + money(a.price) + '</span>'
                         + '</div>'
                         + '</div>';
               });
           }
-          
           html += '</div>';
       }
   }
 
   gridContainer.innerHTML = html;
 }
-window.markWorkerNotifRead = markWorkerNotifRead;
