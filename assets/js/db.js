@@ -419,31 +419,42 @@ function planTag(plan) {
 async function forceCloudSync() {
   try {
     var res = await fetch('/api/get-db');
-    if (res.ok) {
-      var cloudBusinesses = await res.json();
-      var local = loadDB(); 
-      local.businesses = cloudBusinesses; 
-      localStorage.setItem(DBKEY, JSON.stringify(local)); 
-      DB = local; 
-
-      if (typeof CUR !== 'undefined' && CUR && typeof initBizPanel === 'function') {
+    if (!res.ok) return;
+ 
+    var cloudBusinesses = await res.json();
+    var local = loadDB();
+    local.businesses = cloudBusinesses;
+    localStorage.setItem(DBKEY, JSON.stringify(local));
+    DB = local;
+ 
+    // Actualizar panel de dueño
+    if (typeof CUR !== 'undefined' && CUR && CUR.id) {
+      try {
         CUR = DB.businesses.find(function(b) { return b.id === CUR.id; }) || CUR;
-        initBizPanel();
-      }
-
-      if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && DB.currentWorker) {
+        if (typeof initBizPanel === 'function') initBizPanel();
+      } catch(e) { console.error('Error actualizando panel biz:', e); }
+    }
+ 
+    // Actualizar panel de trabajador
+    if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && DB.currentWorker) {
+      try {
         var freshBiz = getBizById(DB.currentWorker.bizId);
         if (freshBiz) {
           CUR = freshBiz;
-          var freshWorker = (freshBiz.workers || []).find(function(w) { return w.id === DB.currentWorker.workerId; });
+          var freshWorker = (freshBiz.workers || []).find(function(w) {
+            return w.id === DB.currentWorker.workerId;
+          });
           if (freshWorker) {
             CUR_WORKER = freshWorker;
             if (typeof initWorkerPanel === 'function') initWorkerPanel();
           }
         }
-      }
+      } catch(e) { console.error('Error actualizando panel worker:', e); }
     }
-  } catch(e) {}
+ 
+  } catch(e) {
+    // Silencioso — si no hay red, usamos datos locales
+  }
 }
 
 window.addEventListener('load', function() { setTimeout(forceCloudSync, 500); });
