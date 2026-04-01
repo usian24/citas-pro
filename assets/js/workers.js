@@ -982,16 +982,16 @@ function renderWorkerWeeklySchedule() {
                          'z-index: ' + (20 + idx) + ';'; // z-index dinámico por si se enciman
 
           html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')" style="' + styleStr + '">'
-            + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
-            + '<div class="wg-appt-name">' + san(a.client) + '</div>'
-            + '<div style="font-size:9px;font-weight:800;color:var(--blue);">' + san(a.time) + '</div>'
-            + '</div>'
-            + '<div class="wg-appt-phone">' + san(a.phone || '') + '</div>'
-            + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;margin-top:auto;">'
-            + '<span class="' + pClass + '" style="font-size:8px;padding:2px 6px;">' + san(a.svc) + '</span>'
-            + '<span style="font-size:10px;font-weight:800;">' + money(a.price) + '</span>'
-            + '</div>'
-            + '</div>';
+                        + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;gap:4px;">'
+                        + '<div class="wg-appt-name" style="flex:1;min-width:0;">' + san(a.client) + '</div>'
+                        + '<div style="font-size:9px;font-weight:800;color:var(--blue);flex-shrink:0;">' + san(a.time) + '</div>'
+                        + '</div>'
+                        + '<div class="wg-appt-phone" style="width:100%;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">' + san(a.phone || '') + '</div>'
+                        + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;margin-top:auto;gap:4px;">'
+                        + '<span class="' + pClass + '" style="font-size:8px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%;">' + san(a.svc) + '</span>'
+                        + '<span style="font-size:10px;font-weight:800;flex-shrink:0;">' + money(a.price) + '</span>'
+                        + '</div>'
+                        + '</div>';
         });
       }
       html += '</div>';

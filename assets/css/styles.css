@@ -896,7 +896,8 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
 
 .wg-appt {
   position: absolute;
-  left: 4px; right: 4px;
+  left: 4px;
+  width: calc(100% - 8px); 
   border-radius: 10px;
   padding: 8px;
   display: flex;
