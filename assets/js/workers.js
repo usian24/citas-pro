@@ -886,79 +886,77 @@ window.markWorkerNotifRead = markWorkerNotifRead;
 function renderWorkerWeeklySchedule() {
   var gridContainer = G('wk-weekly-grid');
   if (!gridContainer || !CUR_WORKER) return;
-
+ 
   var curr = new Date();
-  var day = curr.getDay();
-  var diff = curr.getDate() - day + (day === 0 ? -6 : 1);
+  var dayOfWeek = curr.getDay();
+  var diff = curr.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
   var monday = new Date(curr);
   monday.setDate(diff);
-
+ 
   var weekDates = [];
   var weekDatesStr = [];
   var dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-
-  for (var i = 0; i < 7; i++) {
-      var d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      weekDates.push(d);
-      var ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      weekDatesStr.push(ds);
+ 
+  for (var wi = 0; wi < 7; wi++) {
+      var wd = new Date(monday);
+      wd.setDate(monday.getDate() + wi);
+      weekDates.push(wd);
+      var wds = wd.getFullYear() + '-' + String(wd.getMonth() + 1).padStart(2, '0') + '-' + String(wd.getDate()).padStart(2, '0');
+      weekDatesStr.push(wds);
   }
-
-  var html = '<div class="wg-corner"></div>';
+ 
   var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0');
-  
-  for (var i = 0; i < 7; i++) {
-      var isToday = (weekDatesStr[i] === todayStr) ? ' wg-today' : '';
-      var dateNum = weekDates[i].getDate();
-      html += '<div class="wg-header' + isToday + '">' + dayNames[i] + '<br><span class="wg-date">' + dateNum + '</span></div>';
+ 
+  var html = '<div class="wg-corner"></div>';
+  for (var wi = 0; wi < 7; wi++) {
+      var isToday = (weekDatesStr[wi] === todayStr) ? ' wg-today' : '';
+      html += '<div class="wg-header' + isToday + '">' + dayNames[wi] + '<br><span class="wg-date">' + weekDates[wi].getDate() + '</span></div>';
   }
-
-  var horario = getHorarioSeguro(); 
+ 
+  var horario = getHorarioSeguro();
   var appts = CUR_WORKER.appointments || [];
   var hoursGrid = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00'];
   var colors = ['w-blue', 'w-gold', 'w-green', 'w-purple'];
-
+ 
   function timeToMins(t) {
       if (!t) return 0;
       var p = t.split(':');
       return parseInt(p[0]) * 60 + parseInt(p[1]);
   }
-
-  function isCellOpen(dayIndex, timeStr) {
-      var h = horario[dayIndex];
-      if (!h || !h.open) return false;
+ 
+  function isCellOpen(dayIdx, timeStr) {
+      var hor = horario[dayIdx];
+      if (!hor || !hor.open) return false;
       var tMins = timeToMins(timeStr);
-      var f1 = timeToMins(h.from1 || h.from || '09:00');
-      var t1 = timeToMins(h.to1 || h.to || '14:00');
-      if (tMins >= f1 && tMins < t1) return true; 
-      if (h.hasBreak && h.from2 && h.to2) {
-          var f2 = timeToMins(h.from2);
-          var t2 = timeToMins(h.to2);
-          if (tMins >= f2 && tMins < t2) return true; 
+      var f1 = timeToMins(hor.from1 || hor.from || '09:00');
+      var t1 = timeToMins(hor.to1 || hor.to || '14:00');
+      if (tMins >= f1 && tMins < t1) return true;
+      if (hor.hasBreak && hor.from2 && hor.to2) {
+          var f2 = timeToMins(hor.from2);
+          var t2 = timeToMins(hor.to2);
+          if (tMins >= f2 && tMins < t2) return true;
       }
-      return false; 
+      return false;
   }
-
-  for (var h = 0; h < hoursGrid.length; h++) {
-      var timeStr = hoursGrid[h];
-      var hourPrefix = timeStr.split(':')[0]; 
+ 
+  for (var hi = 0; hi < hoursGrid.length; hi++) {
+      var timeStr = hoursGrid[hi];
+      var hourPrefix = timeStr.split(':')[0];
       html += '<div class="wg-time">' + timeStr + '</div>';
-
-      for (var d = 0; d < 7; d++) {
-          var dateStr = weekDatesStr[d];
-          var cellOpen = isCellOpen(d, timeStr);
-          var cellClass = cellOpen ? 'wg-cell' : 'wg-cell wg-out';
-          html += '<div class="' + cellClass + '">';
-          
+ 
+      for (var di = 0; di < 7; di++) {
+          var dateStr = weekDatesStr[di];
+          var cellOpen = isCellOpen(di, timeStr);
+          html += '<div class="' + (cellOpen ? 'wg-cell' : 'wg-cell wg-out') + '">';
+ 
           var cellAppts = appts.filter(function(a) {
               return a.date === dateStr && (a.time || '').startsWith(hourPrefix + ':') && a.status !== 'cancelled';
           });
-
+ 
           if (cellAppts.length > 0) {
-              cellAppts.sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
+              cellAppts.sort(function(a, b) { return (a.time || '').localeCompare(b.time || ''); });
               cellAppts.forEach(function(a, idx) {
-                  var cClass = colors[(d + h + idx) % colors.length]; 
+                  var cClass = colors[(di + hi + idx) % colors.length];
                   var pClass = cClass.replace('w-', 'pill-');
                   html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')">'
                         + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
@@ -976,6 +974,6 @@ function renderWorkerWeeklySchedule() {
           html += '</div>';
       }
   }
-
+ 
   gridContainer.innerHTML = html;
 }
