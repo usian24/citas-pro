@@ -868,6 +868,9 @@ window.markWorkerNotifRead = markWorkerNotifRead;
    VISTA SEMANAL — variables con nombres únicos
    para evitar colisiones con bucles externos
 ══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   MOTOR DEL HORARIO SEMANAL (VISTA MATRIZ INTELIGENTE)
+══════════════════════════════════════════════════ */
 function renderWorkerWeeklySchedule() {
   var gridContainer = G('wk-weekly-grid');
   if (!gridContainer || !CUR_WORKER) return;
@@ -909,8 +912,15 @@ function renderWorkerWeeklySchedule() {
 
   var horario = getHorarioSeguro();
   var appts   = CUR_WORKER.appointments || [];
-  var hoursGrid = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00',
-                   '15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00'];
+  
+  /* ⏱️ GENERAR HORAS DE 30 EN 30 MINUTOS (De 07:00 a 22:00) */
+  var hoursGrid = [];
+  for (var h = 7; h <= 22; h++) {
+      var hh = String(h).padStart(2, '0');
+      hoursGrid.push(hh + ':00');
+      if (h < 22) hoursGrid.push(hh + ':30'); // Agregamos la media hora (hasta 21:30)
+  }
+  
   var colors = ['w-blue','w-gold','w-green','w-purple'];
 
   function timeToMins(t) {
@@ -919,7 +929,7 @@ function renderWorkerWeeklySchedule() {
     return parseInt(pts[0]) * 60 + parseInt(pts[1]);
   }
 
-  /* ✅ Nombres únicos: hor, dayIdx, tMins — sin colisión con bucles */
+  /* Evalúa matemáticamente si la HORA EXACTA está dentro del turno */
   function isCellOpen(dayIdx, timeStr) {
     var hor = horario[dayIdx];
     if (!hor || !hor.open) return false;
@@ -935,10 +945,9 @@ function renderWorkerWeeklySchedule() {
     return false;
   }
 
-  /* Grid de horas × días — contadores hi y di */
+  /* Grid de horas × días */
   for (var hi = 0; hi < hoursGrid.length; hi++) {
     var timeStr   = hoursGrid[hi];
-    var hourPfx   = timeStr.split(':')[0];
     html += '<div class="wg-time">' + timeStr + '</div>';
 
     for (var di = 0; di < 7; di++) {
@@ -946,18 +955,32 @@ function renderWorkerWeeklySchedule() {
       var cellOpen = isCellOpen(di, timeStr);
       html += '<div class="' + (cellOpen ? 'wg-cell' : 'wg-cell wg-out') + '">';
 
+      /* Buscar citas EXACTAS a esta hora (Ej: a las 09:30) */
       var cellAppts = appts.filter(function(a) {
-        return a.date === dateStr &&
-               (a.time || '').startsWith(hourPfx + ':') &&
-               a.status !== 'cancelled';
+        return a.date === dateStr && a.time === timeStr && a.status !== 'cancelled';
       });
 
       if (cellAppts.length > 0) {
         cellAppts.sort(function(a, b) { return (a.time || '').localeCompare(b.time || ''); });
+        
         cellAppts.forEach(function(a, idx) {
           var cClass = colors[(di + hi + idx) % colors.length];
           var pClass = cClass.replace('w-', 'pill-');
-          html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')">'
+          
+          /* CÁLCULO INTELIGENTE DE ALTURA */
+          var dur = 30; // 30 mins por defecto
+          if (CUR_WORKER.services) {
+             var sObj = CUR_WORKER.services.filter(function(s) { return s.name === a.svc; })[0];
+             if (sObj && sObj.dur) dur = parseInt(sObj.dur);
+          }
+          
+          // Calculamos cuántos "bloques" de 30 mins necesita
+          var slots = Math.max(1, Math.ceil(dur / 30));
+          
+          // CSS Mágico: 100% * cantidad de bloques + los pixeles del borde (gap) - el padding base
+          var hCalc = 'calc(' + (slots * 100) + '% + ' + ((slots - 1) * 1) + 'px - 8px)';
+
+          html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')" style="height:' + hCalc + '; z-index:20;">'
             + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
             + '<div class="wg-appt-name">' + san(a.client) + '</div>'
             + '<div style="font-size:9px;font-weight:800;color:var(--blue);">' + san(a.time) + '</div>'
