@@ -431,12 +431,12 @@ async function forceCloudSync() {
     if (typeof CUR !== 'undefined' && CUR && CUR.id) {
       try {
         CUR = DB.businesses.find(function(b) { return b.id === CUR.id; }) || CUR;
-        if (typeof initBizPanel === 'function') initBizPanel();
+        if (typeof showBizPanel === 'function') showBizPanel();
       } catch(e) { console.error('Error actualizando panel biz:', e); }
     }
  
     // Actualizar panel de trabajador
-    if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && DB.currentWorker) {
+    if (typeof DB.currentWorker !== 'undefined' && DB.currentWorker) {
       try {
         var freshBiz = getBizById(DB.currentWorker.bizId);
         if (freshBiz) {
@@ -446,7 +446,7 @@ async function forceCloudSync() {
           });
           if (freshWorker) {
             CUR_WORKER = freshWorker;
-            if (typeof initWorkerPanel === 'function') initWorkerPanel();
+            if (typeof showWorkerPanel === 'function') showWorkerPanel();
           }
         }
       } catch(e) { console.error('Error actualizando panel worker:', e); }
