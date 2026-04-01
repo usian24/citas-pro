@@ -822,7 +822,7 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
   box-shadow: none !important;
 }
 /* ══════════════════════════════════════════════════
-   VISTA SEMANAL — añadir al final de styles.css
+   VISTA SEMANAL (WORKER)
 ══════════════════════════════════════════════════ */
 .weekly-scroll {
   overflow-x: auto;
@@ -832,8 +832,8 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
 
 .weekly-grid {
   display: grid;
-  grid-template-columns: 55px repeat(7, 135px); /* Un poco más ancho */
-  grid-auto-rows: 140px; /* 👈 AHORA LAS HORAS SON MÁS ALTAS. Medio cuadro medirá 70px, perfecto para leer */
+  grid-template-columns: 55px repeat(7, 130px);
+  grid-auto-rows: 100px; /* 👈 Ajustado a 100px para que las citas de 30min se vean bien */
   background: var(--b);
   gap: 1px;
 }
@@ -896,13 +896,13 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
 
 .wg-appt {
   position: absolute;
-  left: 3px; 
-  right: 3px; /* 👈 Esto ancla la tarjeta a los bordes de su columna para que JAMÁS se salga */
-  border-radius: 8px;
-  padding: 8px 6px;
+  left: 4px; right: 4px;
+  border-radius: 10px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Espacia el contenido arriba y abajo */
+  justify-content: flex-start;
+  align-items: flex-start;
   overflow: hidden;
   border-left: 4px solid;
   cursor: pointer;
@@ -943,7 +943,7 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
   background: #FFFFFF; 
 }
 
-/* Aquí estaba el error de tipeo y la llave sin cerrar */
+/* 👈 Aquí estaba el error de tipeo y la llave sin cerrar */
 [data-theme="light"] .wg-cell.wg-out {
   background: repeating-linear-gradient(
     45deg,

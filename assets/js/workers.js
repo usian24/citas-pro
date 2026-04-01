@@ -869,12 +869,13 @@ window.markWorkerNotifRead = markWorkerNotifRead;
    para evitar colisiones con bucles externos
 ══════════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════════
-   MOTOR DEL HORARIO SEMANAL (MATRIZ DE BLOQUES EXACTOS)
+   MOTOR DEL HORARIO SEMANAL (MATRIZ INTELIGENTE 2.0)
 ══════════════════════════════════════════════════ */
 function renderWorkerWeeklySchedule() {
   var gridContainer = G('wk-weekly-grid');
   if (!gridContainer || !CUR_WORKER) return;
 
+  /* 1. Calcular fechas de la semana */
   var curr = new Date();
   var dowCurr = curr.getDay();
   var diffCurr = curr.getDate() - dowCurr + (dowCurr === 0 ? -6 : 1);
@@ -894,6 +895,7 @@ function renderWorkerWeeklySchedule() {
 
   var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0');
 
+  /* 2. Renderizar Cabecera */
   var html = '<div class="wg-corner"></div>';
   for (var wi2 = 0; wi2 < 7; wi2++) {
     var isTodayCol = weekDatesStr[wi2] === todayStr ? ' wg-today' : '';
@@ -903,6 +905,7 @@ function renderWorkerWeeklySchedule() {
   var horario = getHorarioSeguro();
   var appts   = CUR_WORKER.appointments || [];
   
+  /* ⏱️ GRILLA DE 1 HORA (De 07:00 a 22:00) -> Mucho más corto y limpio */
   var hoursGrid = [];
   for (var h = 7; h <= 22; h++) {
       hoursGrid.push(String(h).padStart(2, '0') + ':00');
@@ -931,9 +934,10 @@ function renderWorkerWeeklySchedule() {
     return false;
   }
 
+  /* 3. Renderizar Filas y Columnas */
   for (var hi = 0; hi < hoursGrid.length; hi++) {
     var timeStr   = hoursGrid[hi];
-    var hourPfx   = timeStr.split(':')[0]; 
+    var hourPfx   = timeStr.split(':')[0]; // Detecta '07', '08', etc.
     
     html += '<div class="wg-time">' + timeStr + '</div>';
 
@@ -942,6 +946,7 @@ function renderWorkerWeeklySchedule() {
       var cellOpen = isCellOpen(di, timeStr);
       html += '<div class="' + (cellOpen ? 'wg-cell' : 'wg-cell wg-out') + '">';
 
+      /* Buscar TODAS las citas que ocurren dentro de esta hora (Ej: 09:00, 09:15, 09:30) */
       var cellAppts = appts.filter(function(a) {
         return a.date === dateStr && (a.time || '').startsWith(hourPfx + ':') && a.status !== 'cancelled';
       });
@@ -953,34 +958,38 @@ function renderWorkerWeeklySchedule() {
           var cClass = colors[(di + hi + idx) % colors.length];
           var pClass = cClass.replace('w-', 'pill-');
           
-          /* 🧠 NUEVA LÓGICA DE BLOQUES EXACTOS */
+          /* 🧠 MATEMÁTICAS PARA POSICIÓN Y ALTURA DINÁMICA */
+          // 1. Obtener duración del servicio (por defecto 30 mins si no lo encuentra)
           var dur = 30; 
           if (CUR_WORKER.services) {
              var sObj = CUR_WORKER.services.filter(function(s) { return s.name === a.svc; })[0];
              if (sObj && sObj.dur) dur = parseInt(sObj.dur);
           }
           
-          // Calculamos los bloques (Ej: 40 mins / 30 = 1.33 -> Se redondea a 2 bloques)
-          var slots = Math.ceil(dur / 30); 
-          
-          // Si es a las :30, top 50%. Si es a las :00, top 0%.
+          // 2. Calcular Offset de bajada (Ej: 09:30 = 30 mins = 50% de bajada)
           var aptMins = timeToMins(a.time); 
           var cellMins = timeToMins(timeStr);
-          var topPercent = (aptMins - cellMins === 30) ? 50 : 0; 
+          var offsetMins = aptMins - cellMins;
+          var topPercent = (offsetMins / 60) * 100;
           
-          // Altura: 1 slot (30min) = 50% de la celda. 2 slots (1hr) = 100% de la celda.
-          var heightPercent = slots * 50; 
+          // 3. Calcular Altura (Ej: 60 mins = 100% de la celda)
+          var heightPercent = (dur / 60) * 100;
+          var extraGaps = Math.floor((dur - 1) / 60); // Ajuste fino para la línea del borde
           
-          var styleStr = 'top: ' + topPercent + '%; height: ' + heightPercent + '%; z-index: ' + (20 + idx) + ';';
+          // Crear la regla CSS en línea
+          var styleStr = 'top: calc(' + topPercent + '% + 4px); ' +
+                         'height: calc(' + heightPercent + '% + ' + extraGaps + 'px - 8px); ' +
+                         'z-index: ' + (20 + idx) + ';'; // z-index dinámico por si se enciman
 
           html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')" style="' + styleStr + '">'
-            + '<div style="display:flex;justify-content:space-between;width:100%;align-items:flex-start;gap:4px;">'
-            + '<div class="wg-appt-name" style="flex:1;white-space:normal;line-height:1.1;">' + san(a.client) + '</div>'
-            + '<div style="font-size:9px;font-weight:800;color:var(--blue);flex-shrink:0;">' + san(a.time) + '</div>'
+            + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
+            + '<div class="wg-appt-name">' + san(a.client) + '</div>'
+            + '<div style="font-size:9px;font-weight:800;color:var(--blue);">' + san(a.time) + '</div>'
             + '</div>'
-            + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;gap:4px;">'
-            + '<span class="' + pClass + '" style="font-size:8px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + san(a.svc) + '</span>'
-            + '<span style="font-size:10px;font-weight:800;flex-shrink:0;">' + money(a.price) + '</span>'
+            + '<div class="wg-appt-phone">' + san(a.phone || '') + '</div>'
+            + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;margin-top:auto;">'
+            + '<span class="' + pClass + '" style="font-size:8px;padding:2px 6px;">' + san(a.svc) + '</span>'
+            + '<span style="font-size:10px;font-weight:800;">' + money(a.price) + '</span>'
             + '</div>'
             + '</div>';
         });
