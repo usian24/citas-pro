@@ -587,7 +587,8 @@
   <div class="bnav">
     <div class="bn on" id="wn-home"      onclick="workerTab('home')">Inicio</div>
     <div class="bn"    id="wn-agenda"    onclick="workerTab('agenda')">Agenda</div>
-    <div class="bn"    id="wn-servicios" onclick="workerTab('servicios')">Servicios</div>
+<div class="bn"    id="wn-semana"    onclick="workerTab('semana')">Semana</div>
+<div class="bn"    id="wn-servicios" onclick="workerTab('servicios')">Servicios</div>
     <div class="bn"    id="wn-galeria"   onclick="workerTab('galeria')">Galería</div>
     <div class="bn"    id="wn-finanzas"  onclick="workerTab('finanzas')">Finanzas</div>
     <div class="bn"    id="wn-horario"   onclick="workerTab('horario')">Horario</div>
@@ -633,6 +634,20 @@
       <div id="wk-agenda-day-label" style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px"></div>
       <div id="wk-agenda-list"></div>
     </div>
+    <div class="pane" id="wp-semana">
+  <div class="sec-hdr">
+    <span class="sec-ttl">Mi Semana</span>
+    <div style="font-size:11px;color:var(--blue);font-weight:700;background:var(--bblue);padding:4px 10px;border-radius:12px;">Desliza ↔</div>
+  </div>
+  <div class="tip-box" style="margin-bottom:12px">Visualiza todos tus turnos de la semana. Las áreas rayadas son horas fuera de tu horario.</div>
+  <div class="card" style="padding:0;overflow:hidden;border-radius:16px;">
+    <div class="weekly-scroll">
+      <div class="weekly-grid" id="wk-weekly-grid">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Cargando horario semanal...</div>
+      </div>
+    </div>
+  </div>
+</div>
     <div class="pane" id="wp-servicios">
       <div class="sec-hdr"><span class="sec-ttl">Mis servicios</span><button class="btn btn-blue btn-sm" style="width:auto" id="wk-add-svc-btn">Añadir +</button></div>
       <div class="tip-box" style="margin-bottom:12px">Los clientes verán estos servicios cuando te elijan.</div>

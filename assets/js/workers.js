@@ -95,7 +95,8 @@ function initWorkerPanel() {
 }
 
 function workerTab(tab) {
-  var tabs = ['home','agenda','servicios','galeria','finanzas','horario','perfil','notif'];
+  /* ✅ 'semana' añadido — el resto igual que el funcional */
+  var tabs = ['home','agenda','semana','servicios','galeria','finanzas','horario','perfil','notif'];
   for (var i = 0; i < tabs.length; i++) {
     var t = tabs[i];
     var pa = G('wp-' + t);
@@ -105,6 +106,7 @@ function workerTab(tab) {
   }
   
   if (tab === 'agenda')   initWorkerAgenda();
+  if (tab === 'semana')   renderWorkerWeeklySchedule(); /* ✅ nuevo */
   if (tab === 'notif')    renderWorkerNotifications();
   if (tab === 'horario')  renderWorkerHorario();
   
@@ -488,18 +490,7 @@ function renderWorkerFinances() {
 }
 
 /* ══════════════════════════════════════════════
-   HORARIO TRABAJADOR  ← AQUÍ ESTABA EL BUG
-   
-   Problema: DEFAULT_HORARIO no tenía las props
-   from1/to1/hasBreak/from2/to2, así que al hacer
-   CUR_WORKER.horario || DEFAULT_HORARIO.map(...)
-   el horario quedaba vacío o sin campos válidos.
-   
-   Fix: definimos un horario seguro DENTRO de esta
-   función. Si el worker ya tiene horario guardado
-   lo usamos tal cual. Si no, creamos uno completo
-   con todos los campos necesarios y lo asignamos
-   a CUR_WORKER.horario para que persista.
+   HORARIO TRABAJADOR
 ══════════════════════════════════════════════ */
 function getHorarioSeguro() {
   var plantilla = [
@@ -512,21 +503,17 @@ function getHorarioSeguro() {
     { day: 'Domingo',   open: false, from1: '09:00', to1: '14:00', hasBreak: false, from2: '',      to2: '' }
   ];
 
-  // Si el worker no tiene horario, asignarle la plantilla completa
   if (!CUR_WORKER.horario || !Array.isArray(CUR_WORKER.horario) || CUR_WORKER.horario.length === 0) {
     CUR_WORKER.horario = plantilla.map(function(h) { return Object.assign({}, h); });
     return CUR_WORKER.horario;
   }
 
-  // Si tiene horario pero faltan propiedades en algún día, rellenarlas
   var diasPlantilla = plantilla.map(function(p) { return p.day; });
   diasPlantilla.forEach(function(dia, idx) {
     var existente = CUR_WORKER.horario.filter(function(h) { return h.day === dia; })[0];
     if (!existente) {
-      // Día faltante: añadirlo
       CUR_WORKER.horario.push(Object.assign({}, plantilla[idx]));
     } else {
-      // Rellenar props que falten sin machacar las que ya existen
       if (existente.from1  === undefined) existente.from1  = plantilla[idx].from1;
       if (existente.to1    === undefined) existente.to1    = plantilla[idx].to1;
       if (existente.from   === undefined) existente.from   = existente.from1;
@@ -537,7 +524,6 @@ function getHorarioSeguro() {
     }
   });
 
-  // Ordenar para que siempre salga en orden L-D
   CUR_WORKER.horario.sort(function(a, b) {
     return diasPlantilla.indexOf(a.day) - diasPlantilla.indexOf(b.day);
   });
@@ -560,8 +546,6 @@ function renderWorkerHorario() {
     var content = '';
     if (day.open) {
       content = '<div style="margin-top:12px">'
-
-        // Turno principal
         + '<div style="display:flex;gap:10px;align-items:center;margin-bottom:12px">'
         + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;text-transform:uppercase">Inicio turno</div>'
         + '<input class="inp" type="time" value="' + san(f1) + '" data-wfrom1="' + i + '" onchange="window._wkHorarioChange(this)" style="padding:9px 12px"/></div>'
@@ -569,14 +553,10 @@ function renderWorkerHorario() {
         + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;text-transform:uppercase">Fin turno</div>'
         + '<input class="inp" type="time" value="' + san(t1) + '" data-wto1="' + i + '" onchange="window._wkHorarioChange(this)" style="padding:9px 12px"/></div>'
         + '</div>'
-
-        // Toggle descanso
         + '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg3);padding:10px 14px;border-radius:12px;margin-bottom:12px">'
         + '<div style="font-size:12px;font-weight:700;color:var(--t2)">Descanso / Almuerzo</div>'
         + '<div class="toggle ' + (hb ? 'on' : '') + '" onclick="window.toggleWorkerBreak(' + i + ')"></div>'
         + '</div>'
-
-        // Segundo turno (solo si hasBreak)
         + (hb
           ? '<div style="display:flex;gap:10px;align-items:center;animation:popIn .3s ease">'
           + '<div style="flex:1"><div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px;text-transform:uppercase">Reinicio turno</div>'
@@ -586,7 +566,6 @@ function renderWorkerHorario() {
           + '<input class="inp" type="time" value="' + san(t2) + '" data-wto2="' + i + '" onchange="window._wkHorarioChange(this)" style="padding:9px 12px"/></div>'
           + '</div>'
           : '')
-
         + '</div>';
     }
 
@@ -600,7 +579,6 @@ function renderWorkerHorario() {
   }).join(''));
 }
 
-// Manejador centralizado de cambios en inputs de horario
 window._wkHorarioChange = function(el) {
   if (!CUR_WORKER || !CUR_WORKER.horario) return;
   var val = el.value;
@@ -735,8 +713,6 @@ function syncWorkerToCloud() {
 ══════════════════════════ */
 function saveWorkerHorario() {
   if (!CUR_WORKER) return;
-  // Los inputs ya actualizan CUR_WORKER.horario en tiempo real
-  // via _wkHorarioChange, así que solo guardamos
   syncWorkerToCloud();
   saveDB();
   toast('Horario guardado', '#22C55E');
@@ -887,3 +863,116 @@ function markWorkerNotifRead(index) {
   renderWorkerNotifBadge();
 }
 window.markWorkerNotifRead = markWorkerNotifRead;
+
+/* ══════════════════════════════════════════════════
+   VISTA SEMANAL — variables con nombres únicos
+   para evitar colisiones con bucles externos
+══════════════════════════════════════════════════ */
+function renderWorkerWeeklySchedule() {
+  var gridContainer = G('wk-weekly-grid');
+  if (!gridContainer || !CUR_WORKER) return;
+
+  /* Calcular lunes de la semana actual */
+  var curr = new Date();
+  var dowCurr = curr.getDay();
+  var diffCurr = curr.getDate() - dowCurr + (dowCurr === 0 ? -6 : 1);
+  var monday = new Date(curr);
+  monday.setDate(diffCurr);
+
+  var weekDates = [];
+  var weekDatesStr = [];
+  var dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+  for (var wi = 0; wi < 7; wi++) {
+    var wd = new Date(monday);
+    wd.setDate(monday.getDate() + wi);
+    weekDates.push(wd);
+    weekDatesStr.push(
+      wd.getFullYear() + '-' +
+      String(wd.getMonth() + 1).padStart(2, '0') + '-' +
+      String(wd.getDate()).padStart(2, '0')
+    );
+  }
+
+  var todayStr =
+    new Date().getFullYear() + '-' +
+    String(new Date().getMonth() + 1).padStart(2, '0') + '-' +
+    String(new Date().getDate()).padStart(2, '0');
+
+  /* Cabecera */
+  var html = '<div class="wg-corner"></div>';
+  for (var wi2 = 0; wi2 < 7; wi2++) {
+    var isTodayCol = weekDatesStr[wi2] === todayStr ? ' wg-today' : '';
+    html += '<div class="wg-header' + isTodayCol + '">' +
+      dayNames[wi2] + '<br><span class="wg-date">' + weekDates[wi2].getDate() + '</span></div>';
+  }
+
+  var horario = getHorarioSeguro();
+  var appts   = CUR_WORKER.appointments || [];
+  var hoursGrid = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00',
+                   '15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00'];
+  var colors = ['w-blue','w-gold','w-green','w-purple'];
+
+  function timeToMins(t) {
+    if (!t) return 0;
+    var pts = t.split(':');
+    return parseInt(pts[0]) * 60 + parseInt(pts[1]);
+  }
+
+  /* ✅ Nombres únicos: hor, dayIdx, tMins — sin colisión con bucles */
+  function isCellOpen(dayIdx, timeStr) {
+    var hor = horario[dayIdx];
+    if (!hor || !hor.open) return false;
+    var tMins = timeToMins(timeStr);
+    var f1m = timeToMins(hor.from1 || hor.from || '09:00');
+    var t1m = timeToMins(hor.to1   || hor.to   || '14:00');
+    if (tMins >= f1m && tMins < t1m) return true;
+    if (hor.hasBreak && hor.from2 && hor.to2) {
+      var f2m = timeToMins(hor.from2);
+      var t2m = timeToMins(hor.to2);
+      if (tMins >= f2m && tMins < t2m) return true;
+    }
+    return false;
+  }
+
+  /* Grid de horas × días — contadores hi y di */
+  for (var hi = 0; hi < hoursGrid.length; hi++) {
+    var timeStr   = hoursGrid[hi];
+    var hourPfx   = timeStr.split(':')[0];
+    html += '<div class="wg-time">' + timeStr + '</div>';
+
+    for (var di = 0; di < 7; di++) {
+      var dateStr  = weekDatesStr[di];
+      var cellOpen = isCellOpen(di, timeStr);
+      html += '<div class="' + (cellOpen ? 'wg-cell' : 'wg-cell wg-out') + '">';
+
+      var cellAppts = appts.filter(function(a) {
+        return a.date === dateStr &&
+               (a.time || '').startsWith(hourPfx + ':') &&
+               a.status !== 'cancelled';
+      });
+
+      if (cellAppts.length > 0) {
+        cellAppts.sort(function(a, b) { return (a.time || '').localeCompare(b.time || ''); });
+        cellAppts.forEach(function(a, idx) {
+          var cClass = colors[(di + hi + idx) % colors.length];
+          var pClass = cClass.replace('w-', 'pill-');
+          html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')">'
+            + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
+            + '<div class="wg-appt-name">' + san(a.client) + '</div>'
+            + '<div style="font-size:9px;font-weight:800;color:var(--blue);">' + san(a.time) + '</div>'
+            + '</div>'
+            + '<div class="wg-appt-phone">' + san(a.phone || '') + '</div>'
+            + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;margin-top:auto;">'
+            + '<span class="' + pClass + '" style="font-size:8px;padding:2px 6px;">' + san(a.svc) + '</span>'
+            + '<span style="font-size:10px;font-weight:800;">' + money(a.price) + '</span>'
+            + '</div>'
+            + '</div>';
+        });
+      }
+      html += '</div>';
+    }
+  }
+
+  gridContainer.innerHTML = html;
+}
