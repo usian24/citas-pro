@@ -84,6 +84,7 @@ function initWorkerPanel() {
   renderWorkerFinances();
   renderWorkerHorario();
   renderWorkerCalendar();
+  renderWorkerWeeklySchedule();
   initWorkerAgenda();
   renderWorkerProfile();
 
@@ -95,7 +96,7 @@ function initWorkerPanel() {
 }
 
 function workerTab(tab) {
-  var tabs = ['home','agenda','servicios','galeria','finanzas','horario','perfil','notif'];
+  var tabs = ['home','agenda','semana','servicios','galeria','finanzas','horario','perfil','notif'];
   for (var i = 0; i < tabs.length; i++) {
     var t = tabs[i];
     var pa = G('wp-' + t);
@@ -105,6 +106,7 @@ function workerTab(tab) {
   }
   
   if (tab === 'agenda')   initWorkerAgenda();
+  if (tab === 'semana')   renderWorkerWeeklySchedule();
   if (tab === 'notif')    renderWorkerNotifications();
   if (tab === 'horario')  renderWorkerHorario();
   
@@ -885,5 +887,122 @@ function markWorkerNotifRead(index) {
   saveDB(); 
   renderWorkerNotifications(); 
   renderWorkerNotifBadge();
+}
+/* ══════════════════════════════════════════════════
+   MOTOR DEL HORARIO SEMANAL (VISTA MATRIZ)
+══════════════════════════════════════════════════ */
+function renderWorkerWeeklySchedule() {
+  var gridContainer = G('wk-weekly-grid');
+  if (!gridContainer || !CUR_WORKER) return;
+
+  // 1. Obtener la fecha del Lunes de la semana actual
+  var curr = new Date();
+  var day = curr.getDay(); // 0 = Dom, 1 = Lun...
+  var diff = curr.getDate() - day + (day === 0 ? -6 : 1);
+  var monday = new Date(curr);
+  monday.setDate(diff);
+
+  var weekDates = [];
+  var weekDatesStr = [];
+  var dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+  // Formato YYYY-MM-DD seguro (sin problemas de zona horaria)
+  for (var i = 0; i < 7; i++) {
+      var d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      weekDates.push(d);
+      var ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      weekDatesStr.push(ds);
+  }
+
+  // 2. Construir la cabecera (Días de la semana)
+  var html = '<div class="wg-corner"></div>';
+  var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0');
+  
+  for (var i = 0; i < 7; i++) {
+      var isToday = (weekDatesStr[i] === todayStr) ? ' wg-today' : '';
+      var dateNum = weekDates[i].getDate();
+      html += '<div class="wg-header' + isToday + '">' + dayNames[i] + '<br><span class="wg-date">' + dateNum + '</span></div>';
+  }
+
+  // 3. Preparar los datos
+  var horario = getHorarioSeguro(); 
+  var appts = CUR_WORKER.appointments || [];
+  
+  // Eje Y: Horas (de 08:00 a 22:00)
+  var hoursGrid = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00'];
+  var colors = ['w-blue', 'w-gold', 'w-green', 'w-purple'];
+
+  function timeToMins(t) {
+      if (!t) return 0;
+      var p = t.split(':');
+      return parseInt(p[0]) * 60 + parseInt(p[1]);
+  }
+
+  function isCellOpen(dayIndex, timeStr) {
+      var h = horario[dayIndex];
+      if (!h || !h.open) return false;
+      
+      var tMins = timeToMins(timeStr);
+      var f1 = timeToMins(h.from1 || h.from || '09:00');
+      var t1 = timeToMins(h.to1 || h.to || '14:00');
+      
+      if (tMins >= f1 && tMins < t1) return true; 
+      
+      if (h.hasBreak && h.from2 && h.to2) {
+          var f2 = timeToMins(h.from2);
+          var t2 = timeToMins(h.to2);
+          if (tMins >= f2 && tMins < t2) return true; 
+      }
+      return false; 
+  }
+
+  // 4. Renderizar la cuadrícula
+  for (var h = 0; h < hoursGrid.length; h++) {
+      var timeStr = hoursGrid[h];
+      var hourPrefix = timeStr.split(':')[0]; 
+      
+      html += '<div class="wg-time">' + timeStr + '</div>';
+
+      for (var d = 0; d < 7; d++) {
+          var dateStr = weekDatesStr[d];
+          var cellOpen = isCellOpen(d, timeStr);
+          var cellClass = cellOpen ? 'wg-cell' : 'wg-cell wg-out';
+          
+          html += '<div class="' + cellClass + '">';
+          
+          // Buscar citas de este día que correspondan a esta hora (Ej: 10:00 o 10:30)
+          var cellAppts = appts.filter(function(a) {
+              return a.date === dateStr && (a.time || '').startsWith(hourPrefix + ':') && a.status !== 'cancelled';
+          });
+
+          if (cellAppts.length > 0) {
+              // Ordenar por minutos exactos para que las citas de 10:00 salgan antes que las de 10:30
+              cellAppts.sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
+
+              cellAppts.forEach(function(a, idx) {
+                  var cClass = colors[(d + h + idx) % colors.length]; 
+                  var pClass = cClass.replace('w-', 'pill-');
+                  
+                  // Reutilizamos tu función openWorkerApptDetail que ya existe y abre tu modal!
+                  html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')">'
+                        + '<div style="display:flex; justify-content:space-between; width:100%; align-items:center;">'
+                        + '<div class="wg-appt-name">' + san(a.client) + '</div>'
+                        + '<div style="font-size:9px; font-weight:800; color:var(--blue);">' + san(a.time) + '</div>'
+                        + '</div>'
+                        + '<div class="wg-appt-phone">' + san(a.phone || '') + '</div>'
+                        + '<div style="display:flex; justify-content:space-between; width:100%; align-items:center; margin-top:auto;">'
+                        + '<span class="' + pClass + '" style="font-size:8px; padding:2px 6px;">' + san(a.svc) + '</span>'
+                        + '<span style="font-size:10px; font-weight:800;">' + money(a.price) + '</span>'
+                        + '</div>'
+                        + '</div>';
+              });
+          }
+          
+          html += '</div>';
+      }
+  }
+
+  gridContainer.innerHTML = html;
 }
 window.markWorkerNotifRead = markWorkerNotifRead;
