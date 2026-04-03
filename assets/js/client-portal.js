@@ -33,9 +33,6 @@ function loadBizDirect(bizId) {
   DB.currentWorker = null;
   initCSEL();
   CSEL.bizId = bizId;
-  
-  // ✅ 1. CAMBIO PRINCIPAL: Vamos al portal de la barbería en lugar del cliente
-  goTo('s-barber-portal');
 
   // --- Llenar datos de la pantalla s-barber-portal ---
   var bpCover = G('bp-cover');
@@ -51,7 +48,7 @@ function loadBizDirect(bizId) {
   T('bp-name', biz.name);
   T('bp-desc', (biz.addr || '') + (biz.city ? ', ' + biz.city : '') + (biz.type ? ' · ' + biz.type : ''));
 
-  // --- Llenar datos de la pantalla s-client (para cuando presione reservar) ---
+  // --- Llenar datos de la pantalla s-client ---
   var coverBg = G('cl-cover-bg');
   if (coverBg) {
     if (biz.cover) coverBg.style.backgroundImage = 'url(' + sanitizeImageDataURL(biz.cover) + ')';
@@ -86,24 +83,27 @@ function loadBizDirect(bizId) {
   var chSocials = G('ch-socials');
   if (chSocials) chSocials.innerHTML = socialsHtml;
 
-  clGoStep(1);
-  window.scrollTo(0, 0);
-
-  // ✅ 2. ASIGNAR ACCIONES A LOS BOTONES DEL PORTAL DE BARBERÍA
+  // ✅ 1. PREPARAR EL CLIENTE SÓLO SI HACE CLIC EN EL BOTÓN
   var btnBook = G('bp-btn-book');
   if (btnBook) {
     btnBook.onclick = function() {
-      goTo('s-client'); // Al hacer clic, enviamos al cliente a agendar
+      clGoStep(1); // Preparamos el formulario justo antes de mostrarlo
+      goTo('s-client'); 
+      window.scrollTo(0, 0);
     };
   }
 
   var btnShop = G('bp-btn-shop');
   if (btnShop) {
     btnShop.onclick = function() {
-      T('bs-name', biz.name); // Ponemos el nombre de la barbería en la tienda
-      goTo('s-barber-shop'); // Al hacer clic, enviamos a la tienda en construcción
+      T('bs-name', biz.name);
+      goTo('s-barber-shop'); 
     };
   }
+
+  // ✅ 2. MOSTRAR EL PORTAL DE LA BARBERÍA AL FINAL (Evita el parpadeo)
+  goTo('s-barber-portal');
+  window.scrollTo(0, 0);
 }
 
 function clGoStep(n) {
