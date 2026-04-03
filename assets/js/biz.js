@@ -882,13 +882,17 @@ function generateTimelineApptHTML(a, worker, startHour, pxPerMin, idx, clickFn) 
   }
 
   return '<div onclick="' + clickFn + '(\'' + a.id + '\')" style="'
-    + 'position:absolute;top:' + top + 'px;height:' + height + 'px;'
-    + 'left:4px;right:4px;'
+    + 'position:absolute;top:' + (top + 2) + 'px;height:' + (height - 4) + 'px;'
+    + 'left:5px;right:5px;'
     + 'background:' + st.bg + ';'
     + 'border-left:4px solid ' + st.border + ';'
+    + 'border-top:1px solid ' + st.border + '99;'
+    + 'border-right:1px solid ' + st.border + '66;'
+    + 'border-bottom:1px solid ' + st.border + '66;'
     + 'border-radius:0 8px 8px 0;'
     + 'padding:5px 8px;cursor:pointer;overflow:hidden;'
-    + 'box-shadow:0 2px 8px rgba(0,0,0,0.25);z-index:2;">'
+    + 'box-shadow:0 3px 10px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.08);'
+    + 'z-index:2;">'
     + inner
     + '</div>';
 }
