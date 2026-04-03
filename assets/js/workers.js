@@ -106,7 +106,6 @@ function workerTab(tab) {
   }
   
   if (tab === 'agenda')   initWorkerAgenda();
-  if (tab === 'semana')   renderWorkerWeeklySchedule(); /* ✅ nuevo */
   if (tab === 'notif')    renderWorkerNotifications();
   if (tab === 'horario')  renderWorkerHorario();
   
@@ -863,140 +862,54 @@ function markWorkerNotifRead(index) {
   renderWorkerNotifBadge();
 }
 window.markWorkerNotifRead = markWorkerNotifRead;
-
-/* ══════════════════════════════════════════════════
-   VISTA SEMANAL — variables con nombres únicos
-   para evitar colisiones con bucles externos
-══════════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════════
-   MOTOR DEL HORARIO SEMANAL (MATRIZ INTELIGENTE 2.0)
-══════════════════════════════════════════════════ */
-function renderWorkerWeeklySchedule() {
-  var gridContainer = G('wk-weekly-grid');
-  if (!gridContainer || !CUR_WORKER) return;
-
-  /* 1. Calcular fechas de la semana */
-  var curr = new Date();
-  var dowCurr = curr.getDay();
-  var diffCurr = curr.getDate() - dowCurr + (dowCurr === 0 ? -6 : 1);
-  var monday = new Date(curr);
-  monday.setDate(diffCurr);
-
-  var weekDates = [];
-  var weekDatesStr = [];
-  var dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-
-  for (var wi = 0; wi < 7; wi++) {
-    var wd = new Date(monday);
-    wd.setDate(monday.getDate() + wi);
-    weekDates.push(wd);
-    weekDatesStr.push(wd.getFullYear() + '-' + String(wd.getMonth() + 1).padStart(2, '0') + '-' + String(wd.getDate()).padStart(2, '0'));
-  }
-
-  var todayStr = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0') + '-' + String(new Date().getDate()).padStart(2, '0');
-
-  /* 2. Renderizar Cabecera */
-  var html = '<div class="wg-corner"></div>';
-  for (var wi2 = 0; wi2 < 7; wi2++) {
-    var isTodayCol = weekDatesStr[wi2] === todayStr ? ' wg-today' : '';
-    html += '<div class="wg-header' + isTodayCol + '">' + dayNames[wi2] + '<br><span class="wg-date">' + weekDates[wi2].getDate() + '</span></div>';
-  }
-
-  var horario = getHorarioSeguro();
-  var appts   = CUR_WORKER.appointments || [];
+function initWorkerAgenda() {
+  if (!CUR_WORKER) return;
+  var dayAppts = (CUR_WORKER.appointments || [])
+      .filter(function(a){ return a.date === workerCalDay; })
+      .sort(function(a, b){ return (a.time || '').localeCompare(b.time || ''); });
   
-  /* ⏱️ GRILLA DE 1 HORA (De 07:00 a 22:00) -> Mucho más corto y limpio */
-  var hoursGrid = [];
-  for (var h = 7; h <= 22; h++) {
-      hoursGrid.push(String(h).padStart(2, '0') + ':00');
-  }
+  var parts = workerCalDay.split('-');
+  var days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var d = new Date(workerCalDay + 'T12:00');
   
-  var colors = ['w-blue','w-gold','w-green','w-purple'];
+  T('wk-agenda-day-label', days[d.getDay()] + ' ' + parseInt(parts[2]) + ' de ' + MONTHS[parseInt(parts[1])-1] + ' de ' + parts[0]);
+  
+  H('wk-agenda-list', dayAppts.length ? dayAppts.map(function(a){ return workerApptRowH(a); }).join('') : '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">Sin citas en lista para este día</div></div>');
 
-  function timeToMins(t) {
-    if (!t) return 0;
-    var pts = t.split(':');
-    return parseInt(pts[0]) * 60 + parseInt(pts[1]);
+  // ✅ NUEVO: Llama al calendario visual
+  renderWorkerDailyTimeline(workerCalDay);
+}
+
+// ✅ NUEVA FUNCIÓN PARA EL TIMELINE DEL TRABAJADOR (UNA SOLA COLUMNA SIN FOTO)
+function renderWorkerDailyTimeline(dateStr) {
+  var container = G('wk-daily-timeline');
+  if (!container || !CUR_WORKER) return;
+
+  var startHour = 7;
+  var endHour = 22;
+  var pxPerMin = 1.5; 
+  var totalHeight = (endHour - startHour) * 60 * pxPerMin;
+
+  var html = '<div class="tl-wrap"><div class="tl-grid">';
+
+  // 1. Columna de horas
+  html += '<div class="tl-times"><div class="tl-body" style="height:'+totalHeight+'px; background:none;">';
+  for(var h = startHour; h <= endHour; h++) {
+    var top = (h - startHour) * 60 * pxPerMin;
+    var timeStr = String(h).padStart(2,'0') + ':00';
+    html += '<div class="tl-time-lbl" style="top:'+top+'px">'+timeStr+'</div>';
   }
+  html += '</div></div>';
 
-  function isCellOpen(dayIdx, timeStr) {
-    var hor = horario[dayIdx];
-    if (!hor || !hor.open) return false;
-    var tMins = timeToMins(timeStr);
-    var f1m = timeToMins(hor.from1 || hor.from || '09:00');
-    var t1m = timeToMins(hor.to1   || hor.to   || '14:00');
-    if (tMins >= f1m && tMins < t1m) return true;
-    if (hor.hasBreak && hor.from2 && hor.to2) {
-      var f2m = timeToMins(hor.from2);
-      var t2m = timeToMins(hor.to2);
-      if (tMins >= f2m && tMins < t2m) return true;
-    }
-    return false;
-  }
+  // 2. Columna única del trabajador (SIN FOTO, SIN CABECERA EXTRAÑA)
+  html += '<div class="tl-col">';
+  html += '<div class="tl-body" style="height:'+totalHeight+'px; background-size: 100% '+(60*pxPerMin)+'px;">';
 
-  /* 3. Renderizar Filas y Columnas */
-  for (var hi = 0; hi < hoursGrid.length; hi++) {
-    var timeStr   = hoursGrid[hi];
-    var hourPfx   = timeStr.split(':')[0]; // Detecta '07', '08', etc.
-    
-    html += '<div class="wg-time">' + timeStr + '</div>';
+  var wAppts = (CUR_WORKER.appointments || []).filter(function(a){ return a.date === dateStr && a.status !== 'cancelled'; });
+  wAppts.forEach(function(a, i) { html += generateTimelineApptHTML(a, CUR_WORKER, startHour, pxPerMin, i, 'openWorkerApptDetail'); });
 
-    for (var di = 0; di < 7; di++) {
-      var dateStr  = weekDatesStr[di];
-      var cellOpen = isCellOpen(di, timeStr);
-      html += '<div class="' + (cellOpen ? 'wg-cell' : 'wg-cell wg-out') + '">';
-
-      /* Buscar TODAS las citas que ocurren dentro de esta hora (Ej: 09:00, 09:15, 09:30) */
-      var cellAppts = appts.filter(function(a) {
-        return a.date === dateStr && (a.time || '').startsWith(hourPfx + ':') && a.status !== 'cancelled';
-      });
-
-      if (cellAppts.length > 0) {
-        cellAppts.sort(function(a, b) { return (a.time || '').localeCompare(b.time || ''); });
-        
-        cellAppts.forEach(function(a, idx) {
-          var cClass = colors[(di + hi + idx) % colors.length];
-          var pClass = cClass.replace('w-', 'pill-');
-          
-          /* 🧠 MATEMÁTICAS PARA POSICIÓN Y ALTURA DINÁMICA */
-          // 1. Obtener duración del servicio (por defecto 30 mins si no lo encuentra)
-          var dur = 30; 
-          if (CUR_WORKER.services) {
-             var sObj = CUR_WORKER.services.filter(function(s) { return s.name === a.svc; })[0];
-             if (sObj && sObj.dur) dur = parseInt(sObj.dur);
-          }
-          
-          // 2. Calcular Offset de bajada (Ej: 09:30 = 30 mins = 50% de bajada)
-          var aptMins = timeToMins(a.time); 
-          var cellMins = timeToMins(timeStr);
-          var offsetMins = aptMins - cellMins;
-          var topPercent = (offsetMins / 60) * 100;
-          
-          // 3. Calcular Altura (Ej: 60 mins = 100% de la celda)
-          var heightPercent = (dur / 60) * 100;
-          var extraGaps = Math.floor((dur - 1) / 60); // Ajuste fino para la línea del borde
-          
-          // Crear la regla CSS en línea
-          var styleStr = 'top: calc(' + topPercent + '% + 4px); ' +
-                         'height: calc(' + heightPercent + '% + ' + extraGaps + 'px - 8px); ' +
-                         'z-index: ' + (20 + idx) + ';'; // z-index dinámico por si se enciman
-
-          html += '<div class="wg-appt ' + cClass + '" onclick="openWorkerApptDetail(\'' + sanitizeText(a.id) + '\')" style="' + styleStr + '">'
-            + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;">'
-            + '<div class="wg-appt-name">' + san(a.client) + '</div>'
-            + '<div style="font-size:9px;font-weight:800;color:var(--blue);">' + san(a.time) + '</div>'
-            + '</div>'
-            + '<div class="wg-appt-phone">' + san(a.phone || '') + '</div>'
-            + '<div style="display:flex;justify-content:space-between;width:100%;align-items:center;margin-top:auto;">'
-            + '<span class="' + pClass + '" style="font-size:8px;padding:2px 6px;">' + san(a.svc) + '</span>'
-            + '<span style="font-size:10px;font-weight:800;">' + money(a.price) + '</span>'
-            + '</div>'
-            + '</div>';
-        });
-      }
-      html += '</div>';
-    }
-  }
-
-  gridContainer.innerHTML = html;
+  html += '</div></div>';
+  html += '</div></div>';
+  
+  container.innerHTML = html;
 }

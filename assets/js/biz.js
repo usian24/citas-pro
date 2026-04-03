@@ -856,8 +856,79 @@ function initAgenda() {
   var parts=selectedCalDay.split('-'), days=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   var d=new Date(selectedCalDay+'T12:00');
   T('agenda-day-label',days[d.getDay()]+' '+parseInt(parts[2])+' de '+MONTHS[parseInt(parts[1])-1]+' de '+parts[0]);
+  
   H('biz-agenda-list',dayAppts.length?dayAppts.map(function(a){ return apptRowH(a); }).join('')
-    :'<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">Sin citas para este día</div></div>');
+    :'<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">Sin citas en lista para este día</div></div>');
+
+  // ✅ NUEVO: Llama al calendario visual
+  renderBizDailyTimeline(selectedCalDay);
+}
+
+// ✅ NUEVAS FUNCIONES PARA EL TIMELINE DEL DUEÑO (MULTI-COLUMNA)
+function renderBizDailyTimeline(dateStr) {
+  var container = G('biz-daily-timeline');
+  if (!container || !CUR) return;
+
+  var startHour = 7; // Inicia a las 7 AM
+  var endHour = 22;  // Termina a las 10 PM
+  var pxPerMin = 1.5; // Escala: 1.5px por minuto (90px por hora)
+  var totalHeight = (endHour - startHour) * 60 * pxPerMin;
+  
+  var workers = CUR.workers || [];
+  if(workers.length === 0) { container.innerHTML = ''; return; }
+
+  var html = '<div class="tl-wrap"><div class="tl-grid">';
+
+  // 1. Columna de horas
+  html += '<div class="tl-times"><div class="tl-header"></div><div class="tl-body" style="height:'+totalHeight+'px; background:none;">';
+  for(var h = startHour; h <= endHour; h++) {
+    var top = (h - startHour) * 60 * pxPerMin;
+    var timeStr = String(h).padStart(2,'0') + ':00';
+    html += '<div class="tl-time-lbl" style="top:'+top+'px">'+timeStr+'</div>';
+  }
+  html += '</div></div>';
+
+  // 2. Columnas de Trabajadores (CON FOTO Y NOMBRE)
+  workers.forEach(function(w, wIdx) {
+    var av = w.photo ? '<img src="'+sanitizeImageDataURL(w.photo)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover">' : '<div style="width:28px;height:28px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px">'+(w.name.charAt(0))+'</div>';
+
+    html += '<div class="tl-col">';
+    html += '<div class="tl-header">' + av + '<div style="font-size:10px;font-weight:700;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 4px;">'+san(w.name)+'</div></div>';
+    html += '<div class="tl-body" style="height:'+totalHeight+'px; background-size: 100% '+(60*pxPerMin)+'px;">';
+
+    var wAppts = (w.appointments || []).filter(function(a){ return a.date === dateStr && a.status !== 'cancelled'; });
+    wAppts.forEach(function(a, i) { html += generateTimelineApptHTML(a, w, startHour, pxPerMin, i, 'openApptDetail'); });
+
+    html += '</div></div>';
+  });
+
+  html += '</div></div>';
+  container.innerHTML = html;
+}
+
+// Helper para dibujar los cuadritos
+function generateTimelineApptHTML(a, worker, startHour, pxPerMin, idx, clickFn) {
+  if(!a.time) return '';
+  var pts = a.time.split(':').map(Number);
+  var minsFromStart = (pts[0] * 60 + pts[1]) - (startHour * 60);
+  if (minsFromStart < 0) return ''; 
+
+  var dur = 30; // Por defecto 30 min
+  if (worker && worker.services) {
+    var sObj = worker.services.find(function(s){ return s.name === a.svc; });
+    if (sObj && sObj.dur) dur = parseInt(sObj.dur);
+  }
+
+  var top = minsFromStart * pxPerMin;
+  var height = (dur * pxPerMin) - 2; // -2px para borde
+
+  var colors = ['w-blue','w-gold','w-green','w-purple'];
+  var cClass = colors[idx % colors.length];
+
+  return '<div class="tl-appt '+cClass+'" style="top:'+top+'px; height:'+height+'px;" onclick="'+clickFn+'(\''+a.id+'\')">'
+       + '<div class="tl-appt-title">'+san(a.client)+'</div>'
+       + '<div class="tl-appt-sub">'+san(a.time)+' · '+san(a.svc)+'</div>'
+       + '</div>';
 }
 
 /* ══════════════════════════

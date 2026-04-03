@@ -822,137 +822,61 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
   box-shadow: none !important;
 }
 /* ══════════════════════════════════════════════════
-   VISTA SEMANAL (WORKER)
-══════════════════════════════════════════════════ */
-.weekly-scroll {
+   LÍNEA DE TIEMPO DIARIA (AGENDA)
+   ══════════════════════════════════════════════════ */
+.tl-wrap {
+  background: #151A28; /* Un fondo gris/azulado más claro que resalta en modo oscuro */
+  border: 1px solid var(--b);
+  border-radius: 16px;
   overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
+  margin-top: 16px;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+}
+[data-theme="light"] .tl-wrap {
+  background: #FFFFFF;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.03);
 }
 
-.weekly-grid {
-  display: grid;
-  grid-template-columns: 55px repeat(7, 130px);
-  grid-auto-rows: 100px; /* 👈 Ajustado a 100px para que las citas de 30min se vean bien */
-  background: var(--b);
-  gap: 1px;
+.tl-grid { display: flex; min-width: max-content; position: relative; }
+
+.tl-times {
+  width: 60px; flex-shrink: 0; position: relative; 
+  border-right: 1px solid var(--b); background: rgba(0,0,0,0.1);
+}
+[data-theme="light"] .tl-times { background: #F8FAFC; }
+
+.tl-time-lbl {
+  position: absolute; right: 8px; font-size: 11px; color: var(--muted);
+  font-weight: 700; transform: translateY(-50%);
 }
 
-.wg-corner {
-  background: var(--card);
-  position: sticky;
-  left: 0;
-  z-index: 15;
+.tl-col {
+  flex: 1; min-width: 160px; position: relative; border-right: 1px solid var(--b);
+}
+.tl-col:last-child { border-right: none; }
+
+.tl-header {
+  height: 60px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; border-bottom: 1px solid var(--b);
+  position: sticky; top: 0; background: #1A2133; z-index: 10;
+}
+[data-theme="light"] .tl-header { background: #F1F5F9; }
+
+.tl-body {
+  position: relative; 
+  /* La altura se calcula en JS, pero el fondo punteado va aquí */
+  background: repeating-linear-gradient(to bottom, transparent, transparent 89px, var(--b) 90px);
 }
 
-.wg-header {
-  background: var(--card);
-  text-align: center;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--t2);
-  padding: 12px 0;
-  text-transform: uppercase;
+.tl-appt {
+  position: absolute; left: 4px; right: 4px; border-radius: 8px;
+  padding: 6px 8px; font-size: 11px; overflow: hidden;
+  border-left: 4px solid; cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.1s;
 }
-
-.wg-date {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-.wg-today { color: var(--blue); }
-.wg-today .wg-date { color: var(--blue3); }
-
-.wg-time {
-  background: var(--card);
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 700;
-  text-align: center;
-  padding-top: 8px;
-  position: sticky;
-  left: 0;
-  z-index: 10;
-  border-right: 1px solid var(--b);
-}
-
-.wg-cell {
-  background: var(--card);
-  position: relative;
-  transition: background 0.2s;
-}
-
-.wg-cell.wg-out {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--bg),
-    var(--bg) 10px,
-    var(--card) 10px,
-    var(--card) 20px
-  );
-  opacity: 0.6;
-}
-
-.wg-appt {
-  position: absolute;
-  left: 4px; right: 4px;
-  border-radius: 10px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  overflow: hidden;
-  border-left: 4px solid;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  transition: transform 0.15s;
-}
-
-.wg-appt:active { transform: scale(0.96); }
-
-.wg-appt-name {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 2px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  width: 100%;
-}
-
-.wg-appt-phone {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-
-/* Colores de citas */
-.w-blue   { background: rgba(74,127,212,.15);  border-left-color: var(--blue); }
-.w-gold   { background: rgba(245,158,11,.15);  border-left-color: var(--gold); }
-.w-green  { background: rgba(34,197,94,.15);   border-left-color: var(--green); }
-.w-purple { background: rgba(167,139,250,.15); border-left-color: var(--purple); }
-
-/* Modo light */
-[data-theme="light"] .wg-time,
-[data-theme="light"] .wg-header,
-[data-theme="light"] .wg-corner { 
-  background: #FFFFFF; 
-}
-
-/* 👈 Aquí estaba el error de tipeo y la llave sin cerrar */
-[data-theme="light"] .wg-cell.wg-out {
-  background: repeating-linear-gradient(
-    45deg,
-    #F1F5F9, 
-    #F1F5F9 10px,
-    #FFFFFF 10px, 
-    #FFFFFF 20px
-  );
-}
+.tl-appt:active { transform: scale(0.97); }
+.tl-appt-title { font-weight: 800; color: var(--text); margin-bottom: 2px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.tl-appt-sub { font-size: 10px; color: var(--muted); font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 /* ══════════════════════════════════════════════════
    🖥️ OPTIMIZACIÓN "BRUTAL" DEL PORTAL DE INICIO (PC/LAPTOP)
    ══════════════════════════════════════════════════ */
