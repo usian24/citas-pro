@@ -886,69 +886,57 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
   background: repeating-linear-gradient(45deg, rgba(0,0,0,0.04), rgba(0,0,0,0.04) 10px, transparent 10px, transparent 20px);
 }
 /* ══════════════════════════════════════════════════
-   🖥️ OPTIMIZACIÓN "BRUTAL" DEL PORTAL DE INICIO (PC/LAPTOP)
+   🖥️ DASHBOARD DE AGENDA PARA PC Y LAPTOPS
    ══════════════════════════════════════════════════ */
-@media (min-width: 768px) {
-  /* 1. Centramos todo verticalmente en pantallas grandes */
-  #s-portal.scr.on {
-    display: flex !important;
-    justify-content: center !important;
-    padding-top: 0 !important; /* Quitamos el padding del móvil */
+@media (min-width: 1024px) {
+  /* 1. Convertimos los paneles de agenda en una grilla de 2 columnas */
+  #bp-agenda, #wp-agenda {
+    display: grid !important;
+    grid-template-columns: 360px 1fr; /* Izquierda: 360px, Derecha: el resto del espacio */
+    grid-template-rows: auto auto 1fr;
+    gap: 0 32px; /* Separación entre el calendario y la línea de tiempo */
+    align-items: start;
+    max-width: 1200px;
+    margin: 0 auto;
   }
   
-  /* Ajuste visual para que el bloque no quede tan abajo */
-  #s-portal > div:nth-child(3) {
-    padding-top: 0 !important;
-    margin-top: -40px !important; 
+  /* 2. La cabecera ("Agenda" + Botón Nueva Cita) ocupa todo el ancho arriba */
+  #bp-agenda > .sec-hdr, #wp-agenda > .sec-hdr {
+    grid-column: 1 / -1;
+    margin-bottom: 24px;
   }
-
-  /* 2. Título mucho más imponente para PC */
-  #s-portal .d1 {
-    font-size: 78px !important;
-    letter-spacing: 4px !important;
+  
+  /* 3. El Calendario se queda a la izquierda y fijo (Sticky) */
+  #bp-agenda > .card, #wp-agenda > .card {
+    grid-column: 1 / 2;
+    grid-row: 2 / 4;
+    position: sticky;
+    top: 90px; /* Se queda pegado a esta distancia del techo al hacer scroll */
+    margin-bottom: 0;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important; /* Sombra más pronunciada para resaltar */
+  }
+  
+  /* 4. La etiqueta de la fecha ("MIÉRCOLES 22...") se va a la derecha arriba */
+  #agenda-day-label, #wk-agenda-day-label {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+    text-align: left !important; /* La alineamos a la izquierda para el diseño de PC */
+    font-size: 18px !important;  /* Más grande para que parezca un título de sección */
     margin-bottom: 16px !important;
-  }
-  #s-portal .d2 {
-    font-size: 18px !important;
-    max-width: 500px !important;
-  }
-
-  /* 3. Buscador más ancho y cómodo */
-  .portal-search-wrap {
-    max-width: 650px !important; /* Pasamos de 380px a 650px */
-  }
-  .portal-search-box {
-    padding: 16px 24px !important; /* Un poco más grueso */
-  }
-  .portal-search-box input {
-    font-size: 16px !important;
-  }
-
-  /* 4. Carrusel de "APP PARA" más ancho para aprovechar el espacio */
-  #s-portal .d4 > div {
-    max-width: 650px !important;
-  }
-
-  /* 5. ⭐ LA MAGIA: Botones lado a lado en lugar de apilados */
-  #s-portal .d5 {
-    max-width: 650px !important;
-    flex-direction: row !important; /* Cambia la columna por una fila */
-  }
-  #s-portal .d5 button {
-    flex: 1; /* Hace que ambos botones midan exactamente lo mismo (50% y 50%) */
-    padding: 18px 24px !important;
-  }
-
-  /* 6. Tarjeta de oferta (30 Días Gratis) más ancha */
-  #s-portal .d6 {
-    max-width: 650px !important;
+    margin-top: 0;
+    border-bottom: 1px solid var(--b);
+    padding-bottom: 12px;
   }
   
-  /* 7. El brillo azul de fondo lo hacemos más expansivo */
-  #s-portal > div:first-child {
-    width: 100% !important;
-    max-width: 1200px !important;
-    height: 400px !important;
-    opacity: 0.8;
+  /* 5. La línea de tiempo y los filtros se acomodan a la derecha, debajo de la fecha */
+  #biz-agenda-list, #wk-agenda-list, 
+  #biz-daily-timeline, #wk-daily-timeline {
+    grid-column: 2 / 3;
+    grid-row: 3 / 4;
+  }
+  
+  /* 6. Evitar que la grilla del calendario interno se estire de más */
+  .cal-grid {
+    max-width: 100%;
   }
 }
