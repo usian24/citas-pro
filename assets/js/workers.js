@@ -95,7 +95,6 @@ function initWorkerPanel() {
 }
 
 function workerTab(tab) {
-  /* ✅ 'semana' añadido — el resto igual que el funcional */
   var tabs = ['home','agenda','semana','servicios','galeria','finanzas','horario','perfil','notif'];
   for (var i = 0; i < tabs.length; i++) {
     var t = tabs[i];
@@ -270,25 +269,6 @@ function prevWorkerMonth() {
 function nextWorkerMonth() { 
   workerCalDate.setMonth(workerCalDate.getMonth() + 1); 
   renderWorkerCalendar(); 
-}
-
-function initWorkerAgenda() {
-  if (!CUR_WORKER) return;
-  var dayAppts = (CUR_WORKER.appointments || [])
-      .filter(function(a){ return a.date === workerCalDay; })
-      .sort(function(a, b){ return (a.time || '').localeCompare(b.time || ''); });
-  
-  var parts = workerCalDay.split('-');
-  var days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  var d = new Date(workerCalDay + 'T12:00');
-  
-  T('wk-agenda-day-label', days[d.getDay()] + ' ' + parseInt(parts[2]) + ' de ' + MONTHS[parseInt(parts[1])-1] + ' de ' + parts[0]);
-  
-  if (dayAppts.length) {
-      H('wk-agenda-list', dayAppts.map(function(a){ return workerApptRowH(a); }).join(''));
-  } else {
-      H('wk-agenda-list', '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">Sin citas para este día</div></div>');
-  }
 }
 
 /* ══════════════════════════
@@ -862,25 +842,30 @@ function markWorkerNotifRead(index) {
   renderWorkerNotifBadge();
 }
 window.markWorkerNotifRead = markWorkerNotifRead;
+
+/* ══════════════════════════════════════════════
+   AGENDA TRABAJADOR Y CALENDARIO VISUAL
+══════════════════════════════════════════════ */
 function initWorkerAgenda() {
   if (!CUR_WORKER) return;
-  var dayAppts = (CUR_WORKER.appointments || [])
-      .filter(function(a){ return a.date === workerCalDay; })
-      .sort(function(a, b){ return (a.time || '').localeCompare(b.time || ''); });
   
   var parts = workerCalDay.split('-');
   var days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   var d = new Date(workerCalDay + 'T12:00');
   
-  T('wk-agenda-day-label', days[d.getDay()] + ' ' + parseInt(parts[2]) + ' de ' + MONTHS[parseInt(parts[1])-1] + ' de ' + parts[0]);
+  var lbl = G('wk-agenda-day-label');
+  if (lbl) {
+    lbl.textContent = days[d.getDay()] + ' ' + parseInt(parts[2]) + ' de ' + MONTHS[parseInt(parts[1])-1] + ' de ' + parts[0];
+    lbl.style.textAlign = 'center';
+    lbl.style.fontSize = '14px';
+  }
   
-  H('wk-agenda-list', dayAppts.length ? dayAppts.map(function(a){ return workerApptRowH(a); }).join('') : '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">Sin citas en lista para este día</div></div>');
+  var listEl = G('wk-agenda-list');
+  if (listEl) listEl.innerHTML = ''; 
 
-  // ✅ NUEVO: Llama al calendario visual
   renderWorkerDailyTimeline(workerCalDay);
 }
 
-// ✅ NUEVA FUNCIÓN PARA EL TIMELINE DEL TRABAJADOR (UNA SOLA COLUMNA SIN FOTO)
 function renderWorkerDailyTimeline(dateStr) {
   var container = G('wk-daily-timeline');
   if (!container || !CUR_WORKER) return;
@@ -893,7 +878,7 @@ function renderWorkerDailyTimeline(dateStr) {
   var html = '<div class="tl-wrap"><div class="tl-grid">';
 
   // 1. Columna de horas
-  html += '<div class="tl-times"><div class="tl-body" style="height:'+totalHeight+'px; background:none;">';
+  html += '<div class="tl-times"><div class="tl-header"></div><div class="tl-body" style="height:'+totalHeight+'px; background:none;">';
   for(var h = startHour; h <= endHour; h++) {
     var top = (h - startHour) * 60 * pxPerMin;
     var timeStr = String(h).padStart(2,'0') + ':00';
@@ -901,12 +886,25 @@ function renderWorkerDailyTimeline(dateStr) {
   }
   html += '</div></div>';
 
-  // 2. Columna única del trabajador (SIN FOTO, SIN CABECERA EXTRAÑA)
+  // 2. Columna única del trabajador
   html += '<div class="tl-col">';
+  
+  // ✅ AÑADIDO: Un header para que se alinee horizontalmente con las horas
+  html += '<div class="tl-header"><div style="font-size:12px;font-weight:800;color:var(--blue)">Mi Agenda</div></div>';
+  
   html += '<div class="tl-body" style="height:'+totalHeight+'px; background-size: 100% '+(60*pxPerMin)+'px;">';
 
+  // ✅ APLICAR RAYAS DE HORARIO BLOQUEADO
+  if (typeof generateBlockedTimeHTML === 'function') {
+    html += generateBlockedTimeHTML(CUR_WORKER, dateStr, startHour, endHour, pxPerMin);
+  }
+
   var wAppts = (CUR_WORKER.appointments || []).filter(function(a){ return a.date === dateStr && a.status !== 'cancelled'; });
-  wAppts.forEach(function(a, i) { html += generateTimelineApptHTML(a, CUR_WORKER, startHour, pxPerMin, i, 'openWorkerApptDetail'); });
+  wAppts.forEach(function(a, i) { 
+    if (typeof generateTimelineApptHTML === 'function') {
+      html += generateTimelineApptHTML(a, CUR_WORKER, startHour, pxPerMin, i, 'openWorkerApptDetail'); 
+    }
+  });
 
   html += '</div></div>';
   html += '</div></div>';

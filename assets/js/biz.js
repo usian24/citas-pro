@@ -47,7 +47,7 @@ function rmGoStep2() {
   if (DB.businesses.filter(function(b) { return (b.email||'').toLowerCase() === email; })[0]) { showErr('rm-err1', 'Este correo ya tiene una cuenta registrada. Inicia sesión.'); return; }
   _rmData = { email: email, phone: phone, pass: pass };
   _rmCode = String(Math.floor(100000 + Math.random() * 900000));
-  // ✅ CORREGIDO: ruta limpia sin doble barra
+  
   fetch('/api/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -94,7 +94,6 @@ function rmVerify() {
 function rmResend() {
   if (!_rmData.email) return;
   _rmCode = String(Math.floor(100000 + Math.random() * 900000));
-  // ✅ CORREGIDO: ruta limpia
   fetch('/api/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -339,20 +338,16 @@ function finalizeBizReg() {
   if (DB.businesses.filter(function(b){ return (b.email||'').toLowerCase()===REG.email.toLowerCase(); })[0]) { toast('Email ya registrado','#EF4444'); showRegStep(2); return; }
   var slug = (REG.name||'negocio').toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').slice(0,20)+'-'+Date.now().toString(36);
   
-  // NUEVO: Cálculo automático de los 30 días de prueba
   var hoy = new Date();
   var trialEnd = new Date(hoy);
   trialEnd.setDate(trialEnd.getDate() + 30); 
-  // --------------------------------------------------------
 
   var biz = {
     id:slug, name:REG.name, owner:REG.owner, email:REG.email, pass:REG.pass,
     phone:REG.phone, addr:REG.addr, city:REG.city, country:REG.country,
     type:REG.type, teamSize:REG.teamSize,
-    // "join_date" para coincidir con Supabase y "expires_at" para el límite
     join_date: hoy.toISOString().split('T')[0],
-    expires_at: trialEnd.toISOString().split('T')[0], // <- INYECCIÓN DE LA FECHA LÍMITE
-    // Redes sociales y demás configuraciones
+    expires_at: trialEnd.toISOString().split('T')[0], 
     plan:'trial', desc:'', logo:REG.logo||'', photos:REG.photos||[], insta:'', facebook:'', x_url:'', cover:REG.cover||'',
     horario:DEFAULT_HORARIO.map(function(h){ return Object.assign({},h); }),
     workers: [], 
@@ -428,13 +423,11 @@ function initBizPanel() {
   renderBizWorkers();
   renderGallery();
   
-  // Llamada a finanzas antiguas por si acaso
   renderBizFinances();
   
   renderCalendar();
   initAgenda();
 
-  // Llamadas al nuevo script de Real Data para el Home (si existe)
   if (typeof renderBizHomeStats === 'function') {
       renderBizHomeStats();
   }
@@ -457,11 +450,9 @@ function initBizPanel() {
   var pfAd=G('pf-addr'); if(pfAd) pfAd.value=CUR.addr||'';
   var pfPh=G('pf-phone'); if(pfPh) pfPh.value=CUR.phone||'';
   
-  // AQUÍ CARGAMOS LAS REDES SOCIALES EN LOS INPUTS ↓
   var pfIn=G('pf-insta'); if(pfIn) pfIn.value=CUR.insta||'';
   var pfFb=G('pf-facebook'); if(pfFb) pfFb.value=CUR.facebook||'';
   var pfX=G('pf-xurl'); if(pfX) pfX.value=CUR.x_url||'';
-  // ---------------------------------------------------
   
   var pfDs=G('pf-desc'); if(pfDs) pfDs.value=CUR.desc||'';
   var pfPs=G('pf-plan-status');
@@ -485,16 +476,14 @@ function bizTab(tab) {
   
   if(tab==='agenda'){ DB=loadDB(); CUR=DB.currentBiz?DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0]:CUR; initAgenda(); }
   
-  // NUEVO: Hook para cargar los datos reales en Finanzas
   if(tab === 'finanzas'){
       if (typeof renderBizFinanzas === 'function') {
           renderBizFinanzas();
       } else {
-          renderBizFinances(); // Fallback
+          renderBizFinances(); 
       }
   }
   
-  // NUEVO: Hook para actualizar los datos reales en Home
   if(tab==='home'){ 
       DB=loadDB(); 
       CUR=DB.currentBiz?DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0]:CUR; 
@@ -581,7 +570,7 @@ function updateApptStatus(id, status) {
   renderTodayAppts(); 
   initAgenda(); 
   renderBizFinances();
-  if (typeof renderBizFinanzas === 'function') renderBizFinanzas(); // actualiza grafico real
+  if (typeof renderBizFinanzas === 'function') renderBizFinanzas(); 
   toast(status==='completed'?'Cita completada':'Cita cancelada', status==='completed'?'#22C55E':'#EF4444');
 }
 
@@ -712,7 +701,6 @@ function saveBarber() {
 
   var workerId = editWorkerId || 'w_' + Date.now();
 
-  // ✅ Si estamos editando y no se subió foto nueva, conservar la existente
   var existingPhoto = '';
   var existingCover = '';
   if (editWorkerId) {
@@ -752,7 +740,6 @@ function saveBarber() {
     toast('Trabajador creado', '#22C55E');
   }
 
-  // ✅ CORREGIDO: ruta limpia
   fetch('/api/save-worker', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -776,7 +763,6 @@ function confirmDeleteWorker(id) {
       renderBizWorkers(); 
       toast('Trabajador eliminado','#475569');
       
-      // ✅ CORREGIDO: ruta limpia
       fetch('/api/save-worker', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -848,38 +834,95 @@ function nextMonth(){ calendarDate.setMonth(calendarDate.getMonth()+1); renderCa
 
 function initAgenda() {
   if (!CUR) return;
-  var dayAppts=[];
-  (CUR.workers||[]).forEach(function(w){ (w.appointments||[]).forEach(function(a){ if(a.date===selectedCalDay) dayAppts.push(a); }); });
-  (CUR.appointments||[]).forEach(function(a){ if(a.date===selectedCalDay) dayAppts.push(a); });
-  dayAppts.sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
-
-  var parts=selectedCalDay.split('-'), days=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  var d=new Date(selectedCalDay+'T12:00');
-  T('agenda-day-label',days[d.getDay()]+' '+parseInt(parts[2])+' de '+MONTHS[parseInt(parts[1])-1]+' de '+parts[0]);
+  var parts = selectedCalDay.split('-');
+  var days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var d = new Date(selectedCalDay + 'T12:00');
   
-  H('biz-agenda-list',dayAppts.length?dayAppts.map(function(a){ return apptRowH(a); }).join('')
-    :'<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">Sin citas en lista para este día</div></div>');
+  var lbl = G('agenda-day-label');
+  if(lbl) {
+    lbl.textContent = days[d.getDay()] + ' ' + parseInt(parts[2]) + ' de ' + MONTHS[parseInt(parts[1])-1] + ' de ' + parts[0];
+    lbl.style.textAlign = 'center';
+    lbl.style.fontSize = '14px';
+  }
+  
+  var listEl = G('biz-agenda-list');
+  if(listEl) listEl.innerHTML = ''; 
 
-  // ✅ NUEVO: Llama al calendario visual
   renderBizDailyTimeline(selectedCalDay);
 }
 
-// ✅ NUEVAS FUNCIONES PARA EL TIMELINE DEL DUEÑO (MULTI-COLUMNA)
+window._currentBizWorkerFilter = 'all';
+
+function generateBlockedTimeHTML(worker, dateStr, startHour, endHour, pxPerMin) {
+  var d = new Date(dateStr + 'T12:00');
+  var dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var dayName = dayNames[d.getDay()];
+  
+  var horario = worker.horario || [];
+  var hDay = horario.find(function(h) { return h.day === dayName; }) || {open:true, from1:'09:00', to1:'14:00'};
+  
+  var html = '';
+  var startMinTotal = startHour * 60;
+  var endMinTotal = endHour * 60;
+  
+  function timeToMins(t) {
+    if(!t) return 0;
+    var p = t.split(':').map(Number);
+    return p[0]*60 + p[1];
+  }
+  
+  function drawBlock(startM, endM) {
+    var drawStart = Math.max(startM, startMinTotal);
+    var drawEnd = Math.min(endM, endMinTotal);
+    if (drawStart >= drawEnd) return '';
+    var top = (drawStart - startMinTotal) * pxPerMin;
+    var height = (drawEnd - drawStart) * pxPerMin;
+    return '<div class="tl-out" style="top:'+top+'px; height:'+height+'px;"></div>';
+  }
+  
+  if (!hDay.open) { return drawBlock(startMinTotal, endMinTotal); }
+  
+  var f1 = timeToMins(hDay.from1 || hDay.from || '09:00');
+  var t1 = timeToMins(hDay.to1 || hDay.to || '14:00');
+  html += drawBlock(startMinTotal, f1);
+  
+  if (hDay.hasBreak && hDay.from2 && hDay.to2) {
+    var f2 = timeToMins(hDay.from2);
+    var t2 = timeToMins(hDay.to2);
+    html += drawBlock(t1, f2);
+    html += drawBlock(t2, endMinTotal);
+  } else {
+    html += drawBlock(t1, endMinTotal);
+  }
+  return html;
+}
+
 function renderBizDailyTimeline(dateStr) {
   var container = G('biz-daily-timeline');
   if (!container || !CUR) return;
 
-  var startHour = 7; // Inicia a las 7 AM
-  var endHour = 22;  // Termina a las 10 PM
-  var pxPerMin = 1.5; // Escala: 1.5px por minuto (90px por hora)
+  var startHour = 7;
+  var endHour = 22;
+  var pxPerMin = 1.5; 
   var totalHeight = (endHour - startHour) * 60 * pxPerMin;
   
-  var workers = CUR.workers || [];
-  if(workers.length === 0) { container.innerHTML = ''; return; }
+  var allWorkers = CUR.workers || [];
+  if(allWorkers.length === 0) { container.innerHTML = ''; return; }
 
-  var html = '<div class="tl-wrap"><div class="tl-grid">';
+  var workersToRender = allWorkers;
+  if (window._currentBizWorkerFilter !== 'all') {
+      workersToRender = allWorkers.filter(function(w){ return w.id === window._currentBizWorkerFilter; });
+  }
 
-  // 1. Columna de horas
+  var html = '<div style="display:flex; justify-content:flex-end; margin-bottom:12px;">';
+  html += '<select class="inp" style="width:auto; padding:8px 14px; font-size:12px; border-radius:12px; background:var(--card);" onchange="window._currentBizWorkerFilter=this.value; renderBizDailyTimeline(\''+dateStr+'\')">';
+  html += '<option value="all" '+(window._currentBizWorkerFilter==='all'?'selected':'')+'>Todos los trabajadores</option>';
+  allWorkers.forEach(function(w){
+      html += '<option value="'+w.id+'" '+(window._currentBizWorkerFilter===w.id?'selected':'')+'>'+san(w.name)+'</option>';
+  });
+  html += '</select></div>';
+
+  html += '<div class="tl-wrap"><div class="tl-grid">';
   html += '<div class="tl-times"><div class="tl-header"></div><div class="tl-body" style="height:'+totalHeight+'px; background:none;">';
   for(var h = startHour; h <= endHour; h++) {
     var top = (h - startHour) * 60 * pxPerMin;
@@ -888,13 +931,13 @@ function renderBizDailyTimeline(dateStr) {
   }
   html += '</div></div>';
 
-  // 2. Columnas de Trabajadores (CON FOTO Y NOMBRE)
-  workers.forEach(function(w, wIdx) {
+  workersToRender.forEach(function(w, wIdx) {
     var av = w.photo ? '<img src="'+sanitizeImageDataURL(w.photo)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover">' : '<div style="width:28px;height:28px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px">'+(w.name.charAt(0))+'</div>';
-
     html += '<div class="tl-col">';
     html += '<div class="tl-header">' + av + '<div style="font-size:10px;font-weight:700;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 4px;">'+san(w.name)+'</div></div>';
     html += '<div class="tl-body" style="height:'+totalHeight+'px; background-size: 100% '+(60*pxPerMin)+'px;">';
+
+    html += generateBlockedTimeHTML(w, dateStr, startHour, endHour, pxPerMin);
 
     var wAppts = (w.appointments || []).filter(function(a){ return a.date === dateStr && a.status !== 'cancelled'; });
     wAppts.forEach(function(a, i) { html += generateTimelineApptHTML(a, w, startHour, pxPerMin, i, 'openApptDetail'); });
@@ -906,22 +949,20 @@ function renderBizDailyTimeline(dateStr) {
   container.innerHTML = html;
 }
 
-// Helper para dibujar los cuadritos
 function generateTimelineApptHTML(a, worker, startHour, pxPerMin, idx, clickFn) {
   if(!a.time) return '';
   var pts = a.time.split(':').map(Number);
   var minsFromStart = (pts[0] * 60 + pts[1]) - (startHour * 60);
   if (minsFromStart < 0) return ''; 
 
-  var dur = 30; // Por defecto 30 min
+  var dur = 30;
   if (worker && worker.services) {
     var sObj = worker.services.find(function(s){ return s.name === a.svc; });
     if (sObj && sObj.dur) dur = parseInt(sObj.dur);
   }
 
   var top = minsFromStart * pxPerMin;
-  var height = (dur * pxPerMin) - 2; // -2px para borde
-
+  var height = (dur * pxPerMin) - 2; 
   var colors = ['w-blue','w-gold','w-green','w-purple'];
   var cClass = colors[idx % colors.length];
 
@@ -991,15 +1032,11 @@ function saveBizProfile() {
   if(!CUR) return;
   
   var nm=sanitizeText(V('pf-nm')), addr=sanitizeText(V('pf-addr')), phone=sanitizeText(V('pf-phone')), desc=sanitizeText(V('pf-desc'));
-  
-  // AQUÍ LEEMOS LAS 3 REDES SOCIALES ↓
   var insta=sanitizeText(V('pf-insta')), facebook=sanitizeText(V('pf-facebook')), x_url=sanitizeText(V('pf-xurl'));
   
   if(!nm){ toast('El nombre no puede estar vacío','#EF4444'); return; }
   
   CUR.name=nm; CUR.addr=addr; CUR.phone=phone; CUR.desc=desc.slice(0,300);
-  
-  // AQUÍ LAS GUARDAMOS EN EL OBJETO ACTUAL ↓
   CUR.insta=insta;
   CUR.facebook=facebook;
   CUR.x_url=x_url;

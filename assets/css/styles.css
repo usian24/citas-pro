@@ -877,6 +877,14 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
 .tl-appt:active { transform: scale(0.97); }
 .tl-appt-title { font-weight: 800; color: var(--text); margin-bottom: 2px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 .tl-appt-sub { font-size: 10px; color: var(--muted); font-weight: 600; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+/* Bloques de horas no laborales (tachadas) */
+.tl-out {
+  position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 10px, transparent 10px, transparent 20px);
+}
+[data-theme="light"] .tl-out {
+  background: repeating-linear-gradient(45deg, rgba(0,0,0,0.04), rgba(0,0,0,0.04) 10px, transparent 10px, transparent 20px);
+}
 /* ══════════════════════════════════════════════════
    🖥️ OPTIMIZACIÓN "BRUTAL" DEL PORTAL DE INICIO (PC/LAPTOP)
    ══════════════════════════════════════════════════ */
