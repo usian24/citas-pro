@@ -640,38 +640,53 @@ function renderBizFinances() {
   html += '<div class="card" style="margin-bottom:16px">';
   html += '<div class="sec-hdr"><span class="sec-ttl">Ingresos por mes</span><span style="font-size:11px;color:var(--muted)">Últimos 6 meses</span></div>';
   html += '<div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:6px">';
+  
+  var mBarsHTML = '';
   mVals.forEach(function(v,i){
     var h=Math.max(4,Math.round(v/mMax*100));
     var isLast=i===mVals.length-1;
-    html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">';
-    if(v>0) html+='<div style="font-size:8px;color:var(--muted)">'+money(v)+'</div>';
-    html+='<div style="width:100%;height:'+h+'%;border-radius:5px 5px 0 0;background:'+(isLast?'linear-gradient(to top,var(--blue2),var(--blue3))':'linear-gradient(to top,rgba(74,127,212,.3),rgba(74,127,212,.5))')+'" title="'+money(v)+'"></div>';
-    html+='</div>';
+    mBarsHTML += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">';
+    if(v>0) mBarsHTML += '<div style="font-size:8px;color:var(--muted)">'+money(v)+'</div>';
+    mBarsHTML += '<div style="width:100%;height:'+h+'%;border-radius:5px 5px 0 0;background:'+(isLast?'linear-gradient(to top,var(--blue2),var(--blue3))':'linear-gradient(to top,rgba(74,127,212,.3),rgba(74,127,212,.5))')+'" title="'+money(v)+'"></div>';
+    mBarsHTML += '</div>';
   });
+  html += mBarsHTML;
   html += '</div>';
+  
   html += '<div style="display:flex;gap:5px">';
-  months.forEach(function(m,i){ var p=m.split('-'); html+='<div style="flex:1;text-align:center;font-size:9px;color:'+(i===months.length-1?'var(--blue)':'var(--muted)')+';font-weight:700">'+MONTHS_SHORT[parseInt(p[1])-1]+'</div>'; });
+  var mLabelsHTML = '';
+  months.forEach(function(m,i){ 
+    var p=m.split('-'); 
+    mLabelsHTML += '<div style="flex:1;text-align:center;font-size:9px;color:'+(i===months.length-1?'var(--blue)':'var(--muted)')+';font-weight:700">'+MONTHS_SHORT[parseInt(p[1])-1]+'</div>'; 
+  });
+  html += mLabelsHTML;
   html += '</div></div>';
 
   /* Gráfico SEMANAS */
   html += '<div class="card" style="margin-bottom:16px">';
   html += '<div class="sec-hdr"><span class="sec-ttl">Ingresos por semana</span><span style="font-size:11px;color:var(--muted)">Últimas 8 semanas</span></div>';
   html += '<div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:6px">';
+  
+  var wBarsHTML = '';
   wVals.forEach(function(v,i){
     var h=Math.max(4,Math.round(v/wMax*100));
     var isLast=i===wVals.length-1;
-    html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">';
-    if(v>0) html+='<div style="font-size:8px;color:var(--muted)">'+money(v)+'</div>';
-    html+='<div style="width:100%;height:'+h+'%;border-radius:5px 5px 0 0;background:'+(isLast?'linear-gradient(to top,#16A34A,#4ADE80)':'linear-gradient(to top,rgba(34,197,94,.25),rgba(34,197,94,.5))')+'" title="'+money(v)+'"></div>';
-    html+='</div>';
+    wBarsHTML += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">';
+    if(v>0) wBarsHTML += '<div style="font-size:8px;color:var(--muted)">'+money(v)+'</div>';
+    wBarsHTML += '<div style="width:100%;height:'+h+'%;border-radius:5px 5px 0 0;background:'+(isLast?'linear-gradient(to top,#16A34A,#4ADE80)':'linear-gradient(to top,rgba(34,197,94,.25),rgba(34,197,94,.5))')+'" title="'+money(v)+'"></div>';
+    wBarsHTML += '</div>';
   });
+  html += wBarsHTML;
   html += '</div>';
+  
   html += '<div style="display:flex;gap:5px">';
+  var wLabelsHTML = '';
   weeks.forEach(function(ws,i){
     var d=new Date(ws+'T12:00');
     var lbl=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
-    html+='<div style="flex:1;text-align:center;font-size:9px;color:'+(i===weeks.length-1?'var(--green)':'var(--muted)')+';font-weight:700">'+lbl+'</div>';
+    wLabelsHTML += '<div style="flex:1;text-align:center;font-size:9px;color:'+(i===weeks.length-1?'var(--green)':'var(--muted)')+';font-weight:700">'+lbl+'</div>';
   });
+  html += wLabelsHTML;
   html += '</div></div>';
 
   /* Tabla por trabajador */
