@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="assets/css/styles.css"/>
   
   <style>
-    /* Estilos exclusivos para la tienda */
     body { background: var(--bg); padding-bottom: 90px; }
     
     /* Header de la tienda */
@@ -29,90 +28,95 @@
       background: var(--card);
       border: 1.5px solid var(--b);
       border-radius: 16px;
-      padding: 14px 18px;
-      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px;
     }
     .shop-search input {
       flex: 1; background: none; border: none; outline: none;
-      color: var(--text); font-family: var(--font); font-size: 15px;
+      color: var(--text); font-family: var(--font); font-size: 14px;
     }
     
     /* Carrusel de Categorías (Swipe) */
     .cat-scroll {
-      display: flex; gap: 16px; padding: 0 20px 20px;
+      display: flex; gap: 14px; padding: 0 20px 20px;
       overflow-x: auto; scroll-snap-type: x mandatory;
-      scrollbar-width: none; /* Firefox */
+      scrollbar-width: none;
     }
-    .cat-scroll::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+    .cat-scroll::-webkit-scrollbar { display: none; }
     
     .cat-item {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
       scroll-snap-align: start; cursor: pointer; flex-shrink: 0;
     }
     .cat-circle {
-      width: 64px; height: 64px; border-radius: 50%;
+      width: 56px; height: 56px; border-radius: 50%;
       background: var(--bblue); border: 2px solid transparent;
       display: flex; align-items: center; justify-content: center;
-      font-size: 28px; overflow: hidden; transition: all 0.2s;
+      overflow: hidden; transition: all 0.2s; color: var(--blue);
     }
     .cat-item.active .cat-circle { border-color: var(--blue); background: var(--blue); color: #fff; }
-    .cat-name { font-size: 12px; font-weight: 700; color: var(--t2); transition: color 0.2s; }
+    .cat-name { font-size: 11px; font-weight: 700; color: var(--t2); transition: color 0.2s; }
     .cat-item.active .cat-name { color: var(--blue); }
     
-    /* Grilla de Productos */
-    .product-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px; padding: 0 20px; max-width: 1200px; margin: 0 auto;
+    /* Productos con Swipe Horizontal */
+    .product-scroll {
+      display: flex; gap: 14px; padding: 0 20px 20px;
+      overflow-x: auto; scroll-snap-type: x mandatory;
+      scrollbar-width: none;
     }
+    .product-scroll::-webkit-scrollbar { display: none; }
     
-    /* Tarjeta de Producto */
+    /* Tarjeta de Producto (Más pequeña para celular) */
     .p-card {
+      width: 145px; /* Tamaño reducido para que entren varios */
+      flex-shrink: 0; scroll-snap-align: start;
       background: var(--card); border: 1px solid var(--b);
-      border-radius: 20px; overflow: hidden; position: relative;
+      border-radius: 16px; overflow: hidden; position: relative;
       display: flex; flex-direction: column; transition: transform 0.2s;
     }
     .p-card:active { transform: scale(0.97); }
     
     .p-img-wrap {
-      width: 100%; aspect-ratio: 1; background: #fff; /* Fondo blanco para productos */
+      width: 100%; height: 120px; background: #fff; 
       position: relative; padding: 10px; display: flex; align-items: center; justify-content: center;
     }
     .p-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; border-radius: 8px; }
     
     .p-badge {
-      position: absolute; top: 10px; left: 10px;
-      background: var(--red); color: #fff; font-size: 10px; font-weight: 800;
-      padding: 4px 8px; border-radius: 8px;
+      position: absolute; top: 8px; left: 8px;
+      background: var(--red); color: #fff; font-size: 9px; font-weight: 800;
+      padding: 3px 6px; border-radius: 6px;
     }
     .p-like {
-      position: absolute; top: 10px; right: 10px;
-      background: rgba(0,0,0,0.1); width: 32px; height: 32px; border-radius: 50%;
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(0,0,0,0.05); width: 28px; height: 28px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px; cursor: pointer; backdrop-filter: blur(4px);
+      color: var(--muted); cursor: pointer; backdrop-filter: blur(4px); transition: color 0.2s;
     }
+    .p-like.active { color: var(--red); }
     
-    .p-info { padding: 14px; flex: 1; display: flex; flex-direction: column; }
-    .p-title { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.4; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .p-stars { font-size: 10px; color: var(--gold); margin-bottom: 8px; }
+    .p-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+    .p-title { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     
-    .p-price-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; margin-top: auto; }
-    .p-old { font-size: 11px; color: var(--muted); text-decoration: line-through; }
-    .p-new { font-size: 16px; font-weight: 900; color: var(--green); }
+    .p-price-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 10px; margin-top: auto; }
+    .p-old { font-size: 10px; color: var(--muted); text-decoration: line-through; }
+    .p-new { font-size: 15px; font-weight: 900; color: var(--green); }
     
     /* Botón flotante del carrito */
     .cart-float {
       position: fixed; bottom: 24px; right: 24px; z-index: 90;
-      width: 60px; height: 60px; border-radius: 20px;
+      width: 56px; height: 56px; border-radius: 18px;
       background: linear-gradient(135deg, var(--blue), var(--blue2));
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 10px 25px rgba(74,127,212,0.4); cursor: pointer;
-      color: white;
+      box-shadow: 0 8px 20px rgba(74,127,212,0.4); cursor: pointer;
+      color: white; transition: transform 0.2s;
     }
+    .cart-float:active { transform: scale(0.95); }
     .cart-badge {
-      position: absolute; top: -6px; right: -6px;
-      background: var(--red); color: white; font-size: 11px; font-weight: 900;
-      width: 24px; height: 24px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
+      position: absolute; top: -5px; right: -5px;
+      background: var(--red); color: white; font-size: 10px; font-weight: 900;
+      width: 22px; height: 22px; border-radius: 50%;
+      display: none; align-items: center; justify-content: center;
       border: 2px solid var(--bg);
     }
   </style>
@@ -121,129 +125,202 @@
 
   <header class="shop-header">
     <button onclick="window.history.back()" style="background:rgba(255,255,255,0.07); border:1px solid var(--b); border-radius:12px; padding:8px 14px; font-size:13px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:6px;">
-      ← Atrás
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Atrás
     </button>
-    <div style="font-size:16px; font-weight:800; text-align:center" id="shop-title">Cargando Tienda...</div>
+    <div style="font-size:15px; font-weight:800; text-align:center" id="shop-title">Cargando Tienda...</div>
     <button onclick="document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark'" style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;color:var(--text);">
-      ☀️
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
     </button>
   </header>
 
   <div class="shop-search">
-    <span>🔍</span>
-    <input type="text" placeholder="Buscar geles, ceras, lociones..."/>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input type="text" placeholder="Buscar productos..."/>
   </div>
 
-  <div style="font-size:16px; font-weight:900; padding: 0 20px; margin-bottom:14px;">Categorías destacadas</div>
-  <div class="cat-scroll">
-    <div class="cat-item active">
-      <div class="cat-circle">🌟</div>
-      <span class="cat-name">Todo</span>
-    </div>
-    <div class="cat-item">
-      <div class="cat-circle" style="background:#FFE4E1">👁️</div>
-      <span class="cat-name">Rostro</span>
-    </div>
-    <div class="cat-item">
-      <div class="cat-circle" style="background:#E0FFFF">🧴</div>
-      <span class="cat-name">Lociones</span>
-    </div>
-    <div class="cat-item">
-      <div class="cat-circle" style="background:#F0FFF0">💈</div>
-      <span class="cat-name">Ceras</span>
-    </div>
-    <div class="cat-item">
-      <div class="cat-circle" style="background:#F5F5DC">✂️</div>
-      <span class="cat-name">Equipos</span>
-    </div>
-  </div>
+  <div style="font-size:15px; font-weight:900; padding: 0 20px; margin-bottom:12px;">Categorías</div>
+  
+  <div class="cat-scroll" id="client-cats"></div>
 
-  <div class="product-grid">
-    
-    <div class="p-card">
-      <div class="p-img-wrap">
-        <span class="p-badge">-35%</span>
-        <div class="p-like">🤍</div>
-        <img src="https://placehold.co/300x300/ffffff/4A7FD4?text=Producto+1" alt="Producto" style="height:120px;"/>
-      </div>
-      <div class="p-info">
-        <div class="p-title">Kit Limpiador Facial Piel Grasa 473ml + Protector Solar</div>
-        <div class="p-stars">★★★★★ <span style="color:var(--muted)">(24)</span></div>
-        <div class="p-price-row">
-          <span class="p-old">259.00€</span>
-          <span class="p-new">168.35€</span>
-        </div>
-        <button class="btn btn-dark btn-sm">Añadir al carrito</button>
-      </div>
-    </div>
+  <div style="font-size:15px; font-weight:900; padding: 0 20px; margin-bottom:12px; margin-top:10px;">Destacados</div>
+  
+  <div class="product-scroll" id="client-prods"></div>
 
-    <div class="p-card">
-      <div class="p-img-wrap">
-        <div class="p-like" style="color:var(--red)">❤️</div>
-        <img src="https://placehold.co/300x300/ffffff/4A7FD4?text=Producto+2" alt="Producto" style="height:120px;"/>
-      </div>
-      <div class="p-info">
-        <div class="p-title">Cera Fijadora Efecto Mate Barber Pro 100g</div>
-        <div class="p-stars">★★★★☆ <span style="color:var(--muted)">(12)</span></div>
-        <div class="p-price-row">
-          <span class="p-new">15.00€</span>
-        </div>
-        <button class="btn btn-dark btn-sm">Añadir al carrito</button>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="cart-float">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-    <div class="cart-badge">2</div>
+  <div class="cart-float" onclick="abrirCarrito()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+    <div class="cart-badge" id="cart-count">0</div>
   </div>
 
   <script src="assets/js/db.js"></script>
-   <script src="assets/js/tienda-cliente.js"></script>
-
+  
   <script>
-    let SHOP_BIZ = null; // Aquí guardaremos los datos de la barbería actual
+    let SHOP_BIZ = null;
+    let carrito = [];
+    let currentCategory = 'all';
 
     document.addEventListener("DOMContentLoaded", function() {
-      // 1. Cargamos la base de datos con seguridad
+      // 1. Cargar DB
       if (typeof loadDB === 'function') {
          window.DB = loadDB();
       }
 
-      // 2. Extraer el ID de forma más inteligente
+      // 2. Extraer ID
       let bizId = '';
       const hash = window.location.hash;
-      
       if (hash && hash.includes('#b/')) {
-        // Si el cliente entró por su link público
         bizId = hash.split('#b/')[1].split('/')[0];
       } else if (window.DB && window.DB.currentBiz) {
-        // Fallback: Si el DUEÑO entra a probar y el link falló, usamos su sesión activa
         bizId = window.DB.currentBiz;
       }
       
-      // 3. Validamos si logramos conseguir un ID
+      // 3. Validar y arrancar
       if (bizId && window.DB && window.DB.businesses) {
-        
-        // Buscamos la barbería en nuestra base de datos
         SHOP_BIZ = window.DB.businesses.find(b => b.id === bizId);
         
         if (SHOP_BIZ) {
-          console.log("Tienda cargada exitosamente:", SHOP_BIZ.name);
-          
-          // ¡Cambiamos el título de la tienda!
           document.getElementById('shop-title').textContent = "Tienda de " + SHOP_BIZ.name;
-          
+          inicializarTienda();
         } else {
-          document.getElementById('shop-title').textContent = "Barbería no encontrada";
-          console.error("Error: No se encontró la barbería en la base de datos.");
+          document.getElementById('shop-title').textContent = "Negocio no encontrado";
         }
       } else {
          document.getElementById('shop-title').textContent = "Enlace inválido";
-         console.error("No se detectó un ID válido de barbería.");
       }
     });
+
+    function inicializarTienda() {
+        renderCategorias();
+        renderProductos('all');
+    }
+
+    // ICONO POR DEFECTO PARA CATEGORÍAS
+    const defaultSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`;
+
+    function renderCategorias() {
+        const container = document.getElementById('client-cats');
+        if(!container) return;
+        
+        let cats = SHOP_BIZ.categories || [];
+        
+        let html = `
+          <div class="cat-item ${currentCategory === 'all' ? 'active' : ''}" onclick="filtrarProductos('all')">
+            <div class="cat-circle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
+            <span class="cat-name">Todo</span>
+          </div>
+        `;
+        
+        cats.forEach(c => {
+            // Si el dueño usó un emoji, lo mostramos (luego cambiaremos el admin para subir iconos), si no, SVG default
+            let iconContent = (c.icon && c.icon.length <= 5) ? `<span style="font-size:24px">${c.icon}</span>` : defaultSvg;
+            
+            html += `
+              <div class="cat-item ${currentCategory === c.id ? 'active' : ''}" onclick="filtrarProductos('${c.id}')">
+                <div class="cat-circle" style="background:#F8FAFC; border: 2px solid ${currentCategory === c.id ? 'var(--blue)' : 'transparent'}">${iconContent}</div>
+                <span class="cat-name">${c.name}</span>
+              </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function filtrarProductos(catId) {
+        currentCategory = catId;
+        renderCategorias(); 
+        renderProductos(catId);
+    }
+
+    function renderProductos(catId) {
+        const container = document.getElementById('client-prods');
+        if(!container) return;
+
+        let prods = SHOP_BIZ.products || [];
+        
+        if(catId !== 'all') {
+            prods = prods.filter(p => p.categoryId === catId);
+        }
+
+        if(prods.length === 0) {
+            container.innerHTML = `<div style="width:100%; text-align:center; padding:40px; color:var(--muted); font-size:13px;">No hay productos disponibles aquí.</div>`;
+            return;
+        }
+
+        let html = '';
+        prods.forEach(p => {
+            let finalPrice = p.discount > 0 ? (p.price - (p.price * p.discount / 100)).toFixed(2) : p.price.toFixed(2);
+            let badge = p.discount > 0 ? `<span class="p-badge">-${p.discount}%</span>` : '';
+            let oldPrice = p.discount > 0 ? `<span class="p-old">${p.price.toFixed(2)}€</span>` : '';
+            let img = p.image ? p.image : 'https://placehold.co/300x300/ffffff/4A7FD4?text=Foto';
+
+            html += `
+            <div class="p-card">
+              <div class="p-img-wrap">
+                ${badge}
+                <div class="p-like" onclick="toggleLike(this)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                </div>
+                <img src="${img}" alt="${p.name}"/>
+              </div>
+              <div class="p-info">
+                <div class="p-title">${p.name}</div>
+                <div class="p-price-row">
+                  <span class="p-new">${finalPrice}€</span>
+                  ${oldPrice}
+                </div>
+                <button class="btn btn-blue btn-sm" onclick="agregarAlCarrito('${p.id}')" style="padding:8px; font-size:11px;">Añadir al carrito</button>
+              </div>
+            </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    function toggleLike(btn) {
+        btn.classList.toggle('active');
+        let svg = btn.querySelector('svg');
+        if (btn.classList.contains('active')) {
+            svg.setAttribute('fill', 'currentColor');
+        } else {
+            svg.setAttribute('fill', 'none');
+        }
+    }
+
+    function agregarAlCarrito(id) {
+        let prod = (SHOP_BIZ.products || []).find(p => p.id === id);
+        if(!prod) return;
+        
+        let item = carrito.find(c => c.product.id === id);
+        if(item) {
+            item.cantidad++;
+        } else {
+            carrito.push({ product: prod, cantidad: 1 });
+        }
+        
+        actualizarBadgeCarrito();
+        
+        // Efecto visual en el botón flotante
+        const cartBtn = document.querySelector('.cart-float');
+        cartBtn.style.transform = 'scale(1.1)';
+        setTimeout(() => cartBtn.style.transform = 'scale(1)', 200);
+    }
+
+    function actualizarBadgeCarrito() {
+        const badge = document.getElementById('cart-count');
+        if(!badge) return;
+        
+        let total = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+        badge.textContent = total;
+        badge.style.display = total > 0 ? 'flex' : 'none';
+    }
+
+    function abrirCarrito() {
+        if(carrito.length === 0) {
+            alert("Tu carrito está vacío.");
+            return;
+        }
+        alert("¡Próximamente: Panel de pago y envío a WhatsApp!");
+    }
   </script>
 </body>
 </html>
