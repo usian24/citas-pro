@@ -853,48 +853,44 @@ function initAgenda() {
 
 window._currentBizWorkerFilter = 'all';
 
-function generateBlockedTimeHTML(worker, dateStr, startHour, endHour, pxPerMin) {
-  var d = new Date(dateStr + 'T12:00');
-  var dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  var dayName = dayNames[d.getDay()];
-  
-  var horario = worker.horario || [];
-  var hDay = horario.find(function(h) { return h.day === dayName; }) || {open:true, from1:'09:00', to1:'14:00'};
-  
-  var html = '';
-  var startMinTotal = startHour * 60;
-  var endMinTotal = endHour * 60;
-  
-  function timeToMins(t) {
-    if(!t) return 0;
-    var p = t.split(':').map(Number);
-    return p[0]*60 + p[1];
+function generateTimelineApptHTML(a, worker, startHour, pxPerMin, idx, clickFn) {
+  if(!a.time) return '';
+  var pts = a.time.split(':').map(Number);
+  var minsFromStart = (pts[0] * 60 + pts[1]) - (startHour * 60);
+  if (minsFromStart < 0) return '';
+
+  var dur = 30;
+  if (worker && worker.services) {
+    var sObj = worker.services.find(function(s){ return s.name === a.svc; });
+    if (sObj && sObj.dur) dur = parseInt(sObj.dur);
   }
-  
-  function drawBlock(startM, endM) {
-    var drawStart = Math.max(startM, startMinTotal);
-    var drawEnd = Math.min(endM, endMinTotal);
-    if (drawStart >= drawEnd) return '';
-    var top = (drawStart - startMinTotal) * pxPerMin;
-    var height = (drawEnd - drawStart) * pxPerMin;
-    return '<div class="tl-out" style="top:'+top+'px; height:'+height+'px;"></div>';
-  }
-  
-  if (!hDay.open) { return drawBlock(startMinTotal, endMinTotal); }
-  
-  var f1 = timeToMins(hDay.from1 || hDay.from || '09:00');
-  var t1 = timeToMins(hDay.to1 || hDay.to || '14:00');
-  html += drawBlock(startMinTotal, f1);
-  
-  if (hDay.hasBreak && hDay.from2 && hDay.to2) {
-    var f2 = timeToMins(hDay.from2);
-    var t2 = timeToMins(hDay.to2);
-    html += drawBlock(t1, f2);
-    html += drawBlock(t2, endMinTotal);
-  } else {
-    html += drawBlock(t1, endMinTotal);
-  }
-  return html;
+
+  var top    = minsFromStart * pxPerMin;
+  var height = (dur * pxPerMin) - 2;
+
+  /* ── Color e info por estado ── */
+  var stateMap = {
+    confirmed:   { border: '#4A7FD4', bg: 'rgba(74,127,212,.18)',  label: 'Conf.',     lc: '#7EB8FF' },
+    pending:     { border: '#F59E0B', bg: 'rgba(245,158,11,.18)',  label: 'Pend.',     lc: '#F59E0B' },
+    completed:   { border: '#22C55E', bg: 'rgba(34,197,94,.18)',   label: 'Completada',lc: '#22C55E' },
+    cancelled:   { border: '#EF4444', bg: 'rgba(239,68,68,.18)',   label: 'Cancelada', lc: '#EF4444' },
+    in_progress: { border: '#A855F7', bg: 'rgba(168,85,247,.18)',  label: 'En curso',  lc: '#A855F7' },
+    rescheduled: { border: '#F59E0B', bg: 'rgba(245,158,11,.18)',  label: 'Reagend.',  lc: '#F59E0B' }
+  };
+  var st = stateMap[a.status] || stateMap['confirmed'];
+
+  var priceHtml = (a.price && parseFloat(a.price) > 0)
+    ? '<div style="font-size:10px;font-weight:800;color:' + st.lc + ';margin-top:2px">' + parseFloat(a.price).toFixed(2) + '€</div>'
+    : '';
+
+  var labelHtml = '<span style="font-size:9px;font-weight:700;background:' + st.border + '33;color:' + st.lc + ';border-radius:6px;padding:1px 5px;margin-top:2px;display:inline-block">' + st.label + '</span>';
+
+  return '<div class="tl-appt" style="top:'+top+'px;height:'+height+'px;background:'+st.bg+';border-left:4px solid '+st.border+';left:4px;right:4px;border-radius:8px;padding:6px 8px;position:absolute;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.15);overflow:hidden;" onclick="'+clickFn+'(\''+a.id+'\')">'
+       + '<div class="tl-appt-title" style="font-weight:800;font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + san(a.client) + '</div>'
+       + '<div class="tl-appt-sub"  style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + san(a.time) + ' · ' + san(a.svc) + '</div>'
+       + priceHtml
+       + labelHtml
+       + '</div>';
 }
 
 function renderBizDailyTimeline(dateStr) {
