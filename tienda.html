@@ -36,7 +36,7 @@
       color: var(--text); font-family: var(--font); font-size: 14px;
     }
     
-    /* Carrusel de Categorías (Swipe) */
+    /* Carrusel de Categorías */
     .cat-scroll {
       display: flex; gap: 14px; padding: 0 20px 20px;
       overflow-x: auto; scroll-snap-type: x mandatory;
@@ -58,7 +58,7 @@
     .cat-name { font-size: 11px; font-weight: 700; color: var(--t2); transition: color 0.2s; }
     .cat-item.active .cat-name { color: var(--blue); }
     
-    /* Productos con Swipe Horizontal */
+    /* Productos */
     .product-scroll {
       display: flex; gap: 14px; padding: 0 20px 20px;
       overflow-x: auto; scroll-snap-type: x mandatory;
@@ -66,9 +66,8 @@
     }
     .product-scroll::-webkit-scrollbar { display: none; }
     
-    /* Tarjeta de Producto (Más pequeña para celular) */
     .p-card {
-      width: 145px; /* Tamaño reducido para que entren varios */
+      width: 145px;
       flex-shrink: 0; scroll-snap-align: start;
       background: var(--card); border: 1px solid var(--b);
       border-radius: 16px; overflow: hidden; position: relative;
@@ -102,7 +101,7 @@
     .p-old { font-size: 10px; color: var(--muted); text-decoration: line-through; }
     .p-new { font-size: 15px; font-weight: 900; color: var(--green); }
     
-    /* Botón flotante del carrito */
+    /* Botón flotante */
     .cart-float {
       position: fixed; bottom: 24px; right: 24px; z-index: 90;
       width: 56px; height: 56px; border-radius: 18px;
@@ -119,6 +118,16 @@
       display: none; align-items: center; justify-content: center;
       border: 2px solid var(--bg);
     }
+
+    /* Burbuja de Notificación (Toast) */
+    #toast-msg {
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--blue); color: #fff; padding: 12px 24px; border-radius: var(--rpill);
+      font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.26.55); z-index: 100;
+      box-shadow: 0 8px 20px rgba(74,127,212,0.4);
+    }
+    #toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -139,11 +148,9 @@
   </div>
 
   <div style="font-size:15px; font-weight:900; padding: 0 20px; margin-bottom:12px;">Categorías</div>
-  
   <div class="cat-scroll" id="client-cats"></div>
 
   <div style="font-size:15px; font-weight:900; padding: 0 20px; margin-bottom:12px; margin-top:10px;">Destacados</div>
-  
   <div class="product-scroll" id="client-prods"></div>
 
   <div class="cart-float" onclick="abrirCarrito()">
@@ -151,20 +158,27 @@
     <div class="cart-badge" id="cart-count">0</div>
   </div>
 
+  <div id="toast-msg">🛒 Producto añadido al carrito</div>
+
+  <div class="ov" id="ov-shop-alert">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:320px; text-align:center; padding: 30px 20px;">
+      <div style="font-size:48px; margin-bottom:16px; animation: popIn 0.4s ease;" id="sa-icon">🛍️</div>
+      <div style="font-size:20px; font-weight:900; margin-bottom:8px; color:var(--text);" id="sa-title">Atención</div>
+      <div style="font-size:14px; color:var(--t2); margin-bottom:24px; line-height:1.6" id="sa-msg">Mensaje</div>
+      <button class="btn btn-blue" onclick="document.getElementById('ov-shop-alert').classList.remove('on')" style="width:100%; font-size:15px; padding:14px;">Entendido</button>
+    </div>
+  </div>
+
   <script src="assets/js/db.js"></script>
-  
   <script>
     let SHOP_BIZ = null;
     let carrito = [];
     let currentCategory = 'all';
+    let toastTimeout;
 
     document.addEventListener("DOMContentLoaded", function() {
-      // 1. Cargar DB
-      if (typeof loadDB === 'function') {
-         window.DB = loadDB();
-      }
+      if (typeof loadDB === 'function') { window.DB = loadDB(); }
 
-      // 2. Extraer ID
       let bizId = '';
       const hash = window.location.hash;
       if (hash && hash.includes('#b/')) {
@@ -173,10 +187,8 @@
         bizId = window.DB.currentBiz;
       }
       
-      // 3. Validar y arrancar
       if (bizId && window.DB && window.DB.businesses) {
         SHOP_BIZ = window.DB.businesses.find(b => b.id === bizId);
-        
         if (SHOP_BIZ) {
           document.getElementById('shop-title').textContent = "Tienda de " + SHOP_BIZ.name;
           inicializarTienda();
@@ -188,12 +200,30 @@
       }
     });
 
+    // --- FUNCIONES DE UI ---
+    function mostrarAlertaCustom(titulo, mensaje, icono = "🛍️") {
+        document.getElementById('sa-icon').innerText = icono;
+        document.getElementById('sa-title').innerText = titulo;
+        document.getElementById('sa-msg').innerText = mensaje;
+        document.getElementById('ov-shop-alert').classList.add('on');
+    }
+
+    function mostrarToast(mensaje) {
+        const toast = document.getElementById('toast-msg');
+        toast.innerText = mensaje;
+        toast.classList.add('show');
+        
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000); // Desaparece en 2 segundos
+    }
+
     function inicializarTienda() {
         renderCategorias();
         renderProductos('all');
     }
 
-    // ICONO POR DEFECTO PARA CATEGORÍAS
     const defaultSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`;
 
     function renderCategorias() {
@@ -210,9 +240,7 @@
         `;
         
         cats.forEach(c => {
-            // Si el dueño usó un emoji, lo mostramos (luego cambiaremos el admin para subir iconos), si no, SVG default
             let iconContent = (c.icon && c.icon.length <= 5) ? `<span style="font-size:24px">${c.icon}</span>` : defaultSvg;
-            
             html += `
               <div class="cat-item ${currentCategory === c.id ? 'active' : ''}" onclick="filtrarProductos('${c.id}')">
                 <div class="cat-circle" style="background:#F8FAFC; border: 2px solid ${currentCategory === c.id ? 'var(--blue)' : 'transparent'}">${iconContent}</div>
@@ -299,10 +327,12 @@
         
         actualizarBadgeCarrito();
         
-        // Efecto visual en el botón flotante
+        // Animación del botón flotante y Toast
         const cartBtn = document.querySelector('.cart-float');
         cartBtn.style.transform = 'scale(1.1)';
         setTimeout(() => cartBtn.style.transform = 'scale(1)', 200);
+        
+        mostrarToast(`¡Añadido: ${prod.name}!`);
     }
 
     function actualizarBadgeCarrito() {
@@ -316,10 +346,10 @@
 
     function abrirCarrito() {
         if(carrito.length === 0) {
-            alert("Tu carrito está vacío.");
+            mostrarAlertaCustom("Carrito Vacío", "Aún no has añadido ningún producto a tu carrito.", "🛒");
             return;
         }
-        alert("¡Próximamente: Panel de pago y envío a WhatsApp!");
+        mostrarAlertaCustom("¡Casi listo!", "Aquí abriremos el panel para revisar tu pedido y enviarlo por WhatsApp.", "🚀");
     }
   </script>
 </body>
