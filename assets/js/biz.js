@@ -854,43 +854,76 @@ function initAgenda() {
 window._currentBizWorkerFilter = 'all';
 
 function generateTimelineApptHTML(a, worker, startHour, pxPerMin, idx, clickFn) {
-  if(!a.time) return '';
+  if (!a.time) return '';
+ 
   var pts = a.time.split(':').map(Number);
   var minsFromStart = (pts[0] * 60 + pts[1]) - (startHour * 60);
   if (minsFromStart < 0) return '';
-
+ 
   var dur = 30;
   if (worker && worker.services) {
-    var sObj = worker.services.find(function(s){ return s.name === a.svc; });
+    var sObj = worker.services.find(function(s) { return s.name === a.svc; });
     if (sObj && sObj.dur) dur = parseInt(sObj.dur);
   }
-
+ 
   var top    = minsFromStart * pxPerMin;
-  var height = (dur * pxPerMin) - 2;
-
-  /* ── Color e info por estado ── */
-  var stateMap = {
-    confirmed:   { border: '#4A7FD4', bg: 'rgba(74,127,212,.18)',  label: 'Conf.',     lc: '#7EB8FF' },
-    pending:     { border: '#F59E0B', bg: 'rgba(245,158,11,.18)',  label: 'Pend.',     lc: '#F59E0B' },
-    completed:   { border: '#22C55E', bg: 'rgba(34,197,94,.18)',   label: 'Completada',lc: '#22C55E' },
-    cancelled:   { border: '#EF4444', bg: 'rgba(239,68,68,.18)',   label: 'Cancelada', lc: '#EF4444' },
-    in_progress: { border: '#A855F7', bg: 'rgba(168,85,247,.18)',  label: 'En curso',  lc: '#A855F7' },
-    rescheduled: { border: '#F59E0B', bg: 'rgba(245,158,11,.18)',  label: 'Reagend.',  lc: '#F59E0B' }
+  var height = Math.max((dur * pxPerMin) - 2, 28); // mínimo 28px para que se lea
+ 
+  // ── Color por estado, NO por índice ──
+  var stateStyles = {
+    confirmed:   { bg: 'rgba(74,127,212,0.25)',  border: '#4A7FD4', label: 'Confirmada', lc: '#7EB8FF' },
+    pending:     { bg: 'rgba(245,158,11,0.25)',  border: '#F59E0B', label: 'Pendiente',  lc: '#F59E0B' },
+    completed:   { bg: 'rgba(34,197,94,0.25)',   border: '#22C55E', label: 'Completada', lc: '#22C55E' },
+    cancelled:   { bg: 'rgba(239,68,68,0.25)',   border: '#EF4444', label: 'Cancelada',  lc: '#EF4444' },
+    in_progress: { bg: 'rgba(168,85,247,0.25)',  border: '#A855F7', label: 'En curso',   lc: '#C084FC' },
+    rescheduled: { bg: 'rgba(245,158,11,0.20)',  border: '#F59E0B', label: 'Reagendada', lc: '#FCD34D' }
   };
-  var st = stateMap[a.status] || stateMap['confirmed'];
-
-  var priceHtml = (a.price && parseFloat(a.price) > 0)
-    ? '<div style="font-size:10px;font-weight:800;color:' + st.lc + ';margin-top:2px">' + parseFloat(a.price).toFixed(2) + '€</div>'
-    : '';
-
-  var labelHtml = '<span style="font-size:9px;font-weight:700;background:' + st.border + '33;color:' + st.lc + ';border-radius:6px;padding:1px 5px;margin-top:2px;display:inline-block">' + st.label + '</span>';
-
-  return '<div class="tl-appt" style="top:'+top+'px;height:'+height+'px;background:'+st.bg+';border-left:4px solid '+st.border+';left:4px;right:4px;border-radius:8px;padding:6px 8px;position:absolute;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.15);overflow:hidden;" onclick="'+clickFn+'(\''+a.id+'\')">'
-       + '<div class="tl-appt-title" style="font-weight:800;font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + san(a.client) + '</div>'
-       + '<div class="tl-appt-sub"  style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + san(a.time) + ' · ' + san(a.svc) + '</div>'
-       + priceHtml
-       + labelHtml
-       + '</div>';
+  var st = stateStyles[a.status] || stateStyles['confirmed'];
+ 
+  // ── Precio ──
+  var precio = parseFloat(a.price || 0);
+  var priceStr = precio > 0 ? precio.toFixed(2) + '€' : '';
+ 
+  // ── HTML interno según altura disponible ──
+  var inner = '';
+ 
+  if (height >= 52) {
+    // Cita con suficiente espacio: nombre + hora·servicio + precio + etiqueta
+    inner = '<div style="font-size:11px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">' + san(a.client) + '</div>'
+          + '<div style="font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">' + san(a.time) + ' · ' + san(a.svc) + '</div>'
+          + (priceStr ? '<div style="font-size:10px;font-weight:800;color:' + st.lc + ';line-height:1.4">' + priceStr + '</div>' : '')
+          + '<div style="margin-top:3px;display:inline-block;font-size:9px;font-weight:700;background:' + st.border + '55;color:' + st.lc + ';border-radius:6px;padding:1px 6px">' + st.label + '</div>';
+  } else if (height >= 34) {
+    // Cita pequeña: nombre + hora + etiqueta en línea
+    inner = '<div style="font-size:11px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">' + san(a.client) + '</div>'
+          + '<div style="font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+          +   san(a.time)
+          +   (priceStr ? ' · <span style="font-weight:800;color:' + st.lc + '">' + priceStr + '</span>' : '')
+          +   ' <span style="background:' + st.border + '55;color:' + st.lc + ';border-radius:5px;padding:0 4px;font-size:9px;font-weight:700">' + st.label + '</span>'
+          + '</div>';
+  } else {
+    // Muy pequeña: solo nombre
+    inner = '<div style="font-size:10px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + san(a.client) + ' <span style="font-weight:400;color:rgba(255,255,255,.7)">' + san(a.time) + '</span></div>';
+  }
+ 
+  return '<div onclick="' + clickFn + '(\'' + a.id + '\')" style="'
+    + 'position:absolute;'
+    + 'top:' + top + 'px;'
+    + 'height:' + height + 'px;'
+    + 'left:4px;'
+    + 'right:4px;'
+    + 'background:' + st.bg + ';'
+    + 'border-left:4px solid ' + st.border + ';'
+    + 'border-radius:0 8px 8px 0;'
+    + 'padding:5px 8px;'
+    + 'cursor:pointer;'
+    + 'overflow:hidden;'
+    + 'box-shadow:0 2px 8px rgba(0,0,0,0.25);'
+    + 'transition:filter .15s;'
+    + 'z-index:2;'
+    + '">'
+    + inner
+    + '</div>';
 }
 
 function renderBizDailyTimeline(dateStr) {
