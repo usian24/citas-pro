@@ -106,7 +106,16 @@ function workerTab(tab) {
   
   if (tab === 'agenda')   initWorkerAgenda();
   if (tab === 'notif')    renderWorkerNotifications();
-  if (tab === 'horario')  renderWorkerHorario();
+
+  if (tab === 'horario') {
+    renderWorkerHorario();
+    /* ── STICKY SPLIT EN PC ── */
+    if (window.innerWidth >= 1024) {
+      setTimeout(function() {
+        if (typeof initHorarioSplit === 'function') initHorarioSplit();
+      }, 200);
+    }
+  }
   
   if (tab === 'finanzas') {
       if (typeof renderWorkerFinanzas === 'function') {
@@ -589,12 +598,24 @@ window.toggleWorkerBreak = function(i) {
   if (h.hasBreak && !h.from2) { h.from2 = '16:00'; h.to2 = '20:00'; }
   if (!h.hasBreak) { h.from2 = ''; h.to2 = ''; }
   renderWorkerHorario();
+  /* Re-inicializar split si estamos en PC */
+  if (window.innerWidth >= 1024) {
+    setTimeout(function() {
+      if (typeof initHorarioSplit === 'function') initHorarioSplit();
+    }, 100);
+  }
 };
 
 window.toggleWorkerHorarioDay = function(i) {
   if (!CUR_WORKER || !CUR_WORKER.horario || !CUR_WORKER.horario[i]) return;
   CUR_WORKER.horario[i].open = !CUR_WORKER.horario[i].open;
   renderWorkerHorario();
+  /* Re-inicializar split si estamos en PC */
+  if (window.innerWidth >= 1024) {
+    setTimeout(function() {
+      if (typeof initHorarioSplit === 'function') initHorarioSplit();
+    }, 100);
+  }
 };
 
 /* ══════════════════════════
@@ -877,7 +898,6 @@ function renderWorkerDailyTimeline(dateStr) {
 
   var html = '<div class="tl-wrap"><div class="tl-grid">';
 
-  // 1. Columna de horas
   html += '<div class="tl-times"><div class="tl-header"></div><div class="tl-body" style="height:'+totalHeight+'px; background:none;">';
   for(var h = startHour; h <= endHour; h++) {
     var top = (h - startHour) * 60 * pxPerMin;
@@ -886,15 +906,10 @@ function renderWorkerDailyTimeline(dateStr) {
   }
   html += '</div></div>';
 
-  // 2. Columna única del trabajador
   html += '<div class="tl-col">';
-  
-  // ✅ AÑADIDO: Un header para que se alinee horizontalmente con las horas
   html += '<div class="tl-header"><div style="font-size:12px;font-weight:800;color:var(--blue)">Mi Agenda</div></div>';
-  
   html += '<div class="tl-body" style="height:'+totalHeight+'px; background-size: 100% '+(60*pxPerMin)+'px;">';
 
-  // ✅ APLICAR RAYAS DE HORARIO BLOQUEADO
   if (typeof generateBlockedTimeHTML === 'function') {
     html += generateBlockedTimeHTML(CUR_WORKER, dateStr, startHour, endHour, pxPerMin);
   }

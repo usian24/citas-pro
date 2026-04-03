@@ -73,7 +73,6 @@ async function dotsLogin() {
   }
 
   try {
-    // Mandamos las credenciales al "Guardia" en Netlify
     let res = await fetch('/api/admin-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -89,10 +88,7 @@ async function dotsLogin() {
       closeOv('ov-admin');
       goTo('s-admin'); 
       showAdminPanel();
-      
-      // NUEVO: Conectar Realtime
       if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
-      
       toast('Bienvenido/a, Admin', '#2855C8');
     } else {
       showErr('dots-err', 'Credenciales incorrectas.');
@@ -121,7 +117,6 @@ async function doAdminLogin() {
   }
   
   try {
-    // Mandamos las credenciales al "Guardia" en Netlify
     let res = await fetch('/api/admin-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -134,10 +129,7 @@ async function doAdminLogin() {
       saveDB(); 
       hideErr('adm-err'); 
       showAdminPanel();
-      
-      // NUEVO: Conectar Realtime
       if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
-      
     } else {
       showErr('adm-err', 'Credenciales incorrectas.');
       var p = G('adm-pass'); 
@@ -154,8 +146,6 @@ function doAdminLogout() {
     var l = G('adm-login'), p = G('adm-panel'); 
     if (l) l.style.display = 'flex'; 
     if (p) p.style.display = 'none'; 
-    
-    // NUEVO: Desconectar Realtime
     if (typeof unsubscribeRealtime === 'function') unsubscribeRealtime();
 }
 
@@ -218,11 +208,9 @@ function renderDash() {
   T('ds-flags', cl.map(function(c) { return FLAGS[c] || ''; }).join(' '));
   T('neg-badge', bizs.length);
   
-  // NUEVO: Hook para renderizar el gráfico MRR con datos reales
   if (typeof renderAdminMRRChart === 'function') {
       renderAdminMRRChart();
   } else {
-      // Fallback a gráfico falso
       var vals = [0, 0, 0, 0, mrr > 0 ? Math.round(mrr * .4) : 0, mrr];
       var max = Math.max.apply(null, vals.concat([10]));
       var mns = ['Oct','Nov','Dic','Ene','Feb',MONTHS_SHORT[now.getMonth()]];
@@ -370,26 +358,19 @@ function renderNotifications() {
   }).join('') : '<div style="text-align:center;color:var(--muted);padding:36px"><div style="font-size:13px">Sin notificaciones</div></div>');
 }
 
-
-
 /* ══════════════════════════
-   ELIMINAR BARBERÍA (Super Admin) - 
+   ELIMINAR BARBERÍA (Super Admin)
 ══════════════════════════ */
 function deleteBiz(id) {
-  // 1. PRIMERO: Cerramos el panel de la barbería para que no tape el mensaje
   if (typeof closeOv === 'function') {
     closeOv('ov-biz-profile');
   }
 
-  // 2. Esperamos un instante pequeñito (300ms) a que el panel se cierre visualmente
   setTimeout(function() {
-    
-    // 3. AHORA SÍ, abrimos el mensaje de confirmación sin nada que lo cubra
     openConfirmModal(
       'Eliminar negocio',
       '¿Estás seguro? Se eliminarán todos los datos, citas y trabajadores de este negocio de la base de datos.',
       function() {
-        // Borramos de la pantalla local
         DB.businesses = DB.businesses.filter(function(b) { return b.id !== id; });
         saveDB(); 
         renderBizListAdmin(filterBiz()); 
@@ -398,7 +379,6 @@ function deleteBiz(id) {
         
         toast('Eliminando de la nube...', '#F59E0B');
 
-        // Mandamos a borrar a la nube (Supabase)
         fetch('/api/delete-biz', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -426,7 +406,7 @@ function copyText(txt) {
 }
 
 /* ══════════════════════════
-   FUNCIONES DE NUBE (NUEVAS)
+   FUNCIONES DE NUBE
 ══════════════════════════ */
 async function fetchBizFromCloud(bizId) {
   try {
@@ -448,7 +428,7 @@ function syncBizToLocal(cloudData) {
   } else {
     DB.businesses.push(cloudData);
   }
-  CUR = cloudData; // Actualizamos la variable global
+  CUR = cloudData;
 }
 
 /* ══════════════════════════
@@ -538,7 +518,6 @@ window.onload = async function() {
   on('adm-back-btn', 'click', function() { goTo('s-portal'); });
   on('adm-home-btn', 'click', function() { goTo('s-portal'); });
   
-  // FUNCIÓN PROTEGIDA PARA EVITAR ERRORES SI EL ARCHIVO NO CARGA
   on('adm-out-btn', 'click',  function() { 
       if(typeof doAdminLogout === 'function') doAdminLogout(); 
   });
@@ -572,15 +551,9 @@ window.onload = async function() {
   on('skip-5', 'click', function() { bizRegStep(6); }); 
   on('next-6', 'click', function() { bizRegStep(7); });
   
-  // AQUI ES DONDE SE COMPLETA EL REGISTRO
   on('enter-panel-btn', 'click', function() {
-      // 1. Establecer CUR antes de guardar
       CUR = DB.businesses.filter(function(b){ return b.id===DB.currentBiz; })[0];
-      
-      // 2. Guardar DB ahora que CUR está definido (esto evita el error 500)
       if (typeof saveDB === 'function') saveDB();
-      
-      // 3. Mostrar el panel
       if(CUR) {
           if (typeof showBizPanel === 'function') showBizPanel();
       } else {
@@ -599,7 +572,6 @@ window.onload = async function() {
   });
 
   /* Biz panel — dueño */
-  // FUNCIONES PROTEGIDAS PARA EVITAR CRASH
   on('biz-out-btn', 'click',    function() { 
       if (typeof bizLogout === 'function') bizLogout(); 
   });
@@ -709,7 +681,7 @@ window.onload = async function() {
   setupPhotoUpload();
   setupWorkerPhotoUpload();
 
-  /* Eye toggles con SVG profesional */
+  /* Eye toggles */
   if (typeof initAllEyeToggles === 'function') initAllEyeToggles();
 
   /* QR */
@@ -728,7 +700,7 @@ window.onload = async function() {
     a.click();
   });
 
-  /* GLOBALS EXPORTADAS PARA EVITAR ERRORES DE REFERENCE */
+  /* GLOBALS EXPORTADAS */
   window.admTab            = admTab;
   window.bizTab            = bizTab;
   window.workerTab         = workerTab;
@@ -740,7 +712,6 @@ window.onload = async function() {
   window.copyText          = copyText;
   window.filterClientBiz   = filterClientBiz;
   
-  // FUNCIONES QUE PODRÍAN ESTAR EN OTRO ARCHIVO
   window.prevMonth         = typeof prevMonth === 'function' ? prevMonth : function(){};
   window.nextMonth         = typeof nextMonth === 'function' ? nextMonth : function(){};
   window.selectCalDay      = typeof selectCalDay === 'function' ? selectCalDay : function(){};
@@ -764,6 +735,18 @@ window.onload = async function() {
   window.confirmOk         = typeof confirmOk === 'function' ? confirmOk : function(){};
   window.confirmCancel     = typeof confirmCancel === 'function' ? confirmCancel : function(){};
   window.REG               = REG;
+
+  /* ══════════════════════════════════════════════════
+     STICKY SPLIT HORARIO — activar al pulsar tab
+  ══════════════════════════════════════════════════ */
+  if (window.innerWidth >= 1024) {
+    var horarioTabBtn = G('wn-horario');
+    if (horarioTabBtn) {
+      horarioTabBtn.addEventListener('click', function() {
+        setTimeout(initHorarioSplit, 200);
+      });
+    }
+  }
 
   /* ARRANQUE CONECTADO A LA NUBE */
   (async function startup() {
@@ -805,24 +788,21 @@ window.onload = async function() {
     if (DB.admin && DB.admin.auth) {
       goTo('s-admin');
       showAdminPanel();
-      // NUEVO: Conectar Realtime
       if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
     } else if (DB.currentWorker) {
       if (typeof showWorkerPanel === 'function') showWorkerPanel();
       else goTo('s-portal'); 
-      // NUEVO: Conectar Realtime
       if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
     } else if (DB.currentBiz) {
       if (typeof showBizPanel === 'function') showBizPanel();
       else goTo('s-portal'); 
-      // NUEVO: Conectar Realtime
       if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
     } else {
       goTo('s-portal');
     }
   })();
 
-  /* Escuchar cambios de hash (para clientes que navegan entre barberías) */
+  /* Escuchar cambios de hash */
   window.addEventListener('hashchange', async function() {
     let newHash = window.location.hash;
     if (newHash.startsWith('#b/')) {
@@ -832,4 +812,78 @@ window.onload = async function() {
     }
     if (typeof checkLinkAccess === 'function') checkLinkAccess();
   });
-};
+
+}; // <-- cierre del window.onload
+
+
+/* ══════════════════════════════════════════════════
+   STICKY SPLIT DEL HORARIO — función global
+   Se llama desde workerTab() en workers.js y desde
+   el listener del tab de horario en el onload.
+══════════════════════════════════════════════════ */
+function initHorarioSplit() {
+  var daysContainer = G('wk-horario-days');
+  if (!daysContainer || window.innerWidth < 1024) return;
+
+  // Evitar doble inicialización
+  if (daysContainer.querySelector('.horario-split-wrap')) return;
+
+  var days = Array.from(daysContainer.children);
+  if (days.length < 2) return;
+
+  var half    = Math.ceil(days.length / 2);
+  var topDays = days.slice(0, half);
+  var botDays = days.slice(half);
+
+  // Crear wrapper principal
+  var wrap    = document.createElement('div');
+  wrap.className = 'horario-split-wrap';
+
+  // Mitad superior
+  var topWrap = document.createElement('div');
+  topWrap.className = 'horario-top-half';
+  topDays.forEach(function(d) { topWrap.appendChild(d); });
+
+  // Divisor visual
+  var divider = document.createElement('div');
+  divider.className = 'horario-divider';
+  divider.innerHTML = '<span>Continúa el horario</span>';
+
+  // Mitad inferior
+  var botWrap = document.createElement('div');
+  botWrap.className = 'horario-bottom-half';
+  botDays.forEach(function(d) { botWrap.appendChild(d); });
+
+  wrap.appendChild(topWrap);
+  wrap.appendChild(divider);
+  wrap.appendChild(botWrap);
+  daysContainer.appendChild(wrap);
+
+  // Estado inicial de la mitad inferior (ligeramente opaca)
+  botWrap.style.opacity = '0.5';
+  botWrap.style.transform = 'translateY(16px)';
+
+  // Scroll handler
+  var topHeight = 0;
+  function onScroll() {
+    if (!topHeight) topHeight = topWrap.offsetHeight;
+    var rect     = wrap.getBoundingClientRect();
+    var topbarH  = 74; // altura del topbar
+    var progress = Math.max(0, Math.min(1,
+      (-rect.top + topbarH + topHeight * 0.4) / (topHeight * 0.6)
+    ));
+
+    // Superior: sube y se desvanece
+    topWrap.style.transform = 'translateY(' + (-progress * topHeight * 0.45) + 'px)';
+    topWrap.style.opacity   = String(1 - progress * 0.85);
+
+    // Inferior: sube y aparece
+    botWrap.style.transform = 'translateY(' + ((1 - progress) * 16) + 'px)';
+    botWrap.style.opacity   = String(0.5 + progress * 0.5);
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll(); // ejecutar una vez al iniciar
+}
+
+window.initHorarioSplit = initHorarioSplit;
