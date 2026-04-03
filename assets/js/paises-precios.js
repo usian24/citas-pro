@@ -6,7 +6,7 @@ const preciosPorPais = {
   "MX": "$ 200",       // México (Pesos mexicanos)
   "CL": "$ 10.000",    // Chile (Pesos chilenos)
   "AR": "$ 10.000",    // Argentina (Pesos argentinos)
-  "US": "$ 10"         // Estados Unidos (Dólares)
+  "US": "$ 15"         // Estados Unidos (Dólares)
 };
 
 // 2. Función para detectar país y cambiar el texto
