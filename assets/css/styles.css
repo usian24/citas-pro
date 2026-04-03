@@ -886,130 +886,111 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
   background: repeating-linear-gradient(45deg, rgba(0,0,0,0.04), rgba(0,0,0,0.04) 10px, transparent 10px, transparent 20px);
 }
 /* ══════════════════════════════════════════════════
-   🖥️ DASHBOARD CORPORATIVO (PC Y LAPTOPS)
+   🖥️ DASHBOARD MODO "LIBRO ABIERTO" (IZQUIERDA / DERECHA)
    ══════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
   
-  /* 1. SCROLL INTERNO PARA LA LÍNEA DE TIEMPO (AGENDA) */
-  .tl-wrap {
-    max-height: 65vh; 
-    overflow-y: auto; 
-    overflow-x: auto;
-    box-shadow: inset 0 0px 20px rgba(0,0,0,0.2); 
+  /* 1. OCULTAMOS LAS PESTAÑAS (En PC mostraremos todo a la vez) */
+  .bnav, .tabs {
+    display: none !important;
+  }
+
+  /* 2. CONTENEDOR MAESTRO A 2 COLUMNAS */
+  #biz-panel > div[style*="padding"],
+  #s-worker > div[style*="padding"] {
+    display: grid !important;
+    grid-template-columns: minmax(380px, 420px) 1fr; /* Izquierda fija, Derecha expansiva */
+    gap: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 32px !important;
+    align-items: start;
+  }
+
+  /* 3. FORZAR QUE TODAS LAS SECCIONES SEAN VISIBLES SIMULTÁNEAMENTE */
+  .pane {
+    display: block !important;
+    margin-bottom: 40px;
+  }
+
+  /* 4. COLUMNA IZQUIERDA: AGENDA MAESTRA (Fija y con scroll interno) */
+  #bp-agenda, #wp-agenda {
+    grid-column: 1 / 2;
+    grid-row: 1 / 20; /* Le decimos que ocupe todo el alto de la columna izquierda */
+    
+    /* Magia Sticky: Se pega a la pantalla */
+    position: sticky;
+    top: 85px; 
+    height: calc(100vh - 100px); /* Ocupa el alto de la pantalla menos el menú top */
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0 !important;
   }
   
-  /* 2. AGENDA A DOS COLUMNAS */
-  #bp-agenda.on, #wp-agenda.on {
-    display: grid !important;
-    grid-template-columns: 360px 1fr;
-    grid-template-rows: auto auto 1fr;
-    gap: 0 32px; 
-    align-items: start;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  #bp-agenda > .sec-hdr, #wp-agenda > .sec-hdr {
-    grid-column: 1 / -1;
-    margin-bottom: 24px;
-  }
+  /* Calendario estático arriba */
   #bp-agenda > .card, #wp-agenda > .card {
-    grid-column: 1 / 2;
-    grid-row: 2 / 4;
-    position: sticky;
-    top: 90px;
-    margin-bottom: 0;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important; 
-  }
-  #agenda-day-label, #wk-agenda-day-label {
-    grid-column: 2 / 3;
-    grid-row: 2 / 3;
-    text-align: left !important; 
-    font-size: 18px !important;  
-    margin-bottom: 16px !important;
-    margin-top: 0;
-    border-bottom: 1px solid var(--b);
-    padding-bottom: 12px;
-  }
-  #biz-agenda-list, #wk-agenda-list, 
-  #biz-daily-timeline, #wk-daily-timeline {
-    grid-column: 2 / 3;
-    grid-row: 3 / 4;
-  }
-  .cal-grid {
-    max-width: 100%;
+    flex-shrink: 0;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
   }
 
-  /* 3. DASHBOARD DE INICIO (HOME) A DOS COLUMNAS */
-  #bp-home.on, #wp-home.on {
-    display: grid !important;
-    grid-template-columns: 2fr 1fr; 
-    gap: 0 32px;
-    align-items: start;
-    max-width: 1200px;
-    margin: 0 auto;
+  /* Magia de Scroll Interno para la Línea de Tiempo */
+  .tl-wrap {
+    flex: 1; /* Ocupa el resto del espacio disponible abajo del calendario */
+    overflow-y: auto; /* ¡AQUÍ ESTÁ EL SCROLL INTERNO QUE PEDISTE! */
+    overflow-x: auto;
+    border-radius: 16px;
+    box-shadow: inset 0 2px 15px rgba(0,0,0,0.25);
   }
-  #bp-home > #biz-greeting, #wp-home > #wk-greeting,
-  #bp-home > .stats2, #wp-home > .stats2 {
-    grid-column: 1 / -1;
-  }
-  #bp-home > .link-box, #wp-home > .link-box {
-    grid-column: 2 / 3;
-    grid-row: 3 / 5;
-    position: sticky;
-    top: 90px;
-  }
-  #bp-home > .sec-hdr, #wp-home > .sec-hdr,
-  #bh-appts, #wk-appts {
-    grid-column: 1 / 2;
+  [data-theme="light"] .tl-wrap {
+    box-shadow: inset 0 2px 15px rgba(0,0,0,0.05);
   }
 
-  /* 4. DASHBOARD DE FINANZAS A DOS COLUMNAS */
-  #bp-finanzas.on, #wp-finanzas.on {
-    display: grid !important;
-    grid-template-columns: 2fr 1fr; 
-    gap: 0 32px;
-    align-items: start;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  #bp-finanzas > .sec-hdr:nth-child(1), #wp-finanzas > .sec-hdr:nth-child(1),
-  #bp-finanzas > .stats2, #wp-finanzas > .stats2 {
-    grid-column: 1 / -1;
-  }
-  #bp-finanzas > .card, #wp-finanzas > .card {
-    grid-column: 1 / 2;
-  }
-  #bp-finanzas > .sec-hdr:nth-of-type(2), #wp-finanzas > .sec-hdr:nth-of-type(2) {
+  /* 5. COLUMNA DERECHA: ORDEN DE LAS SECCIONES */
+  /* Las metemos todas en la columna 2 */
+  #bp-home, #wp-home,
+  #bp-finanzas, #wp-finanzas,
+  #bp-equipo, #wp-servicios,
+  #wp-horario, #bp-tienda, #wp-galeria,
+  #bp-perfil, #wp-perfil, #wp-notif {
     grid-column: 2 / 3;
-    grid-row: 3 / 4;
-    margin-top: 0;
-  }
-  #biz-appts-fin, #wk-appts-fin {
-    grid-column: 2 / 3;
-    grid-row: 4 / 5;
-    max-height: 450px;
-    overflow-y: auto;
-    padding-right: 12px;
   }
 
-  /* 5. EQUIPO, SERVICIOS Y HORARIOS EN FORMATO GRILLA (TARJETAS) */
+  /* 🎯 ORDEN EXACTO DEL TRABAJADOR (De arriba a abajo) */
+  #wp-home      { grid-row: 1; }
+  #wp-finanzas  { grid-row: 2; }
+  #wp-horario   { grid-row: 3; }
+  #wp-servicios { grid-row: 4; }
+  #wp-perfil    { grid-row: 5; }
+  #wp-galeria   { grid-row: 6; }
+  #wp-notif     { grid-row: 7; }
+
+  /* 🎯 ORDEN EXACTO DE LA BARBERÍA (De arriba a abajo) */
+  #bp-home      { grid-row: 1; }
+  #bp-finanzas  { grid-row: 2; }
+  #bp-equipo    { grid-row: 3; }
+  #bp-perfil    { grid-row: 4; }
+  #bp-tienda    { grid-row: 5; }
+
+  /* 6. ESTILIZACIÓN DE LOS ELEMENTOS DE LA DERECHA */
+  /* Los contadores (Citas hoy, Ingresos, etc) en 4 columnas en lugar de 2 */
+  .stats2 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  
+  /* Cajas de Horarios(24H), Servicios y Equipo divididas tipo mosaico */
   #biz-barbers-list, #wk-svcs-list, #wk-horario-days {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); 
-    gap: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
   }
   #biz-barbers-list > div, #wk-svcs-list > div, #wk-horario-days > div {
     margin-bottom: 0 !important;
-    height: 100%; 
   }
 
-  /* 6. PERFIL CENTRADO */
-  #bp-perfil > .card, #wp-perfil > .card,
-  #bp-perfil > a, #wp-perfil > a {
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
+  /* Perfil centrado y contenido para no verse gigante */
+  #bp-perfil > .card, #wp-perfil > .card {
+    max-width: 700px;
+    margin: 0 auto 16px auto;
   }
 }
