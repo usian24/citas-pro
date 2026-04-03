@@ -889,12 +889,12 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
    🖥️ DASHBOARD DE AGENDA PARA PC Y LAPTOPS
    ══════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
-  /* 1. Convertimos los paneles de agenda en una grilla de 2 columnas */
-  #bp-agenda, #wp-agenda {
+  /* 1. SÓLO aplicamos el Grid si la pestaña está activa (.on) */
+  #bp-agenda.on, #wp-agenda.on {
     display: grid !important;
     grid-template-columns: 360px 1fr; /* Izquierda: 360px, Derecha: el resto del espacio */
     grid-template-rows: auto auto 1fr;
-    gap: 0 32px; /* Separación entre el calendario y la línea de tiempo */
+    gap: 0 32px; 
     align-items: start;
     max-width: 1200px;
     margin: 0 auto;
@@ -911,17 +911,17 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
     grid-column: 1 / 2;
     grid-row: 2 / 4;
     position: sticky;
-    top: 90px; /* Se queda pegado a esta distancia del techo al hacer scroll */
+    top: 90px;
     margin-bottom: 0;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important; /* Sombra más pronunciada para resaltar */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important; 
   }
   
   /* 4. La etiqueta de la fecha ("MIÉRCOLES 22...") se va a la derecha arriba */
   #agenda-day-label, #wk-agenda-day-label {
     grid-column: 2 / 3;
     grid-row: 2 / 3;
-    text-align: left !important; /* La alineamos a la izquierda para el diseño de PC */
-    font-size: 18px !important;  /* Más grande para que parezca un título de sección */
+    text-align: left !important; 
+    font-size: 18px !important;  
     margin-bottom: 16px !important;
     margin-top: 0;
     border-bottom: 1px solid var(--b);
