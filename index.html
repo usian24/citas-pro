@@ -494,26 +494,25 @@
         <div class="sec-hdr"><span class="sec-ttl">Mi equipo</span><button class="btn btn-blue btn-sm" style="width:auto" id="add-barber-btn">Añadir +</button></div>
         <div id="biz-barbers-list"></div>
       </div>
+      
       <div class="pane" id="bp-tienda">
         <div class="sec-hdr">
           <span class="sec-ttl">Mi Tienda</span>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-dark btn-sm" style="width:auto" onclick="openCatModal()">Categoría +</button>
-            <button class="btn btn-blue btn-sm" style="width:auto" onclick="openProdModal()">Producto +</button>
-          </div>
+          <button class="btn btn-blue btn-sm" style="width:auto" onclick="openProdModal()">Añadir Producto +</button>
         </div>
-        <div class="tip-box">Sube tus productos reales. Organízalos por categorías para que tus clientes los encuentren rápido.</div>
+        <div class="tip-box">Sube tus productos reales. Las categorías se crearán automáticamente según las etiquetas que uses.</div>
         
         <div style="font-size:14px;font-weight:800;margin-bottom:12px;margin-top:20px;display:flex;justify-content:space-between">
-          <span>Tus Categorías</span>
+          <span>Tus Categorías (Automáticas)</span>
         </div>
         <div id="biz-categorias-list" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;">
-          </div>
+        </div>
 
         <div style="font-size:14px;font-weight:800;margin-bottom:12px;margin-top:20px;">Tus Productos</div>
-        <div id="biz-productos-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;">
-          </div>
+        <div id="biz-productos-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;">
+        </div>
       </div>
+
       <div class="pane" id="bp-finanzas">
         <div class="sec-hdr"><span class="sec-ttl">Finanzas (todo el equipo)</span></div>
         <div class="stats2">
@@ -1136,35 +1135,16 @@
   </div>
 </div>
 
-<div class="ov bot" id="ov-tienda-cat">
-  <div class="mbot" onclick="event.stopPropagation()">
-    <div class="mhdr"><span class="mttl">Nueva Categoría</span><div class="xbtn" onclick="closeOv('ov-tienda-cat')">×</div></div>
-    <div class="tip-box">Crea secciones para agrupar tus productos.</div>
-    <div class="field"><label>Nombre (Ej: Ceras, Rostro) *</label><input class="inp" id="cat-name" placeholder="Nombre de categoría" maxlength="30"/></div>
-    <div class="field">
-      <label>Ícono de la categoría *</label>
-      <select class="inp" id="cat-icon-sel">
-        <option value="equipo">📦 Equipos / Varios</option>
-        <option value="rostro">👁️ Rostro / Facial</option>
-        <option value="locion">🧴 Lociones / Cremas</option>
-        <option value="corte">✂️ Corte / Tijeras</option>
-        <option value="barba">🧔 Barba / Bigote</option>
-        <option value="gel">💧 Gel / Ceras</option>
-      </select>
-    </div>
-    <button class="btn btn-blue" onclick="saveCategory()">Guardar Categoría</button>
-  </div>
-</div>
-
 <div class="ov bot" id="ov-tienda-prod">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Añadir Producto</span><div class="xbtn" onclick="closeOv('ov-tienda-prod')">×</div></div>
     <div class="field"><label>Nombre del Producto *</label><input class="inp" id="prod-name" placeholder="Ej: Cera Fijadora Mate" maxlength="80"/></div>
-    <div class="field"><label>Categoría *</label><select class="inp" id="prod-cat"></select></div>
-    <div style="display:flex;gap:10px">
-      <div class="field" style="flex:1"><label>Precio (€) *</label><input class="inp" id="prod-price" type="number" placeholder="15" min="0" step="0.5"/></div>
-      <div class="field" style="flex:1"><label>Descuento (%)</label><input class="inp" id="prod-disc" type="number" placeholder="0" min="0" max="99"/></div>
+    <div class="field">
+      <label>Categoría / Etiqueta *</label>
+      <input class="inp" id="prod-cat" list="cat-list" placeholder="Ej: Ceras, Rostro, Barbería..." maxlength="30"/>
+      <datalist id="cat-list"></datalist>
     </div>
+    <div class="field"><label>Precio (€) *</label><input class="inp" id="prod-price" type="number" placeholder="15" min="0" step="0.5"/></div>
     <div class="field"><label>Descripción breve</label><input class="inp" id="prod-desc" placeholder="Detalles del producto..." maxlength="150"/></div>
     <div class="field">
       <label>Foto del producto</label>

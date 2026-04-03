@@ -36,47 +36,37 @@
       color: var(--text); font-family: var(--font); font-size: 14px;
     }
     
-    /* Carrusel de Categorías */
+    /* Carrusel de Etiquetas (Categorías Automáticas) */
     .cat-scroll {
-      display: flex; gap: 14px; padding: 0 20px 20px;
+      display: flex; gap: 10px; padding: 0 20px 20px;
       overflow-x: auto; scroll-snap-type: x mandatory;
       scrollbar-width: none;
     }
     .cat-scroll::-webkit-scrollbar { display: none; }
     
-    .cat-item {
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
-      scroll-snap-align: start; cursor: pointer; flex-shrink: 0;
+    .cat-pill { 
+      background: var(--card); border: 1px solid var(--b); color: var(--t2); 
+      padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; 
+      cursor: pointer; flex-shrink: 0; transition: all 0.2s; 
     }
-    .cat-circle {
-      width: 56px; height: 56px; border-radius: 50%;
-      background: var(--bblue); border: 2px solid transparent;
-      display: flex; align-items: center; justify-content: center;
-      overflow: hidden; transition: all 0.2s; color: var(--blue);
+    .cat-pill.active { 
+      background: var(--blue); color: #fff; border-color: var(--blue); box-shadow:0 4px 10px rgba(74,127,212,0.3);
     }
-    .cat-item.active .cat-circle { border-color: var(--blue); background: var(--blue); color: #fff; }
-    .cat-name { font-size: 11px; font-weight: 700; color: var(--t2); transition: color 0.2s; }
-    .cat-item.active .cat-name { color: var(--blue); }
     
-    /* Productos */
-    .product-scroll {
-      display: flex; gap: 14px; padding: 0 20px 20px;
-      overflow-x: auto; scroll-snap-type: x mandatory;
-      scrollbar-width: none;
+    /* Grid de Productos */
+    .product-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; padding: 0 20px; margin-bottom: 20px;
     }
-    .product-scroll::-webkit-scrollbar { display: none; }
     
     .p-card {
-      width: 145px;
-      flex-shrink: 0; scroll-snap-align: start;
       background: var(--card); border: 1px solid var(--b);
       border-radius: 16px; overflow: hidden; position: relative;
-      display: flex; flex-direction: column; transition: transform 0.2s;
+      display: flex; flex-direction: column; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.04);
     }
     .p-card:active { transform: scale(0.97); }
     
     .p-img-wrap {
-      width: 100%; height: 120px; background: #fff; 
+      width: 100%; height: 110px; background: #fff; 
       position: relative; padding: 10px; display: flex; align-items: center; justify-content: center;
     }
     .p-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; border-radius: 8px; }
@@ -95,11 +85,9 @@
     .p-like.active { color: var(--red); }
     
     .p-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+    .p-tag { align-self: flex-start; font-size: 9px; color: var(--blue); font-weight: 800; background: rgba(74,127,212,0.1); padding: 3px 6px; border-radius: 6px; text-transform: uppercase; margin-bottom: 6px; }
     .p-title { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    
-    .p-price-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 10px; margin-top: auto; }
-    .p-old { font-size: 10px; color: var(--muted); text-decoration: line-through; }
-    .p-new { font-size: 15px; font-weight: 900; color: var(--green); }
+    .p-new { font-size: 15px; font-weight: 900; color: var(--green); margin-bottom: 10px; margin-top: auto; }
     
     /* Botón flotante */
     .cart-float {
@@ -124,7 +112,7 @@
       position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
       background: var(--blue); color: #fff; padding: 12px 24px; border-radius: var(--rpill);
       font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.26.55); z-index: 100;
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.26, 1.55); z-index: 100;
       box-shadow: 0 8px 20px rgba(74,127,212,0.4);
     }
     #toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -144,14 +132,14 @@
 
   <div class="shop-search">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-    <input type="text" placeholder="Buscar productos..."/>
+    <input type="text" id="shop-search-input" placeholder="Buscar productos..." oninput="buscarProductos(this.value)"/>
   </div>
 
   <div style="font-size:15px; font-weight:900; padding: 0 20px; margin-bottom:12px;">Categorías</div>
   <div class="cat-scroll" id="client-cats"></div>
 
-  <div style="font-size:15px; font-weight:900; padding: 0 20px; margin-bottom:12px; margin-top:10px;">Destacados</div>
-  <div class="product-scroll" id="client-prods"></div>
+  <div style="font-size:15px; font-weight:900; padding: 0 20px; margin-bottom:12px; margin-top:10px;">Catálogo</div>
+  <div class="product-grid" id="client-prods"></div>
 
   <div class="cart-float" onclick="abrirCarrito()">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
@@ -169,14 +157,22 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="assets/js/db.js"></script>
+  
   <script>
-    let SHOP_BIZ = null;
+    // Conexión a Supabase (Entorno DEV)
+    const SUPABASE_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-'; 
+    const tiendaSupa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let productosDB = []; // Aquí se guardan los productos que bajemos de la nube
     let carrito = [];
     let currentCategory = 'all';
     let toastTimeout;
 
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", async function() {
+      // Cargar DB Local para sacar el ID de la barbería actual
       if (typeof loadDB === 'function') { window.DB = loadDB(); }
 
       let bizId = '';
@@ -187,18 +183,34 @@
         bizId = window.DB.currentBiz;
       }
       
-      if (bizId && window.DB && window.DB.businesses) {
-        SHOP_BIZ = window.DB.businesses.find(b => b.id === bizId);
-        if (SHOP_BIZ) {
-          document.getElementById('shop-title').textContent = "Tienda de " + SHOP_BIZ.name;
-          inicializarTienda();
-        } else {
-          document.getElementById('shop-title').textContent = "Negocio no encontrado";
-        }
+      if (bizId) {
+        let SHOP_BIZ = window.DB.businesses ? window.DB.businesses.find(b => b.id === bizId) : null;
+        document.getElementById('shop-title').textContent = SHOP_BIZ ? "Tienda de " + SHOP_BIZ.name : "Nuestra Tienda";
+        
+        // ¡Traer los datos en tiempo real desde Supabase!
+        await fetchProductosDeSupabase(bizId);
       } else {
          document.getElementById('shop-title').textContent = "Enlace inválido";
       }
     });
+
+    async function fetchProductosDeSupabase(bizId) {
+        try {
+            const { data, error } = await tiendaSupa
+              .from('products')
+              .select('*')
+              .eq('business_id', bizId);
+              
+            if (error) throw error;
+            
+            productosDB = data || [];
+            inicializarTienda();
+            
+        } catch(err) {
+            console.error("Error al conectar con la tienda:", err);
+            document.getElementById('client-prods').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--red);">Error al cargar los productos de la tienda.</div>';
+        }
+    }
 
     // --- FUNCIONES DE UI ---
     function mostrarAlertaCustom(titulo, mensaje, icono = "🛍️") {
@@ -216,7 +228,7 @@
         clearTimeout(toastTimeout);
         toastTimeout = setTimeout(() => {
             toast.classList.remove('show');
-        }, 2000); // Desaparece en 2 segundos
+        }, 2000); 
     }
 
     function inicializarTienda() {
@@ -224,29 +236,18 @@
         renderProductos('all');
     }
 
-    const defaultSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`;
-
+    // Generar Etiquetas Dinámicas
     function renderCategorias() {
         const container = document.getElementById('client-cats');
         if(!container) return;
         
-        let cats = SHOP_BIZ.categories || [];
+        // Buscar todas las etiquetas de los productos y quitar repetidas
+        let categoriasUnicas = [...new Set(productosDB.map(p => p.category).filter(Boolean))];
         
-        let html = `
-          <div class="cat-item ${currentCategory === 'all' ? 'active' : ''}" onclick="filtrarProductos('all')">
-            <div class="cat-circle"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
-            <span class="cat-name">Todo</span>
-          </div>
-        `;
+        let html = `<div class="cat-pill ${currentCategory === 'all' ? 'active' : ''}" onclick="filtrarProductos('all')">Todo</div>`;
         
-        cats.forEach(c => {
-            let iconContent = (c.icon && c.icon.length <= 5) ? `<span style="font-size:24px">${c.icon}</span>` : defaultSvg;
-            html += `
-              <div class="cat-item ${currentCategory === c.id ? 'active' : ''}" onclick="filtrarProductos('${c.id}')">
-                <div class="cat-circle" style="background:#F8FAFC; border: 2px solid ${currentCategory === c.id ? 'var(--blue)' : 'transparent'}">${iconContent}</div>
-                <span class="cat-name">${c.name}</span>
-              </div>
-            `;
+        categoriasUnicas.forEach(cat => {
+            html += `<div class="cat-pill ${currentCategory === cat ? 'active' : ''}" onclick="filtrarProductos('${cat}')">${cat}</div>`;
         });
         
         container.innerHTML = html;
@@ -254,47 +255,59 @@
 
     function filtrarProductos(catId) {
         currentCategory = catId;
+        document.getElementById('shop-search-input').value = ''; // Limpiar buscador al cambiar filtro
         renderCategorias(); 
         renderProductos(catId);
     }
+    
+    function buscarProductos(termino) {
+        let text = termino.toLowerCase().trim();
+        let filtrados = productosDB.filter(p => p.name.toLowerCase().includes(text));
+        
+        // Si hay búsqueda, quitar la marca azul de las categorías
+        if (text !== '') {
+            currentCategory = ''; 
+            renderCategorias();
+        } else {
+            currentCategory = 'all';
+            renderCategorias();
+        }
+        
+        renderTarjetas(filtrados);
+    }
 
     function renderProductos(catId) {
+        let prods = catId === 'all' ? productosDB : productosDB.filter(p => p.category === catId);
+        renderTarjetas(prods);
+    }
+
+    // Dibujar las tarjetas pequeñas (130px)
+    function renderTarjetas(prods) {
         const container = document.getElementById('client-prods');
         if(!container) return;
 
-        let prods = SHOP_BIZ.products || [];
-        
-        if(catId !== 'all') {
-            prods = prods.filter(p => p.categoryId === catId);
-        }
-
         if(prods.length === 0) {
-            container.innerHTML = `<div style="width:100%; text-align:center; padding:40px; color:var(--muted); font-size:13px;">No hay productos disponibles aquí.</div>`;
+            container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:13px;">No hay productos disponibles.</div>`;
             return;
         }
 
         let html = '';
         prods.forEach(p => {
-            let finalPrice = p.discount > 0 ? (p.price - (p.price * p.discount / 100)).toFixed(2) : p.price.toFixed(2);
-            let badge = p.discount > 0 ? `<span class="p-badge">-${p.discount}%</span>` : '';
-            let oldPrice = p.discount > 0 ? `<span class="p-old">${p.price.toFixed(2)}€</span>` : '';
-            let img = p.image ? p.image : 'https://placehold.co/300x300/ffffff/4A7FD4?text=Foto';
+            let finalPrice = parseFloat(p.price).toFixed(2);
+            let img = p.image ? p.image : 'https://placehold.co/300x300/ffffff/4A7FD4?text=Producto';
 
             html += `
             <div class="p-card">
               <div class="p-img-wrap">
-                ${badge}
                 <div class="p-like" onclick="toggleLike(this)">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 </div>
                 <img src="${img}" alt="${p.name}"/>
               </div>
               <div class="p-info">
+                <div class="p-tag">${p.category || 'General'}</div>
                 <div class="p-title">${p.name}</div>
-                <div class="p-price-row">
-                  <span class="p-new">${finalPrice}€</span>
-                  ${oldPrice}
-                </div>
+                <div class="p-new">${finalPrice}€</div>
                 <button class="btn btn-blue btn-sm" onclick="agregarAlCarrito('${p.id}')" style="padding:8px; font-size:11px;">Añadir al carrito</button>
               </div>
             </div>
@@ -315,7 +328,7 @@
     }
 
     function agregarAlCarrito(id) {
-        let prod = (SHOP_BIZ.products || []).find(p => p.id === id);
+        let prod = productosDB.find(p => p.id === id);
         if(!prod) return;
         
         let item = carrito.find(c => c.product.id === id);
@@ -327,7 +340,7 @@
         
         actualizarBadgeCarrito();
         
-        // Animación del botón flotante y Toast
+        // Efecto rebote en el botón
         const cartBtn = document.querySelector('.cart-float');
         cartBtn.style.transform = 'scale(1.1)';
         setTimeout(() => cartBtn.style.transform = 'scale(1)', 200);
@@ -349,6 +362,7 @@
             mostrarAlertaCustom("Carrito Vacío", "Aún no has añadido ningún producto a tu carrito.", "🛒");
             return;
         }
+        // En el próximo paso crearemos el panel lateral (Drawer) para ver el resumen del pedido.
         mostrarAlertaCustom("¡Casi listo!", "Aquí abriremos el panel para revisar tu pedido y enviarlo por WhatsApp.", "🚀");
     }
   </script>
