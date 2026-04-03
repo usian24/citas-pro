@@ -886,442 +886,127 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
   background: repeating-linear-gradient(45deg, rgba(0,0,0,0.04), rgba(0,0,0,0.04) 10px, transparent 10px, transparent 20px);
 }
 /* ══════════════════════════════════════════════════
-   🖥️ DASHBOARD CORPORATIVO (PC Y LAPTOPS)
-   Solo afecta pantallas ≥ 1024px
+   🖥️ DASHBOARD CORPORATIVO PREMIUM (PC Y LAPTOPS)
    ══════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
-
-  /* ─── CONTENEDOR GENERAL ─── */
+  
+  /* ── CONTENEDOR GENERAL ── */
   #biz-panel > div:last-child,
   #s-worker > div:last-child {
-    max-width: 1280px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 32px 90px;
+    padding: 32px 40px 90px;
   }
 
-  /* ─── CRÍTICO: Solo el panel con clase .on se muestra ─── */
-  .pane {
-    display: none !important;
-  }
-  .pane.on {
-    display: block !important;
-  }
+  /* ── PESTAÑAS (MANTIENEN SU INDEPENDENCIA) ── */
+  .pane { display: none !important; }
+  .pane.on { display: block !important; animation: fadeUp 0.3s ease; }
 
-  /* ══════════════════════════════════════
-     1. HOME — layout dos columnas solo cuando .on
-  ══════════════════════════════════════ */
-
-  #bp-home.on,
-  #wp-home.on {
+  /* ── 1. INICIO (HOME) ── */
+  #bp-home.on, #wp-home.on {
     display: grid !important;
-    grid-template-columns: 1fr 340px;
-    gap: 0 32px;
+    grid-template-columns: 2fr 1fr; /* 66% Izquierda, 33% Derecha */
+    gap: 24px 32px;
     align-items: start;
-    max-width: 1280px;
-    margin: 0 auto;
   }
-
-  #bp-home.on > #biz-greeting,
-  #wp-home.on > #wk-greeting {
-    grid-column: 1 / -1;
-    font-size: 26px !important;
-    margin-bottom: 20px !important;
+  #bp-home.on > #biz-greeting, #wp-home.on > #wk-greeting {
+    grid-column: 1 / -1; margin-bottom: 0 !important; font-size: 28px !important;
   }
-
-  #bp-home.on > .stats2,
-  #wp-home.on > .stats2 {
-    grid-column: 1 / -1;
-    margin-bottom: 24px;
+  #bp-home.on > .stats2, #wp-home.on > .stats2 {
+    grid-column: 1 / -1; 
+    grid-template-columns: repeat(4, 1fr) !important; /* 4 Tarjetas de KPI en línea */
   }
-
-  #bp-home.on > .link-box,
-  #wp-home.on > .link-box {
+  #bp-home.on > .sec-hdr, #wp-home.on > .sec-hdr,
+  #bp-home.on > #bh-appts, #wp-home.on > #wk-appts {
+    grid-column: 1 / 2; /* Las citas se quedan a la izquierda */
+  }
+  #bp-home.on > .link-box, #wp-home.on > .link-box {
     grid-column: 2 / 3;
     grid-row: 3 / 5;
-    position: sticky;
-    top: 74px;
-    margin-bottom: 0;
+    position: sticky; top: 90px; /* El enlace flota a la derecha */
   }
 
-  #bp-home.on > .sec-hdr,
-  #wp-home.on > .sec-hdr {
-    grid-column: 1 / 2;
-    grid-row: 3 / 4;
-  }
-
-  #bp-home.on > #bh-appts,
-  #wp-home.on > #wk-appts {
-    grid-column: 1 / 2;
-    grid-row: 4 / 5;
-  }
-
-
-  /* ══════════════════════════════════════
-     2. AGENDA — layout dos columnas solo cuando .on
-  ══════════════════════════════════════ */
-
-  #bp-agenda.on,
-  #wp-agenda.on {
+  /* ── 2. AGENDA ── */
+  #bp-agenda.on, #wp-agenda.on {
     display: grid !important;
     grid-template-columns: 360px 1fr;
     gap: 0 32px;
     align-items: start;
-    max-width: 1280px;
-    margin: 0 auto;
   }
-
-  #bp-agenda.on > .sec-hdr,
-  #wp-agenda.on > .sec-hdr {
-    grid-column: 1 / -1;
-    margin-bottom: 20px;
+  #bp-agenda.on > .sec-hdr, #wp-agenda.on > .sec-hdr { grid-column: 1 / -1; margin-bottom: 20px; }
+  #bp-agenda.on > .card, #wp-agenda.on > .card {
+    grid-column: 1 / 2; grid-row: 2 / 5;
+    position: sticky; top: 90px; margin-bottom: 0;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
   }
-
-  #bp-agenda.on > .card,
-  #wp-agenda.on > .card {
-    grid-column: 1 / 2;
-    grid-row: 2 / 5;
-    position: sticky;
-    top: 74px;
-    margin-bottom: 0;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.25) !important;
+  #agenda-day-label, #wk-agenda-day-label {
+    grid-column: 2 / 3; grid-row: 2 / 3;
+    font-size: 18px !important; margin: 0 0 16px 0 !important;
+    border-bottom: 1px solid var(--b); padding-bottom: 12px; text-align: left !important;
   }
-
-  #bp-agenda.on > #agenda-day-label,
-  #wp-agenda.on > #wk-agenda-day-label {
-    grid-column: 2 / 3;
-    grid-row: 2 / 3;
-    font-size: 18px !important;
-    margin-bottom: 16px !important;
-    margin-top: 4px;
-    border-bottom: 1px solid var(--b, rgba(255,255,255,0.08));
-    padding-bottom: 12px;
-  }
-
-  #bp-agenda.on > #biz-agenda-list,
-  #wp-agenda.on > #wk-agenda-list {
-    grid-column: 2 / 3;
-    grid-row: 3 / 4;
-  }
-
-  #bp-agenda.on > #biz-daily-timeline,
-  #wp-agenda.on > #wk-daily-timeline {
-    grid-column: 2 / 3;
-    grid-row: 4 / 5;
-    max-height: 68vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+  #biz-agenda-list, #wk-agenda-list { grid-column: 2 / 3; grid-row: 3 / 4; }
+  #biz-daily-timeline, #wk-daily-timeline {
+    grid-column: 2 / 3; grid-row: 4 / 5;
+    max-height: 65vh; overflow-y: auto; padding-right: 8px;
     border-radius: 16px;
-    padding-right: 4px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(74,127,212,0.3) transparent;
-  }
-  #biz-daily-timeline::-webkit-scrollbar,
-  #wk-daily-timeline::-webkit-scrollbar { width: 4px; }
-  #biz-daily-timeline::-webkit-scrollbar-thumb,
-  #wk-daily-timeline::-webkit-scrollbar-thumb {
-    background: rgba(74,127,212,0.35);
-    border-radius: 4px;
   }
 
-
-  /* ══════════════════════════════════════
-     3. FINANZAS — layout dos columnas solo cuando .on
-  ══════════════════════════════════════ */
-
-  #bp-finanzas.on,
-  #wp-finanzas.on {
+  /* ── 3. FINANZAS ── */
+  #bp-finanzas.on, #wp-finanzas.on {
     display: grid !important;
-    grid-template-columns: 1fr 360px;
-    gap: 0 32px;
+    grid-template-columns: 2fr 1fr; /* Gráficos izquierda, Historial derecha */
+    gap: 24px 32px;
     align-items: start;
-    max-width: 1280px;
-    margin: 0 auto;
   }
-
-  #bp-finanzas.on > .sec-hdr:first-child,
-  #wp-finanzas.on > .sec-hdr:first-child {
+  #bp-finanzas.on > .sec-hdr:first-child, #wp-finanzas.on > .sec-hdr:first-child { grid-column: 1 / -1; margin-bottom: 0; }
+  #bp-finanzas.on > .stats2, #wp-finanzas.on > .stats2 {
     grid-column: 1 / -1;
-  }
-
-  #bp-finanzas.on > .stats2,
-  #wp-finanzas.on > .stats2 {
-    grid-column: 1 / -1;
-    margin-bottom: 24px;
-  }
-
-  #bp-finanzas.on > .card,
-  #wp-finanzas.on > .card {
-    grid-column: 1 / 2;
-    grid-row: 3 / 5;
-  }
-
-  #bp-finanzas.on > .sec-hdr:nth-of-type(2),
-  #wp-finanzas.on > .sec-hdr:nth-of-type(2) {
-    grid-column: 2 / 3;
-    grid-row: 3 / 4;
-    margin-top: 0;
-    font-size: 16px !important;
-    border-bottom: 1px solid var(--b, rgba(255,255,255,0.08));
-    padding-bottom: 10px;
-    margin-bottom: 12px !important;
-  }
-
-  #bp-finanzas.on > #biz-appts-fin,
-  #wp-finanzas.on > #wk-appts-fin {
-    grid-column: 2 / 3;
-    grid-row: 4 / 5;
-    max-height: 55vh;
-    overflow-y: auto;
-    padding-right: 8px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(74,127,212,0.3) transparent;
-  }
-  #biz-appts-fin::-webkit-scrollbar,
-  #wk-appts-fin::-webkit-scrollbar { width: 4px; }
-  #biz-appts-fin::-webkit-scrollbar-thumb,
-  #wk-appts-fin::-webkit-scrollbar-thumb {
-    background: rgba(74,127,212,0.35);
-    border-radius: 4px;
-  }
-
-
-  /* ══════════════════════════════════════
-     4. EQUIPO — grid de tarjetas solo cuando .on
-  ══════════════════════════════════════ */
-
-  #bp-equipo.on {
-    display: block !important;
-    max-width: 1280px;
-    margin: 0 auto;
-  }
-
-  #bp-equipo.on > .sec-hdr {
-    margin-bottom: 20px;
-  }
-
-  #bp-equipo.on #biz-barbers-list {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 16px;
-  }
-
-  #bp-equipo.on #biz-barbers-list > div {
-    margin-bottom: 0 !important;
-  }
-
-
-  /* ══════════════════════════════════════
-     5. SERVICIOS (WORKER) — grid solo cuando .on
-  ══════════════════════════════════════ */
-
-  #wp-servicios.on {
-    display: block !important;
-    max-width: 1280px;
-    margin: 0 auto;
-  }
-
-  #wp-servicios.on > .sec-hdr {
-    margin-bottom: 20px;
-  }
-
-  #wp-servicios.on > .tip-box {
-    margin-bottom: 16px;
-  }
-
-  #wp-servicios.on #wk-svcs-list {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 14px;
-  }
-
-  #wp-servicios.on #wk-svcs-list > div {
-    margin-bottom: 0 !important;
-  }
-
-
-  /* ══════════════════════════════════════
-     6. PERFIL — dos columnas solo cuando .on
-  ══════════════════════════════════════ */
-
-  #bp-perfil.on,
-  #wp-perfil.on {
-    display: grid !important;
-    grid-template-columns: 1fr 320px;
-    gap: 0 32px;
-    align-items: start;
-    max-width: 1280px;
-    margin: 0 auto;
-  }
-
-  #bp-perfil.on > .sec-hdr,
-  #wp-perfil.on > .sec-hdr {
-    grid-column: 1 / -1;
-    margin-bottom: 20px;
-  }
-
-  #bp-perfil.on > .card:first-of-type,
-  #wp-perfil.on > .card:first-of-type {
-    grid-column: 1 / 2;
-  }
-
-  #bp-perfil.on > .card:nth-of-type(2),
-  #wp-perfil.on > .card:nth-of-type(2) {
-    grid-column: 2 / 3;
-    grid-row: 2 / 3;
-    position: sticky;
-    top: 74px;
-  }
-
-  #bp-perfil.on > .card:nth-of-type(3),
-  #wp-perfil.on > .card:nth-of-type(3),
-  #bp-perfil.on > a,
-  #wp-perfil.on > a {
-    grid-column: 2 / 3;
-  }
-
-
-  /* ══════════════════════════════════════
-     7. TIENDA / GALERÍA — grid solo cuando .on
-  ══════════════════════════════════════ */
-
-  #bp-tienda.on,
-  #wp-galeria.on {
-    display: block !important;
-    max-width: 1280px;
-    margin: 0 auto;
-  }
-
-  #bp-tienda.on > .sec-hdr,
-  #wp-galeria.on > .sec-hdr {
-    margin-bottom: 20px;
-  }
-
-  #bp-tienda.on > .tip-box,
-  #wp-galeria.on > .tip-box {
-    margin-bottom: 16px;
-  }
-
-  #bp-tienda.on #biz-gallery,
-  #wp-galeria.on #wk-gallery {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 14px;
-  }
-
-
-  /* ══════════════════════════════════════
-     8. HORARIO — bloque centrado solo cuando .on
-  ══════════════════════════════════════ */
-
-  #wp-horario.on {
-    display: block !important;
-    max-width: 760px;
-    margin: 0 auto;
-  }
-
-  /* Clases del sticky split (las aplica el JS) */
-  .horario-split-wrap {
-    position: relative;
-  }
-
-  .horario-top-half {
-    position: sticky;
-    top: 74px;
-    z-index: 10;
-    background: var(--bg, #07090F);
-    padding-bottom: 8px;
-    transition: transform 0.15s linear, opacity 0.15s linear;
-    will-change: transform;
-  }
-
-  .horario-bottom-half {
-    position: relative;
-    z-index: 5;
-    padding-top: 8px;
-    transition: transform 0.15s linear, opacity 0.15s linear;
-    will-change: transform;
-  }
-
-  .horario-divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 0;
-    margin: 4px 0;
-    opacity: 0.5;
-  }
-  .horario-divider::before,
-  .horario-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--blue, #4A7FD4);
-    opacity: 0.3;
-  }
-  .horario-divider span {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--blue, #4A7FD4);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-
-  /* ══════════════════════════════════════
-     9. REFINAMIENTOS GLOBALES PC
-  ══════════════════════════════════════ */
-
-  .topbar {
-    max-width: 100%;
-    padding: 0 32px;
-  }
-
-  .bnav {
-    padding: 0 24px;
-    gap: 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .bnav::-webkit-scrollbar { display: none; }
-
-  .bn {
-    padding: 10px 20px;
-    font-size: 13px;
-    border-radius: 12px;
-    transition: background 0.2s ease, color 0.2s ease;
-    white-space: nowrap;
-  }
-
-  .stats2 {
     grid-template-columns: repeat(4, 1fr) !important;
   }
-
-  .card {
-    transition: box-shadow 0.2s ease;
+  #bp-finanzas.on > .card, #wp-finanzas.on > .card {
+    grid-column: 1 / 2; 
   }
-  .card:hover {
-    box-shadow: 0 8px 32px rgba(0,0,0,0.22) !important;
+  #bp-finanzas.on > .sec-hdr:nth-of-type(2), #wp-finanzas.on > .sec-hdr:nth-of-type(2) {
+    grid-column: 2 / 3; grid-row: 3 / 4; margin-top: 0;
   }
-
-  html {
-    scroll-behavior: smooth;
-  }
-
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: rgba(74,127,212,0.25);
-    border-radius: 6px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(74,127,212,0.45);
+  #biz-appts-fin, #wk-appts-fin {
+    grid-column: 2 / 3; grid-row: 4 / 6;
+    max-height: 600px; overflow-y: auto; padding-right: 8px; /* Scroll solo para el historial */
   }
 
+  /* ── 4. HORARIO (LA SOLUCIÓN AL SCROLL INFINITO) ── */
+  #wp-horario.on { display: block !important; }
+  #wk-horario-days {
+    display: grid !important;
+    /* Divide los días de la semana en hermosas tarjetas de 320px */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  #wk-horario-days > div { margin-bottom: 0 !important; height: 100%; }
+
+  /* ── 5. EQUIPO Y SERVICIOS ── */
+  #bp-equipo.on, #wp-servicios.on { display: block !important; }
+  #biz-barbers-list, #wk-svcs-list {
+    display: grid !important;
+    /* Los trabajadores y servicios ya no se estirarán */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  #biz-barbers-list > div, #wk-svcs-list > div { margin-bottom: 0 !important; height: 100%; }
+
+  /* ── 6. PERFIL ── */
+  #bp-perfil.on, #wp-perfil.on { display: block !important; }
+  #bp-perfil.on > .card, #wp-perfil.on > .card,
+  #bp-perfil.on > a, #wp-perfil.on > a {
+    max-width: 700px; /* Evita que los inputs midan un kilómetro de ancho */
+    margin: 0 auto 20px auto; /* Lo centra en la pantalla */
+  }
+  .cover-container { height: 200px; } /* Portada más amplia en PC */
+  .cover-avatar { width: 100px; height: 100px; bottom: -50px; font-size: 40px; }
+
+  /* ── SCROLLBARS ELEGANTES ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(74,127,212,0.25); border-radius: 6px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(74,127,212,0.45); }
 }
-/* ── FIN MEDIA QUERY PC ── */
