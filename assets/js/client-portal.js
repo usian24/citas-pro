@@ -33,8 +33,25 @@ function loadBizDirect(bizId) {
   DB.currentWorker = null;
   initCSEL();
   CSEL.bizId = bizId;
-  goTo('s-client');
+  
+  // ✅ 1. CAMBIO PRINCIPAL: Vamos al portal de la barbería en lugar del cliente
+  goTo('s-barber-portal');
 
+  // --- Llenar datos de la pantalla s-barber-portal ---
+  var bpCover = G('bp-cover');
+  if (bpCover) {
+    if (biz.cover) bpCover.style.backgroundImage = 'url(' + sanitizeImageDataURL(biz.cover) + ')';
+    else bpCover.style.backgroundImage = 'none';
+  }
+  var bpLogo = G('bp-logo');
+  if (bpLogo) {
+    if (biz.logo) bpLogo.innerHTML = '<img src="' + sanitizeImageDataURL(biz.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo"/>';
+    else bpLogo.textContent = (biz.name || '?').charAt(0).toUpperCase();
+  }
+  T('bp-name', biz.name);
+  T('bp-desc', (biz.addr || '') + (biz.city ? ', ' + biz.city : '') + (biz.type ? ' · ' + biz.type : ''));
+
+  // --- Llenar datos de la pantalla s-client (para cuando presione reservar) ---
   var coverBg = G('cl-cover-bg');
   if (coverBg) {
     if (biz.cover) coverBg.style.backgroundImage = 'url(' + sanitizeImageDataURL(biz.cover) + ')';
@@ -48,25 +65,45 @@ function loadBizDirect(bizId) {
   T('ch-nm', biz.name);
   T('ch-meta', (biz.addr || '') + (biz.city ? ', ' + biz.city : '') + (biz.type ? ' · ' + biz.type : ''));
 
-  var socialsContainer = G('ch-socials');
-  if (socialsContainer) {
-    var socialsHtml = '';
-    if (biz.insta) {
-      var igUrl = biz.insta.startsWith('http') ? biz.insta : 'https://instagram.com/' + biz.insta.replace('@', '');
-      socialsHtml += '<a href="' + igUrl + '" target="_blank" style="color:var(--blue);transition:opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>';
-    }
-    if (biz.facebook) {
-      var fbUrl = biz.facebook.startsWith('http') ? biz.facebook : 'https://facebook.com/' + biz.facebook;
-      socialsHtml += '<a href="' + fbUrl + '" target="_blank" style="color:var(--blue);transition:opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>';
-    }
-    if (biz.x_url) {
-      var xUrl = biz.x_url.startsWith('http') ? biz.x_url : 'https://x.com/' + biz.x_url.replace('@', '');
-      socialsHtml += '<a href="' + xUrl + '" target="_blank" style="color:var(--blue);transition:opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733-16z"></path><path d="M4 20l6.768-6.768m2.46-2.46l6.772-6.772"></path></svg></a>';
-    }
-    socialsContainer.innerHTML = socialsHtml;
+  // --- Llenar redes sociales para AMBOS portales ---
+  var socialsHtml = '';
+  if (biz.insta) {
+    var igUrl = biz.insta.startsWith('http') ? biz.insta : 'https://instagram.com/' + biz.insta.replace('@', '');
+    socialsHtml += '<a href="' + igUrl + '" target="_blank" style="color:var(--blue);transition:opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>';
   }
+  if (biz.facebook) {
+    var fbUrl = biz.facebook.startsWith('http') ? biz.facebook : 'https://facebook.com/' + biz.facebook;
+    socialsHtml += '<a href="' + fbUrl + '" target="_blank" style="color:var(--blue);transition:opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>';
+  }
+  if (biz.x_url) {
+    var xUrl = biz.x_url.startsWith('http') ? biz.x_url : 'https://x.com/' + biz.x_url.replace('@', '');
+    socialsHtml += '<a href="' + xUrl + '" target="_blank" style="color:var(--blue);transition:opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733-16z"></path><path d="M4 20l6.768-6.768m2.46-2.46l6.772-6.772"></path></svg></a>';
+  }
+  
+  var bpSocials = G('bp-socials');
+  if (bpSocials) bpSocials.innerHTML = socialsHtml;
+  
+  var chSocials = G('ch-socials');
+  if (chSocials) chSocials.innerHTML = socialsHtml;
+
   clGoStep(1);
   window.scrollTo(0, 0);
+
+  // ✅ 2. ASIGNAR ACCIONES A LOS BOTONES DEL PORTAL DE BARBERÍA
+  var btnBook = G('bp-btn-book');
+  if (btnBook) {
+    btnBook.onclick = function() {
+      goTo('s-client'); // Al hacer clic, enviamos al cliente a agendar
+    };
+  }
+
+  var btnShop = G('bp-btn-shop');
+  if (btnShop) {
+    btnShop.onclick = function() {
+      T('bs-name', biz.name); // Ponemos el nombre de la barbería en la tienda
+      goTo('s-barber-shop'); // Al hacer clic, enviamos a la tienda en construcción
+    };
+  }
 }
 
 function clGoStep(n) {
