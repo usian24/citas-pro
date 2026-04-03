@@ -247,8 +247,6 @@ function delWorkerGalleryPhoto(idx) {
 
 /* ══════════════════════════════════════════════════
    FINANZAS TRABAJADOR — RENOVADA
-   REGLA: Solo usa CUR_WORKER.appointments
-   Nunca accede a datos de otros trabajadores
 ══════════════════════════════════════════════════ */
 function renderWorkerFinances() {
   if (!CUR_WORKER) return;
@@ -257,7 +255,6 @@ function renderWorkerFinances() {
   var today     = now.toISOString().split('T')[0];
   var thisMonth = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
 
-  /* Inicio semana (lunes) */
   var dayOfWeek = now.getDay()===0 ? 6 : now.getDay()-1;
   var weekStart = new Date(now); weekStart.setDate(now.getDate()-dayOfWeek);
   var weekStartStr = weekStart.toISOString().split('T')[0];
@@ -266,7 +263,6 @@ function renderWorkerFinances() {
   var active = appts.filter(function(a){ return a.status!=='cancelled'; });
   var paid   = appts.filter(function(a){ return a.status!=='cancelled' && a.price>0; });
 
-  /* KPIs personales */
   var revHoy  = active.filter(function(a){ return a.date===today; }).reduce(function(s,a){ return s+(a.price||0); },0);
   var revSem  = active.filter(function(a){ return a.date>=weekStartStr; }).reduce(function(s,a){ return s+(a.price||0); },0);
   var revMes  = active.filter(function(a){ return a.date&&a.date.slice(0,7)===thisMonth; }).reduce(function(s,a){ return s+(a.price||0); },0);
@@ -276,21 +272,17 @@ function renderWorkerFinances() {
   var completadas = appts.filter(function(a){ return a.status==='completed'; }).length;
   var ticket  = paid.length ? paid.reduce(function(s,a){ return s+(a.price||0); },0)/paid.length : 0;
 
-  /* Servicio más solicitado */
   var svcCount={}; active.forEach(function(a){ if(a.svc) svcCount[a.svc]=(svcCount[a.svc]||0)+1; });
   var topSvc='—',topC=0; Object.keys(svcCount).forEach(function(k){ if(svcCount[k]>topC){topSvc=k;topC=svcCount[k];} });
 
-  /* Cliente más frecuente */
   var cliCount={}; active.forEach(function(a){ if(a.client) cliCount[a.client]=(cliCount[a.client]||0)+1; });
   var topCli='—',topCC=0; Object.keys(cliCount).forEach(function(k){ if(cliCount[k]>topCC){topCli=k;topCC=cliCount[k];} });
 
-  /* Gráfico MESES */
   var months=[];
   for(var i=5;i>=0;i--){ var dm=new Date(now); dm.setMonth(dm.getMonth()-i); months.push(dm.getFullYear()+'-'+String(dm.getMonth()+1).padStart(2,'0')); }
   var mVals=months.map(function(m){ return active.filter(function(a){ return a.date&&a.date.slice(0,7)===m; }).reduce(function(s,a){ return s+(a.price||0); },0); });
   var mMax=Math.max.apply(null,mVals.concat([10]));
 
-  /* Gráfico SEMANAS */
   var weeks=[];
   for(var i=7;i>=0;i--){
     var dw=new Date(now); dw.setDate(now.getDate()-(dayOfWeek+i*7));
@@ -303,10 +295,8 @@ function renderWorkerFinances() {
   });
   var wMax=Math.max.apply(null,wVals.concat([10]));
 
-  /* ── RENDER HTML ── */
   var html = '';
 
-  /* KPIs principales */
   html += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Mi resumen de hoy</div>';
   html += '<div class="stats2" style="margin-bottom:20px">';
   html += _wkKpi('Ingresos hoy',    money(revHoy), 'var(--green)',  citHoy+' cita'+(citHoy!==1?'s':''));
@@ -315,7 +305,6 @@ function renderWorkerFinances() {
   html += _wkKpi('Ticket medio',    money(ticket), 'var(--purple)', 'por servicio');
   html += '</div>';
 
-  /* Stats de rendimiento */
   html += '<div class="stats2" style="margin-bottom:20px">';
   html += _wkKpi('Completadas', completadas,  'var(--green)',  'históricas');
   html += _wkKpi('Servicio top', topSvc.length>10?topSvc.slice(0,10)+'…':topSvc, 'var(--blue3)', topC+' veces');
@@ -323,32 +312,36 @@ function renderWorkerFinances() {
   html += _wkKpi('Mis servicios', (CUR_WORKER.services||[]).length, 'var(--blue)', 'en catálogo');
   html += '</div>';
 
-  /* Gráfico MESES */
   html += '<div class="card" style="margin-bottom:16px">';
   html += '<div class="sec-hdr"><span class="sec-ttl">Mis ingresos por mes</span><span style="font-size:11px;color:var(--muted)">Últimos 6 meses</span></div>';
   html += '<div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:6px">';
+  
   mVals.forEach(function(v,i){
     var h=Math.max(4,Math.round(v/mMax*100)), isLast=i===mVals.length-1;
-    html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">';
+    // ✅ AQUÍ ESTÁ LA CORRECCIÓN
+    html+='<div style="flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:3px">';
     if(v>0) html+='<div style="font-size:8px;color:var(--muted)">'+money(v)+'</div>';
     html+='<div style="width:100%;height:'+h+'%;border-radius:5px 5px 0 0;background:'+(isLast?'linear-gradient(to top,var(--blue2),var(--blue3))':'linear-gradient(to top,rgba(74,127,212,.3),rgba(74,127,212,.5))')+'" title="'+money(v)+'"></div>';
     html+='</div>';
   });
+  
   html+='</div><div style="display:flex;gap:5px">';
   months.forEach(function(m,i){ var p=m.split('-'); html+='<div style="flex:1;text-align:center;font-size:9px;color:'+(i===months.length-1?'var(--blue)':'var(--muted)')+';font-weight:700">'+MONTHS_SHORT[parseInt(p[1])-1]+'</div>'; });
   html+='</div></div>';
 
-  /* Gráfico SEMANAS */
   html += '<div class="card" style="margin-bottom:16px">';
   html += '<div class="sec-hdr"><span class="sec-ttl">Mis ingresos por semana</span><span style="font-size:11px;color:var(--muted)">Últimas 8 semanas</span></div>';
   html += '<div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:6px">';
+  
   wVals.forEach(function(v,i){
     var h=Math.max(4,Math.round(v/wMax*100)), isLast=i===wVals.length-1;
-    html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">';
+    // ✅ AQUÍ ESTÁ LA CORRECCIÓN
+    html+='<div style="flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:3px">';
     if(v>0) html+='<div style="font-size:8px;color:var(--muted)">'+money(v)+'</div>';
     html+='<div style="width:100%;height:'+h+'%;border-radius:5px 5px 0 0;background:'+(isLast?'linear-gradient(to top,#16A34A,#4ADE80)':'linear-gradient(to top,rgba(34,197,94,.25),rgba(34,197,94,.5))')+'" title="'+money(v)+'"></div>';
     html+='</div>';
   });
+  
   html+='</div><div style="display:flex;gap:5px">';
   weeks.forEach(function(ws,i){
     var d=new Date(ws+'T12:00');
@@ -357,7 +350,6 @@ function renderWorkerFinances() {
   });
   html+='</div></div>';
 
-  /* Historial personal */
   html += '<div class="sec-hdr"><span class="sec-ttl">Mi historial</span></div>';
   var historial=paid.slice().sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,30);
   html += historial.length ? historial.map(function(a){ return workerApptRowH(a); }).join('') : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Sin registros</div>';

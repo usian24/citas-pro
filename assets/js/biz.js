@@ -562,7 +562,6 @@ function renderBizFinances() {
   var today     = now.toISOString().split('T')[0];
   var thisMonth = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
 
-  /* Inicio de semana actual (lunes) */
   var dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1;
   var weekStart = new Date(now); weekStart.setDate(now.getDate() - dayOfWeek);
   var weekStartStr = weekStart.toISOString().split('T')[0];
@@ -571,7 +570,6 @@ function renderBizFinances() {
   var active   = allAppts.filter(function(a){ return a.status!=='cancelled'; });
   var paid     = allAppts.filter(function(a){ return a.status!=='cancelled'&&a.price>0; });
 
-  /* KPIs principales */
   var revHoy  = active.filter(function(a){ return a.date===today; }).reduce(function(s,a){ return s+(a.price||0); },0);
   var revSem  = active.filter(function(a){ return a.date>=weekStartStr; }).reduce(function(s,a){ return s+(a.price||0); },0);
   var revMes  = active.filter(function(a){ return a.date&&a.date.slice(0,7)===thisMonth; }).reduce(function(s,a){ return s+(a.price||0); },0);
@@ -582,13 +580,11 @@ function renderBizFinances() {
   var pendientes  = allAppts.filter(function(a){ return a.status==='confirmed'||a.status==='pending'; }).length;
   var ticket = paid.length ? paid.reduce(function(s,a){ return s+(a.price||0); },0)/paid.length : 0;
 
-  /* Gráfico por MESES (últimos 6) */
   var months=[];
   for(var i=5;i>=0;i--){ var dm=new Date(now); dm.setMonth(dm.getMonth()-i); months.push(dm.getFullYear()+'-'+String(dm.getMonth()+1).padStart(2,'0')); }
   var mVals=months.map(function(m){ return active.filter(function(a){ return a.date&&a.date.slice(0,7)===m; }).reduce(function(s,a){ return s+(a.price||0); },0); });
   var mMax=Math.max.apply(null,mVals.concat([10]));
 
-  /* Gráfico por SEMANAS (últimas 8) */
   var weeks=[];
   for(var i=7;i>=0;i--){
     var dw=new Date(now); dw.setDate(now.getDate()-(dayOfWeek+i*7));
@@ -601,7 +597,6 @@ function renderBizFinances() {
   });
   var wMax=Math.max.apply(null,wVals.concat([10]));
 
-  /* Tabla de rendimiento por trabajador */
   var workerRows = (CUR.workers||[]).map(function(w){
     var wa=w.appointments||[];
     var wHoy = wa.filter(function(a){ return a.date===today&&a.status!=='cancelled'; }).reduce(function(s,a){ return s+(a.price||0); },0);
@@ -612,14 +607,11 @@ function renderBizFinances() {
   });
   workerRows.sort(function(a,b){ return b.mes-a.mes; });
 
-  /* Servicio más popular */
   var svcCount={}; active.forEach(function(a){ if(a.svc) svcCount[a.svc]=(svcCount[a.svc]||0)+1; });
   var topSvc='—',topC=0; Object.keys(svcCount).forEach(function(k){ if(svcCount[k]>topC){topSvc=k;topC=svcCount[k];} });
 
-  /* ── RENDER HTML ── */
   var html = '';
 
-  /* Fila 1: KPIs del día */
   html += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Resumen de hoy</div>';
   html += '<div class="stats2" style="margin-bottom:20px">';
   html += _kpi('Ingresos hoy',    money(revHoy),  'var(--green)', citHoy+' cita'+(citHoy!==1?'s':''));
@@ -628,7 +620,6 @@ function renderBizFinances() {
   html += _kpi('Ticket medio',    money(ticket),  'var(--purple)','por servicio');
   html += '</div>';
 
-  /* Fila 2: estado de citas */
   html += '<div class="stats2" style="margin-bottom:20px">';
   html += _kpi('Completadas', completadas, 'var(--green)', 'históricas');
   html += _kpi('Pendientes',  pendientes,  'var(--gold)',  'confirmadas o pend.');
@@ -636,7 +627,6 @@ function renderBizFinances() {
   html += _kpi('Trabajadores', (CUR.workers||[]).length, 'var(--blue)', (CUR.workers||[]).filter(function(w){return w.active;}).length+' activos');
   html += '</div>';
 
-  /* Gráfico MESES */
   html += '<div class="card" style="margin-bottom:16px">';
   html += '<div class="sec-hdr"><span class="sec-ttl">Ingresos por mes</span><span style="font-size:11px;color:var(--muted)">Últimos 6 meses</span></div>';
   html += '<div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:6px">';
@@ -645,9 +635,10 @@ function renderBizFinances() {
   mVals.forEach(function(v,i){
     var h=Math.max(4,Math.round(v/mMax*100));
     var isLast=i===mVals.length-1;
-    mBarsHTML += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">';
+    // ✅ AQUÍ ESTÁ LA CORRECCIÓN: height:100% y justify-content:flex-end
+    mBarsHTML += '<div style="flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:3px">';
     if(v>0) mBarsHTML += '<div style="font-size:8px;color:var(--muted)">'+money(v)+'</div>';
-    mBarsHTML += '<div style="width:100%;height:'+h+'%;border-radius:5px 5px 0 0;background:'+(isLast?'linear-gradient(to top,var(--blue2),var(--blue3))':'linear-gradient(to top,rgba(74,127,212,.3),rgba(74,127,212,.5))')+'" title="'+money(v)+'"></div>';
+    mBarsHTML += '<div style="width:100%; height:'+h+'%; border-radius:5px 5px 0 0; background:'+(isLast?'linear-gradient(to top,var(--blue2),var(--blue3))':'linear-gradient(to top,rgba(74,127,212,.3),rgba(74,127,212,.5))')+'" title="'+money(v)+'"></div>';
     mBarsHTML += '</div>';
   });
   html += mBarsHTML;
@@ -662,7 +653,6 @@ function renderBizFinances() {
   html += mLabelsHTML;
   html += '</div></div>';
 
-  /* Gráfico SEMANAS */
   html += '<div class="card" style="margin-bottom:16px">';
   html += '<div class="sec-hdr"><span class="sec-ttl">Ingresos por semana</span><span style="font-size:11px;color:var(--muted)">Últimas 8 semanas</span></div>';
   html += '<div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:6px">';
@@ -671,9 +661,10 @@ function renderBizFinances() {
   wVals.forEach(function(v,i){
     var h=Math.max(4,Math.round(v/wMax*100));
     var isLast=i===wVals.length-1;
-    wBarsHTML += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">';
+    // ✅ AQUÍ ESTÁ LA CORRECCIÓN
+    wBarsHTML += '<div style="flex:1; height:100%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:3px">';
     if(v>0) wBarsHTML += '<div style="font-size:8px;color:var(--muted)">'+money(v)+'</div>';
-    wBarsHTML += '<div style="width:100%;height:'+h+'%;border-radius:5px 5px 0 0;background:'+(isLast?'linear-gradient(to top,#16A34A,#4ADE80)':'linear-gradient(to top,rgba(34,197,94,.25),rgba(34,197,94,.5))')+'" title="'+money(v)+'"></div>';
+    wBarsHTML += '<div style="width:100%; height:'+h+'%; border-radius:5px 5px 0 0; background:'+(isLast?'linear-gradient(to top,#16A34A,#4ADE80)':'linear-gradient(to top,rgba(34,197,94,.25),rgba(34,197,94,.5))')+'" title="'+money(v)+'"></div>';
     wBarsHTML += '</div>';
   });
   html += wBarsHTML;
@@ -689,7 +680,6 @@ function renderBizFinances() {
   html += wLabelsHTML;
   html += '</div></div>';
 
-  /* Tabla por trabajador */
   if (workerRows.length) {
     html += '<div class="card" style="margin-bottom:16px">';
     html += '<div class="sec-hdr"><span class="sec-ttl">Rendimiento por trabajador</span></div>';
@@ -715,7 +705,6 @@ function renderBizFinances() {
     html += '</tbody></table></div></div>';
   }
 
-  /* Historial */
   html += '<div class="sec-hdr"><span class="sec-ttl">Historial completo</span></div>';
   var historial = paid.slice().sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,30);
   html += historial.length ? historial.map(function(a){ return apptRowH(a); }).join('') : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Sin registros</div>';
