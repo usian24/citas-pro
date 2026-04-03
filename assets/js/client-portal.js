@@ -667,17 +667,30 @@ function cancelApptByToken(token) {
 async function checkLinkAccess() {
   var hash = window.location.hash;
   if (hash && hash.indexOf('#manage/') === 0) return await checkManageAccess();
+  
   if (hash && hash.indexOf('#b/') === 0) {
+    
+    // 🚀 BLOQUEO DIRECTO: Forzamos la pantalla de barbería en el milisegundo cero.
+    // Esto destruye el flashazo del portal cliente mientras esperamos la base de datos.
+    goTo('s-barber-portal'); 
+    
     var bizId = hash.slice(3);
     if (bizId) {
       DB = loadDB();
       var biz = getBizById(bizId);
+      
       if (!biz && typeof fetchBizFromCloud === 'function') {
+        // Al estar aquí el 'await', antes la app se confundía. Ya no lo hará.
         biz = await fetchBizFromCloud(bizId);
         if (biz && typeof syncBizToLocal === 'function') syncBizToLocal(biz);
       }
-      if (biz) { loadBizDirect(bizId); return true; }
-      else toast('Negocio no encontrado', '#EF4444');
+      
+      if (biz) { 
+        loadBizDirect(bizId); 
+        return true; 
+      } else {
+        toast('Negocio no encontrado', '#EF4444');
+      }
     }
   }
   return false;

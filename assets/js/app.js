@@ -770,7 +770,7 @@ window.onload = async function() {
     const hash = window.location.hash;
 
     if (hash && hash.startsWith('#b/')) {
-      goTo('s-client'); // ← mostrar pantalla cliente inmediatamente
+      goTo('s-barber-portal'); 
       const targetBizId = hash.split('/')[1];
         
       if (targetBizId) {
