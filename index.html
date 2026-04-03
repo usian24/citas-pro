@@ -1141,7 +1141,17 @@
     <div class="mhdr"><span class="mttl">Nueva Categoría</span><div class="xbtn" onclick="closeOv('ov-tienda-cat')">×</div></div>
     <div class="tip-box">Crea secciones para agrupar tus productos.</div>
     <div class="field"><label>Nombre (Ej: Ceras, Rostro) *</label><input class="inp" id="cat-name" placeholder="Nombre de categoría" maxlength="30"/></div>
-    <div class="field"><label>Emoji / Ícono *</label><input class="inp" id="cat-icon" placeholder="Ej: 💈, 🧴, ✂️" maxlength="5"/></div>
+    <div class="field">
+      <label>Ícono de la categoría *</label>
+      <select class="inp" id="cat-icon-sel">
+        <option value="equipo">📦 Equipos / Varios</option>
+        <option value="rostro">👁️ Rostro / Facial</option>
+        <option value="locion">🧴 Lociones / Cremas</option>
+        <option value="corte">✂️ Corte / Tijeras</option>
+        <option value="barba">🧔 Barba / Bigote</option>
+        <option value="gel">💧 Gel / Ceras</option>
+      </select>
+    </div>
     <button class="btn btn-blue" onclick="saveCategory()">Guardar Categoría</button>
   </div>
 </div>
