@@ -205,36 +205,44 @@
     let SHOP_BIZ = null; // Aquí guardaremos los datos de la barbería actual
 
     document.addEventListener("DOMContentLoaded", function() {
-      // 1. Cargamos la base de datos
+      // 1. Cargamos la base de datos con seguridad
       if (typeof loadDB === 'function') {
          window.DB = loadDB();
       }
 
-      // 2. Leemos la URL para saber qué barbería cargar
+      // 2. Extraer el ID de forma más inteligente
+      let bizId = '';
       const hash = window.location.hash;
       
-      if (hash && hash.startsWith('#b/')) {
-        const bizId = hash.split('/')[1];
+      if (hash && hash.includes('#b/')) {
+        // Si el cliente entró por su link público
+        bizId = hash.split('#b/')[1].split('/')[0];
+      } else if (window.DB && window.DB.currentBiz) {
+        // Fallback: Si el DUEÑO entra a probar y el link falló, usamos su sesión activa
+        bizId = window.DB.currentBiz;
+      }
+      
+      // 3. Validamos si logramos conseguir un ID
+      if (bizId && window.DB && window.DB.businesses) {
         
-        // 3. Buscamos la barbería en nuestra base de datos
-        SHOP_BIZ = DB.businesses.find(b => b.id === bizId);
+        // Buscamos la barbería en nuestra base de datos
+        SHOP_BIZ = window.DB.businesses.find(b => b.id === bizId);
         
         if (SHOP_BIZ) {
           console.log("Tienda cargada exitosamente:", SHOP_BIZ.name);
           
-          // ¡MAGIA! Cambiamos el título de la tienda por el nombre real del negocio
+          // ¡Cambiamos el título de la tienda!
           document.getElementById('shop-title').textContent = "Tienda de " + SHOP_BIZ.name;
           
-          // Aquí más adelante llamaremos a la función que dibuje los productos reales
-          // renderProducts(); 
-          
         } else {
-          // Si el ID de la barbería no existe, lo regresamos al inicio
-          window.location.href = 'index.html'; 
+          // Ya no te bota, ahora te avisa
+          document.getElementById('shop-title').textContent = "Barbería no encontrada";
+          alert("Error: No se encontró la barbería en la base de datos.");
         }
       } else {
-        // Si entran al archivo directo sin ID, lo regresamos al inicio
-        window.location.href = 'index.html'; 
+         // Ya no te bota, ahora te avisa
+         document.getElementById('shop-title').textContent = "Enlace inválido";
+         alert("No se detectó un ID válido de barbería.");
       }
     });
   </script>
