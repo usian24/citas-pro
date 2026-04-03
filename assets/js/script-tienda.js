@@ -1,18 +1,21 @@
+// ==========================================
+// 1. CONEXIÓN DIRECTA A SUPABASE (ENTORNO DEV)
+// ==========================================
+// Lucian: Cuando pases a producción, cambia estas dos variables por tus llaves oficiales.
+const SUPABASE_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-'; 
+
+// Inicializamos el cliente de Supabase para la tienda
+const tiendaSupa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ==========================================
+// VARIABLES GLOBALES
+// ==========================================
 let tempProdPhoto = null;
 let editingProdId = null;
-let editingCatId = null; // Variable para saber si editamos una categoría
+let editingCatId = null;
 
-// Función cazadora para encontrar tu conexión real a Supabase
-function getSupa() {
-  if (typeof window.supabaseClient !== 'undefined') return window.supabaseClient;
-  if (window.DB && window.DB.supabase) return window.DB.supabase;
-  // Si usaste una variable global diferente en tu db.js, la atrapamos aquí
-  if (typeof supabase !== 'undefined' && typeof supabase.from === 'function') return supabase;
-  console.error("No se encontró el cliente de Supabase instanciado.");
-  return null;
-}
-
-// Catálogo de Íconos Profesionales (SVG)
+// Catálogo de Íconos SVG para categorías
 const ICONOS_CAT = {
   todo: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
   rostro: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
@@ -49,14 +52,14 @@ function confirmarAccionTienda(titulo, mensaje, onConfirm) {
   openOv('ov-confirm');
 }
 
-// -----------------------------------------------------
-
-// 1. DIBUJAR TODO (Admin)
+// ==========================================
+// 2. DIBUJAR TODO (Admin)
+// ==========================================
 async function renderTiendaAdmin() {
   if (!CUR) return;
   if (!CUR.categories) CUR.categories = [];
 
-  // Pintar Categorías (Ahora se pueden clicar para editar)
+  // Pintar Categorías (Se guardan en tu base de datos actual CUR)
   const catList = document.getElementById('biz-categorias-list');
   if (CUR.categories.length === 0) {
     catList.innerHTML = '<div style="width:100%;text-align:center;color:var(--muted);font-size:12px;padding:10px;">Crea tu primera categoría</div>';
@@ -72,15 +75,12 @@ async function renderTiendaAdmin() {
     `}).join('');
   }
 
-  // Buscar y Pintar Productos desde Supabase
+  // Buscar y Pintar Productos directos desde Supabase (ENTORNO DEV)
   const prodList = document.getElementById('biz-productos-list');
   prodList.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--blue);">Cargando productos... ⏳</div>';
 
   try {
-    const miSupa = getSupa();
-    if (!miSupa) throw new Error("No hay conexión a BD");
-
-    const { data: productosSupabase, error } = await miSupa
+    const { data: productosSupabase, error } = await tiendaSupa
       .from('products')
       .select('*')
       .eq('business_id', CUR.id);
@@ -98,14 +98,12 @@ async function renderTiendaAdmin() {
       let catIcon = cat ? (ICONOS_CAT[cat.iconCode] || ICONOS_CAT['equipo']) : '';
       
       let img = p.image ? `<img src="${p.image}" style="width:100%;height:100px;object-fit:contain;mix-blend-mode:multiply;border-radius:8px;">` : `<div style="height:100px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Sin foto</div>`;
-      let finalPrice = p.discount > 0 ? (p.price - (p.price * p.discount / 100)).toFixed(2) : parseFloat(p.price).toFixed(2);
-      let badge = p.discount > 0 ? `<span style="position:absolute;top:6px;left:6px;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px;">-${p.discount}%</span>` : '';
+      let finalPrice = parseFloat(p.price).toFixed(2);
 
-      // La tarjeta entera es clickable para Editar
       return `
       <div onclick="editProduct('${p.id}')" style="background:#fff;border:1px solid var(--b);border-radius:16px;padding:10px;position:relative;display:flex;flex-direction:column;box-shadow:0 4px 10px rgba(0,0,0,0.05);cursor:pointer;transition:transform 0.2s;">
-        ${badge}
         <button onclick="deleteProduct('${p.id}', event)" style="position:absolute;top:6px;right:6px;background:rgba(239,68,68,0.1);color:var(--red);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;font-weight:bold;border:none;cursor:pointer;">×</button>
+        <button onclick="editProduct('${p.id}')" style="position:absolute;top:6px;right:34px;background:rgba(74,127,212,0.1);color:var(--blue);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;font-size:12px;border:none;cursor:pointer;">✏️</button>
         <div style="width:100%;background:#F8FAFC;border-radius:12px;margin-bottom:10px;display:flex;justify-content:center;align-items:center;">
            ${img}
         </div>
@@ -115,7 +113,6 @@ async function renderTiendaAdmin() {
         <div style="font-size:13px;font-weight:800;color:#0F172A;line-height:1.2;margin:4px 0;flex:1;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${p.name}</div>
         <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px;">
           <span style="font-size:16px;font-weight:900;color:var(--green)">${finalPrice}€</span>
-          ${p.discount > 0 ? `<span style="font-size:10px;color:var(--muted);text-decoration:line-through">${parseFloat(p.price).toFixed(2)}€</span>` : ''}
         </div>
       </div>
       `;
@@ -123,12 +120,12 @@ async function renderTiendaAdmin() {
 
   } catch (err) {
     console.error("Error cargando productos:", err);
-    prodList.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--red);">Hubo un error cargando tus productos.</div>';
+    prodList.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--red);">Hubo un error conectando con la Base de Datos DEV.</div>';
   }
 }
 
 // ==========================================
-// 2. CRUD DE CATEGORÍAS
+// 3. CRUD DE CATEGORÍAS 
 // ==========================================
 function openCatModal() {
   editingCatId = null;
@@ -158,36 +155,35 @@ function saveCategory() {
   if (!CUR.categories) CUR.categories = [];
   
   if (editingCatId) {
-    // Modo Actualizar
     let index = CUR.categories.findIndex(c => c.id === editingCatId);
     if(index > -1) {
       CUR.categories[index].name = name;
       CUR.categories[index].iconCode = iconCode;
     }
   } else {
-    // Modo Crear
     CUR.categories.push({ id: 'cat_' + Date.now(), name: name, iconCode: iconCode });
   }
   
-  saveDB(); // Guarda el JSON del negocio (incluyendo las categorías)
+  if (typeof saveDB === 'function') saveDB(); 
   renderTiendaAdmin(); 
   closeOv('ov-tienda-cat');
 }
 
 function deleteCategory(id, event) {
-  event.stopPropagation(); // Evita que se abra el modal de editar al hacer clic en la X
+  event.stopPropagation();
   confirmarAccionTienda(
     'Eliminar Categoría', 
     '¿Estás seguro? Los productos dentro de esta categoría quedarán sin clasificar.', 
     () => {
       CUR.categories = CUR.categories.filter(c => c.id !== id);
-      saveDB(); renderTiendaAdmin();
+      if (typeof saveDB === 'function') saveDB();
+      renderTiendaAdmin();
     }
   );
 }
 
 // ==========================================
-// 3. CRUD DE PRODUCTOS (HACIA SUPABASE)
+// 4. CRUD DE PRODUCTOS (Directo a SUPABASE DEV)
 // ==========================================
 function openProdModal() {
   if (!CUR.categories || CUR.categories.length === 0) {
@@ -198,7 +194,6 @@ function openProdModal() {
   
   document.getElementById('prod-name').value = '';
   document.getElementById('prod-price').value = '';
-  document.getElementById('prod-disc').value = '';
   document.getElementById('prod-desc').value = '';
   
   let sel = document.getElementById('prod-cat');
@@ -212,8 +207,7 @@ function openProdModal() {
 
 async function editProduct(id) {
   try {
-    const miSupa = getSupa();
-    const { data, error } = await miSupa.from('products').select('*').eq('id', id).single();
+    const { data, error } = await tiendaSupa.from('products').select('*').eq('id', id).single();
     if (error) throw error;
     if (!data) return;
 
@@ -221,8 +215,6 @@ async function editProduct(id) {
     
     document.getElementById('prod-name').value = data.name;
     document.getElementById('prod-price').value = data.price;
-    // Si tu tabla de Supabase no tiene columna discount, lo guardamos localmente. Aquí asumimos que lo tiene o usa 0
-    document.getElementById('prod-disc').value = data.discount || 0; 
     document.getElementById('prod-desc').value = data.description || '';
     
     let sel = document.getElementById('prod-cat');
@@ -238,10 +230,11 @@ async function editProduct(id) {
     openOv('ov-tienda-prod');
   } catch (err) {
     console.error("Error al cargar producto para editar:", err);
-    mostrarAlertaTienda('No pudimos cargar los datos del producto.', 'Error', '❌');
+    mostrarAlertaTienda('No pudimos cargar los datos del producto desde Supabase.', 'Error', '❌');
   }
 }
 
+// 📸 Aquí está la conexión con tu ImgBB
 document.getElementById('prod-photo-input').addEventListener('change', async function(e) {
   let f = e.target.files[0];
   if (!f) return;
@@ -254,6 +247,7 @@ document.getElementById('prod-photo-input').addEventListener('change', async fun
       document.getElementById('prod-photo-preview').innerHTML = `<img src="${url}" style="width:100%;height:80px;object-fit:cover;border-radius:12px;">`;
     }
   } else {
+    // Fallback por si acaso
     tempProdPhoto = "https://placehold.co/300x300/ffffff/4A7FD4?text=Producto";
     document.getElementById('prod-photo-preview').innerHTML = `<img src="${tempProdPhoto}" style="width:100%;height:80px;object-fit:cover;border-radius:12px;">`;
   }
@@ -262,7 +256,6 @@ document.getElementById('prod-photo-input').addEventListener('change', async fun
 async function saveProduct() {
   let name = document.getElementById('prod-name').value.trim();
   let price = parseFloat(document.getElementById('prod-price').value);
-  let disc = parseInt(document.getElementById('prod-disc').value) || 0;
   let cat = document.getElementById('prod-cat').value;
   let desc = document.getElementById('prod-desc').value.trim();
   
@@ -276,49 +269,44 @@ async function saveProduct() {
     name: name,
     description: desc,
     price: price,
-    // Asegúrate de que tu tabla en Supabase tenga la columna discount o coméntala
-    // discount: disc, 
     stock: 100, 
     image: tempProdPhoto || '',
     category: cat
   };
 
   try {
-    const miSupa = getSupa();
-    
     if (editingProdId) {
-      // MODO ACTUALIZAR
-      const { error } = await miSupa.from('products').update(productoData).eq('id', editingProdId);
+      // UPDATE EN DEV
+      const { error } = await tiendaSupa.from('products').update(productoData).eq('id', editingProdId);
       if (error) throw error;
       mostrarAlertaTienda('El producto se actualizó correctamente.', '¡Listo!', '✏️');
     } else {
-      // MODO CREAR
+      // INSERT EN DEV
       productoData.id = 'prod_' + Date.now();
       productoData.rating = 0;
       productoData.reviews_count = 0;
       
-      const { error } = await miSupa.from('products').insert([productoData]);
+      const { error } = await tiendaSupa.from('products').insert([productoData]);
       if (error) throw error;
-      mostrarAlertaTienda('Producto guardado exitosamente.', '¡Éxito!', '✅');
+      mostrarAlertaTienda('Producto guardado exitosamente en DEV.', '¡Éxito!', '✅');
     }
 
     renderTiendaAdmin(); 
     closeOv('ov-tienda-prod');
   } catch (err) {
-    console.error("Error guardando en Supabase:", err);
-    mostrarAlertaTienda('Revisa tu conexión o la estructura de tu tabla en Supabase.', 'Error en Base de Datos', '❌');
+    console.error("Error guardando en Supabase DEV:", err);
+    mostrarAlertaTienda('Error al guardar en Supabase. Revisa la consola.', 'Error en Base de Datos', '❌');
   }
 }
 
 function deleteProduct(id, event) {
-  event.stopPropagation(); // Evita que se abra el modal de editar
+  event.stopPropagation();
   confirmarAccionTienda(
     'Eliminar Producto', 
     '¿Estás seguro de que deseas eliminar este producto permanentemente?', 
     async () => {
       try {
-        const miSupa = getSupa();
-        const { error } = await miSupa.from('products').delete().eq('id', id);
+        const { error } = await tiendaSupa.from('products').delete().eq('id', id);
         if (error) throw error;
         renderTiendaAdmin();
       } catch (err) {
@@ -329,7 +317,9 @@ function deleteProduct(id, event) {
   );
 }
 
-// 4. ENGANCHAR AL SISTEMA DE TABS
+// ==========================================
+// 5. ENGANCHAR AL SISTEMA DE TABS
+// ==========================================
 const fnOriginalBizTab = window.bizTab;
 window.bizTab = function(tab) {
   if (fnOriginalBizTab) fnOriginalBizTab(tab); 
