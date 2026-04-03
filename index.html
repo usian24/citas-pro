@@ -146,10 +146,10 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
         Registrar cita
       </button>
-      <button id="btn-ir-tienda" class="btn btn-dark" onclick="window.location.href = 'tienda.html' + window.location.hash" style="font-size:16px; font-weight:800; padding:18px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-        Ver tienda
-        </button>
+      <button id="btn-ir-tienda" class="btn btn-dark" onclick="abrirTiendaSegura()" style="font-size:16px; font-weight:800; padding:18px;">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+  Ver tienda
+</button>
     </div>
   </div>
 </div>
@@ -1132,6 +1132,35 @@
 
 <div id="bs-name" style="display:none;"></div>
 <button id="bp-btn-shop" style="display:none;"></button>
+<script>
+  function abrirTiendaSegura() {
+     // 1. Si entró por link directo, la URL ya tiene el ID
+     if (window.location.hash && window.location.hash.includes('#b/')) {
+         window.location.href = 'tienda.html' + window.location.hash;
+         return;
+     }
+     
+     // 2. Si entró por el BUSCADOR, leemos el nombre de la pantalla y sacamos su ID
+     let nombreBarberia = document.getElementById('bp-name').innerText;
+     let baseDatos = window.DB || (typeof loadDB === 'function' ? loadDB() : null);
+     
+     if (baseDatos && baseDatos.businesses) {
+         let negocio = baseDatos.businesses.find(b => b.name === nombreBarberia);
+         if (negocio) {
+             window.location.href = 'tienda.html#b/' + negocio.id;
+             return;
+         }
+     }
+
+     // 3. Si el DUEÑO está probando desde su panel
+     if (typeof CUR !== 'undefined' && CUR && CUR.id) {
+         window.location.href = 'tienda.html#b/' + CUR.id;
+         return;
+     }
+
+     alert("Error: No pudimos identificar la barbería para abrir la tienda.");
+  }
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="assets/js/db.js"></script>
