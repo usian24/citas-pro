@@ -495,10 +495,24 @@
         <div id="biz-barbers-list"></div>
       </div>
       <div class="pane" id="bp-tienda">
-        <div class="sec-hdr"><span class="sec-ttl">Tienda</span><button class="btn btn-dark btn-sm" style="width:auto" id="add-gallery-btn">Producto +</button></div>
-        <div class="tip-box">Sube los productos que vendes en el local (ceras, minoxidil, lociones, etc.)</div>
-        <div class="img-gallery" id="biz-gallery"></div>
-        <input type="file" id="gallery-input" accept="image/jpeg,image/png,image/webp" multiple style="display:none"/>
+        <div class="sec-hdr">
+          <span class="sec-ttl">Mi Tienda</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-dark btn-sm" style="width:auto" onclick="openCatModal()">Categoría +</button>
+            <button class="btn btn-blue btn-sm" style="width:auto" onclick="openProdModal()">Producto +</button>
+          </div>
+        </div>
+        <div class="tip-box">Sube tus productos reales. Organízalos por categorías para que tus clientes los encuentren rápido.</div>
+        
+        <div style="font-size:14px;font-weight:800;margin-bottom:12px;margin-top:20px;display:flex;justify-content:space-between">
+          <span>Tus Categorías</span>
+        </div>
+        <div id="biz-categorias-list" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;">
+          </div>
+
+        <div style="font-size:14px;font-weight:800;margin-bottom:12px;margin-top:20px;">Tus Productos</div>
+        <div id="biz-productos-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;">
+          </div>
       </div>
       <div class="pane" id="bp-finanzas">
         <div class="sec-hdr"><span class="sec-ttl">Finanzas (todo el equipo)</span></div>
@@ -1113,20 +1127,32 @@
   </div>
 </div>
 
-<div class="ov" id="ov-privacidad">
-  <div class="modal" onclick="event.stopPropagation()" style="max-width:500px">
-    <div class="mhdr"><span class="mttl">Política de Privacidad</span><div class="xbtn" onclick="closeOv('ov-privacidad')">×</div></div>
-    <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px; font-size: 13px; color: var(--t2); line-height: 1.6; text-align: left;">
-      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">1. Datos que Recopilamos</h3>
-      <p style="margin-bottom: 12px;">Recopilamos información básica para el funcionamiento del servicio: nombre, correo electrónico, número de teléfono y datos de las reservas. Los clientes finales proporcionan sus datos únicamente con el fin de agendar citas en los negocios registrados.</p>
-      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">2. Uso de la Información</h3>
-      <p style="margin-bottom: 12px;">Usamos tus datos para gestionar tu cuenta, permitir el acceso a la plataforma, enviar confirmaciones/recordatorios de citas y procesar pagos. No vendemos, alquilamos ni compartimos tus datos personales con terceros para fines publicitarios.</p>
-      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">3. Seguridad de los Datos</h3>
-      <p style="margin-bottom: 12px;">Implementamos medidas de seguridad estándar de la industria y almacenamos la información en bases de datos cifradas en la nube (Supabase) para proteger tu información contra accesos no autorizados.</p>
-      <h3 style="color: var(--text); margin-bottom: 8px; font-size: 15px;">4. Tus Derechos</h3>
-      <p style="margin-bottom: 12px;">Puedes solicitar en cualquier momento el acceso, rectificación o eliminación total de tus datos personales y los de tus clientes almacenados en nuestra plataforma contactando a nuestro soporte.</p>
+<div class="ov bot" id="ov-tienda-cat">
+  <div class="mbot" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl">Nueva Categoría</span><div class="xbtn" onclick="closeOv('ov-tienda-cat')">×</div></div>
+    <div class="tip-box">Crea secciones para agrupar tus productos.</div>
+    <div class="field"><label>Nombre (Ej: Ceras, Rostro) *</label><input class="inp" id="cat-name" placeholder="Nombre de categoría" maxlength="30"/></div>
+    <div class="field"><label>Emoji / Ícono *</label><input class="inp" id="cat-icon" placeholder="Ej: 💈, 🧴, ✂️" maxlength="5"/></div>
+    <button class="btn btn-blue" onclick="saveCategory()">Guardar Categoría</button>
+  </div>
+</div>
+
+<div class="ov bot" id="ov-tienda-prod">
+  <div class="mbot" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl">Añadir Producto</span><div class="xbtn" onclick="closeOv('ov-tienda-prod')">×</div></div>
+    <div class="field"><label>Nombre del Producto *</label><input class="inp" id="prod-name" placeholder="Ej: Cera Fijadora Mate" maxlength="80"/></div>
+    <div class="field"><label>Categoría *</label><select class="inp" id="prod-cat"></select></div>
+    <div style="display:flex;gap:10px">
+      <div class="field" style="flex:1"><label>Precio (€) *</label><input class="inp" id="prod-price" type="number" placeholder="15" min="0" step="0.5"/></div>
+      <div class="field" style="flex:1"><label>Descuento (%)</label><input class="inp" id="prod-disc" type="number" placeholder="0" min="0" max="99"/></div>
     </div>
-    <button class="btn btn-blue" onclick="closeOv('ov-privacidad')" style="margin-top: 16px;">Entendido</button>
+    <div class="field"><label>Descripción breve</label><input class="inp" id="prod-desc" placeholder="Detalles del producto..." maxlength="150"/></div>
+    <div class="field">
+      <label>Foto del producto</label>
+      <div id="prod-photo-preview" class="photo-upload" onclick="document.getElementById('prod-photo-input').click()"><div style="font-size:13px;color:var(--muted)">Añadir foto</div></div>
+      <input type="file" id="prod-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+    </div>
+    <button class="btn btn-blue" onclick="saveProduct()">Guardar Producto</button>
   </div>
 </div>
 
@@ -1171,6 +1197,7 @@
 <script src="assets/js/finanzas-realdata.js"></script>  
 <script src="assets/js/realtime.js"></script>              
 <script src="assets/js/client-portal.js"></script>
+<script src="assets/js/script-tienda.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
 <script>
