@@ -1127,6 +1127,15 @@
   </div>
 </div>
 
+<div class="ov" id="ov-tienda-alert">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:320px; text-align:center; padding: 30px 20px;">
+    <div style="font-size:48px; margin-bottom:16px; animation: popIn 0.4s ease;" id="ta-icon">⚠️</div>
+    <div style="font-size:20px; font-weight:900; margin-bottom:8px; color:var(--text);" id="ta-title">Atención</div>
+    <div style="font-size:14px; color:var(--t2); margin-bottom:24px; line-height:1.6" id="ta-msg">Mensaje</div>
+    <button class="btn btn-blue" onclick="closeOv('ov-tienda-alert')" style="width:100%; font-size:15px; padding:14px;">Entendido</button>
+  </div>
+</div>
+
 <div class="ov bot" id="ov-tienda-cat">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Nueva Categoría</span><div class="xbtn" onclick="closeOv('ov-tienda-cat')">×</div></div>
