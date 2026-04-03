@@ -11,7 +11,7 @@
   <style>
     body { background: var(--bg); padding-bottom: 90px; }
     
-    /* Header de la tienda */
+    /* ── Header ── */
     .shop-header {
       position: sticky; top: 0; z-index: 100;
       background: rgba(7, 9, 15, 0.95);
@@ -22,7 +22,7 @@
     }
     [data-theme="light"] .shop-header { background: rgba(244, 247, 251, 0.95); }
     
-    /* Buscador Tienda */
+    /* ── Buscador ── */
     .shop-search {
       margin: 20px;
       background: var(--card);
@@ -35,144 +35,249 @@
       flex: 1; background: none; border: none; outline: none;
       color: var(--text); font-family: var(--font); font-size: 14px;
     }
-    
-    /* Carrusel de Etiquetas (Categorías Automáticas) */
+
+    /* ════════════════════════════════════════
+       PILLS DE CATEGORÍA — Vista Cliente
+       Pills circulares con emoji + nombre
+    ════════════════════════════════════════ */
     .cat-scroll {
-      display: flex; gap: 10px; padding: 0 20px 20px;
+      display: flex; gap: 12px; padding: 0 20px 20px;
       overflow-x: auto; scroll-snap-type: x mandatory;
       scrollbar-width: none;
     }
     .cat-scroll::-webkit-scrollbar { display: none; }
-    
-    .cat-pill { 
-      background: var(--card); border: 1px solid var(--b); color: var(--t2); 
-      padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; 
-      cursor: pointer; flex-shrink: 0; transition: all 0.2s; 
+
+    .cat-pill-client {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      flex-shrink: 0; cursor: pointer; transition: transform 0.2s;
     }
-    .cat-pill.active { 
-      background: var(--blue); color: #fff; border-color: var(--blue); box-shadow:0 4px 10px rgba(74,127,212,0.3);
+    .cat-pill-client:active { transform: scale(0.93); }
+
+    /* Círculo */
+    .cat-circle {
+      width: 58px; height: 58px; border-radius: 50%;
+      background: var(--card);
+      border: 2px solid var(--b);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      transition: all 0.25s;
+      position: relative;
     }
-    
-    /* Grid de Productos */
+    .cat-pill-client.active .cat-circle {
+      background: linear-gradient(135deg, var(--blue), var(--blue2));
+      border-color: var(--blue);
+      box-shadow: 0 6px 16px rgba(74, 127, 212, 0.4);
+    }
+    /* Anillo exterior cuando está activo */
+    .cat-pill-client.active .cat-circle::after {
+      content: '';
+      position: absolute; inset: -5px;
+      border-radius: 50%;
+      border: 2px solid rgba(74, 127, 212, 0.4);
+    }
+
+    /* Etiqueta debajo */
+    .cat-label {
+      font-size: 11px; font-weight: 700;
+      color: var(--t2);
+      max-width: 64px; text-align: center;
+      line-height: 1.2;
+      transition: color 0.2s;
+    }
+    .cat-pill-client.active .cat-label { color: var(--blue3, #7EB8FF); }
+
+    /* ── Grid de Productos ── */
     .product-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; padding: 0 20px; margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 14px; padding: 0 20px; margin-bottom: 20px;
     }
     
     .p-card {
       background: var(--card); border: 1px solid var(--b);
-      border-radius: 16px; overflow: hidden; position: relative;
-      display: flex; flex-direction: column; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+      border-radius: 18px; overflow: hidden; position: relative;
+      display: flex; flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
     .p-card:active { transform: scale(0.97); }
-    
+
     .p-img-wrap {
-      width: 100%; height: 110px; background: #fff; 
-      position: relative; padding: 10px; display: flex; align-items: center; justify-content: center;
-    }
-    .p-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; border-radius: 8px; }
-    
-    .p-badge {
-      position: absolute; top: 8px; left: 8px;
-      background: var(--red); color: #fff; font-size: 9px; font-weight: 800;
-      padding: 3px 6px; border-radius: 6px;
-    }
-    .p-like {
-      position: absolute; top: 8px; right: 8px;
-      background: rgba(0,0,0,0.05); width: 28px; height: 28px; border-radius: 50%;
+      width: 100%; height: 120px; background: #fff;
+      position: relative; padding: 12px;
       display: flex; align-items: center; justify-content: center;
-      color: var(--muted); cursor: pointer; backdrop-filter: blur(4px); transition: color 0.2s;
     }
-    .p-like.active { color: var(--red); }
+    .p-img-wrap img {
+      max-width: 100%; max-height: 100%;
+      object-fit: contain; mix-blend-mode: multiply; border-radius: 8px;
+    }
+
+    .p-like {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(255,255,255,0.85);
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); cursor: pointer;
+      backdrop-filter: blur(4px); transition: color 0.2s, background 0.2s;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .p-like.active { color: #EF4444; background: #fff; }
     
     .p-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
-    .p-tag { align-self: flex-start; font-size: 9px; color: var(--blue); font-weight: 800; background: rgba(74,127,212,0.1); padding: 3px 6px; border-radius: 6px; text-transform: uppercase; margin-bottom: 6px; }
-    .p-title { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .p-new { font-size: 15px; font-weight: 900; color: var(--green); margin-bottom: 10px; margin-top: auto; }
-    
-    /* Botón flotante */
+    .p-tag {
+      align-self: flex-start;
+      font-size: 9px; color: var(--blue); font-weight: 800;
+      background: rgba(74,127,212,0.12); padding: 3px 7px;
+      border-radius: 6px; text-transform: uppercase;
+      margin-bottom: 6px; letter-spacing: 0.4px;
+    }
+    .p-title {
+      font-size: 13px; font-weight: 700; color: var(--text);
+      line-height: 1.3; margin-bottom: 8px;
+      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .p-new {
+      font-size: 17px; font-weight: 900; color: var(--green);
+      margin-bottom: 10px; margin-top: auto;
+    }
+
+    /* Botón añadir */
+    .p-add-btn {
+      background: linear-gradient(135deg, var(--blue), var(--blue2));
+      color: #fff; border: none; border-radius: 10px;
+      padding: 9px; font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
+      font-family: var(--font);
+    }
+    .p-add-btn:active { opacity: 0.8; }
+
+    /* ── Botón carrito flotante ── */
     .cart-float {
       position: fixed; bottom: 24px; right: 24px; z-index: 90;
-      width: 56px; height: 56px; border-radius: 18px;
+      width: 58px; height: 58px; border-radius: 18px;
       background: linear-gradient(135deg, var(--blue), var(--blue2));
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 20px rgba(74,127,212,0.4); cursor: pointer;
+      box-shadow: 0 8px 24px rgba(74,127,212,0.45); cursor: pointer;
       color: white; transition: transform 0.2s;
     }
-    .cart-float:active { transform: scale(0.95); }
+    .cart-float:active { transform: scale(0.93); }
     .cart-badge {
-      position: absolute; top: -5px; right: -5px;
-      background: var(--red); color: white; font-size: 10px; font-weight: 900;
+      position: absolute; top: -6px; right: -6px;
+      background: #EF4444; color: white;
+      font-size: 10px; font-weight: 900;
       width: 22px; height: 22px; border-radius: 50%;
       display: none; align-items: center; justify-content: center;
       border: 2px solid var(--bg);
     }
 
-    /* Burbuja de Notificación (Toast) */
+    /* ── Toast ── */
     #toast-msg {
-      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
-      background: var(--blue); color: #fff; padding: 12px 24px; border-radius: var(--rpill);
-      font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.26, 1.55); z-index: 100;
-      box-shadow: 0 8px 20px rgba(74,127,212,0.4);
+      position: fixed; bottom: 100px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--blue); color: #fff;
+      padding: 12px 24px; border-radius: 40px;
+      font-size: 13px; font-weight: 700; opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.68, -0.55, 0.26, 1.55);
+      z-index: 100; box-shadow: 0 8px 20px rgba(74,127,212,0.4);
     }
     #toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Animación entrada cards ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .p-card { animation: fadeUp 0.3s ease both; }
   </style>
 </head>
 <body>
 
+  <!-- Header -->
   <header class="shop-header">
-    <button onclick="window.history.back()" style="background:rgba(255,255,255,0.07); border:1px solid var(--b); border-radius:12px; padding:8px 14px; font-size:13px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:6px;">
+    <button onclick="window.history.back()" style="background:rgba(255,255,255,0.07);border:1px solid var(--b);border-radius:12px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Atrás
     </button>
-    <div style="font-size:15px; font-weight:800; text-align:center" id="shop-title">Cargando Tienda...</div>
-    <button onclick="document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark'" style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;color:var(--text);">
+    <div style="font-size:15px;font-weight:800;text-align:center" id="shop-title">Cargando Tienda...</div>
+    <button onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'" style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;color:var(--text);">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
     </button>
   </header>
 
+  <!-- Buscador -->
   <div class="shop-search">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
     <input type="text" id="shop-search-input" placeholder="Buscar productos..." oninput="buscarProductos(this.value)"/>
   </div>
 
-  <div style="font-size:15px; font-weight:900; padding: 0 20px; margin-bottom:12px;">Categorías</div>
+  <!-- Título + Categorías en circles -->
+  <div style="font-size:15px;font-weight:900;padding:0 20px;margin-bottom:14px;">Categorías</div>
   <div class="cat-scroll" id="client-cats"></div>
 
-  <div style="font-size:15px; font-weight:900; padding: 0 20px; margin-bottom:12px; margin-top:10px;">Catálogo</div>
+  <!-- Catálogo -->
+  <div style="font-size:15px;font-weight:900;padding:0 20px;margin-bottom:14px;margin-top:4px;">Catálogo</div>
   <div class="product-grid" id="client-prods"></div>
 
+  <!-- Carrito flotante -->
   <div class="cart-float" onclick="abrirCarrito()">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
     <div class="cart-badge" id="cart-count">0</div>
   </div>
 
-  <div id="toast-msg">🛒 Producto añadido al carrito</div>
+  <div id="toast-msg">🛒 Añadido al carrito</div>
 
+  <!-- Modal alerta -->
   <div class="ov" id="ov-shop-alert">
-    <div class="modal" onclick="event.stopPropagation()" style="max-width:320px; text-align:center; padding: 30px 20px;">
-      <div style="font-size:48px; margin-bottom:16px; animation: popIn 0.4s ease;" id="sa-icon">🛍️</div>
-      <div style="font-size:20px; font-weight:900; margin-bottom:8px; color:var(--text);" id="sa-title">Atención</div>
-      <div style="font-size:14px; color:var(--t2); margin-bottom:24px; line-height:1.6" id="sa-msg">Mensaje</div>
-      <button class="btn btn-blue" onclick="document.getElementById('ov-shop-alert').classList.remove('on')" style="width:100%; font-size:15px; padding:14px;">Entendido</button>
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:320px;text-align:center;padding:30px 20px;">
+      <div style="font-size:48px;margin-bottom:16px;" id="sa-icon">🛍️</div>
+      <div style="font-size:20px;font-weight:900;margin-bottom:8px;color:var(--text);" id="sa-title">Atención</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.6" id="sa-msg">Mensaje</div>
+      <button class="btn btn-blue" onclick="document.getElementById('ov-shop-alert').classList.remove('on')" style="width:100%;font-size:15px;padding:14px;">Entendido</button>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="assets/js/db.js"></script>
-  
+
   <script>
-    // Conexión a Supabase (Entorno DEV)
-    const SUPABASE_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-'; 
+    // ────────────────────────────────────────
+    // Conexión Supabase
+    // ────────────────────────────────────────
+    const SUPABASE_URL   = 'https://krbtoepzoorpdedtykug.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
     const tiendaSupa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let productosDB = []; // Aquí se guardan los productos que bajemos de la nube
-    let carrito = [];
+    let productosDB    = [];
+    let carrito        = [];
     let currentCategory = 'all';
     let toastTimeout;
 
+    // Emoji automático por categoría — si no hay coincidencia usa 🛍️
+    function emojiParaCategoria(cat) {
+      const map = {
+        'ceras':      '🪙', 'cera':       '🪙',
+        'carteras':   '👜', 'cartera':    '👜',
+        'ropa':       '👕', 'complementos':'🎩',
+        'accesorios': '⌚', 'perfumes':   '🌸', 'perfume': '🌸',
+        'cremas':     '🧴', 'crema':      '🧴',
+        'champú':     '🚿', 'champu':     '🚿',
+        'aceites':    '💧', 'aceite':     '💧',
+        'navajas':    '🪒', 'maquinillas':'🪒',
+        'tónicos':    '✨', 'tonico':     '✨',
+        'geles':      '💎', 'gel':        '💎',
+        'barbería':   '💈', 'barberia':   '💈',
+        'peluquería': '✂️', 'peluqueria': '✂️',
+        'todo':       '⭐',
+      };
+      let lower = (cat || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return map[lower] || '🛍️';
+    }
+
+    // ────────────────────────────────────────
+    // Init
+    // ────────────────────────────────────────
     document.addEventListener("DOMContentLoaded", async function() {
-      // Cargar DB Local para sacar el ID de la barbería actual
       if (typeof loadDB === 'function') { window.DB = loadDB(); }
 
       let bizId = '';
@@ -182,188 +287,203 @@
       } else if (window.DB && window.DB.currentBiz) {
         bizId = window.DB.currentBiz;
       }
-      
+
       if (bizId) {
-        let SHOP_BIZ = window.DB.businesses ? window.DB.businesses.find(b => b.id === bizId) : null;
-        document.getElementById('shop-title').textContent = SHOP_BIZ ? "Tienda de " + SHOP_BIZ.name : "Nuestra Tienda";
-        
-        // ¡Traer los datos en tiempo real desde Supabase!
+        let SHOP_BIZ = window.DB && window.DB.businesses
+          ? window.DB.businesses.find(b => b.id === bizId)
+          : null;
+        document.getElementById('shop-title').textContent = SHOP_BIZ
+          ? SHOP_BIZ.name
+          : "Nuestra Tienda";
+
         await fetchProductosDeSupabase(bizId);
       } else {
-         document.getElementById('shop-title').textContent = "Enlace inválido";
+        document.getElementById('shop-title').textContent = "Enlace inválido";
       }
     });
 
     async function fetchProductosDeSupabase(bizId) {
-        try {
-            const { data, error } = await tiendaSupa
-              .from('products')
-              .select('*')
-              .eq('business_id', bizId);
-              
-            if (error) throw error;
-            
-            productosDB = data || [];
-            inicializarTienda();
-            
-        } catch(err) {
-            console.error("Error al conectar con la tienda:", err);
-            document.getElementById('client-prods').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--red);">Error al cargar los productos de la tienda.</div>';
-        }
+      try {
+        const { data, error } = await tiendaSupa
+          .from('products')
+          .select('*')
+          .eq('business_id', bizId);
+        if (error) throw error;
+        productosDB = data || [];
+        inicializarTienda();
+      } catch(err) {
+        console.error("Error tienda:", err);
+        document.getElementById('client-prods').innerHTML =
+          '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--red);">Error al cargar los productos.</div>';
+      }
     }
 
-    // --- FUNCIONES DE UI ---
+    // ────────────────────────────────────────
+    // UI helpers
+    // ────────────────────────────────────────
     function mostrarAlertaCustom(titulo, mensaje, icono = "🛍️") {
-        document.getElementById('sa-icon').innerText = icono;
-        document.getElementById('sa-title').innerText = titulo;
-        document.getElementById('sa-msg').innerText = mensaje;
-        document.getElementById('ov-shop-alert').classList.add('on');
+      document.getElementById('sa-icon').innerText  = icono;
+      document.getElementById('sa-title').innerText = titulo;
+      document.getElementById('sa-msg').innerText   = mensaje;
+      document.getElementById('ov-shop-alert').classList.add('on');
     }
 
     function mostrarToast(mensaje) {
-        const toast = document.getElementById('toast-msg');
-        toast.innerText = mensaje;
-        toast.classList.add('show');
-        
-        clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => {
-            toast.classList.remove('show');
-        }, 2000); 
+      const toast = document.getElementById('toast-msg');
+      toast.innerText = mensaje;
+      toast.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => toast.classList.remove('show'), 2200);
     }
 
     function inicializarTienda() {
-        renderCategorias();
-        renderProductos('all');
+      renderCategorias();
+      renderProductos('all');
     }
 
-    // Generar Etiquetas Dinámicas
+    // ────────────────────────────────────────
+    // CATEGORÍAS — Pills circulares bonitas
+    // ────────────────────────────────────────
     function renderCategorias() {
-        const container = document.getElementById('client-cats');
-        if(!container) return;
-        
-        // Buscar todas las etiquetas de los productos y quitar repetidas
-        let categoriasUnicas = [...new Set(productosDB.map(p => p.category).filter(Boolean))];
-        
-        let html = `<div class="cat-pill ${currentCategory === 'all' ? 'active' : ''}" onclick="filtrarProductos('all')">Todo</div>`;
-        
-        categoriasUnicas.forEach(cat => {
-            html += `<div class="cat-pill ${currentCategory === cat ? 'active' : ''}" onclick="filtrarProductos('${cat}')">${cat}</div>`;
-        });
-        
-        container.innerHTML = html;
+      const container = document.getElementById('client-cats');
+      if (!container) return;
+
+      // Leemos la categoría tal cual (texto plano)
+      let categoriasUnicas = [...new Set(
+        productosDB.map(p => (p.category || '').trim()).filter(Boolean)
+      )].sort();
+
+      // Pill "Todo" siempre primero
+      let html = `
+        <div class="cat-pill-client ${currentCategory === 'all' ? 'active' : ''}"
+             onclick="filtrarProductos('all')">
+          <div class="cat-circle">${emojiParaCategoria('todo')}</div>
+          <div class="cat-label">Todo</div>
+        </div>`;
+
+      categoriasUnicas.forEach(cat => {
+        html += `
+          <div class="cat-pill-client ${currentCategory === cat ? 'active' : ''}"
+               onclick="filtrarProductos('${cat.replace(/'/g, "\\'")}')">
+            <div class="cat-circle">${emojiParaCategoria(cat)}</div>
+            <div class="cat-label">${cat}</div>
+          </div>`;
+      });
+
+      container.innerHTML = html;
     }
 
     function filtrarProductos(catId) {
-        currentCategory = catId;
-        document.getElementById('shop-search-input').value = ''; // Limpiar buscador al cambiar filtro
-        renderCategorias(); 
-        renderProductos(catId);
+      currentCategory = catId;
+      document.getElementById('shop-search-input').value = '';
+      renderCategorias();
+      renderProductos(catId);
     }
-    
+
     function buscarProductos(termino) {
-        let text = termino.toLowerCase().trim();
-        let filtrados = productosDB.filter(p => p.name.toLowerCase().includes(text));
-        
-        // Si hay búsqueda, quitar la marca azul de las categorías
-        if (text !== '') {
-            currentCategory = ''; 
-            renderCategorias();
-        } else {
-            currentCategory = 'all';
-            renderCategorias();
-        }
-        
-        renderTarjetas(filtrados);
+      let text = termino.toLowerCase().trim();
+      let filtrados = productosDB.filter(p =>
+        (p.name || '').toLowerCase().includes(text)
+      );
+      if (text !== '') {
+        currentCategory = '';
+        renderCategorias();
+      } else {
+        currentCategory = 'all';
+        renderCategorias();
+      }
+      renderTarjetas(filtrados);
     }
 
     function renderProductos(catId) {
-        let prods = catId === 'all' ? productosDB : productosDB.filter(p => p.category === catId);
-        renderTarjetas(prods);
+      let prods = catId === 'all'
+        ? productosDB
+        : productosDB.filter(p => (p.category || '').trim() === catId);
+      renderTarjetas(prods);
     }
 
-    // Dibujar las tarjetas pequeñas (130px)
+    // ────────────────────────────────────────
+    // TARJETAS — Vista cliente
+    // ────────────────────────────────────────
     function renderTarjetas(prods) {
-        const container = document.getElementById('client-prods');
-        if(!container) return;
+      const container = document.getElementById('client-prods');
+      if (!container) return;
 
-        if(prods.length === 0) {
-            container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:13px;">No hay productos disponibles.</div>`;
-            return;
-        }
+      if (prods.length === 0) {
+        container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;">
+          <div style="font-size:40px;margin-bottom:12px;">😔</div>
+          No hay productos en esta categoría.
+        </div>`;
+        return;
+      }
 
-        let html = '';
-        prods.forEach(p => {
-            let finalPrice = parseFloat(p.price).toFixed(2);
-            let img = p.image ? p.image : 'https://placehold.co/300x300/ffffff/4A7FD4?text=Producto';
+      container.innerHTML = prods.map((p, i) => {
+        let finalPrice = parseFloat(p.price).toFixed(2);
+        let img = p.image
+          ? p.image
+          : 'https://placehold.co/300x300/ffffff/4A7FD4?text=Producto';
+        let catName = (p.category || 'General').trim();
 
-            html += `
-            <div class="p-card">
-              <div class="p-img-wrap">
-                <div class="p-like" onclick="toggleLike(this)">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                </div>
-                <img src="${img}" alt="${p.name}"/>
-              </div>
-              <div class="p-info">
-                <div class="p-tag">${p.category || 'General'}</div>
-                <div class="p-title">${p.name}</div>
-                <div class="p-new">${finalPrice}€</div>
-                <button class="btn btn-blue btn-sm" onclick="agregarAlCarrito('${p.id}')" style="padding:8px; font-size:11px;">Añadir al carrito</button>
-              </div>
+        return `
+        <div class="p-card" style="animation-delay:${i * 0.05}s">
+          <div class="p-img-wrap">
+            <div class="p-like" onclick="toggleLike(this)" title="Guardar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             </div>
-            `;
-        });
-        
-        container.innerHTML = html;
+            <img src="${img}" alt="${p.name}" loading="lazy"/>
+          </div>
+          <div class="p-info">
+            <div class="p-tag">${catName}</div>
+            <div class="p-title">${p.name}</div>
+            <div class="p-new">${finalPrice}€</div>
+            <button class="p-add-btn" onclick="agregarAlCarrito('${p.id}')">
+              + Añadir al carrito
+            </button>
+          </div>
+        </div>`;
+      }).join('');
     }
 
     function toggleLike(btn) {
-        btn.classList.toggle('active');
-        let svg = btn.querySelector('svg');
-        if (btn.classList.contains('active')) {
-            svg.setAttribute('fill', 'currentColor');
-        } else {
-            svg.setAttribute('fill', 'none');
-        }
+      btn.classList.toggle('active');
+      let svg = btn.querySelector('svg');
+      svg.setAttribute('fill', btn.classList.contains('active') ? 'currentColor' : 'none');
     }
 
+    // ────────────────────────────────────────
+    // Carrito
+    // ────────────────────────────────────────
     function agregarAlCarrito(id) {
-        let prod = productosDB.find(p => p.id === id);
-        if(!prod) return;
-        
-        let item = carrito.find(c => c.product.id === id);
-        if(item) {
-            item.cantidad++;
-        } else {
-            carrito.push({ product: prod, cantidad: 1 });
-        }
-        
-        actualizarBadgeCarrito();
-        
-        // Efecto rebote en el botón
-        const cartBtn = document.querySelector('.cart-float');
-        cartBtn.style.transform = 'scale(1.1)';
-        setTimeout(() => cartBtn.style.transform = 'scale(1)', 200);
-        
-        mostrarToast(`¡Añadido: ${prod.name}!`);
+      let prod = productosDB.find(p => p.id === id);
+      if (!prod) return;
+
+      let item = carrito.find(c => c.product.id === id);
+      if (item) { item.cantidad++; }
+      else       { carrito.push({ product: prod, cantidad: 1 }); }
+
+      actualizarBadgeCarrito();
+
+      const cartBtn = document.querySelector('.cart-float');
+      cartBtn.style.transform = 'scale(1.15)';
+      setTimeout(() => cartBtn.style.transform = 'scale(1)', 200);
+
+      mostrarToast(`¡Añadido: ${prod.name}!`);
     }
 
     function actualizarBadgeCarrito() {
-        const badge = document.getElementById('cart-count');
-        if(!badge) return;
-        
-        let total = carrito.reduce((sum, item) => sum + item.cantidad, 0);
-        badge.textContent = total;
-        badge.style.display = total > 0 ? 'flex' : 'none';
+      const badge = document.getElementById('cart-count');
+      if (!badge) return;
+      let total = carrito.reduce((s, i) => s + i.cantidad, 0);
+      badge.textContent = total;
+      badge.style.display = total > 0 ? 'flex' : 'none';
     }
 
     function abrirCarrito() {
-        if(carrito.length === 0) {
-            mostrarAlertaCustom("Carrito Vacío", "Aún no has añadido ningún producto a tu carrito.", "🛒");
-            return;
-        }
-        // En el próximo paso crearemos el panel lateral (Drawer) para ver el resumen del pedido.
-        mostrarAlertaCustom("¡Casi listo!", "Aquí abriremos el panel para revisar tu pedido y enviarlo por WhatsApp.", "🚀");
+      if (carrito.length === 0) {
+        mostrarAlertaCustom("Carrito Vacío", "Aún no has añadido ningún producto.", "🛒");
+        return;
+      }
+      mostrarAlertaCustom("¡Casi listo!", "Aquí abriremos el panel para revisar tu pedido.", "🚀");
     }
   </script>
 </body>
