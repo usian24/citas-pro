@@ -207,7 +207,11 @@ function renderProductosAdmin(productos) {
   const prodList = document.getElementById('biz-productos-list');
   if (!prodList) return;
 
-  // Buscador siempre visible arriba
+  // Anular el display:grid que viene del CSS del index
+  // para que buscador y secciones fluyan en bloque normal
+  prodList.style.display = 'block';
+  prodList.style.gridTemplateColumns = 'none';
+
   prodList.innerHTML = `
     <div class="adm-search-wrap">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)"
