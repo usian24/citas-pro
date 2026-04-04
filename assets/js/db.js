@@ -290,7 +290,10 @@ function syncProductToCloud(bizId, product) {
 /* ══════════════════════════
    HELPERS UI
 ══════════════════════════ */
-function money(n) { return parseFloat(n || 0).toFixed(2) + '€'; }
+function money(n) {
+  if (typeof formatMoney === 'function') return formatMoney(n);
+  return parseFloat(n || 0).toFixed(2) + '€';
+}
 function G(id)    { return document.getElementById(id); }
 function V(id)    { var e = G(id); return e ? e.value : ''; }
 function T(id, t) { var e = G(id); if (e) e.textContent = sanitizeText(t); }

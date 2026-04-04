@@ -3,14 +3,6 @@
 window._cloudApptCache = window._cloudApptCache || null;
 var _cloudApptCache = null;
 
-var COUNTRY_TIMEZONES = {
-  ES: 'Europe/Madrid', CO: 'America/Bogota', MX: 'America/Mexico_City',
-  AR: 'America/Argentina/Buenos_Aires', PE: 'America/Lima', CL: 'America/Santiago',
-  VE: 'America/Caracas', EC: 'America/Guayaquil', DO: 'America/Santo_Domingo',
-  US: 'America/New_York', BR: 'America/Sao_Paulo', DE: 'Europe/Berlin',
-  NL: 'Europe/Amsterdam', FR: 'Europe/Paris'
-};
-
 function getNowInBizTimezone(country) {
   var tz = COUNTRY_TIMEZONES[country] || 'Europe/Madrid';
   try {
