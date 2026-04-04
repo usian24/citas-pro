@@ -1141,19 +1141,48 @@
 <div class="ov bot" id="ov-tienda-prod">
   <div class="mbot" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Añadir Producto</span><div class="xbtn" onclick="closeOv('ov-tienda-prod')">×</div></div>
-    <div class="field"><label>Nombre del Producto *</label><input class="inp" id="prod-name" placeholder="Ej: Cera Fijadora Mate" maxlength="80"/></div>
+
+    <div class="field"><label>Nombre del Producto *</label>
+      <input class="inp" id="prod-name" placeholder="Ej: Cera Fijadora Mate" maxlength="80"/>
+    </div>
+
     <div class="field">
       <label>Categoría / Etiqueta *</label>
       <input class="inp" id="prod-cat" list="cat-list" placeholder="Ej: Ceras, Rostro, Barbería..." maxlength="30"/>
       <datalist id="cat-list"></datalist>
     </div>
-    <div class="field"><label>Precio (€) *</label><input class="inp" id="prod-price" type="number" placeholder="15" min="0" step="0.5"/></div>
-    <div class="field"><label>Descripción breve</label><input class="inp" id="prod-desc" placeholder="Detalles del producto..." maxlength="150"/></div>
+
+    <div style="display:flex;gap:10px;">
+      <div class="field" style="flex:1;">
+        <label>Precio (€) *</label>
+        <input class="inp" id="prod-price" type="number" placeholder="15" min="0" step="0.5"
+               oninput="actualizarPreviewDescuento()"/>
+      </div>
+      <div class="field" style="flex:1;">
+        <label>Stock (unidades)</label>
+        <input class="inp" id="prod-stock" type="number" placeholder="10" min="0" step="1"/>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Descuento % <span style="color:var(--muted);font-weight:400;font-size:11px">(0 = sin descuento)</span></label>
+      <input class="inp" id="prod-discount" type="number" placeholder="0" min="0" max="90" step="1" value="0"
+             oninput="actualizarPreviewDescuento()"/>
+      <div id="prod-discount-preview" style="font-size:11px;color:#EF4444;margin-top:5px;min-height:16px;font-weight:600;"></div>
+    </div>
+
+    <div class="field"><label>Descripción breve</label>
+      <input class="inp" id="prod-desc" placeholder="Detalles del producto..." maxlength="150"/>
+    </div>
+
     <div class="field">
       <label>Foto del producto</label>
-      <div id="prod-photo-preview" class="photo-upload" onclick="document.getElementById('prod-photo-input').click()"><div style="font-size:13px;color:var(--muted)">Añadir foto</div></div>
+      <div id="prod-photo-preview" class="photo-upload" onclick="document.getElementById('prod-photo-input').click()">
+        <div style="font-size:13px;color:var(--muted)">Añadir foto</div>
+      </div>
       <input type="file" id="prod-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
     </div>
+
     <button class="btn btn-blue" onclick="saveProduct()">Guardar Producto</button>
   </div>
 </div>
@@ -1161,32 +1190,37 @@
 <div id="bs-name" style="display:none;"></div>
 <button id="bp-btn-shop" style="display:none;"></button>
 <script>
+  function actualizarPreviewDescuento() {
+    const precio  = parseFloat(document.getElementById('prod-price').value) || 0;
+    const desc    = parseFloat(document.getElementById('prod-discount').value) || 0;
+    const preview = document.getElementById('prod-discount-preview');
+    if (desc > 0 && precio > 0) {
+      const final = (precio * (1 - desc / 100)).toFixed(2);
+      preview.textContent = `El cliente verá: ${precio.toFixed(2)}€ → ${final}€ (-${Math.round(desc)}%)`;
+    } else {
+      preview.textContent = '';
+    }
+  }
+
   function abrirTiendaSegura() {
-     // 1. Si entró por link directo, la URL ya tiene el ID
-     if (window.location.hash && window.location.hash.includes('#b/')) {
-         window.location.href = 'tienda.html' + window.location.hash;
-         return;
-     }
-     
-     // 2. Si entró por el BUSCADOR, leemos el nombre de la pantalla y sacamos su ID
-     let nombreBarberia = document.getElementById('bp-name').innerText;
-     let baseDatos = window.DB || (typeof loadDB === 'function' ? loadDB() : null);
-     
-     if (baseDatos && baseDatos.businesses) {
-         let negocio = baseDatos.businesses.find(b => b.name === nombreBarberia);
-         if (negocio) {
-             window.location.href = 'tienda.html#b/' + negocio.id;
-             return;
-         }
-     }
-
-     // 3. Si el DUEÑO está probando desde su panel
-     if (typeof CUR !== 'undefined' && CUR && CUR.id) {
-         window.location.href = 'tienda.html#b/' + CUR.id;
-         return;
-     }
-
-     alert("Error: No pudimos identificar la barbería para abrir la tienda.");
+    if (window.location.hash && window.location.hash.includes('#b/')) {
+      window.location.href = 'tienda.html' + window.location.hash;
+      return;
+    }
+    let nombreBarberia = document.getElementById('bp-name').innerText;
+    let baseDatos = window.DB || (typeof loadDB === 'function' ? loadDB() : null);
+    if (baseDatos && baseDatos.businesses) {
+      let negocio = baseDatos.businesses.find(b => b.name === nombreBarberia);
+      if (negocio) {
+        window.location.href = 'tienda.html#b/' + negocio.id;
+        return;
+      }
+    }
+    if (typeof CUR !== 'undefined' && CUR && CUR.id) {
+      window.location.href = 'tienda.html#b/' + CUR.id;
+      return;
+    }
+    alert("Error: No pudimos identificar la barbería para abrir la tienda.");
   }
 </script>
 
