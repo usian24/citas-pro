@@ -446,7 +446,7 @@
       Pedir por WhatsApp
     </button>
     <button class="cart-btn-clear" onclick="vaciarCarrito()">
-      🗑️ Vaciar carrito
+       Vaciar carrito
     </button>
   </div>
 </div>
@@ -871,7 +871,7 @@ function renderCartItems() {
         </div>
         <div class="cart-qty">
           <div class="cart-qty-btn minus" onclick="cambiarCantidad('${p.id}',-1)">
-            ${item.cantidad===1 ? '🗑️' : '−'}
+            ${item.cantidad===1 ? 'X' : '−'}
           </div>
           <div class="cart-qty-num">${item.cantidad}</div>
           <div class="cart-qty-btn" onclick="cambiarCantidad('${p.id}',1)">+</div>
