@@ -7,28 +7,26 @@
   <title>Tienda | Citas Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="assets/css/styles.css"/>
-  
+
   <style>
-    body { background: var(--bg); padding-bottom: 90px; }
-    
+    body { background: var(--bg); padding-bottom: 100px; }
+
     /* ── Header ── */
     .shop-header {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(7, 9, 15, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 16px 20px;
+      background: rgba(7,9,15,0.96);
+      backdrop-filter: blur(12px);
+      padding: 14px 20px;
       display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid var(--b);
     }
-    [data-theme="light"] .shop-header { background: rgba(244, 247, 251, 0.95); }
-    
+    [data-theme="light"] .shop-header { background: rgba(244,247,251,0.96); }
+
     /* ── Buscador ── */
     .shop-search {
-      margin: 20px;
-      background: var(--card);
-      border: 1.5px solid var(--b);
-      border-radius: 16px;
-      padding: 12px 16px;
+      margin: 16px 20px;
+      background: var(--card); border: 1.5px solid var(--b);
+      border-radius: 16px; padding: 12px 16px;
       display: flex; align-items: center; gap: 10px;
     }
     .shop-search input {
@@ -36,12 +34,9 @@
       color: var(--text); font-family: var(--font); font-size: 14px;
     }
 
-    /* ════════════════════════════════════════
-       PILLS DE CATEGORÍA — Vista Cliente
-       Pills circulares con emoji + nombre
-    ════════════════════════════════════════ */
+    /* ── Pills de categoría ── */
     .cat-scroll {
-      display: flex; gap: 12px; padding: 0 20px 20px;
+      display: flex; gap: 14px; padding: 0 20px 20px;
       overflow-x: auto; scroll-snap-type: x mandatory;
       scrollbar-width: none;
     }
@@ -50,115 +45,178 @@
     .cat-pill-client {
       display: flex; flex-direction: column; align-items: center; gap: 6px;
       flex-shrink: 0; cursor: pointer; transition: transform 0.2s;
+      scroll-snap-align: start;
     }
-    .cat-pill-client:active { transform: scale(0.93); }
+    .cat-pill-client:active { transform: scale(0.9); }
 
-    /* Círculo */
     .cat-circle {
-      width: 58px; height: 58px; border-radius: 50%;
-      background: var(--card);
-      border: 2px solid var(--b);
+      width: 60px; height: 60px; border-radius: 50%;
+      background: var(--card); border: 2px solid var(--b);
       display: flex; align-items: center; justify-content: center;
-      font-size: 24px;
-      transition: all 0.25s;
-      position: relative;
+      font-size: 26px; transition: all 0.25s; position: relative;
     }
     .cat-pill-client.active .cat-circle {
       background: linear-gradient(135deg, var(--blue), var(--blue2));
       border-color: var(--blue);
-      box-shadow: 0 6px 16px rgba(74, 127, 212, 0.4);
+      box-shadow: 0 6px 18px rgba(74,127,212,0.45);
     }
-    /* Anillo exterior cuando está activo */
     .cat-pill-client.active .cat-circle::after {
-      content: '';
-      position: absolute; inset: -5px;
-      border-radius: 50%;
-      border: 2px solid rgba(74, 127, 212, 0.4);
+      content: ''; position: absolute; inset: -5px;
+      border-radius: 50%; border: 2px solid rgba(74,127,212,0.35);
     }
-
-    /* Etiqueta debajo */
     .cat-label {
-      font-size: 11px; font-weight: 700;
-      color: var(--t2);
-      max-width: 64px; text-align: center;
-      line-height: 1.2;
-      transition: color 0.2s;
+      font-size: 10px; font-weight: 700; color: var(--t2);
+      max-width: 66px; text-align: center; line-height: 1.2;
     }
-    .cat-pill-client.active .cat-label { color: var(--blue3, #7EB8FF); }
+    .cat-pill-client.active .cat-label { color: #7EB8FF; }
 
-    /* ── Grid de Productos ── */
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 14px; padding: 0 20px; margin-bottom: 20px;
+    /* ══════════════════════════════════════
+       SECCIÓN DE CATÁLOGO — layout tren
+    ══════════════════════════════════════ */
+    .catalogo-seccion {
+      margin-bottom: 32px;
     }
-    
+    .catalogo-seccion-titulo {
+      font-size: 15px; font-weight: 900;
+      padding: 0 20px; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .catalogo-seccion-titulo span.cnt {
+      font-size: 11px; font-weight: 700; color: var(--blue);
+      background: rgba(74,127,212,0.12);
+      padding: 2px 8px; border-radius: 10px;
+    }
+
+    /* Tren horizontal — 3 cards visibles, scroll suave */
+    .tren-scroll {
+      display: flex; gap: 12px;
+      padding: 4px 20px 12px;
+      overflow-x: auto; scroll-snap-type: x mandatory;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .tren-scroll::-webkit-scrollbar { display: none; }
+
+    /* Cada columna del tren: hasta 3 cards en vertical */
+    .tren-col {
+      display: flex; flex-direction: column; gap: 12px;
+      flex-shrink: 0; scroll-snap-align: start;
+      width: calc((100vw - 52px) / 3); /* 3 columnas visibles */
+      min-width: 110px; max-width: 150px;
+    }
+
+    /* ── Tarjeta de producto ── */
     .p-card {
       background: var(--card); border: 1px solid var(--b);
-      border-radius: 18px; overflow: hidden; position: relative;
+      border-radius: 16px; overflow: hidden; position: relative;
       display: flex; flex-direction: column;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transition: transform 0.18s;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+      animation: fadeUp 0.3s ease both;
     }
-    .p-card:active { transform: scale(0.97); }
+    .p-card:active { transform: scale(0.96); }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
 
     .p-img-wrap {
-      width: 100%; height: 120px; background: #fff;
-      position: relative; padding: 12px;
+      width: 100%; aspect-ratio: 1/1; background: #fff;
+      position: relative; padding: 10px;
       display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
     }
     .p-img-wrap img {
       max-width: 100%; max-height: 100%;
-      object-fit: contain; mix-blend-mode: multiply; border-radius: 8px;
+      object-fit: contain; mix-blend-mode: multiply; border-radius: 6px;
     }
 
-    .p-like {
-      position: absolute; top: 10px; right: 10px;
-      background: rgba(255,255,255,0.85);
-      width: 30px; height: 30px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--muted); cursor: pointer;
-      backdrop-filter: blur(4px); transition: color 0.2s, background 0.2s;
-      border: 1px solid rgba(0,0,0,0.06);
+    /* Badge de descuento */
+    .p-discount-badge {
+      position: absolute; top: 7px; left: 7px;
+      background: #EF4444; color: #fff;
+      font-size: 9px; font-weight: 900;
+      padding: 3px 6px; border-radius: 6px; z-index: 2;
     }
-    .p-like.active { color: #EF4444; background: #fff; }
-    
-    .p-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+
+    /* Corazón */
+    .p-like {
+      position: absolute; top: 7px; right: 7px;
+      background: rgba(255,255,255,0.88);
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #aaa; cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.06);
+      transition: color 0.2s, transform 0.15s;
+      z-index: 2;
+    }
+    .p-like.active { color: #EF4444; }
+    .p-like:active { transform: scale(1.25); }
+
+    .p-info { padding: 8px 10px 10px; flex:1; display:flex; flex-direction:column; }
+
     .p-tag {
-      align-self: flex-start;
-      font-size: 9px; color: var(--blue); font-weight: 800;
-      background: rgba(74,127,212,0.12); padding: 3px 7px;
-      border-radius: 6px; text-transform: uppercase;
-      margin-bottom: 6px; letter-spacing: 0.4px;
+      align-self: flex-start; font-size: 8px; color: var(--blue);
+      font-weight: 800; background: rgba(74,127,212,0.12);
+      padding: 2px 6px; border-radius: 5px; text-transform: uppercase;
+      margin-bottom: 4px; letter-spacing: 0.3px;
     }
     .p-title {
-      font-size: 13px; font-weight: 700; color: var(--text);
-      line-height: 1.3; margin-bottom: 8px;
-      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
+      font-size: 11px; font-weight: 700; color: var(--text);
+      line-height: 1.3; margin-bottom: 4px;
+      display: -webkit-box; -webkit-line-clamp: 2;
       -webkit-box-orient: vertical; overflow: hidden;
     }
-    .p-new {
-      font-size: 17px; font-weight: 900; color: var(--green);
-      margin-bottom: 10px; margin-top: auto;
+
+    /* Precios */
+    .p-price-wrap { margin-bottom: 6px; margin-top: auto; }
+    .p-price-old {
+      font-size: 10px; color: var(--muted); text-decoration: line-through;
+      font-weight: 600; line-height: 1;
     }
+    .p-price-new {
+      font-size: 14px; font-weight: 900; color: var(--green); line-height: 1.2;
+    }
+    .p-price-new.discounted { color: #EF4444; }
+
+    /* Estrellas */
+    .p-stars {
+      display: flex; gap: 1px; margin-bottom: 6px; align-items: center;
+    }
+    .star { font-size: 9px; color: #d1d5db; transition: color 0.2s; }
+    .star.on { color: #FBBF24; }
+    .p-stars-count {
+      font-size: 9px; color: var(--muted); font-weight: 600; margin-left: 3px;
+    }
+
+    /* Stock badge */
+    .p-stock {
+      font-size: 9px; font-weight: 700; margin-bottom: 5px;
+    }
+    .p-stock.ok   { color: var(--green); }
+    .p-stock.low  { color: #F59E0B; }
+    .p-stock.out  { color: var(--red); }
 
     /* Botón añadir */
     .p-add-btn {
       background: linear-gradient(135deg, var(--blue), var(--blue2));
-      color: #fff; border: none; border-radius: 10px;
-      padding: 9px; font-size: 12px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s;
-      font-family: var(--font);
+      color: #fff; border: none; border-radius: 8px;
+      padding: 7px 4px; font-size: 10px; font-weight: 700;
+      cursor: pointer; width: 100%; font-family: var(--font);
+      transition: opacity 0.2s;
     }
     .p-add-btn:active { opacity: 0.8; }
+    .p-add-btn:disabled {
+      background: var(--b); color: var(--muted); cursor: not-allowed;
+    }
 
-    /* ── Botón carrito flotante ── */
+    /* ── Carrito flotante ── */
     .cart-float {
-      position: fixed; bottom: 24px; right: 24px; z-index: 90;
-      width: 58px; height: 58px; border-radius: 18px;
+      position: fixed; bottom: 24px; right: 20px; z-index: 90;
+      width: 56px; height: 56px; border-radius: 16px;
       background: linear-gradient(135deg, var(--blue), var(--blue2));
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 24px rgba(74,127,212,0.45); cursor: pointer;
+      box-shadow: 0 8px 24px rgba(74,127,212,0.5); cursor: pointer;
       color: white; transition: transform 0.2s;
     }
     .cart-float:active { transform: scale(0.93); }
@@ -166,325 +224,518 @@
       position: absolute; top: -6px; right: -6px;
       background: #EF4444; color: white;
       font-size: 10px; font-weight: 900;
-      width: 22px; height: 22px; border-radius: 50%;
+      width: 20px; height: 20px; border-radius: 50%;
       display: none; align-items: center; justify-content: center;
       border: 2px solid var(--bg);
     }
 
     /* ── Toast ── */
     #toast-msg {
-      position: fixed; bottom: 100px; left: 50%;
+      position: fixed; bottom: 90px; left: 50%;
       transform: translateX(-50%) translateY(20px);
       background: var(--blue); color: #fff;
-      padding: 12px 24px; border-radius: 40px;
+      padding: 10px 22px; border-radius: 40px;
       font-size: 13px; font-weight: 700; opacity: 0;
       pointer-events: none;
-      transition: all 0.35s cubic-bezier(0.68, -0.55, 0.26, 1.55);
-      z-index: 100; box-shadow: 0 8px 20px rgba(74,127,212,0.4);
+      transition: all 0.35s cubic-bezier(0.68,-0.55,0.26,1.55);
+      z-index: 200; white-space: nowrap;
     }
-    #toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast-msg.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-    /* ── Animación entrada cards ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
+    /* ── Sin resultados ── */
+    .empty-state {
+      text-align: center; padding: 40px 20px;
+      color: var(--muted); font-size: 13px;
     }
-    .p-card { animation: fadeUp 0.3s ease both; }
+    .empty-state div:first-child { font-size: 36px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="shop-header">
-    <button onclick="window.history.back()" style="background:rgba(255,255,255,0.07);border:1px solid var(--b);border-radius:12px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Atrás
-    </button>
-    <div style="font-size:15px;font-weight:800;text-align:center" id="shop-title">Cargando Tienda...</div>
-    <button onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'" style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;color:var(--text);">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
-    </button>
-  </header>
+<!-- Header -->
+<header class="shop-header">
+  <button onclick="window.history.back()"
+          style="background:rgba(255,255,255,0.07);border:1px solid var(--b);border-radius:12px;
+                 padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);
+                 display:flex;align-items:center;gap:6px;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg> Atrás
+  </button>
+  <div style="font-size:15px;font-weight:800;text-align:center" id="shop-title">Cargando...</div>
+  <button onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'"
+          style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.07);
+                 border:1px solid var(--b);display:flex;align-items:center;justify-content:center;color:var(--text);">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"/>
+      <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>
+    </svg>
+  </button>
+</header>
 
-  <!-- Buscador -->
-  <div class="shop-search">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-    <input type="text" id="shop-search-input" placeholder="Buscar productos..." oninput="buscarProductos(this.value)"/>
+<!-- Buscador -->
+<div class="shop-search">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)"
+       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+  <input type="text" id="shop-search-input" placeholder="Buscar productos..."
+         oninput="buscarProductos(this.value)"/>
+</div>
+
+<!-- Categorías -->
+<div style="font-size:15px;font-weight:900;padding:0 20px;margin-bottom:14px;">Categorías</div>
+<div class="cat-scroll" id="client-cats"></div>
+
+<!-- Catálogo por secciones -->
+<div id="catalogo-root"></div>
+
+<!-- Carrito flotante -->
+<div class="cart-float" onclick="abrirCarrito()">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+  </svg>
+  <div class="cart-badge" id="cart-count">0</div>
+</div>
+
+<div id="toast-msg"></div>
+
+<!-- Modal alerta -->
+<div class="ov" id="ov-shop-alert">
+  <div class="modal" onclick="event.stopPropagation()"
+       style="max-width:320px;text-align:center;padding:30px 20px;">
+    <div style="font-size:48px;margin-bottom:16px;" id="sa-icon">🛍️</div>
+    <div style="font-size:20px;font-weight:900;margin-bottom:8px;color:var(--text);" id="sa-title">Atención</div>
+    <div style="font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.6" id="sa-msg"></div>
+    <button class="btn btn-blue"
+            onclick="document.getElementById('ov-shop-alert').classList.remove('on')"
+            style="width:100%;font-size:15px;padding:14px;">Entendido</button>
   </div>
+</div>
 
-  <!-- Título + Categorías en circles -->
-  <div style="font-size:15px;font-weight:900;padding:0 20px;margin-bottom:14px;">Categorías</div>
-  <div class="cat-scroll" id="client-cats"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="assets/js/db.js"></script>
+<script>
+// ════════════════════════════════════════════
+// CONEXIÓN SUPABASE
+// ════════════════════════════════════════════
+const SUPABASE_URL      = 'https://krbtoepzoorpdedtykug.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
+const tiendaSupa        = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  <!-- Catálogo -->
-  <div style="font-size:15px;font-weight:900;padding:0 20px;margin-bottom:14px;margin-top:4px;">Catálogo</div>
-  <div class="product-grid" id="client-prods"></div>
+// ════════════════════════════════════════════
+// ESTADO GLOBAL
+// ════════════════════════════════════════════
+let productosDB     = [];
+let carrito         = [];
+let currentCategory = 'all';
+let maxRating       = 1;      // para calcular estrellas relativas
+let toastTimeout;
+let bizIdGlobal     = '';
 
-  <!-- Carrito flotante -->
-  <div class="cart-float" onclick="abrirCarrito()">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-    <div class="cart-badge" id="cart-count">0</div>
-  </div>
+// Likes guardados en localStorage para no spamear
+function getLikes() {
+  try { return JSON.parse(localStorage.getItem('cp_likes') || '{}'); } catch { return {}; }
+}
+function setLike(prodId, val) {
+  const l = getLikes(); l[prodId] = val;
+  localStorage.setItem('cp_likes', JSON.stringify(l));
+}
 
-  <div id="toast-msg">🛒 Añadido al carrito</div>
+// ════════════════════════════════════════════
+// EMOJI POR CATEGORÍA
+// ════════════════════════════════════════════
+function emojiParaCategoria(cat) {
+  const map = {
+    'ceras':'🪙','cera':'🪙','carteras':'👜','cartera':'👜',
+    'ropa':'👕','complementos':'🎩','accesorios':'⌚',
+    'perfumes':'🌸','perfume':'🌸','cremas':'🧴','crema':'🧴',
+    'champu':'🚿','champú':'🚿','aceites':'💧','aceite':'💧',
+    'navajas':'🪒','maquinillas':'🪒','tonicos':'✨','tonico':'✨',
+    'geles':'💎','gel':'💎','barberia':'💈','barbería':'💈',
+    'peluqueria':'✂️','peluquería':'✂️','todo':'⭐',
+    'botas':'👢','bota':'👢','toros':'🐂','toro':'🐂',
+    'pestanas':'👁️','pestañas':'👁️',
+  };
+  const lower = (cat||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  return map[lower] || '🛍️';
+}
 
-  <!-- Modal alerta -->
-  <div class="ov" id="ov-shop-alert">
-    <div class="modal" onclick="event.stopPropagation()" style="max-width:320px;text-align:center;padding:30px 20px;">
-      <div style="font-size:48px;margin-bottom:16px;" id="sa-icon">🛍️</div>
-      <div style="font-size:20px;font-weight:900;margin-bottom:8px;color:var(--text);" id="sa-title">Atención</div>
-      <div style="font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.6" id="sa-msg">Mensaje</div>
-      <button class="btn btn-blue" onclick="document.getElementById('ov-shop-alert').classList.remove('on')" style="width:100%;font-size:15px;padding:14px;">Entendido</button>
-    </div>
-  </div>
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  if (typeof loadDB === 'function') window.DB = loadDB();
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="assets/js/db.js"></script>
+  const hash = window.location.hash;
+  if (hash && hash.includes('#b/')) {
+    bizIdGlobal = hash.split('#b/')[1].split('/')[0];
+  } else if (window.DB?.currentBiz) {
+    bizIdGlobal = window.DB.currentBiz;
+  }
 
-  <script>
-    // ────────────────────────────────────────
-    // Conexión Supabase
-    // ────────────────────────────────────────
-    const SUPABASE_URL   = 'https://krbtoepzoorpdedtykug.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
-    const tiendaSupa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  if (bizIdGlobal) {
+    const biz = window.DB?.businesses?.find(b => b.id === bizIdGlobal);
+    document.getElementById('shop-title').textContent = biz ? biz.name : 'Nuestra Tienda';
+    await fetchProductos(bizIdGlobal);
+  } else {
+    document.getElementById('shop-title').textContent = 'Enlace inválido';
+  }
+});
 
-    let productosDB    = [];
-    let carrito        = [];
-    let currentCategory = 'all';
-    let toastTimeout;
+async function fetchProductos(bizId) {
+  try {
+    const { data, error } = await tiendaSupa
+      .from('products').select('*').eq('business_id', bizId);
+    if (error) throw error;
+    productosDB = data || [];
 
-    // Emoji automático por categoría — si no hay coincidencia usa 🛍️
-    function emojiParaCategoria(cat) {
-      const map = {
-        'ceras':      '🪙', 'cera':       '🪙',
-        'carteras':   '👜', 'cartera':    '👜',
-        'ropa':       '👕', 'complementos':'🎩',
-        'accesorios': '⌚', 'perfumes':   '🌸', 'perfume': '🌸',
-        'cremas':     '🧴', 'crema':      '🧴',
-        'champú':     '🚿', 'champu':     '🚿',
-        'aceites':    '💧', 'aceite':     '💧',
-        'navajas':    '🪒', 'maquinillas':'🪒',
-        'tónicos':    '✨', 'tonico':     '✨',
-        'geles':      '💎', 'gel':        '💎',
-        'barbería':   '💈', 'barberia':   '💈',
-        'peluquería': '✂️', 'peluqueria': '✂️',
-        'todo':       '⭐',
-      };
-      let lower = (cat || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      return map[lower] || '🛍️';
-    }
+    // Calcular maxRating para estrellas relativas
+    maxRating = Math.max(1, ...productosDB.map(p => p.rating || 0));
 
-    // ────────────────────────────────────────
-    // Init
-    // ────────────────────────────────────────
-    document.addEventListener("DOMContentLoaded", async function() {
-      if (typeof loadDB === 'function') { window.DB = loadDB(); }
+    inicializarTienda();
+  } catch(err) {
+    console.error('Error tienda:', err);
+    document.getElementById('catalogo-root').innerHTML =
+      '<div class="empty-state"><div>❌</div>Error al cargar productos.</div>';
+  }
+}
 
-      let bizId = '';
-      const hash = window.location.hash;
-      if (hash && hash.includes('#b/')) {
-        bizId = hash.split('#b/')[1].split('/')[0];
-      } else if (window.DB && window.DB.currentBiz) {
-        bizId = window.DB.currentBiz;
-      }
+// ════════════════════════════════════════════
+// INICIALIZAR
+// ════════════════════════════════════════════
+function inicializarTienda() {
+  renderCategorias();
+  renderCatalogo('all');
+}
 
-      if (bizId) {
-        let SHOP_BIZ = window.DB && window.DB.businesses
-          ? window.DB.businesses.find(b => b.id === bizId)
-          : null;
-        document.getElementById('shop-title').textContent = SHOP_BIZ
-          ? SHOP_BIZ.name
-          : "Nuestra Tienda";
+// ════════════════════════════════════════════
+// CATEGORÍAS
+// ════════════════════════════════════════════
+function renderCategorias() {
+  const container = document.getElementById('client-cats');
+  if (!container) return;
 
-        await fetchProductosDeSupabase(bizId);
-      } else {
-        document.getElementById('shop-title').textContent = "Enlace inválido";
-      }
+  const cats = [...new Set(
+    productosDB.map(p => (p.category||'').trim()).filter(Boolean)
+  )].sort();
+
+  let html = `
+    <div class="cat-pill-client ${currentCategory==='all'?'active':''}"
+         onclick="filtrarProductos('all')">
+      <div class="cat-circle">${emojiParaCategoria('todo')}</div>
+      <div class="cat-label">Todo</div>
+    </div>`;
+
+  cats.forEach(cat => {
+    html += `
+      <div class="cat-pill-client ${currentCategory===cat?'active':''}"
+           onclick="filtrarProductos('${cat.replace(/'/g,"\\'")}')">
+        <div class="cat-circle">${emojiParaCategoria(cat)}</div>
+        <div class="cat-label">${cat}</div>
+      </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function filtrarProductos(catId) {
+  currentCategory = catId;
+  document.getElementById('shop-search-input').value = '';
+  renderCategorias();
+  renderCatalogo(catId);
+}
+
+function buscarProductos(termino) {
+  const text = termino.toLowerCase().trim();
+  if (text === '') {
+    currentCategory = 'all';
+    renderCategorias();
+    renderCatalogo('all');
+    return;
+  }
+  currentCategory = '';
+  renderCategorias();
+  const filtrados = productosDB.filter(p => (p.name||'').toLowerCase().includes(text));
+  renderCatalogoLista(filtrados, '🔍 Resultados de búsqueda');
+}
+
+// ════════════════════════════════════════════
+// CATÁLOGO — layout tren por secciones
+// ════════════════════════════════════════════
+function renderCatalogo(catId) {
+  const root = document.getElementById('catalogo-root');
+  if (!root) return;
+
+  if (catId === 'all') {
+    // Sección "Catálogo" con todos los productos
+    const todos = [...productosDB];
+    let html = renderSeccion('🛍️ Catálogo', todos, 'all');
+
+    // Luego una sección por cada categoría
+    const cats = [...new Set(todos.map(p=>(p.category||'').trim()).filter(Boolean))].sort();
+    cats.forEach(cat => {
+      const prods = todos.filter(p => (p.category||'').trim() === cat);
+      html += renderSeccion(`${emojiParaCategoria(cat)} ${cat}`, prods, cat);
     });
 
-    async function fetchProductosDeSupabase(bizId) {
-      try {
-        const { data, error } = await tiendaSupa
-          .from('products')
-          .select('*')
-          .eq('business_id', bizId);
-        if (error) throw error;
-        productosDB = data || [];
-        inicializarTienda();
-      } catch(err) {
-        console.error("Error tienda:", err);
-        document.getElementById('client-prods').innerHTML =
-          '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--red);">Error al cargar los productos.</div>';
-      }
+    root.innerHTML = html || '<div class="empty-state"><div>📦</div>Sin productos aún.</div>';
+  } else {
+    const prods = productosDB.filter(p => (p.category||'').trim() === catId);
+    root.innerHTML = prods.length
+      ? renderSeccion(`${emojiParaCategoria(catId)} ${catId}`, prods, catId)
+      : '<div class="empty-state"><div>😔</div>No hay productos en esta categoría.</div>';
+  }
+}
+
+// Render para búsqueda (una sola sección sin título de categoría)
+function renderCatalogoLista(prods, titulo) {
+  const root = document.getElementById('catalogo-root');
+  root.innerHTML = prods.length
+    ? renderSeccion(titulo, prods, 'search')
+    : '<div class="empty-state"><div>🔍</div>Sin resultados.</div>';
+}
+
+// ────────────────────────────────────────────
+// renderSeccion — genera el tren horizontal
+// Máx 3 cards por columna visible, scroll lateral
+// ────────────────────────────────────────────
+function renderSeccion(titulo, prods, catKey) {
+  if (!prods.length) return '';
+
+  const likes   = getLikes();
+  const ROWS    = 3; // filas por columna
+  const cols    = [];
+
+  // Agrupar en columnas de ROWS cards
+  for (let i = 0; i < prods.length; i += ROWS) {
+    cols.push(prods.slice(i, i + ROWS));
+  }
+
+  const colsHtml = cols.map(col => `
+    <div class="tren-col">
+      ${col.map((p, idx) => renderCard(p, likes, idx)).join('')}
+    </div>`).join('');
+
+  return `
+    <div class="catalogo-seccion">
+      <div class="catalogo-seccion-titulo">
+        ${titulo}
+        <span class="cnt">${prods.length}</span>
+      </div>
+      <div class="tren-scroll">${colsHtml}</div>
+    </div>`;
+}
+
+// ════════════════════════════════════════════
+// TARJETA DE PRODUCTO
+// ════════════════════════════════════════════
+function renderCard(p, likes, animIdx) {
+  const liked      = !!likes[p.id];
+  const rating     = p.rating || 0;
+  const estrellas  = calcularEstrellas(rating);
+  const precio     = parseFloat(p.price) || 0;
+  const descuento  = parseFloat(p.discount_percent) || 0;
+  const precioFinal = descuento > 0 ? precio * (1 - descuento / 100) : precio;
+  const stock      = p.stock != null ? parseInt(p.stock) : null;
+  const img        = p.image || 'https://placehold.co/300x300/ffffff/4A7FD4?text=Producto';
+  const catName    = (p.category || 'General').trim();
+
+  // Stock label
+  let stockHtml = '';
+  if (stock !== null) {
+    if (stock <= 0)  stockHtml = '<div class="p-stock out">Sin stock</div>';
+    else if (stock <= 5) stockHtml = `<div class="p-stock low">Últimas ${stock} uds</div>`;
+    else stockHtml = `<div class="p-stock ok">En stock</div>`;
+  }
+
+  // Precio con o sin descuento
+  let precioHtml = '';
+  if (descuento > 0) {
+    precioHtml = `
+      <div class="p-price-wrap">
+        <div class="p-price-old">${precio.toFixed(2)}€</div>
+        <div class="p-price-new discounted">${precioFinal.toFixed(2)}€</div>
+      </div>`;
+  } else {
+    precioHtml = `
+      <div class="p-price-wrap">
+        <div class="p-price-new">${precio.toFixed(2)}€</div>
+      </div>`;
+  }
+
+  // Estrellas
+  const starsHtml = `
+    <div class="p-stars">
+      ${[1,2,3,4,5].map(i=>`<span class="star${i<=estrellas?' on':''}">★</span>`).join('')}
+      <span class="p-stars-count">${rating}</span>
+    </div>`;
+
+  // Badge descuento
+  const badgeHtml = descuento > 0
+    ? `<div class="p-discount-badge">-${Math.round(descuento)}%</div>`
+    : '';
+
+  const btnDisabled = stock !== null && stock <= 0;
+
+  return `
+    <div class="p-card" style="animation-delay:${animIdx*0.06}s">
+      <div class="p-img-wrap">
+        ${badgeHtml}
+        <div class="p-like ${liked?'active':''}"
+             onclick="toggleLike(this,'${p.id}')" title="Me gusta">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="${liked?'currentColor':'none'}"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+        <img src="${img}" alt="${p.name}" loading="lazy"/>
+      </div>
+      <div class="p-info">
+        <div class="p-tag">${catName}</div>
+        <div class="p-title">${p.name}</div>
+        ${starsHtml}
+        ${stockHtml}
+        ${precioHtml}
+        <button class="p-add-btn" ${btnDisabled?'disabled':''} onclick="agregarAlCarrito('${p.id}')">
+          ${btnDisabled ? 'Sin stock' : '+ Añadir'}
+        </button>
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════════
+// ESTRELLAS — relativas al producto más popular
+// ════════════════════════════════════════════
+function calcularEstrellas(rating) {
+  if (!rating || maxRating === 0) return 0;
+  return Math.round((rating / maxRating) * 5);
+}
+
+// ════════════════════════════════════════════
+// CORAZÓN — incrementa rating en Supabase
+// 1 like por producto por sesión (localStorage)
+// ════════════════════════════════════════════
+async function toggleLike(btn, prodId) {
+  const likes  = getLikes();
+  const yaLike = !!likes[prodId];
+  const svg    = btn.querySelector('svg');
+
+  if (yaLike) {
+    // Quitar like
+    btn.classList.remove('active');
+    svg.setAttribute('fill', 'none');
+    setLike(prodId, false);
+
+    // Decrementar rating en Supabase (mínimo 0)
+    const prod = productosDB.find(p => p.id === prodId);
+    if (prod) {
+      const newRating = Math.max(0, (prod.rating || 0) - 1);
+      prod.rating = newRating;
+      await tiendaSupa.from('products').update({ rating: newRating }).eq('id', prodId);
+    }
+  } else {
+    // Dar like
+    btn.classList.add('active');
+    svg.setAttribute('fill', 'currentColor');
+    setLike(prodId, true);
+
+    // Incrementar rating en Supabase
+    const prod = productosDB.find(p => p.id === prodId);
+    if (prod) {
+      const newRating = (prod.rating || 0) + 1;
+      prod.rating = newRating;
+      maxRating   = Math.max(maxRating, newRating);
+      await tiendaSupa.from('products').update({ rating: newRating }).eq('id', prodId);
     }
 
-    // ────────────────────────────────────────
-    // UI helpers
-    // ────────────────────────────────────────
-    function mostrarAlertaCustom(titulo, mensaje, icono = "🛍️") {
-      document.getElementById('sa-icon').innerText  = icono;
-      document.getElementById('sa-title').innerText = titulo;
-      document.getElementById('sa-msg').innerText   = mensaje;
-      document.getElementById('ov-shop-alert').classList.add('on');
-    }
+    // Animación de corazón
+    btn.style.transform = 'scale(1.4)';
+    setTimeout(() => btn.style.transform = 'scale(1)', 200);
+    mostrarToast('❤️ ¡Añadido a favoritos!');
+  }
 
-    function mostrarToast(mensaje) {
-      const toast = document.getElementById('toast-msg');
-      toast.innerText = mensaje;
-      toast.classList.add('show');
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => toast.classList.remove('show'), 2200);
-    }
+  // Refrescar estrellas en pantalla sin recargar todo
+  const allCards = document.querySelectorAll('.p-card');
+  allCards.forEach(card => {
+    // Recalcular estrellas de todas las cards visibles
+    const starsEl = card.querySelectorAll('.star');
+    const countEl = card.querySelector('.p-stars-count');
+    if (!starsEl.length) return;
+    // Buscar el producto por su botón de like
+    const likeBtn = card.querySelector('.p-like');
+    if (!likeBtn) return;
+    const pid = likeBtn.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+    if (!pid) return;
+    const p = productosDB.find(x => x.id === pid);
+    if (!p) return;
+    const est = calcularEstrellas(p.rating || 0);
+    starsEl.forEach((s, i) => s.classList.toggle('on', i < est));
+    if (countEl) countEl.textContent = p.rating || 0;
+  });
+}
 
-    function inicializarTienda() {
-      renderCategorias();
-      renderProductos('all');
-    }
+// ════════════════════════════════════════════
+// CARRITO
+// ════════════════════════════════════════════
+function agregarAlCarrito(id) {
+  const prod = productosDB.find(p => p.id === id);
+  if (!prod) return;
+  if (prod.stock != null && prod.stock <= 0) {
+    mostrarToast('❌ Producto sin stock');
+    return;
+  }
 
-    // ────────────────────────────────────────
-    // CATEGORÍAS — Pills circulares bonitas
-    // ────────────────────────────────────────
-    function renderCategorias() {
-      const container = document.getElementById('client-cats');
-      if (!container) return;
+  const item = carrito.find(c => c.product.id === id);
+  if (item) { item.cantidad++; }
+  else       { carrito.push({ product: prod, cantidad: 1 }); }
 
-      // Leemos la categoría tal cual (texto plano)
-      let categoriasUnicas = [...new Set(
-        productosDB.map(p => (p.category || '').trim()).filter(Boolean)
-      )].sort();
+  actualizarBadgeCarrito();
 
-      // Pill "Todo" siempre primero
-      let html = `
-        <div class="cat-pill-client ${currentCategory === 'all' ? 'active' : ''}"
-             onclick="filtrarProductos('all')">
-          <div class="cat-circle">${emojiParaCategoria('todo')}</div>
-          <div class="cat-label">Todo</div>
-        </div>`;
+  const btn = document.querySelector('.cart-float');
+  btn.style.transform = 'scale(1.18)';
+  setTimeout(() => btn.style.transform = 'scale(1)', 200);
 
-      categoriasUnicas.forEach(cat => {
-        html += `
-          <div class="cat-pill-client ${currentCategory === cat ? 'active' : ''}"
-               onclick="filtrarProductos('${cat.replace(/'/g, "\\'")}')">
-            <div class="cat-circle">${emojiParaCategoria(cat)}</div>
-            <div class="cat-label">${cat}</div>
-          </div>`;
-      });
+  mostrarToast(`🛒 Añadido: ${prod.name}`);
+}
 
-      container.innerHTML = html;
-    }
+function actualizarBadgeCarrito() {
+  const badge = document.getElementById('cart-count');
+  if (!badge) return;
+  const total = carrito.reduce((s,i) => s + i.cantidad, 0);
+  badge.textContent = total;
+  badge.style.display = total > 0 ? 'flex' : 'none';
+}
 
-    function filtrarProductos(catId) {
-      currentCategory = catId;
-      document.getElementById('shop-search-input').value = '';
-      renderCategorias();
-      renderProductos(catId);
-    }
+function abrirCarrito() {
+  if (!carrito.length) {
+    mostrarAlertaCustom('Carrito vacío', 'Aún no has añadido ningún producto.', '🛒');
+    return;
+  }
+  mostrarAlertaCustom('¡Casi listo!', 'Próximamente: resumen y pedido por WhatsApp.', '🚀');
+}
 
-    function buscarProductos(termino) {
-      let text = termino.toLowerCase().trim();
-      let filtrados = productosDB.filter(p =>
-        (p.name || '').toLowerCase().includes(text)
-      );
-      if (text !== '') {
-        currentCategory = '';
-        renderCategorias();
-      } else {
-        currentCategory = 'all';
-        renderCategorias();
-      }
-      renderTarjetas(filtrados);
-    }
+// ════════════════════════════════════════════
+// HELPERS UI
+// ════════════════════════════════════════════
+function mostrarAlertaCustom(titulo, mensaje, icono = '🛍️') {
+  document.getElementById('sa-icon').innerText  = icono;
+  document.getElementById('sa-title').innerText = titulo;
+  document.getElementById('sa-msg').innerText   = mensaje;
+  document.getElementById('ov-shop-alert').classList.add('on');
+}
 
-    function renderProductos(catId) {
-      let prods = catId === 'all'
-        ? productosDB
-        : productosDB.filter(p => (p.category || '').trim() === catId);
-      renderTarjetas(prods);
-    }
-
-    // ────────────────────────────────────────
-    // TARJETAS — Vista cliente
-    // ────────────────────────────────────────
-    function renderTarjetas(prods) {
-      const container = document.getElementById('client-prods');
-      if (!container) return;
-
-      if (prods.length === 0) {
-        container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--muted);font-size:13px;">
-          <div style="font-size:40px;margin-bottom:12px;">😔</div>
-          No hay productos en esta categoría.
-        </div>`;
-        return;
-      }
-
-      container.innerHTML = prods.map((p, i) => {
-        let finalPrice = parseFloat(p.price).toFixed(2);
-        let img = p.image
-          ? p.image
-          : 'https://placehold.co/300x300/ffffff/4A7FD4?text=Producto';
-        let catName = (p.category || 'General').trim();
-
-        return `
-        <div class="p-card" style="animation-delay:${i * 0.05}s">
-          <div class="p-img-wrap">
-            <div class="p-like" onclick="toggleLike(this)" title="Guardar">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-            </div>
-            <img src="${img}" alt="${p.name}" loading="lazy"/>
-          </div>
-          <div class="p-info">
-            <div class="p-tag">${catName}</div>
-            <div class="p-title">${p.name}</div>
-            <div class="p-new">${finalPrice}€</div>
-            <button class="p-add-btn" onclick="agregarAlCarrito('${p.id}')">
-              + Añadir al carrito
-            </button>
-          </div>
-        </div>`;
-      }).join('');
-    }
-
-    function toggleLike(btn) {
-      btn.classList.toggle('active');
-      let svg = btn.querySelector('svg');
-      svg.setAttribute('fill', btn.classList.contains('active') ? 'currentColor' : 'none');
-    }
-
-    // ────────────────────────────────────────
-    // Carrito
-    // ────────────────────────────────────────
-    function agregarAlCarrito(id) {
-      let prod = productosDB.find(p => p.id === id);
-      if (!prod) return;
-
-      let item = carrito.find(c => c.product.id === id);
-      if (item) { item.cantidad++; }
-      else       { carrito.push({ product: prod, cantidad: 1 }); }
-
-      actualizarBadgeCarrito();
-
-      const cartBtn = document.querySelector('.cart-float');
-      cartBtn.style.transform = 'scale(1.15)';
-      setTimeout(() => cartBtn.style.transform = 'scale(1)', 200);
-
-      mostrarToast(`¡Añadido: ${prod.name}!`);
-    }
-
-    function actualizarBadgeCarrito() {
-      const badge = document.getElementById('cart-count');
-      if (!badge) return;
-      let total = carrito.reduce((s, i) => s + i.cantidad, 0);
-      badge.textContent = total;
-      badge.style.display = total > 0 ? 'flex' : 'none';
-    }
-
-    function abrirCarrito() {
-      if (carrito.length === 0) {
-        mostrarAlertaCustom("Carrito Vacío", "Aún no has añadido ningún producto.", "🛒");
-        return;
-      }
-      mostrarAlertaCustom("¡Casi listo!", "Aquí abriremos el panel para revisar tu pedido.", "🚀");
-    }
-  </script>
+function mostrarToast(msg) {
+  const t = document.getElementById('toast-msg');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
 </body>
 </html>
