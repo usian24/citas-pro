@@ -498,16 +498,19 @@
       <div class="pane" id="bp-tienda">
         <div class="sec-hdr">
           <span class="sec-ttl">Mi Tienda</span>
-          <button class="btn btn-blue btn-sm" style="width:auto" onclick="openProdModal()">Añadir Producto +</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-dark btn-sm" style="width:auto" onclick="abrirModalNuevaCategoria()">Añadir Categoría</button>
+            <button class="btn btn-blue btn-sm" style="width:auto" onclick="openProdModal()">Añadir Producto</button>
+          </div>
         </div>
         <div class="tip-box">Sube tus productos reales. Las categorías se crearán automáticamente según las etiquetas que uses.</div>
         
         <div style="font-size:14px;font-weight:800;margin-bottom:12px;margin-top:20px;display:flex;justify-content:space-between">
-          <span>Tus Categorías (Automáticas)</span>
+          <span>Tus Categorías</span>
         </div>
         <div id="biz-categorias-list" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;">
         </div>
-
+ 
         <div style="font-size:14px;font-weight:800;margin-bottom:12px;margin-top:20px;">Tus Productos</div>
         <div id="biz-productos-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;">
         </div>
