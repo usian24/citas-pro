@@ -1196,7 +1196,7 @@
     const preview = document.getElementById('prod-discount-preview');
     if (desc > 0 && precio > 0) {
       const final = (precio * (1 - desc / 100)).toFixed(2);
-      preview.textContent = `El cliente verá: ${precio.toFixed(2)}€ → ${final}€ (-${Math.round(desc)}%)`;
+      preview.textContent = `El cliente verá: ${money(precio)} → ${money(final)} (-${Math.round(desc)}%)`;
     } else {
       preview.textContent = '';
     }

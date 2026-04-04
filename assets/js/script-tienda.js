@@ -305,9 +305,9 @@ function renderAdmCard(p) {
   const badgeDesc = desc > 0 ? `<div class="adm-p-desc-badge">-${Math.round(desc)}%</div>` : '';
 
   let precioHtml = desc > 0
-    ? `<div class="adm-p-price-old">${precio.toFixed(2)}€</div>
-       <div class="adm-p-price desc">${precioFin.toFixed(2)}€</div>`
-    : `<div class="adm-p-price">${precio.toFixed(2)}€</div>`;
+    ? `<div class="adm-p-price-old">${money(precio)}</div>
+       <div class="adm-p-price desc">${money(precioFin)}</div>`
+    : `<div class="adm-p-price">${money(precio)}</div>`;
 
   let stockHtml = '';
   if (stock !== null) {
