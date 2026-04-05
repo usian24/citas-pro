@@ -1,9 +1,27 @@
 'use strict';
-// client-portal.js 
+// client-portal.js — bugs corregidos:
+// 1. COUNTRY_TIMEZONES definido aquí (no depende de config-pais.js)
+// 2. getNowInBizTimezone usa el diccionario local como fallback seguro
+// 3. Botón "Registrar cita" — un solo click
+
 window._cloudApptCache = window._cloudApptCache || null;
 var _cloudApptCache = null;
 
+// ─── Diccionario local de timezones (independiente de config-pais.js) ───
+var COUNTRY_TIMEZONES = {
+  ES: 'Europe/Madrid',       CO: 'America/Bogota',
+  MX: 'America/Mexico_City', AR: 'America/Argentina/Buenos_Aires',
+  PE: 'America/Lima',        CL: 'America/Santiago',
+  VE: 'America/Caracas',    EC: 'America/Guayaquil',
+  DO: 'America/Santo_Domingo', US: 'America/New_York',
+  BR: 'America/Sao_Paulo',  DE: 'Europe/Berlin',
+  NL: 'Europe/Amsterdam',   FR: 'Europe/Paris'
+};
+
 function getNowInBizTimezone(country) {
+  // Usar ahoraEnNegocio de config-pais.js si está disponible
+  if (typeof ahoraEnNegocio === 'function') return ahoraEnNegocio(country);
+  // Fallback propio (no depende de ningún otro archivo)
   var tz = COUNTRY_TIMEZONES[country] || 'Europe/Madrid';
   try {
     var now = new Date();
@@ -26,7 +44,6 @@ function loadBizDirect(bizId) {
   initCSEL();
   CSEL.bizId = bizId;
 
-  // --- Llenar datos de la pantalla s-barber-portal ---
   var bpCover = G('bp-cover');
   if (bpCover) {
     if (biz.cover) bpCover.style.backgroundImage = 'url(' + sanitizeImageDataURL(biz.cover) + ')';
@@ -40,7 +57,6 @@ function loadBizDirect(bizId) {
   T('bp-name', biz.name);
   T('bp-desc', (biz.addr || '') + (biz.city ? ', ' + biz.city : '') + (biz.type ? ' · ' + biz.type : ''));
 
-  // --- Llenar datos de la pantalla s-client ---
   var coverBg = G('cl-cover-bg');
   if (coverBg) {
     if (biz.cover) coverBg.style.backgroundImage = 'url(' + sanitizeImageDataURL(biz.cover) + ')';
@@ -54,7 +70,6 @@ function loadBizDirect(bizId) {
   T('ch-nm', biz.name);
   T('ch-meta', (biz.addr || '') + (biz.city ? ', ' + biz.city : '') + (biz.type ? ' · ' + biz.type : ''));
 
-  // --- Llenar redes sociales para AMBOS portales ---
   var socialsHtml = '';
   if (biz.insta) {
     var igUrl = biz.insta.startsWith('http') ? biz.insta : 'https://instagram.com/' + biz.insta.replace('@', '');
@@ -68,32 +83,33 @@ function loadBizDirect(bizId) {
     var xUrl = biz.x_url.startsWith('http') ? biz.x_url : 'https://x.com/' + biz.x_url.replace('@', '');
     socialsHtml += '<a href="' + xUrl + '" target="_blank" style="color:var(--blue);transition:opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733-16z"></path><path d="M4 20l6.768-6.768m2.46-2.46l6.772-6.772"></path></svg></a>';
   }
-  
+
   var bpSocials = G('bp-socials');
   if (bpSocials) bpSocials.innerHTML = socialsHtml;
-  
   var chSocials = G('ch-socials');
   if (chSocials) chSocials.innerHTML = socialsHtml;
 
-  // ✅ 1. PREPARAR EL CLIENTE SÓLO SI HACE CLIC EN EL BOTÓN
+  // ── Botón "Registrar cita" — un solo click, sin doble pulsación ──
   var btnBook = G('bp-btn-book');
   if (btnBook) {
-    btnBook.onclick = function() {
-      clGoStep(1); // Preparamos el formulario justo antes de mostrarlo
-      goTo('s-client'); 
+    // Clonar para eliminar listeners anteriores acumulados
+    var newBtnBook = btnBook.cloneNode(true);
+    btnBook.parentNode.replaceChild(newBtnBook, btnBook);
+    newBtnBook.addEventListener('click', function() {
+      clGoStep(1);
+      goTo('s-client');
       window.scrollTo(0, 0);
-    };
+    });
   }
 
   var btnShop = G('bp-btn-shop');
   if (btnShop) {
     btnShop.onclick = function() {
       T('bs-name', biz.name);
-      goTo('s-barber-shop'); 
+      goTo('s-barber-shop');
     };
   }
 
-  // ✅ 2. MOSTRAR EL PORTAL DE LA BARBERÍA AL FINAL (Evita el parpadeo)
   goTo('s-barber-portal');
   window.scrollTo(0, 0);
 }
@@ -352,7 +368,6 @@ function confirmBooking() {
 
   var token = isModifying ? CSEL.editingToken : 'tk_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
   var apptId = String(Date.now());
-  // ✅ rescheduled si modifica, confirmed si es nueva
   var apptStatus = isModifying ? 'rescheduled' : 'confirmed';
 
   var appt = {
@@ -389,7 +404,7 @@ function confirmBooking() {
         client_id: '', client_name: name, client_phone: phone, client_email: email,
         token: token, notes: '', service_name: CSEL.svc,
         service_price: CSEL.svcPrice || 0, date: CSEL.date, time: CSEL.time,
-        status: apptStatus  // ✅ rescheduled o confirmed
+        status: apptStatus
       }]
     })
   }).catch(function(e){ console.error('Error sync appointment:', e); });
@@ -446,30 +461,24 @@ function confirmBooking() {
 async function checkManageAccess() {
   var hash = window.location.hash;
   if (!(hash && hash.indexOf('#manage/') === 0)) return false;
-
   var parts = hash.split('/');
   var token = parts.length === 3 ? parts[2] : parts[1];
-
   var found = null;
-
   if (token) {
     found = findApptByToken(token);
     if (!found && window._cloudApptCache && window._cloudApptCache.appt && window._cloudApptCache.appt.token === token) {
       found = window._cloudApptCache;
     }
   }
-
   if (!found && token) {
     try {
       var resp = await fetch('/api/get-appointment-by-token?token=' + encodeURIComponent(token));
       var data = await resp.json();
-
       if (data && data.already_cancelled) {
         toast('Esta cita ya fue cancelada', '#F59E0B');
         setTimeout(function() { window.location.hash = ''; }, 2500);
         return true;
       }
-
       if (data && data.appointment) {
         var a = data.appointment;
         var biz = getBizById(a.business_id) || { id: a.business_id, name: 'Tu barbería', workers: [] };
@@ -486,7 +495,6 @@ async function checkManageAccess() {
       }
     } catch(e) { console.error('Error buscando cita por token:', e); }
   }
-
   if (found) { openManageModal(found.biz, found.worker, found.appt); return true; }
   toast('Cita no encontrada o ya expirada', '#EF4444');
   return false;
@@ -535,33 +543,19 @@ function reprogramarCita(token) {
     found = window._cloudApptCache;
   }
   if (!found) { toast('No se pudo cargar la cita', '#EF4444'); return; }
-
-  // Guardar todos los datos antes de cerrar el modal
-  var savedToken  = token;
-  var savedBizId  = found.biz.id;
+  var savedToken = token, savedBizId = found.biz.id;
   var savedWorker = found.worker ? found.worker.id : null;
-  var savedName   = found.appt.client;
-  var savedPhone  = found.appt.phone;
-  var savedEmail  = found.appt.email;
-  var savedSvc    = found.appt.svc;
-  var savedPrice  = found.appt.price;
-  var savedDur    = 30;
+  var savedName = found.appt.client, savedPhone = found.appt.phone, savedEmail = found.appt.email;
+  var savedSvc = found.appt.svc, savedPrice = found.appt.price, savedDur = 30;
   if (found.worker && found.worker.services) {
     var sObj = found.worker.services.find(function(s) { return s.name === found.appt.svc; });
     if (sObj) savedDur = sObj.dur || 30;
   }
-  var savedFoundBiz    = found.biz;
-  var savedFoundWorker = found.worker;
-
-  window._cloudApptCache = null;
-  _cloudApptCache = null;
+  var savedFoundBiz = found.biz, savedFoundWorker = found.worker;
+  window._cloudApptCache = null; _cloudApptCache = null;
   closeOv('ov-manage');
-
-  // Asegurar que el biz esté en local
   var localBiz = getBizById(savedBizId);
   if (!localBiz) { DB.businesses.push(savedFoundBiz); localBiz = savedFoundBiz; }
-
-  // ✅ Cargar imagen y datos del negocio manualmente sin resetear CSEL
   var coverBg = G('cl-cover-bg');
   if (coverBg) {
     if (localBiz.cover) coverBg.style.backgroundImage = 'url(' + sanitizeImageDataURL(localBiz.cover) + ')';
@@ -574,20 +568,10 @@ function reprogramarCita(token) {
   }
   T('ch-nm', localBiz.name);
   T('ch-meta', (localBiz.addr || '') + (localBiz.city ? ', ' + localBiz.city : '') + (localBiz.type ? ' · ' + localBiz.type : ''));
-
   goTo('s-client');
-
-  // Establecer CSEL con los datos de la cita a modificar
-  CSEL.editingToken = savedToken;
-  CSEL.bizId        = savedBizId;
-  CSEL.workerId     = savedWorker;
-  CSEL.clientName   = savedName;
-  CSEL.clientPhone  = savedPhone;
-  CSEL.clientEmail  = savedEmail;
-  CSEL.svc          = savedSvc;
-  CSEL.svcPrice     = savedPrice;
-  CSEL.svcDur       = savedDur;
-
+  CSEL.editingToken = savedToken; CSEL.bizId = savedBizId; CSEL.workerId = savedWorker;
+  CSEL.clientName = savedName; CSEL.clientPhone = savedPhone; CSEL.clientEmail = savedEmail;
+  CSEL.svc = savedSvc; CSEL.svcPrice = savedPrice; CSEL.svcDur = savedDur;
   if (savedFoundWorker) buildDates(savedBizId, savedFoundWorker.id);
   clGoStep(4);
 }
@@ -598,7 +582,6 @@ function cancelApptByToken(token) {
     found = window._cloudApptCache;
   }
   if (!found) { toast('Cita no encontrada', '#EF4444'); return; }
-
   found.appt.status = 'cancelled';
   DB.businesses.forEach(function(biz) {
     (biz.workers || []).forEach(function(w) {
@@ -607,18 +590,12 @@ function cancelApptByToken(token) {
     (biz.appointments || []).forEach(function(a) { if (a.token === token) a.status = 'cancelled'; });
   });
   try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch(e) {}
-
   fetch('/api/cancel-appointment', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token: token, business_id: found.biz.id })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (d.success) { console.log('Cancelada en Supabase OK'); }
-    else { console.error('Error cancelando:', d.error); }
-  })
+  }).then(function(r) { return r.json(); })
+  .then(function(d) { if (!d.success) console.error('Error cancelando:', d.error); })
   .catch(function(e) { console.error('Error cancel-appointment:', e); });
-
   if (found.worker) {
     if (!found.worker.notifications) found.worker.notifications = [];
     found.worker.notifications.unshift({
@@ -640,7 +617,6 @@ function cancelApptByToken(token) {
       }})
     }).catch(function(e) { console.error('Error guardando worker:', e); });
   }
-
   if (found.worker && found.worker.email) {
     fetch('/api/send-email', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -649,7 +625,6 @@ function cancelApptByToken(token) {
       })
     }).catch(function(e) { console.error('Error email:', e); });
   }
-
   window._cloudApptCache = null; _cloudApptCache = null;
   closeOv('ov-manage');
   toast('Tu cita ha sido cancelada', '#22C55E');
@@ -659,30 +634,18 @@ function cancelApptByToken(token) {
 async function checkLinkAccess() {
   var hash = window.location.hash;
   if (hash && hash.indexOf('#manage/') === 0) return await checkManageAccess();
-  
   if (hash && hash.indexOf('#b/') === 0) {
-    
-    // 🚀 BLOQUEO DIRECTO: Forzamos la pantalla de barbería en el milisegundo cero.
-    // Esto destruye el flashazo del portal cliente mientras esperamos la base de datos.
-    goTo('s-barber-portal'); 
-    
+    goTo('s-barber-portal');
     var bizId = hash.slice(3);
     if (bizId) {
       DB = loadDB();
       var biz = getBizById(bizId);
-      
       if (!biz && typeof fetchBizFromCloud === 'function') {
-        // Al estar aquí el 'await', antes la app se confundía. Ya no lo hará.
         biz = await fetchBizFromCloud(bizId);
         if (biz && typeof syncBizToLocal === 'function') syncBizToLocal(biz);
       }
-      
-      if (biz) { 
-        loadBizDirect(bizId); 
-        return true; 
-      } else {
-        toast('Negocio no encontrado', '#EF4444');
-      }
+      if (biz) { loadBizDirect(bizId); return true; }
+      else { toast('Negocio no encontrado', '#EF4444'); }
     }
   }
   return false;

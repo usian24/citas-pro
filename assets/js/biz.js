@@ -221,7 +221,10 @@ async function uploadToImgBB(file) {
   var formData = new FormData();
   formData.append('image', file);
   try {
-    var res = await fetch('https://api.imgbb.com/1/upload?key=6d7ef48cb26db3e0279b772ff3efeed5', { method: 'POST', body: formData });
+    var controller = new AbortController();
+var timeoutId = setTimeout(function() { controller.abort(); }, 8000);
+var res = await fetch('https://api.imgbb.com/1/upload?key=...', { method: 'POST', body: formData, signal: controller.signal });
+clearTimeout(timeoutId);
     var data = await res.json();
     if (data.success) return data.data.url;
     throw new Error('Error ImgBB');
