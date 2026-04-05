@@ -18,7 +18,27 @@ if (typeof registerFCMToken === 'function') registerFCMToken();
 
 function initWorkerPanel() {
   if (!CUR_WORKER || !CUR) return;
-
+  // ── Auto-completar citas pasadas ──
+  var ahoraMins = new Date().getHours() * 60 + new Date().getMinutes();
+  var hoyStr = new Date().toISOString().split('T')[0];
+  var cambios = false;
+  (CUR_WORKER.appointments || []).forEach(function(a) {
+    if (a.status !== 'confirmed' && a.status !== 'rescheduled') return;
+    if (a.date > hoyStr) return;
+    if (a.date === hoyStr) {
+      var pts = (a.time || '00:00').split(':').map(Number);
+      var minCita = pts[0] * 60 + pts[1];
+      var dur = 30;
+      if (CUR_WORKER.services) {
+        var svc = CUR_WORKER.services.find(function(s) { return s.name === a.svc; });
+        if (svc) dur = parseInt(svc.dur) || 30;
+      }
+      if (ahoraMins < minCita + dur) return;
+    }
+    a.status = 'completed';
+    cambios = true;
+  });
+  if (cambios) saveDB();
   var av = G('wk-hdr-av');
   if (av) {
     if (CUR_WORKER.photo) av.innerHTML = '<img src="'+sanitizeImageDataURL(CUR_WORKER.photo)+'" style="width:100%;height:100%;object-fit:cover" alt="Foto"/>';
