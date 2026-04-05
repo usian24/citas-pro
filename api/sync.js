@@ -48,15 +48,14 @@ module.exports = async (req, res) => {
         return res.status(400).json({ success: false, error: 'Faltan worker_id o business_id' });
       }
 
-      // Eliminar notificaciones de más de 30 días automáticamente
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       try {
-          await supabase
-            .from('notifications')
-            .delete()
-            .lt('created_at', thirtyDaysAgo.toISOString());
-        } catch(e) {};
+        await supabase
+          .from('notifications')
+          .delete()
+          .lt('created_at', thirtyDaysAgo.toISOString());
+      } catch(e) {}
 
       const { error } = await supabase
         .from('notifications')
@@ -83,8 +82,10 @@ module.exports = async (req, res) => {
       }
 
       var apptErrors = [];
+
       for (const appt of appointments) {
 
+        // Si el frontend manda una cita como cancelada, actualizarla
         if (appt.status === 'cancelled' && appt.token) {
           const { error } = await supabase
             .from('appointments')
@@ -92,31 +93,27 @@ module.exports = async (req, res) => {
             .eq('token', appt.token)
             .eq('business_id', business_id);
 
-          if (!error) {
-            const { data: check } = await supabase
-              .from('appointments')
-              .select('id')
-              .eq('token', appt.token)
-              .eq('business_id', business_id);
-
-            if (!check || check.length === 0) {
-              await supabase
-                .from('appointments')
-                .update({ status: 'cancelled' })
-                .eq('business_id', business_id)
-                .eq('worker_id', appt.worker_id || '')
-                .eq('date', appt.date)
-                .eq('time', appt.time)
-                .neq('status', 'cancelled');
-            }
-          }
-
           if (error) {
-            apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
+            apptErrors.push({ id: appt.id, msg: error.message });
           }
           continue;
         }
 
+        // ✅ PROTECCIÓN CLAVE: antes de hacer upsert,
+        // verificar si la cita ya está cancelada en Supabase.
+        // Si está cancelada, ignorarla — nunca sobreescribir.
+        const { data: enSupabase } = await supabase
+          .from('appointments')
+          .select('status')
+          .eq('id', String(appt.id))
+          .single();
+
+        if (enSupabase && enSupabase.status === 'cancelled') {
+          // Ya cancelada en Supabase — no tocar bajo ninguna circunstancia
+          continue;
+        }
+
+        // No está cancelada — hacer upsert normal
         const { error } = await supabase.from('appointments').upsert({
           id:            String(appt.id),
           business_id:   business_id,
@@ -145,25 +142,24 @@ module.exports = async (req, res) => {
 
       return res.status(200).json({ success: true, synced: appointments.length });
     }
+
     // ═══════════════════════════════════════
     // SERVICES — type: "services"
     // ═══════════════════════════════════════
     if (type === 'services') {
-      // 1. Aquí definimos la variable 'services' que estaba faltando
       const { business_id, worker_id, services } = req.body;
-      
+
       if (!business_id || !Array.isArray(services)) {
         return res.status(400).json({ success: false, error: 'Datos incompletos' });
       }
-  
+
       for (const svc of services) {
-        // 2. Garantizamos el worker_id sin fallos
         const finalWorkerId = svc.worker_id || worker_id || '';
 
         const { error } = await supabase.from('services').upsert({
           id:          String(svc.id),
           business_id: business_id,
-          worker_id:   finalWorkerId, 
+          worker_id:   finalWorkerId,
           name:        svc.name || '',
           description: svc.description || '',
           price:       parseFloat(svc.price) || 0,
@@ -176,11 +172,10 @@ module.exports = async (req, res) => {
           return res.status(400).json({ success: false, error: error.message });
         }
       }
-  
+
       return res.status(200).json({ success: true, synced: services.length });
     }
 
-    
     // ═══════════════════════════════════════
     // DELETE SERVICE — type: "delete_service"
     // ═══════════════════════════════════════
@@ -201,6 +196,7 @@ module.exports = async (req, res) => {
 
       return res.status(200).json({ success: true });
     }
+
     // ═══════════════════════════════════════
     // CLIENT — type: "client"
     // ═══════════════════════════════════════
