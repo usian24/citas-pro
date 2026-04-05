@@ -1,4 +1,4 @@
-// api/cancel-appointment.js
+// /api/cancel-appointment.js — versión corregida
 const { createClient } = require('@supabase/supabase-js');
 
 module.exports = async (req, res) => {
@@ -17,8 +17,7 @@ module.exports = async (req, res) => {
     process.env.SUPABASE_ANON_KEY
   );
 
-  // Buscar la cita por token sin importar el business_id
-  // (más robusto — el token es único globalmente)
+  // Buscar la cita por token
   const { data: existing, error: findError } = await supabase
     .from('appointments')
     .select('id, token, status, business_id, worker_id, client_name, service_name, date, time')
@@ -30,17 +29,16 @@ module.exports = async (req, res) => {
   }
 
   if (!existing || existing.length === 0) {
-    return res.status(404).json({ success: false, error: 'Cita no encontrada' });
+    return res.status(404).json({ success: false, error: 'Cita no encontrada', already_cancelled: false });
   }
 
   const appt = existing[0];
 
-  // Si ya está cancelada, responder ok (idempotente)
   if (appt.status === 'cancelled') {
     return res.status(200).json({ success: true, already_cancelled: true });
   }
 
-  // Cancelar usando el id exacto del registro
+  // Cancelar por ID exacto
   const { error: updateError } = await supabase
     .from('appointments')
     .update({ status: 'cancelled' })
@@ -50,8 +48,8 @@ module.exports = async (req, res) => {
     return res.status(500).json({ success: false, error: updateError.message });
   }
 
-  return res.status(200).json({ 
-    success: true, 
+  return res.status(200).json({
+    success: true,
     cancelled: true,
     appointment: appt
   });

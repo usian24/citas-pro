@@ -577,58 +577,102 @@ function reprogramarCita(token) {
 }
 
 function cancelApptByToken(token) {
+  // 1. Buscar en local (puede no existir si es otro dispositivo)
   var found = findApptByToken(token);
-  if (!found && window._cloudApptCache && window._cloudApptCache.appt && window._cloudApptCache.appt.token === token) {
+  if (!found && window._cloudApptCache &&
+      window._cloudApptCache.appt &&
+      window._cloudApptCache.appt.token === token) {
     found = window._cloudApptCache;
   }
-  if (!found) { toast('Cita no encontrada', '#EF4444'); return; }
-  found.appt.status = 'cancelled';
-  DB.businesses.forEach(function(biz) {
-    (biz.workers || []).forEach(function(w) {
-      (w.appointments || []).forEach(function(a) { if (a.token === token) a.status = 'cancelled'; });
+ 
+  // 2. Actualizar localStorage SI tenemos los datos locales
+  if (found) {
+    found.appt.status = 'cancelled';
+    DB.businesses.forEach(function(biz) {
+      (biz.workers || []).forEach(function(w) {
+        (w.appointments || []).forEach(function(a) {
+          if (a.token === token) a.status = 'cancelled';
+        });
+      });
+      (biz.appointments || []).forEach(function(a) {
+        if (a.token === token) a.status = 'cancelled';
+      });
     });
-    (biz.appointments || []).forEach(function(a) { if (a.token === token) a.status = 'cancelled'; });
-  });
-  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch(e) {}
+    try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch(e) {}
+  }
+ 
+  // 3. Cancelar en Supabase — SIEMPRE, aunque found sea null
+  //    El token es suficiente para que el servidor encuentre la cita
+  var bizId = found ? found.biz.id : '';
+ 
   fetch('/api/cancel-appointment', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: token, business_id: found.biz.id })
-  }).then(function(r) { return r.json(); })
-  .then(function(d) { if (!d.success) console.error('Error cancelando:', d.error); })
-  .catch(function(e) { console.error('Error cancel-appointment:', e); });
-  if (found.worker) {
-    if (!found.worker.notifications) found.worker.notifications = [];
-    found.worker.notifications.unshift({
-      id: Date.now(), type: 'booking_cancel',
-      title: 'Cita cancelada: ' + found.appt.client,
-      msg: 'Cita cancelada: ' + found.appt.client,
-      body: 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time,
-      data: { detail: 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time },
-      read: false, date: new Date().toISOString()
-    });
-    fetch('/api/save-worker', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'upsert', worker: {
-        id: found.worker.id, business_id: found.biz.id,
-        name: found.worker.name || '', email: found.worker.email || '',
-        password: found.worker.pass || found.worker.password || '',
-        phone: found.worker.phone || '', avatar: found.worker.photo || '',
-        cover: found.worker.cover || '', role: found.worker.spec || 'barber'
-      }})
-    }).catch(function(e) { console.error('Error guardando worker:', e); });
-  }
-  if (found.worker && found.worker.email) {
-    fetch('/api/send-email', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'booking_cancel', to: found.worker.email,
-        data: { clientName: found.appt.client, service: found.appt.svc, date: found.appt.date, time: found.appt.time }
-      })
-    }).catch(function(e) { console.error('Error email:', e); });
-  }
-  window._cloudApptCache = null; _cloudApptCache = null;
-  closeOv('ov-manage');
-  toast('Tu cita ha sido cancelada', '#22C55E');
-  setTimeout(function() { window.location.hash = ''; }, 1500);
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: token, business_id: bizId })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.already_cancelled) {
+      toast('Esta cita ya fue cancelada anteriormente', '#F59E0B');
+      window._cloudApptCache = null; _cloudApptCache = null;
+      closeOv('ov-manage');
+      setTimeout(function() { window.location.hash = ''; }, 1500);
+      return;
+    }
+    if (!d.success) {
+      console.error('Error cancelando en servidor:', d.error);
+      toast('Error al cancelar. Intenta de nuevo.', '#EF4444');
+      return;
+    }
+ 
+    // 4. Notificar al trabajador si tenemos sus datos
+    if (found && found.worker) {
+      if (!found.worker.notifications) found.worker.notifications = [];
+      found.worker.notifications.unshift({
+        id: Date.now(), type: 'booking_cancel',
+        title: 'Cita cancelada: ' + found.appt.client,
+        msg: 'Cita cancelada: ' + found.appt.client,
+        body: 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time,
+        data: { detail: 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time },
+        read: false, date: new Date().toISOString()
+      });
+      fetch('/api/save-worker', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'upsert', worker: {
+          id: found.worker.id, business_id: found.biz.id,
+          name: found.worker.name || '', email: found.worker.email || '',
+          password: found.worker.pass || found.worker.password || '',
+          phone: found.worker.phone || '', avatar: found.worker.photo || '',
+          cover: found.worker.cover || '', role: found.worker.spec || 'barber'
+        }})
+      }).catch(function(e) { console.error('Error guardando worker:', e); });
+ 
+      if (found.worker.email) {
+        fetch('/api/send-email', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'booking_cancel', to: found.worker.email,
+            data: {
+              clientName: found.appt.client,
+              service: found.appt.svc,
+              date: found.appt.date,
+              time: found.appt.time
+            }
+          })
+        }).catch(function(e) { console.error('Error email:', e); });
+      }
+    }
+ 
+    // 5. Cerrar y confirmar
+    window._cloudApptCache = null;
+    _cloudApptCache = null;
+    closeOv('ov-manage');
+    toast('Tu cita ha sido cancelada', '#22C55E');
+    setTimeout(function() { window.location.hash = ''; }, 1500);
+  })
+  .catch(function(e) {
+    console.error('Error de red al cancelar:', e);
+    toast('Error de conexión. Intenta de nuevo.', '#EF4444');
+  });
 }
 
 async function checkLinkAccess() {
