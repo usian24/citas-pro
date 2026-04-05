@@ -1,9 +1,16 @@
 // /api/cancel-appointment.js
 const { createClient } = require('@supabase/supabase-js');
+const webpush = require('web-push');
 
 // Las citas viven en krbtoepzoorpdedtykug — siempre operar ahí
 const SUPABASE_APPOINTMENTS_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
 const SUPABASE_APPOINTMENTS_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
+
+webpush.setVapidDetails(
+  'mailto:soporte@citasproonline.com',
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -50,6 +57,36 @@ module.exports = async (req, res) => {
 
   if (updateError) {
     return res.status(500).json({ success: false, error: updateError.message });
+  }
+
+  // ✅ Enviar push al trabajador notificando la cancelación
+  if (appt.worker_id) {
+    try {
+      const { data: subs } = await supabase
+        .from('push_subscriptions')
+        .select('subscription')
+        .eq('worker_id', appt.worker_id);
+
+      if (subs && subs.length > 0) {
+        var payload = JSON.stringify({
+          title: '❌ Cita cancelada',
+          body: (appt.client_name || 'Cliente') + ' canceló · ' +
+                (appt.service_name || '') + ' · ' +
+                (appt.date || '') + ' a las ' + (appt.time || '')
+        });
+        for (var sub of subs) {
+          try {
+            await webpush.sendNotification(sub.subscription, payload);
+          } catch(e) {
+            if (e.statusCode === 410) {
+              await supabase.from('push_subscriptions').delete().eq('worker_id', appt.worker_id);
+            }
+          }
+        }
+      }
+    } catch(e) {
+      console.error('Error push cancelación:', e.message);
+    }
   }
 
   return res.status(200).json({

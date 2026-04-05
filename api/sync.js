@@ -1,5 +1,37 @@
 // sync.js
 const { createClient } = require('@supabase/supabase-js');
+const webpush = require('web-push');
+
+webpush.setVapidDetails(
+  'mailto:soporte@citasproonline.com',
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
+
+// ── Helper: enviar push a un worker ──
+async function enviarPushWorker(supabase, worker_id, title, body) {
+  try {
+    const { data: subs } = await supabase
+      .from('push_subscriptions')
+      .select('subscription')
+      .eq('worker_id', worker_id);
+
+    if (!subs || subs.length === 0) return;
+
+    var payload = JSON.stringify({ title, body });
+    for (var sub of subs) {
+      try {
+        await webpush.sendNotification(sub.subscription, payload);
+      } catch(e) {
+        if (e.statusCode === 410) {
+          await supabase.from('push_subscriptions').delete().eq('worker_id', worker_id);
+        }
+      }
+    }
+  } catch(e) {
+    console.error('Error enviando push:', e.message);
+  }
+}
 
 module.exports = async (req, res) => {
 
@@ -123,6 +155,10 @@ module.exports = async (req, res) => {
             .neq('id', String(appt.id)); // no borrar el nuevo que vamos a insertar
         }
 
+        // ── Detectar si es nueva o reagendada para el push ──
+        const esNueva     = !enSupabase;
+        const esReagendada = appt.status === 'rescheduled';
+
         // Insertar/actualizar el registro con los datos nuevos
         const { error } = await supabase.from('appointments').upsert({
           id:            String(appt.id),
@@ -143,6 +179,26 @@ module.exports = async (req, res) => {
 
         if (error) {
           apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
+          continue;
+        }
+
+        // ✅ Enviar push al trabajador si tiene worker_id
+        if (appt.worker_id) {
+          if (esNueva) {
+            await enviarPushWorker(
+              supabase,
+              appt.worker_id,
+              '📅 Nueva cita',
+              (appt.client_name || 'Cliente') + ' · ' + (appt.service_name || '') + ' · ' + (appt.date || '') + ' a las ' + (appt.time || '')
+            );
+          } else if (esReagendada) {
+            await enviarPushWorker(
+              supabase,
+              appt.worker_id,
+              '🔄 Cita reagendada',
+              (appt.client_name || 'Cliente') + ' cambió a ' + (appt.date || '') + ' a las ' + (appt.time || '')
+            );
+          }
         }
       }
 

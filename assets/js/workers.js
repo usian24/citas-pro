@@ -86,6 +86,29 @@ function initWorkerPanel() {
   if (typeof renderWorkerHomeStats === 'function') renderWorkerHomeStats();
 
   workerTab('home');
+  // Pedir permiso y guardar suscripción push
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+  navigator.serviceWorker.ready.then(function(reg) {
+    reg.pushManager.getSubscription().then(function(sub) {
+      if (sub) return; // ya tiene suscripción
+      reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: 'BMNw_CvifvPTl5K4BO9Re0kCixw6HUqbkrgO2XRatqrDuEzuko2evKp9zamwkBOgq02xOvAWMUWcHWWTPRXFOAQ'
+      }).then(function(newSub) {
+        fetch('/api/save-worker', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'save-push',
+            worker_id: CUR_WORKER.id,
+            business_id: CUR.id,
+            subscription: newSub.toJSON()
+          })
+        }).catch(function(e) { console.error('Error guardando push:', e); });
+      }).catch(function(e) { console.log('Push no disponible:', e); });
+    });
+  });
+}
 }
 
 function workerTab(tab) {

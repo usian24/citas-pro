@@ -11,6 +11,7 @@
     "bcryptjs": "^3.0.3",
     "google-auth-library": "^10.6.2",
     "resend": "^3.2.0",
-    "stripe": "^14.21.0"
+    "stripe": "^14.21.0",
+    "web-push": "^3.6.7"
   }
 }
