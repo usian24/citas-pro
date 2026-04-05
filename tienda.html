@@ -471,7 +471,32 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="assets/js/db.js"></script>
+
 <script>
+const TIENDA_PAIS_CONFIG = {
+  ES:{simbolo:'€',posicion:'derecha',sepDec:',',sepMiles:'.',decimales:2},
+  CO:{simbolo:'$',posicion:'izquierda',sepDec:',',sepMiles:'.',decimales:0},
+  MX:{simbolo:'$',posicion:'izquierda',sepDec:'.',sepMiles:',',decimales:2},
+  AR:{simbolo:'$',posicion:'izquierda',sepDec:',',sepMiles:'.',decimales:2},
+  PE:{simbolo:'S/',posicion:'izquierda',sepDec:'.',sepMiles:',',decimales:2},
+  CL:{simbolo:'$',posicion:'izquierda',sepDec:',',sepMiles:'.',decimales:0},
+  US:{simbolo:'$',posicion:'izquierda',sepDec:'.',sepMiles:',',decimales:2},
+  BR:{simbolo:'R$',posicion:'izquierda',sepDec:',',sepMiles:'.',decimales:2},
+};
+let paisNegocio = 'ES';
+function moneda(n) {
+  const cfg = TIENDA_PAIS_CONFIG[paisNegocio] || TIENDA_PAIS_CONFIG['ES'];
+  const num = parseFloat(n) || 0;
+  const factor = Math.pow(10, cfg.decimales);
+  const rounded = Math.round(num * factor) / factor;
+  const parts = rounded.toFixed(cfg.decimales).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, cfg.sepMiles);
+  const numStr = cfg.decimales > 0 ? parts.join(cfg.sepDec) : parts[0];
+  return cfg.posicion === 'izquierda' ? cfg.simbolo + numStr : numStr + ' ' + cfg.simbolo;
+}
+const PROD_URL = 'https://fcbbquvuffpmudvwqgbg.supabase.co';
+const PROD_KEY = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF';
+const prodSupa = window.supabase.createClient(PROD_URL, PROD_KEY);
 // ════════════════════════════════════════════
 // SUPABASE
 // ════════════════════════════════════════════
@@ -529,7 +554,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else if (window.DB?.currentBiz) {
     bizIdGlobal = window.DB.currentBiz;
   }
-
+  const cachedPais = localStorage.getItem('cp_pais');
+if (cachedPais && TIENDA_PAIS_CONFIG[cachedPais]) paisNegocio = cachedPais;
+try {
+  const { data: bizData } = await prodSupa
+    .from('businesses').select('name,phone,country').eq('id', bizIdGlobal).single();
+  if (bizData) {
+    document.getElementById('shop-title').textContent = bizData.name || 'Nuestra Tienda';
+    if (bizData.phone) bizWAPhone = bizData.phone.replace(/\D/g,'');
+    if (bizData.country && TIENDA_PAIS_CONFIG[bizData.country]) {
+      paisNegocio = bizData.country;
+      localStorage.setItem('cp_pais', bizData.country);
+    }
+  }
+} catch(e) {
+  const biz = window.DB?.businesses?.find(b => b.id === bizIdGlobal);
+  if (biz) {
+    document.getElementById('shop-title').textContent = biz.name || 'Nuestra Tienda';
+    if (biz.phone) bizWAPhone = biz.phone.replace(/\D/g,'');
+    if (biz.country && TIENDA_PAIS_CONFIG[biz.country]) paisNegocio = biz.country;
+  }
+}
+  
   if (bizIdGlobal) {
     const biz = window.DB?.businesses?.find(b => b.id === bizIdGlobal);
     document.getElementById('shop-title').textContent = biz ? biz.name : 'Nuestra Tienda';
@@ -662,11 +708,11 @@ function renderCard(p, likes, animIdx) {
 
   const precioHtml = descuento>0
     ? `<div class="p-price-wrap">
-         <div class="p-price-old">${precio.toFixed(2)}€</div>
-         <div class="p-price-new discounted">${precioFinal.toFixed(2)}€</div>
+         <div class="p-price-old">${moneda(precio)}</div>
+         <div class="p-price-new discounted">${moneda(precioFinal)}</div>
        </div>`
     : `<div class="p-price-wrap">
-         <div class="p-price-new">${precio.toFixed(2)}€</div>
+         <div class="p-price-new">${moneda(precio)}</div>
        </div>`;
 
   const starsHtml = `
@@ -858,8 +904,8 @@ function renderCartItems() {
     const catName    = (p.category||'General').trim();
 
     const precioHtml = desc>0
-      ? `<span class="old">${precio.toFixed(2)}€</span>${precioUnit.toFixed(2)}€`
-      : `${precioUnit.toFixed(2)}€`;
+      ? `<span class="old">${moneda(precio)}</span>${moneda(precioUnit)}`
+      : `${moneda(precioUnit)}`;
 
     return `
       <div class="cart-item">
@@ -871,7 +917,7 @@ function renderCartItems() {
           <div class="cart-item-name">${p.name}</div>
           <div class="cart-item-price ${desc>0?'disc':''}">${precioHtml}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px;">
-            Subtotal: <strong style="color:var(--text)">${subtotal.toFixed(2)}€</strong>
+            Subtotal: <strong style="color:var(--text)">${moneda(subtotal)}</strong>
           </div>
         </div>
         <div class="cart-qty">
@@ -903,16 +949,16 @@ function renderCartItems() {
   summaryEl.innerHTML = `
     <div class="cart-summary-row">
       <span>Subtotal (${totalItems} items)</span>
-      <span>${subtotalSinDesc.toFixed(2)}€</span>
+      <span>${moneda(subtotalSinDesc)}</span>
     </div>
     ${hayDescuento ? `
     <div class="cart-summary-row">
       <span class="discount-line">🏷️ Descuentos aplicados</span>
-      <span class="discount-line">-${totalDescuento.toFixed(2)}€</span>
+      <span class="discount-line">-${moneda(totalDescuento)}</span>
     </div>` : ''}
     <div class="cart-summary-row total">
       <span>Total</span>
-      <span>${totalFinal.toFixed(2)}€</span>
+      <span>${moneda(totalFinal)}</span>
     </div>`;
 }
 
@@ -929,10 +975,10 @@ function pedirPorWhatsApp() {
     totalFinal      += subtotal;
     const desc       = parseFloat(item.product.discount_percent)||0;
     const descTxt    = desc>0 ? ` (-${Math.round(desc)}%)` : '';
-    return `• ${item.product.name}${descTxt} x${item.cantidad} = ${subtotal.toFixed(2)}€`;
+    return `• ${item.product.name}${descTxt} x${item.cantidad} = ${moneda(subtotal)}`;
   }).join('\n');
 
-  const mensaje = `Hola, me gustaría hacer el siguiente pedido en *${nombreTienda}*:\n\n${lineas}\n\n*Total: ${totalFinal.toFixed(2)}€*\n\n¿Está disponible?`;
+  const mensaje = `Hola, me gustaría hacer el siguiente pedido en *${nombreTienda}*:\n\n${lineas}\n\n*Total: ${moneda(totalFinal)}*\n\n¿Está disponible?`;
 
   const phone = bizWAPhone || '34611200984'; // fallback al soporte
   const url   = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
