@@ -350,10 +350,16 @@ function renderWorkerFinances() {
   });
   html+='</div></div>';
 
-  html += '<div class="sec-hdr"><span class="sec-ttl">Mi historial</span></div>';
-  var historial=paid.slice().sort(function(a,b){ return b.date.localeCompare(a.date); }).slice(0,30);
-  html += historial.length ? historial.map(function(a){ return workerApptRowH(a); }).join('') : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Sin registros</div>';
+  html += '<div class="sec-hdr"><span class="sec-ttl">Mi historial completo</span></div>';
 
+// Mostrar TODAS las citas — confirmadas, completadas, canceladas, reagendadas
+var historial = appts.slice().sort(function(a,b){ 
+  return (b.date||'').localeCompare(a.date||''); 
+}).slice(0, 50);
+
+html += historial.length ? historial.map(function(a){ 
+  return workerApptRowH(a); 
+}).join('') : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Sin registros</div>';
   var el=G('wp-finanzas'); if(el) el.innerHTML=html;
 }
 

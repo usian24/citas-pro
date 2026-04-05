@@ -790,29 +790,51 @@ function generateBlockedTimeHTML(worker, dateStr, startHour, endHour, pxPerMin) 
   return html;
 }
 
+// Reemplaza generateTimelineApptHTML en biz.js
+
 function generateTimelineApptHTML(a, worker, startHour, pxPerMin, idx, clickFn) {
-  if(!a.time) return '';
-  var pts=a.time.split(':').map(Number), minsFromStart=(pts[0]*60+pts[1])-(startHour*60);
-  if(minsFromStart<0) return '';
-  var dur=30;
-  if(worker&&worker.services){ var sObj=worker.services.find(function(s){ return s.name===a.svc; }); if(sObj&&sObj.dur) dur=parseInt(sObj.dur); }
-  var top=minsFromStart*pxPerMin, height=Math.max((dur*pxPerMin)-2,28);
-  var stateStyles={ confirmed:{bg:'rgba(74,127,212,0.28)',border:'#4A7FD4',label:'Confirmada',lc:'#7EB8FF'}, pending:{bg:'rgba(245,158,11,0.28)',border:'#F59E0B',label:'Pendiente',lc:'#FCD34D'}, completed:{bg:'rgba(34,197,94,0.28)',border:'#22C55E',label:'Completada',lc:'#4ADE80'}, cancelled:{bg:'rgba(239,68,68,0.28)',border:'#EF4444',label:'Cancelada',lc:'#FCA5A5'}, in_progress:{bg:'rgba(168,85,247,0.28)',border:'#A855F7',label:'En curso',lc:'#C084FC'}, rescheduled:{bg:'rgba(245,158,11,0.22)',border:'#F59E0B',label:'Reagendada',lc:'#FCD34D'} };
-  var st=stateStyles[a.status]||stateStyles['confirmed'];
-  var precio=parseFloat(a.price||0), priceStr=precio>0?precio.toFixed(2)+'€':'';
-  var inner='';
-  if(height>=52){
-    inner='<div style="font-size:11px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">'+san(a.client)+'</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">'+san(a.time)+' · '+san(a.svc)+'</div>'
-      +(priceStr?'<div style="font-size:10px;font-weight:800;color:'+st.lc+';line-height:1.4">'+priceStr+'</div>':'')
-      +'<div style="margin-top:2px;display:inline-block;font-size:9px;font-weight:700;background:'+st.border+'55;color:'+st.lc+';border-radius:5px;padding:1px 5px">'+st.label+'</div>';
-  } else if(height>=34){
-    inner='<div style="font-size:11px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">'+san(a.client)+'</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+san(a.time)+(priceStr?' · <span style="font-weight:800;color:'+st.lc+'">'+priceStr+'</span>':'')+' <span style="background:'+st.border+'55;color:'+st.lc+';border-radius:4px;padding:0 4px;font-size:9px;font-weight:700">'+st.label+'</span></div>';
-  } else {
-    inner='<div style="font-size:10px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+san(a.client)+' <span style="font-weight:400;color:rgba(255,255,255,.7)">'+san(a.time)+'</span></div>';
+  if (!a.time) return '';
+  var pts = a.time.split(':').map(Number), minsFromStart = (pts[0]*60+pts[1]) - (startHour*60);
+  if (minsFromStart < 0) return '';
+  var dur = 30;
+  if (worker && worker.services) {
+    var sObj = worker.services.find(function(s) { return s.name === a.svc; });
+    if (sObj && sObj.dur) dur = parseInt(sObj.dur);
   }
-  return '<div onclick="'+clickFn+'(\''+a.id+'\')" style="position:absolute;top:'+(top+2)+'px;height:'+(height-4)+'px;left:5px;right:5px;background:'+st.bg+';border-left:4px solid '+st.border+';border-top:1px solid '+st.border+'99;border-right:1px solid '+st.border+'66;border-bottom:1px solid '+st.border+'66;border-radius:0 8px 8px 0;padding:5px 8px;cursor:pointer;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,0.35);z-index:2;">'+inner+'</div>';
+  var top = minsFromStart * pxPerMin, height = Math.max((dur * pxPerMin) - 2, 28);
+
+  var stateStyles = {
+    confirmed:   { bg:'rgba(74,127,212,0.28)',  border:'#4A7FD4', label:'Confirmada', lc:'#7EB8FF'  },
+    pending:     { bg:'rgba(245,158,11,0.28)',  border:'#F59E0B', label:'Pendiente',  lc:'#FCD34D'  },
+    completed:   { bg:'rgba(34,197,94,0.28)',   border:'#22C55E', label:'Completada', lc:'#4ADE80'  },
+    cancelled:   { bg:'rgba(239,68,68,0.28)',   border:'#EF4444', label:'Cancelada',  lc:'#FCA5A5'  },
+    in_progress: { bg:'rgba(168,85,247,0.28)',  border:'#A855F7', label:'En curso',   lc:'#C084FC'  },
+    rescheduled: { bg:'rgba(245,158,11,0.22)',  border:'#F59E0B', label:'Reagendada', lc:'#FCD34D'  }
+  };
+
+  var st = stateStyles[a.status] || stateStyles['confirmed'];
+
+  // ✅ Usa money() en lugar de .toFixed(2)+'€'
+  var precio = parseFloat(a.price || 0);
+  var priceStr = precio > 0 ? money(precio) : '';
+
+  var inner = '';
+  if (height >= 52) {
+    inner = '<div style="font-size:11px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">' + san(a.client) + '</div>'
+      + '<div style="font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">' + san(a.time) + ' · ' + san(a.svc) + '</div>'
+      + (priceStr ? '<div style="font-size:10px;font-weight:800;color:' + st.lc + ';line-height:1.4">' + priceStr + '</div>' : '')
+      + '<div style="margin-top:2px;display:inline-block;font-size:9px;font-weight:700;background:' + st.border + '55;color:' + st.lc + ';border-radius:5px;padding:1px 5px">' + st.label + '</div>';
+  } else if (height >= 34) {
+    inner = '<div style="font-size:11px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">' + san(a.client) + '</div>'
+      + '<div style="font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + san(a.time)
+      + (priceStr ? ' · <span style="font-weight:800;color:' + st.lc + '">' + priceStr + '</span>' : '')
+      + ' <span style="background:' + st.border + '55;color:' + st.lc + ';border-radius:4px;padding:0 4px;font-size:9px;font-weight:700">' + st.label + '</span></div>';
+  } else {
+    inner = '<div style="font-size:10px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+      + san(a.client) + ' <span style="font-weight:400;color:rgba(255,255,255,.7)">' + san(a.time) + '</span></div>';
+  }
+
+  return '<div onclick="' + clickFn + '(\'' + a.id + '\')" style="position:absolute;top:' + (top+2) + 'px;height:' + (height-4) + 'px;left:5px;right:5px;background:' + st.bg + ';border-left:4px solid ' + st.border + ';border-top:1px solid ' + st.border + '99;border-right:1px solid ' + st.border + '66;border-bottom:1px solid ' + st.border + '66;border-radius:0 8px 8px 0;padding:5px 8px;cursor:pointer;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,0.35);z-index:2;">' + inner + '</div>';
 }
 
 function renderBizDailyTimeline(dateStr) {
