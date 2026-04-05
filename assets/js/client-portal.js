@@ -448,7 +448,7 @@ function confirmBooking() {
   if (wa) {
     var waMsg = isModifying ? '¡Mi cita fue modificada en ' + biz.name + '!\n' : '¡Cita confirmada en ' + biz.name + '!\n';
     waMsg += 'Profesional: ' + worker.name + '\nServicio: ' + CSEL.svc + '\nFecha: ' + CSEL.date + ' a las ' + CSEL.time
-      + '\nTotal: ' + money(CSEL.svcPrice) + '\n\nPara gestionar o cancelar tu cita visita:\nhttps://citasproonline.com/#manage/' + biz.id + '/' + token;
+      + '\nTotal: ' + money(CSEL.svcPrice) + '\n\nPara gestionar o cancelar tu cita visita:\n' + window.location.origin + '/#manage/' + biz.id + '/' + token;
     wa.href = 'https://wa.me/' + phone.replace(/\D/g,'') + '?text=' + encodeURIComponent(waMsg);
   }
   CSEL.bookingToken = token;
