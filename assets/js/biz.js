@@ -309,22 +309,29 @@ function copyLink() {
 ══════════════════════════ */
 function initBizPanel() {
   if (!CUR) return;
+ 
+  // ── Moneda y precio según país del negocio ──
+  if (CUR.country && typeof guardarPaisEnCache === 'function') {
+    guardarPaisEnCache(CUR.country);
+    if (typeof adaptarPrecioLocal === 'function') adaptarPrecioLocal(CUR.country);
+  }
+ 
   var hr=new Date().getHours(), g=hr<12?'Buenos días':hr<18?'Buenas tardes':'Buenas noches';
   T('biz-greeting', g+' '+(CUR.owner||'').split(' ')[0]);
   T('biz-hdr-nm', CUR.name);
-
+ 
   var planEl=G('biz-hdr-plan');
   if (planEl) {
     planEl.textContent = CUR.plan==='active'?'Plan activo':CUR.plan==='trial'?'Prueba gratis':'Suscripción vencida';
     planEl.style.color = CUR.plan==='active'?'var(--green)':CUR.plan==='trial'?'var(--gold)':'var(--red)';
   }
-
+ 
   var av=G('biz-hdr-av');
   if (av) {
     if (CUR.logo) av.innerHTML='<img src="'+safeImg(CUR.logo)+'" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
     else av.textContent=(CUR.name||'?').charAt(0).toUpperCase();
   }
-
+ 
   var today=new Date().toISOString().split('T')[0];
   var allAppts=_getAllAppts();
   var todayA=allAppts.filter(function(a){ return a.date===today&&a.status!=='cancelled'; });
@@ -332,33 +339,32 @@ function initBizPanel() {
   var weekA=allAppts.filter(function(a){ return a.date>=thisWeekStart.toISOString().split('T')[0]&&a.status!=='cancelled'; });
   var thisMonthStart=new Date(); thisMonthStart.setDate(1);
   var monthA=allAppts.filter(function(a){ return a.date>=thisMonthStart.toISOString().split('T')[0]&&a.status!=='cancelled'; });
-
-  /* Inicio — datos simples y claros */
+ 
   T('bh-today', todayA.length);
   T('bh-rev',   money(todayA.reduce(function(s,a){ return s+(a.price||0); },0)));
   T('bh-week',  weekA.length);
   T('bh-month', money(monthA.reduce(function(s,a){ return s+(a.price||0); },0)));
-
+ 
   var link='citasproonline.com/#b/'+CUR.id;
   T('biz-link-show', link);
   var wah=G('wa-share-home'); if(wah) wah.href='https://wa.me/?text='+encodeURIComponent('Reserva tu cita en '+CUR.name+' → https://'+link);
-
+ 
   renderTodayAppts(todayA);
   renderBizWorkers();
   renderGallery();
   renderBizFinances();
   renderCalendar();
   initAgenda();
-
+ 
   if (typeof renderBizHomeStats === 'function') renderBizHomeStats();
-
+ 
   var profileCover=G('biz-profile-cover'); if(profileCover&&CUR.cover) profileCover.style.backgroundImage='url('+safeImg(CUR.cover)+')';
   var profileLogo=G('biz-profile-logo');
   if (profileLogo) {
     if (CUR.logo) profileLogo.innerHTML='<img src="'+safeImg(CUR.logo)+'" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
     else profileLogo.textContent=(CUR.name||'?').charAt(0).toUpperCase();
   }
-
+ 
   var pfNm=G('pf-nm'); if(pfNm) pfNm.value=CUR.name||'';
   var pfAd=G('pf-addr'); if(pfAd) pfAd.value=CUR.addr||'';
   var pfPh=G('pf-phone'); if(pfPh) pfPh.value=CUR.phone||'';
@@ -369,7 +375,7 @@ function initBizPanel() {
   var pfPs=G('pf-plan-status');
   if(pfPs) pfPs.textContent=CUR.plan==='active'?'Plan activo · Próxima factura el día 1':CUR.plan==='trial'?'En período de prueba gratuito':'Suscripción vencida — contacta soporte';
   var pfPb=G('pf-plan-badge'); if(pfPb) pfPb.innerHTML=planTag(CUR.plan);
-
+ 
   bizTab('home');
 }
 

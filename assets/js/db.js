@@ -291,7 +291,7 @@ function syncProductToCloud(bizId, product) {
    HELPERS UI
 ══════════════════════════ */
 function money(n) {
-  if (typeof formatMoney === 'function') return formatMoney(n);
+  if (typeof formatMoney === 'function') return formatMoney(n, typeof getPaisActivo === 'function' ? getPaisActivo() : 'ES');
   return parseFloat(n || 0).toFixed(2) + '€';
 }
 function G(id)    { return document.getElementById(id); }
