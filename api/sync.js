@@ -99,9 +99,8 @@ module.exports = async (req, res) => {
           continue;
         }
 
-        // ✅ PROTECCIÓN CLAVE: antes de hacer upsert,
-        // verificar si la cita ya está cancelada en Supabase.
-        // Si está cancelada, ignorarla — nunca sobreescribir.
+        // ✅ PROTECCIÓN: verificar si ya está cancelada en Supabase
+        // Si está cancelada, no tocar bajo ninguna circunstancia
         const { data: enSupabase } = await supabase
           .from('appointments')
           .select('status')
@@ -109,11 +108,22 @@ module.exports = async (req, res) => {
           .single();
 
         if (enSupabase && enSupabase.status === 'cancelled') {
-          // Ya cancelada en Supabase — no tocar bajo ninguna circunstancia
           continue;
         }
 
-        // No está cancelada — hacer upsert normal
+        // ✅ REAGENDADA: si el cliente cambió fecha/hora,
+        // borrar TODOS los registros anteriores con ese token
+        // para que solo exista UN registro por cliente/token
+        if (appt.status === 'rescheduled' && appt.token) {
+          await supabase
+            .from('appointments')
+            .delete()
+            .eq('token', appt.token)
+            .eq('business_id', business_id)
+            .neq('id', String(appt.id)); // no borrar el nuevo que vamos a insertar
+        }
+
+        // Insertar/actualizar el registro con los datos nuevos
         const { error } = await supabase.from('appointments').upsert({
           id:            String(appt.id),
           business_id:   business_id,
