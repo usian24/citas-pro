@@ -1,5 +1,9 @@
-// /api/cancel-appointment.js — versión corregida
+// /api/cancel-appointment.js
 const { createClient } = require('@supabase/supabase-js');
+
+// Las citas viven en krbtoepzoorpdedtykug — siempre operar ahí
+const SUPABASE_APPOINTMENTS_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
+const SUPABASE_APPOINTMENTS_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -13,8 +17,8 @@ module.exports = async (req, res) => {
   }
 
   const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
+    SUPABASE_APPOINTMENTS_URL,
+    SUPABASE_APPOINTMENTS_KEY
   );
 
   // Buscar la cita por token
