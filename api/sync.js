@@ -182,7 +182,7 @@ module.exports = async (req, res) => {
           continue;
         }
 
-        // ✅ Enviar push al trabajador si tiene worker_id
+        // ✅ Enviar push y guardar notificación en Supabase
         if (appt.worker_id) {
           if (esNueva) {
             await enviarPushWorker(
@@ -191,6 +191,14 @@ module.exports = async (req, res) => {
               '📅 Nueva cita',
               (appt.client_name || 'Cliente') + ' · ' + (appt.service_name || '') + ' · ' + (appt.date || '') + ' a las ' + (appt.time || '')
             );
+            await supabase.from('notifications').insert({
+              worker_id:   appt.worker_id,
+              business_id: business_id,
+              type:        'new_booking',
+              msg:         'Nueva cita: ' + (appt.client_name || 'Cliente'),
+              detail:      (appt.service_name || '') + ' · ' + (appt.date || '') + ' a las ' + (appt.time || ''),
+              read:        false
+            });
           } else if (esReagendada) {
             await enviarPushWorker(
               supabase,
@@ -198,6 +206,14 @@ module.exports = async (req, res) => {
               '🔄 Cita reagendada',
               (appt.client_name || 'Cliente') + ' cambió a ' + (appt.date || '') + ' a las ' + (appt.time || '')
             );
+            await supabase.from('notifications').insert({
+              worker_id:   appt.worker_id,
+              business_id: business_id,
+              type:        'booking_modify',
+              msg:         'Cita reagendada: ' + (appt.client_name || 'Cliente'),
+              detail:      (appt.service_name || '') + ' · ' + (appt.date || '') + ' a las ' + (appt.time || ''),
+              read:        false
+            });
           }
         }
       }
