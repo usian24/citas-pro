@@ -18,9 +18,11 @@ if (typeof registerFCMToken === 'function') registerFCMToken();
 
 function initWorkerPanel() {
   if (!CUR_WORKER || !CUR) return;
-  // ── Auto-completar citas pasadas ──
-  var ahoraMins = new Date().getHours() * 60 + new Date().getMinutes();
-  var hoyStr = new Date().toISOString().split('T')[0];
+ 
+  // ── Auto-completar citas pasadas (usando timezone del negocio) ──
+  var _ahora = (typeof ahoraEnNegocio === 'function') ? ahoraEnNegocio(CUR.country || 'PE') : new Date();
+  var ahoraMins = _ahora.getHours() * 60 + _ahora.getMinutes();
+  var hoyStr = _ahora.getFullYear() + '-' + String(_ahora.getMonth()+1).padStart(2,'0') + '-' + String(_ahora.getDate()).padStart(2,'0');
   var cambios = false;
   (CUR_WORKER.appointments || []).forEach(function(a) {
     if (a.status !== 'confirmed' && a.status !== 'rescheduled') return;
@@ -39,6 +41,7 @@ function initWorkerPanel() {
     cambios = true;
   });
   if (cambios) saveDB();
+ 
   var av = G('wk-hdr-av');
   if (av) {
     if (CUR_WORKER.photo) av.innerHTML = '<img src="'+sanitizeImageDataURL(CUR_WORKER.photo)+'" style="width:100%;height:100%;object-fit:cover" alt="Foto"/>';
@@ -46,33 +49,38 @@ function initWorkerPanel() {
   }
   T('wk-hdr-nm', CUR_WORKER.name);
   T('wk-hdr-biz', CUR.name);
-
+ 
   var bizAv = G('wk-biz-av');
   if (bizAv) {
     if (CUR.logo) bizAv.innerHTML = '<img src="'+sanitizeImageDataURL(CUR.logo)+'" style="width:100%;height:100%;object-fit:cover" alt="Logo"/>';
     else bizAv.textContent = (CUR.name||'?').charAt(0).toUpperCase();
   }
   T('wk-biz-nm', CUR.name);
-
-  /* Stats home — SOLO datos del trabajador logueado */
-  var today = new Date().toISOString().split('T')[0];
+ 
+  /* Stats home — usando timezone del negocio */
+  var _hoyDate = (typeof ahoraEnNegocio === 'function') ? ahoraEnNegocio(CUR.country || 'PE') : new Date();
+  var today = _hoyDate.getFullYear() + '-' + String(_hoyDate.getMonth()+1).padStart(2,'0') + '-' + String(_hoyDate.getDate()).padStart(2,'0');
   var appts = CUR_WORKER.appointments || [];
   var todayA = appts.filter(function(a){ return a.date===today && a.status!=='cancelled'; });
-  var thisWeekStart = new Date(); thisWeekStart.setDate(thisWeekStart.getDate()-thisWeekStart.getDay());
-  var thisMonthStart = new Date(); thisMonthStart.setDate(1);
-  var weekA  = appts.filter(function(a){ return a.date>=thisWeekStart.toISOString().split('T')[0] && a.status!=='cancelled'; });
-  var monthA = appts.filter(function(a){ return a.date>=thisMonthStart.toISOString().split('T')[0] && a.status!=='cancelled'; });
-
+ 
+  var thisWeekStart = new Date(_hoyDate); thisWeekStart.setDate(_hoyDate.getDate()-_hoyDate.getDay());
+  var thisWeekStartStr = thisWeekStart.getFullYear() + '-' + String(thisWeekStart.getMonth()+1).padStart(2,'0') + '-' + String(thisWeekStart.getDate()).padStart(2,'0');
+  var thisMonthStart = new Date(_hoyDate); thisMonthStart.setDate(1);
+  var thisMonthStartStr = thisMonthStart.getFullYear() + '-' + String(thisMonthStart.getMonth()+1).padStart(2,'0') + '-01';
+ 
+  var weekA  = appts.filter(function(a){ return a.date>=thisWeekStartStr && a.status!=='cancelled'; });
+  var monthA = appts.filter(function(a){ return a.date>=thisMonthStartStr && a.status!=='cancelled'; });
+ 
   T('wk-today', todayA.length);
   T('wk-rev',   money(todayA.reduce(function(s,a){ return s+(a.price||0); },0)));
   T('wk-week',  weekA.length);
   T('wk-month', money(monthA.reduce(function(s,a){ return s+(a.price||0); },0)));
-
+ 
   var link = 'citasproonline.com/#b/'+CUR.id;
   T('wk-link-show', link);
   var waShare = G('wk-wa-share');
   if (waShare) waShare.href = 'https://wa.me/?text='+encodeURIComponent('Reserva tu cita con '+CUR_WORKER.name+' en '+CUR.name+' → https://'+link);
-
+ 
   renderWorkerNotifBadge();
   renderWorkerTodayAppts(todayA);
   renderWorkerServices();
@@ -82,66 +90,16 @@ function initWorkerPanel() {
   renderWorkerCalendar();
   initWorkerAgenda();
   renderWorkerProfile();
-
+ 
   if (typeof renderWorkerHomeStats === 'function') renderWorkerHomeStats();
-
+ 
   workerTab('home');
-
-// ── Si ya tiene permiso, suscribir automáticamente ──
-if ('serviceWorker' in navigator && 'PushManager' in window && Notification.permission === 'granted') {
-  navigator.serviceWorker.ready.then(function(reg) {
-    reg.pushManager.getSubscription().then(function(sub) {
-      if (sub) return;
-      function urlBase64ToUint8Array(b) {
-        var pad = '='.repeat((4 - b.length % 4) % 4);
-        var base64 = (b + pad).replace(/-/g, '+').replace(/_/g, '/');
-        var raw = window.atob(base64);
-        var arr = new Uint8Array(raw.length);
-        for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-        return arr;
-      }
-      reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array('BMNw_CvifvPTl5K4BO9Re0kCixw6HUqbkrgO2XRatqrDuEzuko2evKp9zamwkBOgq02xOvAWMUWcHWWTPRXFOAQ')
-      }).then(function(newSub) {
-        fetch('/api/save-worker', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'save-push',
-            worker_id: CUR_WORKER.id,
-            business_id: CUR.id,
-            subscription: newSub.toJSON()
-          })
-        });
-      }).catch(function(e) { console.log('Push no disponible:', e); });
-    });
-  });
-}
-
-// ── Banner de notificaciones (solo primera vez, si nunca dio permiso) ──
-if ('Notification' in window && Notification.permission === 'default') {
-  var bannerKey = 'cp_push_banner_' + CUR_WORKER.id;
-  if (!localStorage.getItem(bannerKey)) {
-    var banner = document.createElement('div');
-    banner.id = 'push-banner';
-    banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:400px;background:var(--card);border:1px solid var(--blue);border-radius:20px;padding:16px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4);display:flex;gap:12px;align-items:center';
-    banner.innerHTML = ''
-      + '<div style="font-size:28px">🔔</div>'
-      + '<div style="flex:1">'
-      + '<div style="font-weight:800;font-size:14px;margin-bottom:3px">Activa las notificaciones</div>'
-      + '<div style="font-size:12px;color:var(--t2)">Recibe alertas de nuevas citas y cancelaciones al instante</div>'
-      + '</div>'
-      + '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
-      + '<button id="push-allow" style="background:var(--blue);color:#fff;border:none;border-radius:var(--rpill);padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)">Permitir</button>'
-      + '<button id="push-deny" style="background:var(--b);color:var(--muted);border:none;border-radius:var(--rpill);padding:8px 14px;font-size:12px;cursor:pointer;font-family:var(--font)">Ahora no</button>'
-      + '</div>';
-    document.body.appendChild(banner);
-
-    document.getElementById('push-allow').onclick = function() {
-      localStorage.setItem(bannerKey, '1');
-      banner.remove();
-      navigator.serviceWorker.ready.then(function(reg) {
+ 
+  // ── Si ya tiene permiso, suscribir automáticamente ──
+  if ('serviceWorker' in navigator && 'PushManager' in window && Notification.permission === 'granted') {
+    navigator.serviceWorker.ready.then(function(reg) {
+      reg.pushManager.getSubscription().then(function(sub) {
+        if (sub) return;
         function urlBase64ToUint8Array(b) {
           var pad = '='.repeat((4 - b.length % 4) % 4);
           var base64 = (b + pad).replace(/-/g, '+').replace(/_/g, '/');
@@ -164,18 +122,68 @@ if ('Notification' in window && Notification.permission === 'default') {
               subscription: newSub.toJSON()
             })
           });
-          toast('¡Notificaciones activadas!', '#22C55E');
         }).catch(function(e) { console.log('Push no disponible:', e); });
       });
-    };
-
-    document.getElementById('push-deny').onclick = function() {
-      localStorage.setItem(bannerKey, '1');
-      banner.remove();
-    };
+    });
+  }
+ 
+  // ── Banner de notificaciones (solo primera vez, si nunca dio permiso) ──
+  if ('Notification' in window && Notification.permission === 'default') {
+    var bannerKey = 'cp_push_banner_' + CUR_WORKER.id;
+    if (!localStorage.getItem(bannerKey)) {
+      var banner = document.createElement('div');
+      banner.id = 'push-banner';
+      banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:400px;background:var(--card);border:1px solid var(--blue);border-radius:20px;padding:16px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4);display:flex;gap:12px;align-items:center';
+      banner.innerHTML = ''
+        + '<div style="font-size:28px">🔔</div>'
+        + '<div style="flex:1">'
+        + '<div style="font-weight:800;font-size:14px;margin-bottom:3px">Activa las notificaciones</div>'
+        + '<div style="font-size:12px;color:var(--t2)">Recibe alertas de nuevas citas y cancelaciones al instante</div>'
+        + '</div>'
+        + '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
+        + '<button id="push-allow" style="background:var(--blue);color:#fff;border:none;border-radius:var(--rpill);padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)">Permitir</button>'
+        + '<button id="push-deny" style="background:var(--b);color:var(--muted);border:none;border-radius:var(--rpill);padding:8px 14px;font-size:12px;cursor:pointer;font-family:var(--font)">Ahora no</button>'
+        + '</div>';
+      document.body.appendChild(banner);
+ 
+      document.getElementById('push-allow').onclick = function() {
+        localStorage.setItem(bannerKey, '1');
+        banner.remove();
+        navigator.serviceWorker.ready.then(function(reg) {
+          function urlBase64ToUint8Array(b) {
+            var pad = '='.repeat((4 - b.length % 4) % 4);
+            var base64 = (b + pad).replace(/-/g, '+').replace(/_/g, '/');
+            var raw = window.atob(base64);
+            var arr = new Uint8Array(raw.length);
+            for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+            return arr;
+          }
+          reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array('BMNw_CvifvPTl5K4BO9Re0kCixw6HUqbkrgO2XRatqrDuEzuko2evKp9zamwkBOgq02xOvAWMUWcHWWTPRXFOAQ')
+          }).then(function(newSub) {
+            fetch('/api/save-worker', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'save-push',
+                worker_id: CUR_WORKER.id,
+                business_id: CUR.id,
+                subscription: newSub.toJSON()
+              })
+            });
+            toast('¡Notificaciones activadas!', '#22C55E');
+          }).catch(function(e) { console.log('Push no disponible:', e); });
+        });
+      };
+ 
+      document.getElementById('push-deny').onclick = function() {
+        localStorage.setItem(bannerKey, '1');
+        banner.remove();
+      };
+    }
   }
 }
-} // ← cierre de initWorkerPanel
 
 
 function workerTab(tab) {
@@ -259,18 +267,24 @@ var workerCalDate = new Date();
 var workerCalDay  = new Date().toISOString().split('T')[0];
 
 function renderWorkerCalendar() {
-  var now=workerCalDate, year=now.getFullYear(), month=now.getMonth();
+  var now = workerCalDate, year = now.getFullYear(), month = now.getMonth();
   T('wk-cal-title', MONTHS[month]+' '+year);
-  var firstDay=new Date(year,month,1).getDay(), daysInMonth=new Date(year,month+1,0).getDate();
-  var today=new Date().toISOString().split('T')[0];
-  var appts=CUR_WORKER?(CUR_WORKER.appointments||[]):[], apptDates={};
+  var firstDay = new Date(year,month,1).getDay(), daysInMonth = new Date(year,month+1,0).getDate();
+ 
+  // Usar timezone del negocio
+  var _hoy = (typeof ahoraEnNegocio === 'function' && CUR) ? ahoraEnNegocio(CUR.country || 'PE') : new Date();
+  var today = _hoy.getFullYear() + '-' + String(_hoy.getMonth()+1).padStart(2,'0') + '-' + String(_hoy.getDate()).padStart(2,'0');
+ 
+  var appts = CUR_WORKER ? (CUR_WORKER.appointments||[]) : [], apptDates = {};
   appts.forEach(function(a){ if(a.date&&a.status!=='cancelled') apptDates[a.date]=true; });
-  var html='';
+  var html = '';
   for(var i=0;i<firstDay;i++) html+='<div class="cal-day other-month"></div>';
   for(var d=1;d<=daysInMonth;d++){
-    var ds=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    var cls='cal-day';
-    if(ds===today) cls+=' today'; if(ds===workerCalDay) cls+=' sel'; if(apptDates[ds]) cls+=' has-appts';
+    var ds = year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var cls = 'cal-day';
+    if(ds===today) cls+=' today';
+    if(ds===workerCalDay) cls+=' sel';
+    if(apptDates[ds]) cls+=' has-appts';
     html+='<div class="'+cls+'" onclick="selectWorkerCalDay(\''+ds+'\')">'+d+'</div>';
   }
   H('wk-cal-grid', html);
