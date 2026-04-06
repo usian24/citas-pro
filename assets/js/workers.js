@@ -86,19 +86,19 @@ function initWorkerPanel() {
   if (typeof renderWorkerHomeStats === 'function') renderWorkerHomeStats();
 
   workerTab('home');
-  // Pedir permiso y guardar suscripción push
-// ── Suscripción Web Push ──
-if ('serviceWorker' in navigator && 'PushManager' in window) {
+
+// ── Si ya tiene permiso, suscribir automáticamente ──
+if ('serviceWorker' in navigator && 'PushManager' in window && Notification.permission === 'granted') {
   navigator.serviceWorker.ready.then(function(reg) {
     reg.pushManager.getSubscription().then(function(sub) {
       if (sub) return;
-      function urlBase64ToUint8Array(base64String) {
-        var padding = '='.repeat((4 - base64String.length % 4) % 4);
-        var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-        var rawData = window.atob(base64);
-        var outputArray = new Uint8Array(rawData.length);
-        for (var i = 0; i < rawData.length; i++) { outputArray[i] = rawData.charCodeAt(i); }
-        return outputArray;
+      function urlBase64ToUint8Array(b) {
+        var pad = '='.repeat((4 - b.length % 4) % 4);
+        var base64 = (b + pad).replace(/-/g, '+').replace(/_/g, '/');
+        var raw = window.atob(base64);
+        var arr = new Uint8Array(raw.length);
+        for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+        return arr;
       }
       reg.pushManager.subscribe({
         userVisibleOnly: true,
@@ -113,14 +113,70 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
             business_id: CUR.id,
             subscription: newSub.toJSON()
           })
-        }).then(function(r) { return r.json(); })
-        .then(function(d) { console.log('Push guardado:', d); })
-        .catch(function(e) { console.error('Error guardando push:', e); });
+        });
       }).catch(function(e) { console.log('Push no disponible:', e); });
     });
   });
 }
+
+// ── Banner de notificaciones (solo primera vez, si nunca dio permiso) ──
+if ('Notification' in window && Notification.permission === 'default') {
+  var bannerKey = 'cp_push_banner_' + CUR_WORKER.id;
+  if (!localStorage.getItem(bannerKey)) {
+    var banner = document.createElement('div');
+    banner.id = 'push-banner';
+    banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:400px;background:var(--card);border:1px solid var(--blue);border-radius:20px;padding:16px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4);display:flex;gap:12px;align-items:center';
+    banner.innerHTML = ''
+      + '<div style="font-size:28px">🔔</div>'
+      + '<div style="flex:1">'
+      + '<div style="font-weight:800;font-size:14px;margin-bottom:3px">Activa las notificaciones</div>'
+      + '<div style="font-size:12px;color:var(--t2)">Recibe alertas de nuevas citas y cancelaciones al instante</div>'
+      + '</div>'
+      + '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
+      + '<button id="push-allow" style="background:var(--blue);color:#fff;border:none;border-radius:var(--rpill);padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)">Permitir</button>'
+      + '<button id="push-deny" style="background:var(--b);color:var(--muted);border:none;border-radius:var(--rpill);padding:8px 14px;font-size:12px;cursor:pointer;font-family:var(--font)">Ahora no</button>'
+      + '</div>';
+    document.body.appendChild(banner);
+
+    document.getElementById('push-allow').onclick = function() {
+      localStorage.setItem(bannerKey, '1');
+      banner.remove();
+      navigator.serviceWorker.ready.then(function(reg) {
+        function urlBase64ToUint8Array(b) {
+          var pad = '='.repeat((4 - b.length % 4) % 4);
+          var base64 = (b + pad).replace(/-/g, '+').replace(/_/g, '/');
+          var raw = window.atob(base64);
+          var arr = new Uint8Array(raw.length);
+          for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+          return arr;
+        }
+        reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array('BMNw_CvifvPTl5K4BO9Re0kCixw6HUqbkrgO2XRatqrDuEzuko2evKp9zamwkBOgq02xOvAWMUWcHWWTPRXFOAQ')
+        }).then(function(newSub) {
+          fetch('/api/save-worker', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'save-push',
+              worker_id: CUR_WORKER.id,
+              business_id: CUR.id,
+              subscription: newSub.toJSON()
+            })
+          });
+          toast('¡Notificaciones activadas!', '#22C55E');
+        }).catch(function(e) { console.log('Push no disponible:', e); });
+      });
+    };
+
+    document.getElementById('push-deny').onclick = function() {
+      localStorage.setItem(bannerKey, '1');
+      banner.remove();
+    };
+  }
 }
+} // ← cierre de initWorkerPanel
+
 
 function workerTab(tab) {
   var tabs = ['home','agenda','semana','servicios','galeria','finanzas','horario','perfil','notif'];
