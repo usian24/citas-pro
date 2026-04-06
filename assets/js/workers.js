@@ -87,13 +87,22 @@ function initWorkerPanel() {
 
   workerTab('home');
   // Pedir permiso y guardar suscripción push
+// ── Suscripción Web Push ──
 if ('serviceWorker' in navigator && 'PushManager' in window) {
   navigator.serviceWorker.ready.then(function(reg) {
     reg.pushManager.getSubscription().then(function(sub) {
-      if (sub) return; // ya tiene suscripción
+      if (sub) return;
+      function urlBase64ToUint8Array(base64String) {
+        var padding = '='.repeat((4 - base64String.length % 4) % 4);
+        var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        var rawData = window.atob(base64);
+        var outputArray = new Uint8Array(rawData.length);
+        for (var i = 0; i < rawData.length; i++) { outputArray[i] = rawData.charCodeAt(i); }
+        return outputArray;
+      }
       reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: 'BMNw_CvifvPTl5K4BO9Re0kCixw6HUqbkrgO2XRatqrDuEzuko2evKp9zamwkBOgq02xOvAWMUWcHWWTPRXFOAQ'
+        applicationServerKey: urlBase64ToUint8Array('BMNw_CvifvPTl5K4BO9Re0kCixw6HUqbkrgO2XRatqrDuEzuko2evKp9zamwkBOgq02xOvAWMUWcHWWTPRXFOAQ')
       }).then(function(newSub) {
         fetch('/api/save-worker', {
           method: 'POST',
@@ -104,7 +113,9 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
             business_id: CUR.id,
             subscription: newSub.toJSON()
           })
-        }).catch(function(e) { console.error('Error guardando push:', e); });
+        }).then(function(r) { return r.json(); })
+        .then(function(d) { console.log('Push guardado:', d); })
+        .catch(function(e) { console.error('Error guardando push:', e); });
       }).catch(function(e) { console.log('Push no disponible:', e); });
     });
   });
