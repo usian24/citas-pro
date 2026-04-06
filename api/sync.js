@@ -156,8 +156,8 @@ module.exports = async (req, res) => {
         }
 
         // ── Detectar si es nueva o reagendada para el push ──
-        const esNueva     = !enSupabase;
-        const esReagendada = appt.status === 'rescheduled';
+        const esNueva      = !enSupabase && appt.status === 'confirmed';
+        const esReagendada = appt.status === 'rescheduled' && !!enSupabase;
 
         // Insertar/actualizar el registro con los datos nuevos
         const { error } = await supabase.from('appointments').upsert({
