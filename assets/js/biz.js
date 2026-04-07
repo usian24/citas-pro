@@ -62,6 +62,13 @@ function rmGoStep2() {
   if (pass !== pass2)                 { showErr('rm-err1', 'Las contraseñas no coinciden. Verifícalas.'); return; }
   if (!terms || !terms.checked)       { showErr('rm-err1', 'Debes aceptar los Términos y Condiciones para continuar.'); return; }
   if (DB.businesses.filter(function(b) { return (b.email||'').toLowerCase() === email; })[0]) { showErr('rm-err1', 'Este correo ya tiene una cuenta registrada. Inicia sesión.'); return; }
+  var emailEnWorker = false;
+DB.businesses.forEach(function(b) {
+  (b.workers || []).forEach(function(w) {
+    if ((w.email || '').toLowerCase() === email) emailEnWorker = true;
+  });
+});
+if (emailEnWorker) { showErr('rm-err1', 'Este correo ya está registrado como trabajador. Usa otro correo.'); return; }
   _rmData = { email: email, phone: phone, pass: pass };
   _rmCode = String(Math.floor(100000 + Math.random() * 900000));
   fetch('/api/send-email', {
@@ -184,6 +191,13 @@ function bizRegStep(n) {
       if (!validEmail(em)) { toast('Email inválido', '#EF4444'); return; }
       if (ps.length < 6) { toast('Contraseña mínimo 6 caracteres', '#EF4444'); return; }
       if (DB.businesses.filter(function(b) { return (b.email||'').toLowerCase() === em.toLowerCase(); })[0]) { toast('Email ya registrado', '#EF4444'); return; }
+      var emEnWorker = false;
+DB.businesses.forEach(function(b) {
+  (b.workers || []).forEach(function(w) {
+    if ((w.email || '').toLowerCase() === em.toLowerCase()) emEnWorker = true;
+  });
+});
+if (emEnWorker) { toast('Este correo ya está registrado como trabajador', '#EF4444'); return; }
       REG.name = bn; REG.owner = sanitizeText(V('br-owner')); REG.email = em.toLowerCase(); REG.pass = ps; REG.phone = sanitizeText(V('br-phone'));
     }
     if (regStep === 3) { REG.addr = sanitizeText(V('br-addr')); REG.city = sanitizeText(V('br-city')); REG.country = sanitizeText(V('br-country')) || 'ES'; }
