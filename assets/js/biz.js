@@ -270,7 +270,19 @@ function setupPhotoUpload() {
       }
     });
   }
-  handleImg('biz-cover-input', function(d) { if (!REG) return; REG.cover = d; var p = G('reg-cover-preview'); if (p) { p.style.backgroundImage='url('+d+')'; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.innerHTML=''; } toast('Portada guardada', '#22C55E'); });
+  handleImg('biz-cover-input', function(d) {
+    if (typeof REG !== 'undefined' && REG) REG.cover = d;
+    var p = G('reg-cover-preview');
+    if (p) { p.style.backgroundImage='url('+d+')'; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; }
+    var hint = G('reg-cover-hint'); if (hint) hint.style.display='none';
+    toast('Portada guardada', '#22C55E');
+  });
+  handleImg('logo-input', function(d) {
+    if (typeof REG !== 'undefined' && REG) REG.logo = d;
+    var p = G('logo-preview');
+    if (p) { p.style.backgroundImage='url('+d+')'; p.style.backgroundSize='cover'; p.style.backgroundPosition='center'; p.innerHTML=''; }
+    toast('Logo guardado', '#22C55E');
+  });
   handleImg('biz-profile-cover-input', function(d) { if (!CUR) return; CUR.cover = d; var p = G('biz-profile-cover'); if (p) p.style.backgroundImage='url('+d+')'; saveDB(); toast('Portada guardada', '#22C55E'); });
   handleImg('biz-profile-logo-input', function(d) { if (!CUR) return; CUR.logo = d; var p = G('biz-profile-logo'); if (p) p.innerHTML = '<img src="'+d+'" style="width:100%;height:100%;object-fit:cover" alt="Logo">'; saveDB(); toast('Logo guardado', '#22C55E'); });
   handleImgs('svc-photo-input', function(d) { if (!REG || REG.photos.length >= 12) { toast('Máximo 12 fotos', '#EF4444'); return; } REG.photos.push(d); renderRegPhotos(); });
