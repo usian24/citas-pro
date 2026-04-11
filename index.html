@@ -400,14 +400,14 @@
   <input type="file" id="biz-cover-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
   <input type="file" id="logo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
 
-  <div class="card" style="margin-bottom:20px;padding:0;overflow:hidden;border-radius:20px;">
-    <div id="reg-cover-preview" class="cover-container" onclick="document.getElementById('biz-cover-input').click()" style="cursor:pointer;">
+  <div class="card" style="margin-bottom:20px;padding:0;border-radius:20px;">
+    <div id="reg-cover-preview" class="cover-container" onclick="document.getElementById('biz-cover-input').click()" style="cursor:pointer;margin-bottom:50px;">
       <div id="reg-cover-hint" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:rgba(255,255,255,.6);pointer-events:none;">
         <div style="font-size:28px;margin-bottom:4px">📸</div>
         <div style="font-size:11px;font-weight:700">Toca para subir portada</div>
       </div>
-      <div id="logo-preview" class="cover-avatar" onclick="event.stopPropagation();document.getElementById('logo-input').click();" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;" title="Subir logo">
-        <span style="font-size:22px">🏪</span>
+      <div id="logo-preview" class="cover-avatar" onclick="event.stopPropagation();document.getElementById('logo-input').click();" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;z-index:10;" title="Subir logo">
+        <span style="font-size:22px">perfil</span>
         <span style="font-size:10px;color:rgba(255,255,255,.7);font-weight:700">Logo</span>
       </div>
     </div>
@@ -415,10 +415,6 @@
       <div style="font-size:12px;color:var(--muted)">Toca la portada para cambiarla · Toca el círculo para tu logo</div>
     </div>
   </div>
-
-  <button class="btn btn-blue" id="next-5" style="margin-top:10px">Continuar</button>
-  <button class="btn btn-ghost" id="skip-5" style="margin-top:10px;font-size:13px">Omitir por ahora</button>
-</div>
 
   <button class="btn btn-blue" id="next-5" style="margin-top:10px">Continuar</button>
   <button class="btn btn-ghost" id="skip-5" style="margin-top:10px;font-size:13px">Omitir por ahora</button>
