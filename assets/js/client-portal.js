@@ -385,13 +385,6 @@ function confirmBooking() {
     worker.appointments.push(appt);
   }
 
-  var notifTitle = isModifying ? 'Cita modificada: ' + name : 'Nueva cita: ' + name;
-  var notifDetail = 'Servicio: ' + CSEL.svc + ' • ' + CSEL.date + ' a las ' + CSEL.time + ' • Total: ' + money(CSEL.svcPrice);
-  if (!worker.notifications) worker.notifications = [];
-  worker.notifications.unshift({
-    id: Date.now(), type: 'new_booking', title: notifTitle, msg: notifTitle,
-    body: notifDetail, data: { detail: notifDetail }, read: false, date: new Date().toISOString()
-  });
 
   var prevCUR = CUR; CUR = biz; saveDB(); CUR = prevCUR;
 
