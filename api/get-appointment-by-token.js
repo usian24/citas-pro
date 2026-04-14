@@ -1,20 +1,15 @@
 // /api/get-appointment-by-token.js
 const { createClient } = require('@supabase/supabase-js');
 
-// URLs de ambos proyectos Supabase
-const SUPABASE_APPOINTMENTS_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
-const SUPABASE_APPOINTMENTS_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
-
 module.exports = async (req, res) => {
   const token = req.query.token;
   if (!token) {
     return res.status(400).json({ error: 'Falta token' });
   }
 
-  // Las citas viven en krbtoepzoorpdedtykug — siempre buscar ahí
   const supabase = createClient(
-    SUPABASE_APPOINTMENTS_URL,
-    SUPABASE_APPOINTMENTS_KEY
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
   );
 
   const { data, error } = await supabase

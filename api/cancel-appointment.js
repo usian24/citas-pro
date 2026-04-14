@@ -2,9 +2,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const webpush = require('web-push');
 
-const SUPABASE_APPOINTMENTS_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
-const SUPABASE_APPOINTMENTS_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
-
 webpush.setVapidDetails(
   'mailto:soporte@citasproonline.com',
   process.env.VAPID_PUBLIC_KEY,
@@ -18,7 +15,10 @@ module.exports = async (req, res) => {
   const { token, business_id } = req.body;
   if (!token) return res.status(400).json({ success: false, error: 'Falta token' });
 
-  const supabase = createClient(SUPABASE_APPOINTMENTS_URL, SUPABASE_APPOINTMENTS_KEY);
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+  );
 
   const { data: existing, error: findError } = await supabase
     .from('appointments')

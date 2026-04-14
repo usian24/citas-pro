@@ -7,8 +7,8 @@
 // • Buscador interno en el panel admin
 // ─────────────────────────────────────────────────────
 
-const SUPABASE_URL      = 'https://krbtoepzoorpdedtykug.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
+const SUPABASE_URL      = 'https://fcbbquvuffpmudvwqgbg.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF';
 const tiendaSupa        = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let tempProdPhoto      = null;
@@ -46,7 +46,6 @@ function confirmarAccionTienda(titulo, mensaje, onConfirm) {
   const st = document.createElement('style');
   st.id = 'tienda-admin-styles';
   st.textContent = `
-    /* Buscador admin */
     .adm-search-wrap {
       display:flex; align-items:center; gap:10px;
       background:var(--card); border:1.5px solid var(--b);
@@ -56,8 +55,6 @@ function confirmarAccionTienda(titulo, mensaje, onConfirm) {
       flex:1; background:none; border:none; outline:none;
       color:var(--text); font-family:var(--font); font-size:13px;
     }
-
-    /* Sección tren admin */
     .adm-seccion { margin-bottom:28px; }
     .adm-seccion-hdr {
       font-size:13px; font-weight:800; margin-bottom:10px;
@@ -67,7 +64,6 @@ function confirmarAccionTienda(titulo, mensaje, onConfirm) {
       font-size:10px; font-weight:700; color:var(--blue);
       background:rgba(74,127,212,.12); padding:2px 7px; border-radius:8px;
     }
-    /* Botón descuento por categoría */
     .adm-seccion-hdr .btn-cat-desc {
       margin-left:auto; font-size:10px; font-weight:700;
       color:var(--gold,#F59E0B); background:rgba(245,158,11,.1);
@@ -75,8 +71,6 @@ function confirmarAccionTienda(titulo, mensaje, onConfirm) {
       padding:3px 8px; cursor:pointer; white-space:nowrap;
     }
     .adm-seccion-hdr .btn-cat-desc:hover { background:rgba(245,158,11,.2); }
-
-    /* Tren horizontal */
     .adm-tren {
       display:flex; gap:10px;
       overflow-x:auto; scroll-snap-type:x mandatory;
@@ -84,16 +78,12 @@ function confirmarAccionTienda(titulo, mensaje, onConfirm) {
       -webkit-overflow-scrolling:touch;
     }
     .adm-tren::-webkit-scrollbar { display:none; }
-
-    /* Columna de hasta 3 cards */
     .adm-tren-col {
       display:flex; flex-direction:column; gap:10px;
       flex-shrink:0; scroll-snap-align:start;
       width:calc((100vw - 60px) / 3);
       min-width:100px; max-width:140px;
     }
-
-    /* Card admin */
     .adm-p-card {
       background:var(--card); border:1px solid var(--b);
       border-radius:14px; overflow:hidden; position:relative;
@@ -111,17 +101,13 @@ function confirmarAccionTienda(titulo, mensaje, onConfirm) {
       max-width:100%; max-height:100%;
       object-fit:contain; mix-blend-mode:multiply;
     }
-    .adm-p-img .no-img {
-      font-size:22px; color:var(--muted);
-    }
-    /* Badge descuento en card admin */
+    .adm-p-img .no-img { font-size:22px; color:var(--muted); }
     .adm-p-desc-badge {
       position:absolute; top:5px; left:5px;
       background:#EF4444; color:#fff;
       font-size:8px; font-weight:900;
       padding:2px 5px; border-radius:5px; z-index:2;
     }
-    /* Botones editar/borrar */
     .adm-p-actions {
       position:absolute; top:5px; right:5px;
       display:flex; flex-direction:column; gap:3px; z-index:2;
@@ -147,13 +133,8 @@ function confirmarAccionTienda(titulo, mensaje, onConfirm) {
       display:-webkit-box; -webkit-line-clamp:2;
       -webkit-box-orient:vertical; overflow:hidden;
     }
-    .adm-p-price-old {
-      font-size:9px; color:var(--muted);
-      text-decoration:line-through; line-height:1;
-    }
-    .adm-p-price {
-      font-size:13px; font-weight:900; color:var(--green);
-    }
+    .adm-p-price-old { font-size:9px; color:var(--muted); text-decoration:line-through; line-height:1; }
+    .adm-p-price { font-size:13px; font-weight:900; color:var(--green); }
     .adm-p-price.desc { color:#EF4444; }
     .adm-p-stock { font-size:9px; font-weight:700; margin-top:2px; }
     .adm-p-stock.ok  { color:var(--green); }
@@ -185,7 +166,6 @@ async function renderTiendaAdmin() {
 
     todosLosProductos = productos || [];
 
-    // Categorías únicas
     const deBD = [...new Set(todosLosProductos.map(p => (p.category||'').trim()).filter(Boolean))];
     categoriasActuales = [...new Set([...deBD, ...categoriasActuales])].sort();
 
@@ -207,8 +187,6 @@ function renderProductosAdmin(productos) {
   const prodList = document.getElementById('biz-productos-list');
   if (!prodList) return;
 
-  // Anular el display:grid que viene del CSS del index
-  // para que buscador y secciones fluyan en bloque normal
   prodList.style.display = 'block';
   prodList.style.gridTemplateColumns = 'none';
 
@@ -248,10 +226,8 @@ function renderSeccionesAdmin(productos) {
     return;
   }
 
-  // Sección "Todos" primero
   let html = renderAdmSeccion('📦 Todos los productos', productos, null);
 
-  // Luego por categoría
   const cats = [...new Set(productos.map(p=>(p.category||'').trim()).filter(Boolean))].sort();
   cats.forEach(cat => {
     const prods = productos.filter(p => (p.category||'').trim() === cat);
@@ -261,12 +237,11 @@ function renderSeccionesAdmin(productos) {
   root.innerHTML = html;
 }
 
-const ROWS = 3; // tarjetas por columna
+const ROWS = 3;
 
 function renderAdmSeccion(titulo, productos, catKey) {
   if (!productos.length) return '';
 
-  // Agrupar en columnas de ROWS
   const cols = [];
   for (let i = 0; i < productos.length; i += ROWS) {
     cols.push(productos.slice(i, i + ROWS));
@@ -380,27 +355,19 @@ function abrirDescuentoCategoria(catNombre) {
           <span class="mttl" id="catdesc-titulo">Descuento de categoría</span>
           <div class="xbtn" onclick="closeOv('ov-cat-desc')">×</div>
         </div>
-        <div style="font-size:13px;color:var(--t2);margin-bottom:6px;line-height:1.5"
-             id="catdesc-info"></div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:18px;">
-          Pon 0 para quitar el descuento a todos.
-        </div>
+        <div style="font-size:13px;color:var(--t2);margin-bottom:6px;line-height:1.5" id="catdesc-info"></div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:18px;">Pon 0 para quitar el descuento a todos.</div>
         <div class="field" style="text-align:left;">
           <label>% de descuento (0 - 90)</label>
-          <input class="inp" id="catdesc-input" type="number"
-                 min="0" max="90" step="1" placeholder="Ej: 20"/>
+          <input class="inp" id="catdesc-input" type="number" min="0" max="90" step="1" placeholder="Ej: 20"/>
         </div>
         <div id="catdesc-preview" style="font-size:12px;color:var(--t2);margin-bottom:16px;"></div>
-        <button class="btn btn-blue" id="catdesc-btn"
-                onclick="aplicarDescuentoCategoria()" style="margin-bottom:10px;">
+        <button class="btn btn-blue" id="catdesc-btn" onclick="aplicarDescuentoCategoria()" style="margin-bottom:10px;">
           Aplicar a todos los productos
         </button>
-        <button class="btn btn-ghost" onclick="closeOv('ov-cat-desc')"
-                style="font-size:13px;">Cancelar</button>
+        <button class="btn btn-ghost" onclick="closeOv('ov-cat-desc')" style="font-size:13px;">Cancelar</button>
       </div>`;
     document.body.appendChild(ov);
-
-    // Preview en tiempo real
     document.getElementById('catdesc-input').addEventListener('input', function() {
       const v = parseFloat(this.value) || 0;
       const prev = document.getElementById('catdesc-preview');
@@ -419,7 +386,6 @@ function abrirDescuentoCategoria(catNombre) {
     `Aplicará el descuento a <strong style="color:var(--blue)">${prods.length} producto${prods.length!==1?'s':''}</strong> de esta categoría.`;
   document.getElementById('catdesc-input').value = '';
   document.getElementById('catdesc-preview').textContent = '';
-
   openOv(ovId);
   setTimeout(() => document.getElementById('catdesc-input').focus(), 150);
 }
@@ -438,13 +404,9 @@ async function aplicarDescuentoCategoria() {
 
   try {
     const { error } = await tiendaSupa
-      .from('products')
-      .update({ discount_percent: valor })
-      .eq('business_id', CUR.id)
-      .eq('category', cat);
-
+      .from('products').update({ discount_percent: valor })
+      .eq('business_id', CUR.id).eq('category', cat);
     if (error) throw error;
-
     closeOv('ov-cat-desc');
     mostrarAlertaTienda(
       valor > 0
@@ -487,12 +449,8 @@ function abrirModalNuevaCategoria() {
         <div id="nueva-cat-err" style="display:none;color:var(--red);font-size:12px;
              margin-bottom:12px;padding:10px;background:rgba(239,68,68,.07);
              border-radius:10px;text-align:left;"></div>
-        <button class="btn btn-blue" onclick="guardarNuevaCategoria()" style="margin-bottom:10px;">
-          Crear categoría
-        </button>
-        <button class="btn btn-ghost" onclick="closeOv('ov-nueva-cat')" style="font-size:13px;">
-          Cancelar
-        </button>
+        <button class="btn btn-blue" onclick="guardarNuevaCategoria()" style="margin-bottom:10px;">Crear categoría</button>
+        <button class="btn btn-ghost" onclick="closeOv('ov-nueva-cat')" style="font-size:13px;">Cancelar</button>
       </div>`;
     document.body.appendChild(ov);
   }
@@ -523,7 +481,7 @@ function guardarNuevaCategoria() {
 }
 
 // ══════════════════════════════════════════
-// GESTIÓN DE CATEGORÍA — click en pill
+// GESTIÓN DE CATEGORÍA
 // ══════════════════════════════════════════
 function abrirGestionCategoria(catNombre) {
   const ovId = 'ov-cat-manager';
@@ -537,10 +495,8 @@ function abrirGestionCategoria(catNombre) {
           <span class="mttl" id="catm-title">Gestionar categoría</span>
           <div class="xbtn" onclick="closeOv('ov-cat-manager')">×</div>
         </div>
-        <div style="font-size:13px;color:var(--t2);margin-bottom:18px;line-height:1.5"
-             id="catm-info">Cargando...</div>
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
-                    letter-spacing:.5px;margin-bottom:8px;">Renombrar</div>
+        <div style="font-size:13px;color:var(--t2);margin-bottom:18px;line-height:1.5" id="catm-info">Cargando...</div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Renombrar</div>
         <div style="display:flex;gap:8px;margin-bottom:16px;">
           <input class="inp" id="catm-new-name" placeholder="Nuevo nombre..."
                  style="flex:1;margin-bottom:0;" maxlength="40"
@@ -553,13 +509,10 @@ function abrirGestionCategoria(catNombre) {
           🏷️ Aplicar descuento a esta categoría
         </button>
         <div style="border-top:1px solid var(--b);margin-bottom:16px;"></div>
-        <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);
-                    border-radius:14px;padding:14px;">
+        <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:14px;padding:14px;">
           <div style="font-size:12px;font-weight:800;color:var(--red);margin-bottom:6px;">⚠️ Zona de peligro</div>
-          <div style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.5"
-               id="catm-delete-info"></div>
-          <button class="btn btn-red btn-sm" style="width:100%;"
-                  onclick="iniciarEliminarCategoria()">Eliminar esta categoría</button>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.5" id="catm-delete-info"></div>
+          <button class="btn btn-red btn-sm" style="width:100%;" onclick="iniciarEliminarCategoria()">Eliminar esta categoría</button>
         </div>
       </div>`;
     document.body.appendChild(ov);
@@ -592,8 +545,7 @@ async function renombrarCategoria() {
   }
   try {
     const { error } = await tiendaSupa.from('products')
-      .update({ category: catNueva })
-      .eq('business_id', CUR.id).eq('category', catVieja);
+      .update({ category: catNueva }).eq('business_id', CUR.id).eq('category', catVieja);
     if (error) throw error;
     const idx = categoriasActuales.indexOf(catVieja);
     if (idx !== -1) { categoriasActuales[idx] = catNueva; categoriasActuales.sort(); }
@@ -620,8 +572,7 @@ function iniciarEliminarCategoria() {
 async function eliminarCategoria(catNombre) {
   try {
     const { error } = await tiendaSupa.from('products')
-      .update({ category: null })
-      .eq('business_id', CUR.id).eq('category', catNombre);
+      .update({ category: null }).eq('business_id', CUR.id).eq('category', catNombre);
     if (error) throw error;
     categoriasActuales = categoriasActuales.filter(c => c !== catNombre);
     mostrarAlertaTienda(`"${catNombre}" eliminada.`,'Eliminada','🗑️');
@@ -630,7 +581,7 @@ async function eliminarCategoria(catNombre) {
 }
 
 // ══════════════════════════════════════════
-// CRUD PRODUCTOS — modal con stock y descuento
+// CRUD PRODUCTOS
 // ══════════════════════════════════════════
 function openProdModal() {
   if (!categoriasActuales.length) {
@@ -642,7 +593,6 @@ function openProdModal() {
   document.getElementById('prod-price').value   = '';
   document.getElementById('prod-desc').value    = '';
   document.getElementById('prod-cat').value     = '';
-  // Stock y descuento — campos nuevos, los creamos si no existen
   const stockEl = document.getElementById('prod-stock');
   const descEl  = document.getElementById('prod-discount');
   if (stockEl) stockEl.value   = '';

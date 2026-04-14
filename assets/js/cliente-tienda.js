@@ -22,14 +22,14 @@ function moneda(n) {
   const numStr = cfg.decimales > 0 ? parts.join(cfg.sepDec) : parts[0];
   return cfg.posicion === 'izquierda' ? cfg.simbolo + numStr : numStr + ' ' + cfg.simbolo;
 }
-const PROD_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
-const PROD_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
+const PROD_URL = 'https://fcbbquvuffpmudvwqgbg.supabase.co';
+const PROD_KEY = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF';
 const prodSupa = window.supabase.createClient(PROD_URL, PROD_KEY);
 // ════════════════════════════════════════════
 // SUPABASE
 // ════════════════════════════════════════════
-const SUPABASE_URL      = 'https://krbtoepzoorpdedtykug.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
+const SUPABASE_URL      = 'https://fcbbquvuffpmudvwqgbg.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF';
 const tiendaSupa        = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ════════════════════════════════════════════
@@ -310,7 +310,6 @@ async function toggleLike(btn, prodId) {
     await tiendaSupa.from('products').update({rating:newRating}).eq('id',prodId);
   }
 
-  // Refrescar estrellas en todas las cards
   document.querySelectorAll('.p-card').forEach(card => {
     const likeBtn = card.querySelector('.p-like');
     if (!likeBtn) return;
@@ -381,7 +380,6 @@ function actualizarBadgeCarrito() {
   badge.style.display = total>0 ? 'flex' : 'none';
 }
 
-// ── Abrir / Cerrar drawer ──
 function abrirCarrito() {
   document.getElementById('cart-overlay').classList.add('on');
   document.getElementById('cart-drawer').classList.add('on');
@@ -395,7 +393,6 @@ function cerrarCarrito() {
   document.body.style.overflow = '';
 }
 
-// ── Render del contenido del carrito ──
 function renderCartItems() {
   const listEl    = document.getElementById('cart-items-list');
   const summaryEl = document.getElementById('cart-summary');
@@ -420,7 +417,6 @@ function renderCartItems() {
   footerEl.querySelector('.cart-btn-wa').style.display    = 'flex';
   footerEl.querySelector('.cart-btn-clear').style.display = 'block';
 
-  // Items
   listEl.innerHTML = carrito.map(item => {
     const p          = item.product;
     const precio     = parseFloat(p.price)||0;
@@ -457,7 +453,6 @@ function renderCartItems() {
       </div>`;
   }).join('');
 
-  // Resumen de precios
   let subtotalSinDesc = 0;
   let totalDescuento  = 0;
   let totalFinal      = 0;
@@ -489,7 +484,6 @@ function renderCartItems() {
     </div>`;
 }
 
-// ── Pedir por WhatsApp ──
 function pedirPorWhatsApp() {
   if (!carrito.length) return;
 
@@ -507,14 +501,11 @@ function pedirPorWhatsApp() {
 
   const mensaje = `Hola, me gustaría hacer el siguiente pedido en *${nombreTienda}*:\n\n${lineas}\n\n*Total: ${moneda(totalFinal)}*\n\n¿Está disponible?`;
 
-  const phone = bizWAPhone || '34611200984'; // fallback al soporte
+  const phone = bizWAPhone || '34611200984';
   const url   = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-// ════════════════════════════════════════════
-// HELPERS UI
-// ════════════════════════════════════════════
 function mostrarAlertaCustom(titulo, mensaje, icono='🛍️') {
   document.getElementById('sa-icon').innerText  = icono;
   document.getElementById('sa-title').innerText = titulo;
@@ -530,13 +521,12 @@ function mostrarToast(msg) {
   toastTimeout = setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
-// Cerrar drawer con swipe hacia abajo
 (function initSwipeCarrito() {
   let startY = 0;
   const drawer = document.getElementById('cart-drawer');
   drawer.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, {passive:true});
   drawer.addEventListener('touchend', e => {
     const diff = e.changedTouches[0].clientY - startY;
-    if (diff > 80) cerrarCarrito(); // swipe abajo > 80px = cerrar
+    if (diff > 80) cerrarCarrito();
   }, {passive:true});
 })();
