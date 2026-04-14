@@ -19,8 +19,8 @@ function moneda(n) {
   const numStr = cfg.decimales > 0 ? parts.join(cfg.sepDec) : parts[0];
   return cfg.posicion === 'izquierda' ? cfg.simbolo + numStr : numStr + ' ' + cfg.simbolo;
 }
-const PROD_URL = 'https://fcbbquvuffpmudvwqgbg.supabase.co';
-const PROD_KEY = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF';
+const PROD_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
+const PROD_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
 const prodSupa = window.supabase.createClient(PROD_URL, PROD_KEY);
 // ════════════════════════════════════════════
 // SUPABASE
