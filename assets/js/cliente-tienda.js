@@ -7,6 +7,9 @@ const TIENDA_PAIS_CONFIG = {
   CL:{simbolo:'$',posicion:'izquierda',sepDec:',',sepMiles:'.',decimales:0},
   US:{simbolo:'$',posicion:'izquierda',sepDec:'.',sepMiles:',',decimales:2},
   BR:{simbolo:'R$',posicion:'izquierda',sepDec:',',sepMiles:'.',decimales:2},
+  DO:{simbolo:'RD$',posicion:'izquierda',sepDec:'.',sepMiles:',',decimales:2},
+  VE:{simbolo:'Bs.',posicion:'izquierda',sepDec:',',sepMiles:'.',decimales:2},
+  EC:{simbolo:'$',posicion:'izquierda',sepDec:'.',sepMiles:',',decimales:2},
 };
 let paisNegocio = 'ES';
 function moneda(n) {
@@ -79,8 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else if (window.DB?.currentBiz) {
     bizIdGlobal = window.DB.currentBiz;
   }
-  const cachedPais = localStorage.getItem('cp_pais');
-if (cachedPais && TIENDA_PAIS_CONFIG[cachedPais]) paisNegocio = cachedPais;
+  localStorage.removeItem('cp_pais');
 try {
   const { data: bizData } = await prodSupa
     .from('businesses').select('name,phone,country').eq('id', bizIdGlobal).single();
