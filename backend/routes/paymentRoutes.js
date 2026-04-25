@@ -1,9 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+let stripe;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+}
 
 router.post('/stripe-checkout', async (req, res) => {
+  if (!stripe) {
+    return res.status(500).json({ error: 'Stripe no está configurado en este entorno' });
+  }
   const { bizId, bizEmail, bizName } = req.body || {};
 
   if (!bizId || !bizEmail) {

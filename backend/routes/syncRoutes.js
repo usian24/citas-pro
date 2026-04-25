@@ -4,11 +4,15 @@ const supabase = require('../db');
 
 const router = express.Router();
 
-webpush.setVapidDetails(
-  'mailto:soporte@citasproonline.com',
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:soporte@citasproonline.com',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+} else {
+  console.warn("VAPID Keys not provided, webpush disabled");
+}
 
 // ── Helper: enviar push a un worker ──
 async function enviarPushWorker(supabase, worker_id, title, body) {

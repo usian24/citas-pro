@@ -447,6 +447,9 @@ window.onload = async function() {
   initREG(); 
   initCSEL();
   initTheme();
+  
+  // ¡MUY IMPORTANTE! Restaurar la sesión DESPUÉS de que bootComponents haya insertado el HTML de las vistas.
+  if (typeof restaurarSesion === 'function') restaurarSesion();
 
   /* Cerrar overlays al click en fondo */
   document.querySelectorAll('.ov').forEach(function(o) {

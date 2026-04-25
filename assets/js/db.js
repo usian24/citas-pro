@@ -507,4 +507,4 @@ function togglePassEye(inputId, btnEl) {
 }
 window.togglePassEye = togglePassEye;
 
-window.addEventListener('DOMContentLoaded', restaurarSesion);
+// Se ejecutará desde app.js (window.onload) después de cargar los componentes
