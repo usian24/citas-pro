@@ -1,0 +1,88 @@
+  <div style="max-width:500px;margin:0 auto;padding-bottom:60px">
+    <div id="cl-cover-bg" style="width: 100%; height: 160px; background-size: cover; background-position: center; position: relative; background-color: var(--bg3);">
+        <div style="position:absolute; bottom:0; left:0; right:0; height:160px; background:linear-gradient(to bottom, transparent 0%, rgba(7,9,15,0.6) 40%, var(--bg3) 90%, var(--bg3) 100%); pointer-events:none; z-index:1;"></div>
+
+        <button id="cl-back-btn" style="position:absolute;top:16px;left:16px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:var(--rpill);padding:8px 14px;font-size:13px;color:#fff;cursor:pointer;font-family:var(--font);font-weight:600;z-index:10;">Inicio</button>
+        <button onclick="toggleTheme()" style="position:absolute;top:16px;right:16px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;z-index:10;"></button>
+        
+        <div id="ch-av" style="position: absolute; bottom: -45px; left: 50%; transform: translateX(-50%); width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #4A7FD4, #2855C8); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; color: #fff; overflow: hidden; border: 5px solid #07090F; box-shadow: 0 4px 20px rgba(0,0,0,.4); z-index: 5;"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding: 55px 20px 20px; background: linear-gradient(180deg, rgba(74,127,212,.05), transparent);">
+      <div style="font-size:24px;font-weight:900;margin-bottom:4px" id="ch-nm">Negocio</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:6px" id="ch-meta"></div>
+      <div id="ch-socials" style="display: flex; gap: 14px; justify-content: center; margin-top: 10px;"></div>
+    </div>
+    <div style="display:flex;background:var(--bg3)">
+      <div id="bk-p1" style="height:4px;flex:1;background:var(--blue);transition:all .4s"></div>
+      <div id="bk-p2" style="height:4px;flex:1;background:var(--b);transition:all .4s"></div>
+      <div id="bk-p3" style="height:4px;flex:1;background:var(--b);transition:all .4s"></div>
+      <div id="bk-p4" style="height:4px;flex:1;background:var(--b);transition:all .4s"></div>
+      <div id="bk-p5" style="height:4px;flex:1;background:var(--b);transition:all .4s"></div>
+    </div>
+    <div style="display:flex;background:var(--bg3);border-bottom:1px solid var(--b);padding:8px 0">
+      <div id="bk-lbl1" style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--blue)">DATOS</div>
+      <div id="bk-lbl2" style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--muted)">PROFESIONAL</div>
+      <div id="bk-lbl3" style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--muted)">SERVICIO</div>
+      <div id="bk-lbl4" style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--muted)">FECHA/HORA</div>
+      <div id="bk-lbl5" style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--muted)">CONFIRMAR</div>
+    </div>
+    <div class="bstep on" id="cs-1" style="padding:24px 20px">
+      <div style="font-size:22px;font-weight:900;margin-bottom:6px">¡Bienvenido!</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.6">Ingresa tus datos para reservar tu cita.</div>
+      <div class="field"><label>Tu nombre *</label><input class="inp" id="cl-name" placeholder="Nombre completo" maxlength="60" autocomplete="name"/></div>
+      <div class="field"><label>Teléfono / WhatsApp</label><input class="inp" id="cl-phone" type="tel" placeholder="+34 600 000 000" maxlength="20" autocomplete="tel"/></div>
+      <div class="field" style="margin-bottom:24px">
+        <label>Email <span style="color:var(--muted);font-weight:400;font-size:11px">(opcional)</span></label>
+        <input class="inp" id="cl-email" type="email" placeholder="tu@email.com" maxlength="100" autocomplete="email"/>
+      </div>
+      <div id="cl-err1" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px;padding:12px 14px;background:rgba(239,68,68,.07);border-radius:14px;border:1px solid rgba(239,68,68,.15)"></div>
+      <button class="btn btn-blue" id="cs1-next" style="font-size:16px;padding:18px">Continuar</button>
+<button class="btn btn-ghost" onclick="goTo('s-barber-portal')" style="margin-top:12px; font-size:14px; width:100%;">Volver a la barbería</button>
+    </div>
+    <div class="bstep" id="cs-2" style="padding:20px">
+      <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige tu profesional</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:18px">¿Con quién quieres tu cita?</div>
+      <div id="cl-workers-list" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px"></div>
+      <div id="cl-err-worker" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px;padding:12px 14px;background:rgba(239,68,68,.07);border-radius:14px;border:1px solid rgba(239,68,68,.15)"></div>
+      <button class="btn btn-ghost" id="cs2-back" style="font-size:13px;margin-top:8px">Atrás</button>
+    </div>
+    <div class="bstep" id="cs-3" style="padding:20px">
+      <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige el servicio</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:4px">Servicios de <strong id="cl-worker-name"></strong></div>
+      <div id="cl-svc-list" style="margin-bottom:16px"></div>
+      <div id="cl-err2" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px;padding:12px 14px;background:rgba(239,68,68,.07);border-radius:14px;border:1px solid rgba(239,68,68,.15)"></div>
+      <button class="btn btn-blue" id="cs2-next" style="font-size:16px;padding:18px;margin-bottom:10px">Continuar</button>
+      <button class="btn btn-ghost" id="cs3-back" style="font-size:13px">Atrás</button>
+    </div>
+    <div class="bstep" id="cs-4" style="padding:20px">
+      <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige fecha y hora</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:18px">Selecciona el día y la hora disponible</div>
+      <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Fecha</div>
+      <div class="drow" id="cl-dates"></div>
+      <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Hora disponible</div>
+      <div id="cl-time-available" style="font-size:12px;color:var(--green);margin-bottom:10px;font-weight:600"></div>
+      <div class="tgrid" id="cl-times"></div>
+      <div id="cl-err3" style="display:none;color:var(--red);font-size:13px;margin-bottom:14px;padding:12px 14px;background:rgba(239,68,68,.07);border-radius:14px;border:1px solid rgba(239,68,68,.15)"></div>
+      <button class="btn btn-blue" id="cs4-next" style="font-size:16px;padding:18px;margin-bottom:10px">Continuar</button>
+      <button class="btn btn-ghost" id="cs4-back" style="font-size:13px">Atrás</button>
+    </div>
+    <div class="bstep" id="cs-5" style="padding:20px">
+      <div style="font-size:20px;font-weight:900;margin-bottom:4px">Confirma tu cita</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:18px">Revisa los detalles antes de confirmar</div>
+      <div class="card" style="margin-bottom:20px" id="cl-summary"></div>
+      <button class="btn btn-blue" id="cs5-confirm" style="font-size:16px;padding:18px;font-weight:800">Confirmar mi cita</button>
+      <button class="btn btn-ghost" id="cs5-back" style="margin-top:10px;font-size:13px">Atrás</button>
+    </div>
+    <div class="bstep" id="cs-6">
+      <div style="display:flex;flex-direction:column;align-items:center;min-height:60vh;padding:50px 20px;text-align:center">
+        <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#22C55E,#16A34A);display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:20px;animation:popIn .5s ease;box-shadow:0 0 50px rgba(34,197,94,.35)">✅</div>
+        <div style="font-size:24px;font-weight:900;margin-bottom:8px">¡Cita confirmada!</div>
+        <div style="font-size:14px;color:var(--t2);margin-bottom:24px;line-height:1.7" id="cl-confirm-txt"></div>
+        <div class="card" style="width:100%;margin-bottom:20px;text-align:left" id="cl-confirm-card"></div>
+        <a id="cl-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="width:100%;display:block;margin-bottom:12px">
+          <button class="btn btn-green" style="font-size:15px;padding:17px">Guardar cita en WhatsApp</button>
+        </a>
+        <button class="btn btn-ghost" id="cl-reset-btn">Hacer otra reserva</button>
+      </div>
+    </div>
+  </div>

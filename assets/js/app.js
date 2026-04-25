@@ -439,6 +439,10 @@ function syncBizToLocal(cloudData) {
    WINDOW.ONLOAD
 ══════════════════════════ */
 window.onload = async function() {
+  if (typeof bootComponents === 'function') {
+    await bootComponents();
+  }
+
   DB = loadDB(); 
   initREG(); 
   initCSEL();
