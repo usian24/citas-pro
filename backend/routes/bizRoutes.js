@@ -218,4 +218,76 @@ router.get('/get-db', verifyToken, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════
+// RUTA 4: ELIMINAR NEGOCIO
+// ═══════════════════════════════════════
+router.post('/delete-biz', async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res.status(400).json({ error: 'Falta el ID del negocio' });
+    }
+
+    const { error } = await supabase
+      .from('businesses')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("Error de Supabase al eliminar:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json({ success: true });
+    
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════
+// RUTA 5: ACTUALIZAR NEGOCIO
+// ═══════════════════════════════════════
+router.post('/update-biz', async (req, res) => {
+  try {
+    const data = req.body;
+
+    if (!data || !data.id) {
+      return res.status(400).json({ success: false, error: 'Falta el ID de la barbería' });
+    }
+
+    const payload = {
+      id: data.id,
+      name: data.name || 'Sin nombre',
+      owner: data.owner || '',
+      email: data.email || '',
+      password: data.pass || data.password || '', 
+      phone: data.phone || '',
+      addr: data.addr || '',
+      city: data.city || '',
+      country: data.country || '',
+      type: data.type || '',
+      plan: data.plan || 'trial',
+      desc_text: data.desc || data.desc_text || '',
+      logo: data.logo || '',
+      cover: data.cover || '',
+      insta: data.insta || '',
+      joinDate: data.joinDate || new Date().toISOString().split('T')[0],
+      horario: Array.isArray(data.horario) ? data.horario : [],
+      photos: Array.isArray(data.photos) ? data.photos : []
+    };
+
+    const { error } = await supabase.from('businesses').upsert(payload);
+
+    if (error) {
+      return res.status(400).json({ success: false, error: 'Rechazo Supabase: ' + error.message });
+    }
+
+    return res.status(200).json({ success: true });
+
+  } catch (err) {
+    return res.status(500).json({ success: false, error: 'Fallo interno: ' + err.message });
+  }
+});
+
 module.exports = router;

@@ -344,4 +344,77 @@ router.post('/sync', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════
+// NOTIFICACIONES FCM (MOBILE APP)
+// ═══════════════════════════════════════
+router.post('/send-notification', async (req, res) => {
+  try {
+    const { token, title, body, data } = req.body;
+
+    if (!token || !title || !body) {
+      return res.status(400).json({ error: 'Faltan campos: token, title, body' });
+    }
+
+    if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_PRIVATE_KEY) {
+      console.warn("Faltan credenciales de Firebase. Notificación FCM omitida.");
+      return res.status(200).json({ success: true, warning: 'Firebase no configurado' });
+    }
+
+    const { GoogleAuth } = require('google-auth-library');
+
+    const credentials = {
+      type: 'service_account',
+      project_id: process.env.FIREBASE_PROJECT_ID,
+      private_key_id: 'c5e8d89d4f2c8f398d742faaba852207574c2620',
+      private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      client_email: process.env.FIREBASE_CLIENT_EMAIL,
+      token_uri: 'https://oauth2.googleapis.com/token',
+    };
+
+    const auth = new GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
+    });
+
+    const client = await auth.getClient();
+    const accessToken = await client.getAccessToken();
+
+    const fcmUrl = `https://fcm.googleapis.com/v1/projects/${process.env.FIREBASE_PROJECT_ID}/messages:send`;
+
+    const message = {
+      message: {
+        token: token,
+        notification: { title, body },
+        data: data || {},
+        android: {
+          priority: 'high',
+          notification: { sound: 'default', click_action: 'FLUTTER_NOTIFICATION_CLICK' },
+        },
+      },
+    };
+
+    const response = await fetch(fcmUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken.token}`,
+      },
+      body: JSON.stringify(message),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('FCM error:', result);
+      return res.status(500).json({ error: 'Error enviando notificación', detail: result });
+    }
+
+    return res.status(200).json({ success: true, result });
+
+  } catch (err) {
+    console.error('send-notification error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
