@@ -27,7 +27,7 @@ app.use('/api', utilRoutes);
 app.use('/api', paymentRoutes);
 
 // Rutas "comodín" por si alguien pide algo que no existe
-app.all('*', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada en el Cerebro' });
 });
 

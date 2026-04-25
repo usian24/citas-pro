@@ -2,7 +2,12 @@ const express = require('express');
 const { Resend } = require('resend');
 const router = express.Router();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend = null;
+if (process.env.RESEND_API_KEY) {
+  resend = new Resend(process.env.RESEND_API_KEY);
+} else {
+  console.warn("RESEND_API_KEY no configurada. Envío de correos deshabilitado.");
+}
 
 router.post('/send-email', async (req, res) => {
   const { type, to, data } = req.body || {};
@@ -205,6 +210,10 @@ router.post('/send-email', async (req, res) => {
   const template = templates[type];
   if (!template) {
     return res.status(400).json({ error: `Tipo de email no reconocido: ${type}` });
+  }
+
+  if (!resend) {
+    return res.status(500).json({ error: 'El servicio de correo no está configurado en el servidor.' });
   }
 
   try {

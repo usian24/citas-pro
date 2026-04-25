@@ -600,6 +600,29 @@ function openProdModal() {
   tempProdPhoto = null;
   document.getElementById('prod-photo-preview').innerHTML =
     '<div style="font-size:13px;color:var(--muted)">Añadir foto</div>';
+  
+  // Asignar el listener de forma segura aquí
+  const fileInput = document.getElementById('prod-photo-input');
+  if (fileInput && !fileInput.dataset.listener) {
+    fileInput.dataset.listener = 'true';
+    fileInput.addEventListener('change', async function(e) {
+      const f = e.target.files[0]; if (!f) return;
+      document.getElementById('prod-photo-preview').innerHTML =
+        '<span style="color:var(--blue);font-weight:700;">Subiendo... ⏳</span>';
+      if (typeof uploadToImgBB === 'function') {
+        const url = await uploadToImgBB(f);
+        if (url) {
+          tempProdPhoto = url;
+          document.getElementById('prod-photo-preview').innerHTML =
+            `<img src="${url}" style="width:100%;height:80px;object-fit:cover;border-radius:12px;">`;
+        } else {
+          document.getElementById('prod-photo-preview').innerHTML =
+            '<span style="color:var(--red);font-size:12px;">Error al subir foto</span>';
+        }
+      }
+    });
+  }
+
   openOv('ov-tienda-prod');
 }
 
@@ -627,22 +650,7 @@ async function editProduct(id) {
   }
 }
 
-document.getElementById('prod-photo-input').addEventListener('change', async function(e) {
-  const f = e.target.files[0]; if (!f) return;
-  document.getElementById('prod-photo-preview').innerHTML =
-    '<span style="color:var(--blue);font-weight:700;">Subiendo... ⏳</span>';
-  if (typeof uploadToImgBB === 'function') {
-    const url = await uploadToImgBB(f);
-    if (url) {
-      tempProdPhoto = url;
-      document.getElementById('prod-photo-preview').innerHTML =
-        `<img src="${url}" style="width:100%;height:80px;object-fit:cover;border-radius:12px;">`;
-    } else {
-      document.getElementById('prod-photo-preview').innerHTML =
-        '<span style="color:var(--red);font-size:12px;">Error al subir foto</span>';
-    }
-  }
-});
+// (El listener se movió a openProdModal para evitar errores si el HTML no está cargado)
 
 async function saveProduct() {
   const name     = document.getElementById('prod-name').value.trim();
