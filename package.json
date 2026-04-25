@@ -9,7 +9,10 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.99.2",
     "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "google-auth-library": "^10.6.2",
+    "jsonwebtoken": "^9.0.3",
     "resend": "^3.2.0",
     "stripe": "^14.21.0",
     "web-push": "^3.6.7"

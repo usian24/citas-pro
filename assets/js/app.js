@@ -81,6 +81,7 @@ async function dotsLogin() {
 
     if (res.ok) {
       let data = await res.json();
+      if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
       resetRateLimit(key); 
       DB.admin.auth = true; 
       saveDB();
@@ -124,6 +125,8 @@ async function doAdminLogin() {
     });
 
     if (res.ok) {
+      let data = await res.json();
+      if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
       resetRateLimit(key); 
       DB.admin.auth = true; 
       saveDB(); 
@@ -142,6 +145,7 @@ async function doAdminLogin() {
 
 function doAdminLogout() { 
     DB.admin.auth = false; 
+    localStorage.removeItem('citaspro_admin_token');
     saveDB(); 
     var l = G('adm-login'), p = G('adm-panel'); 
     if (l) l.style.display = 'flex'; 

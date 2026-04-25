@@ -421,28 +421,45 @@ function planTag(plan) {
 ══════════════════════════ */
 async function forceCloudSync() {
   try {
-    var res = await fetch('/api/get-db');
-    if (res.ok) {
-      var cloudBusinesses = await res.json();
-      var local = loadDB(); 
-      local.businesses = cloudBusinesses; 
-      localStorage.setItem(DBKEY, JSON.stringify(local)); 
-      DB = local; 
+    if (DB && DB.admin && DB.admin.auth) {
+      var token = localStorage.getItem('citaspro_admin_token') || '';
+      var headers = {};
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      
+      var res = await fetch('/api/get-db', { headers: headers });
+      if (res.ok) {
+        var cloudBusinesses = await res.json();
+        var local = loadDB(); 
+        local.businesses = cloudBusinesses; 
+        localStorage.setItem(DBKEY, JSON.stringify(local)); 
+        DB = local; 
 
-      if (typeof CUR !== 'undefined' && CUR && typeof initBizPanel === 'function') {
-        CUR = DB.businesses.find(function(b) { return b.id === CUR.id; }) || CUR;
-        initBizPanel();
-      }
+        if (typeof CUR !== 'undefined' && CUR && typeof initBizPanel === 'function') {
+          CUR = DB.businesses.find(function(b) { return b.id === CUR.id; }) || CUR;
+          initBizPanel();
+        }
 
-      if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && DB.currentWorker) {
-        var freshBiz = getBizById(DB.currentWorker.bizId);
-        if (freshBiz) {
-          CUR = freshBiz;
-          var freshWorker = (freshBiz.workers || []).find(function(w) { return w.id === DB.currentWorker.workerId; });
-          if (freshWorker) {
-            CUR_WORKER = freshWorker;
-            if (typeof initWorkerPanel === 'function') initWorkerPanel();
+        if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && DB.currentWorker) {
+          var freshBiz = getBizById(DB.currentWorker.bizId);
+          if (freshBiz) {
+            CUR = freshBiz;
+            var freshWorker = (freshBiz.workers || []).find(function(w) { return w.id === DB.currentWorker.workerId; });
+            if (freshWorker) {
+              CUR_WORKER = freshWorker;
+              if (typeof initWorkerPanel === 'function') initWorkerPanel();
+            }
           }
+        }
+      }
+    } else if (DB && (DB.currentBiz || DB.currentWorker)) {
+      var bizId = DB.currentBiz || (DB.currentWorker ? DB.currentWorker.bizId : null);
+      if (bizId && typeof fetchBizFromCloud === 'function' && typeof syncBizToLocal === 'function') {
+        var cloudBiz = await fetchBizFromCloud(bizId);
+        if (cloudBiz) {
+          syncBizToLocal(cloudBiz);
+          saveDB();
+          if (DB.currentBiz && typeof initBizPanel === 'function') initBizPanel();
+          if (DB.currentWorker && typeof initWorkerPanel === 'function') initWorkerPanel();
         }
       }
     }

@@ -88,6 +88,8 @@ async function doLogin() {
     if(btn) btn.textContent = originalText;
 
     if (res.ok) {
+       let data = await res.json();
+       if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
        resetRateLimit(key); 
        DB.admin.auth = true; 
        saveDB(); 
