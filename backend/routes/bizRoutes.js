@@ -48,7 +48,7 @@ router.get('/get-biz', async (req, res) => {
     // Traer workers (¡MAGIA DE SEGURIDAD! Sin password)
     const { data: workers } = await supabase
       .from('workers')
-      .select('id, business_id, created_at, name, email, phone, avatar, cover, role, horario') 
+      .select('id, business_id, created_at, name, email, phone, avatar, cover, role, horario')
       .eq('business_id', bizId);
 
     // Traer appointments
@@ -64,9 +64,9 @@ router.get('/get-biz', async (req, res) => {
       .eq('business_id', bizId);
 
     // Mapear workers con sus citas y servicios
-    biz.workers = (workers || []).map(function(w) {
-      var wAppts = (appointments || []).filter(function(a) { return a.worker_id === w.id; });
-      var wSvcs = (services || []).filter(function(s) { return s.worker_id === w.id; });
+    biz.workers = (workers || []).map(function (w) {
+      var wAppts = (appointments || []).filter(function (a) { return a.worker_id === w.id; });
+      var wSvcs = (services || []).filter(function (s) { return s.worker_id === w.id; });
 
       return {
         id: w.id,
@@ -77,7 +77,7 @@ router.get('/get-biz', async (req, res) => {
         photo: w.avatar || '',
         cover: w.cover || '',
         active: true,
-        services: wSvcs.map(function(s) {
+        services: wSvcs.map(function (s) {
           return {
             id: s.id,
             name: s.name || '',
@@ -89,7 +89,7 @@ router.get('/get-biz', async (req, res) => {
           };
         }),
         horario: (w.horario && Array.isArray(w.horario) && w.horario.length > 0) ? w.horario : (biz.horario || []),
-        appointments: wAppts.map(function(a) {
+        appointments: wAppts.map(function (a) {
           return {
             id: a.id,
             client: a.client_name || '',
@@ -111,10 +111,10 @@ router.get('/get-biz', async (req, res) => {
     });
 
     // Appointments sin worker
-    var unassignedAppts = (appointments || []).filter(function(a) {
+    var unassignedAppts = (appointments || []).filter(function (a) {
       return !a.worker_id;
     });
-    biz.appointments = unassignedAppts.map(function(a) {
+    biz.appointments = unassignedAppts.map(function (a) {
       return {
         id: a.id,
         client: a.client_name || '',
@@ -133,10 +133,10 @@ router.get('/get-biz', async (req, res) => {
     // Mapear campos snake_case
     biz.joinDate = biz.join_date;
     biz.desc = biz.desc_text || '';
-    var unassignedSvcs = (services || []).filter(function(s) {
+    var unassignedSvcs = (services || []).filter(function (s) {
       return !s.worker_id;
     });
-    biz.services = unassignedSvcs.map(function(s) {
+    biz.services = unassignedSvcs.map(function (s) {
       return {
         id: s.id,
         name: s.name || '',
@@ -186,54 +186,54 @@ router.get('/get-db', verifyToken, async (req, res) => {
       const { data: products } = await supabase
         .from('products').select('*').eq('business_id', biz.id);
 
-      biz.workers = (workers || []).map(function(w) {
-        var wAppts = (appointments || []).filter(function(a) { return a.worker_id === w.id; });
-        var wSvcs  = (services    || []).filter(function(s) { return s.worker_id === w.id; });
+      biz.workers = (workers || []).map(function (w) {
+        var wAppts = (appointments || []).filter(function (a) { return a.worker_id === w.id; });
+        var wSvcs = (services || []).filter(function (s) { return s.worker_id === w.id; });
 
         return {
-          id:     w.id,
-          name:   w.name  || '',
-          email:  w.email || '',
-          phone:  w.phone || '',
-          spec:   w.role  || '',
-          photo:  w.avatar || '',
-          cover:  w.cover  || '',
+          id: w.id,
+          name: w.name || '',
+          email: w.email || '',
+          phone: w.phone || '',
+          spec: w.role || '',
+          photo: w.avatar || '',
+          cover: w.cover || '',
           active: true,
-          services: wSvcs.map(function(s) {
+          services: wSvcs.map(function (s) {
             return {
-              id:    s.id,
-              name:  s.name  || '',
-              price: parseFloat(s.price)    || 0,
-              dur:   parseInt(s.duration)   || 30,
-              desc:  s.description || '',
+              id: s.id,
+              name: s.name || '',
+              price: parseFloat(s.price) || 0,
+              dur: parseInt(s.duration) || 30,
+              desc: s.description || '',
               color: s.color || '',
               photo: s.image || ''
             };
           }),
           horario: (w.horario && Array.isArray(w.horario) && w.horario.length > 0)
             ? w.horario : (biz.horario || []),
-          appointments: wAppts.map(function(a) {
+          appointments: wAppts.map(function (a) {
             return {
-              id:     a.id,
-              client: a.client_name  || '',
-              phone:  a.client_phone || '',
-              email:  a.client_email || '',
-              date:   a.date  || '',
-              time:   a.time  || '',
-              svc:    a.service_name || '',
-              barber: w.name  || '',
-              price:  parseFloat(a.service_price) || 0,
+              id: a.id,
+              client: a.client_name || '',
+              phone: a.client_phone || '',
+              email: a.client_email || '',
+              date: a.date || '',
+              time: a.time || '',
+              svc: a.service_name || '',
+              barber: w.name || '',
+              price: parseFloat(a.service_price) || 0,
               status: a.status || 'confirmed',
-              notes:  a.notes || '',
-              token:  a.token || ''
+              notes: a.notes || '',
+              token: a.token || ''
             };
           }),
           photos: [], notifications: []
         };
       });
 
-      var unassignedAppts = (appointments || []).filter(function(a) { return !a.worker_id; });
-      biz.appointments = unassignedAppts.map(function(a) {
+      var unassignedAppts = (appointments || []).filter(function (a) { return !a.worker_id; });
+      biz.appointments = unassignedAppts.map(function (a) {
         return {
           id: a.id, client: a.client_name || '', phone: a.client_phone || '', email: '',
           date: a.date || '', time: a.time || '', svc: a.service_name || '', barber: '',
@@ -242,8 +242,8 @@ router.get('/get-db', verifyToken, async (req, res) => {
       });
 
       biz.joinDate = biz.join_date; biz.desc = biz.desc_text || '';
-      var unassignedSvcs = (services || []).filter(function(s) { return !s.worker_id; });
-      biz.services = unassignedSvcs.map(function(s) {
+      var unassignedSvcs = (services || []).filter(function (s) { return !s.worker_id; });
+      biz.services = unassignedSvcs.map(function (s) {
         return {
           id: s.id, name: s.name || '', price: parseFloat(s.price) || 0, dur: parseInt(s.duration) || 30,
           desc: s.description || '', color: s.color || '', photo: s.image || ''
@@ -281,7 +281,7 @@ router.post('/delete-biz', async (req, res) => {
     }
 
     return res.status(200).json({ success: true });
-    
+
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -298,12 +298,21 @@ router.post('/update-biz', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Falta el ID de la barbería' });
     }
 
+    // 🛡️ ESCUDO: Buscar si el negocio ya existe para rescatar su contraseña original
+    let existingPass = '';
+    const { data: existingBiz } = await supabase
+      .from('businesses')
+      .select('password')
+      .eq('id', data.id)
+      .single();
+    if (existingBiz) existingPass = existingBiz.password;
+
     const payload = {
       id: data.id,
       name: data.name || 'Sin nombre',
       owner: data.owner || '',
       email: data.email || '',
-      password: data.pass || data.password || '', 
+      password: (data.pass || data.password) ? (data.pass || data.password) : existingPass,
       phone: data.phone || '',
       addr: data.addr || '',
       city: data.city || '',

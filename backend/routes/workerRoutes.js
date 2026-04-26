@@ -29,10 +29,20 @@ router.post('/save-worker', async (req, res) => {
       return res.status(200).json({ success: true });
     }
 
+    // 🛡️ ESCUDO: Buscar si el trabajador ya existe para rescatar su contraseña original
+    let existingPass = '';
+    const { data: existingWorker } = await supabase
+      .from('workers')
+      .select('password')
+      .eq('id', worker.id)
+      .single();
+    if (existingWorker) existingPass = existingWorker.password;
+
     const payload = {
       id: worker.id, business_id: worker.business_id || '',
       name: worker.name || '', email: worker.email || '',
-      password: worker.password || '', phone: worker.phone || '',
+      password: worker.password ? worker.password : existingPass,
+      phone: worker.phone || '',
       avatar: worker.avatar || '', cover: worker.cover || '',
       role: worker.role || 'barber',
       horario: Array.isArray(worker.horario) ? worker.horario : []
@@ -41,7 +51,7 @@ router.post('/save-worker', async (req, res) => {
     if (error) return res.status(400).json({ success: false, error: error.message });
     return res.status(200).json({ success: true });
 
-  } catch(err) {
+  } catch (err) {
     console.error('Server error save-worker:', err);
     return res.status(500).json({ success: false, error: err.message });
   }
