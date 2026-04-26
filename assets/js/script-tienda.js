@@ -735,7 +735,20 @@ async function saveProduct() {
     } else {
       productoData.id     = crypto.randomUUID ? crypto.randomUUID() : ('prod_'+Math.random().toString(36).slice(2));
       productoData.rating = 0;
-      const { error } = await tiendaSupa.from('products').insert([productoData]);
+      let { error } = await tiendaSupa.from('products').insert([productoData]);
+      
+      // Sincronización automática de emergencia si la barbería no existe en Supabase
+      if (error && error.code === '23503') {
+        console.log('Sincronizando barbería a Supabase automáticamente...');
+        await fetch('/api/update-biz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(CUR)
+        });
+        const retry = await tiendaSupa.from('products').insert([productoData]);
+        error = retry.error;
+      }
+      
       if (error) throw error;
       mostrarAlertaTienda('Producto publicado.','¡Éxito!','✅');
     }
