@@ -632,9 +632,9 @@ function saveWorkerHorario() {
 ══════════════════════════ */
 function setupWorkerPhotoUpload() {
   var coverInp=G('wk-profile-cover-input');
-  if(coverInp){ coverInp.addEventListener('change',async function(e){ var f=e.target.files[0]; if(!f||!validImageType(f)){ toast('Solo JPG/PNG/WebP (máx 5MB)','#EF4444'); return; } toast('...','#F59E0B'); var url=await uploadToImgBB(f); if(url&&CUR_WORKER){ CUR_WORKER.cover=url; syncWorkerToCloud(); saveDB(); renderWorkerProfile(); toast('Portada actualizada','#22C55E'); } }); }
+  if(coverInp){ coverInp.addEventListener('change',async function(e){ var f=e.target.files[0]; if(!f||!validImageType(f)){ toast('Solo JPG/PNG/WebP (máx 5MB)','#EF4444'); return; } toast('...','#F59E0B'); var url=await uploadToImgBB(f); if(url&&CUR_WORKER){ CUR_WORKER.cover=url; renderWorkerProfile(); toast('Portada subida, presiona Guardar','#22C55E'); } }); }
   var logoInp=G('wk-profile-photo-input');
-  if(logoInp){ logoInp.addEventListener('change',async function(e){ var f=e.target.files[0]; if(!f||!validImageType(f)){ toast('Solo JPG/PNG/WebP (máx 5MB)','#EF4444'); return; } toast('...','#F59E0B'); var url=await uploadToImgBB(f); if(url&&CUR_WORKER){ CUR_WORKER.photo=url; syncWorkerToCloud(); saveDB(); renderWorkerProfile(); initWorkerPanel(); toast('Foto de perfil actualizada','#22C55E'); } }); }
+  if(logoInp){ logoInp.addEventListener('change',async function(e){ var f=e.target.files[0]; if(!f||!validImageType(f)){ toast('Solo JPG/PNG/WebP (máx 5MB)','#EF4444'); return; } toast('...','#F59E0B'); var url=await uploadToImgBB(f); if(url&&CUR_WORKER){ CUR_WORKER.photo=url; renderWorkerProfile(); toast('Foto subida, presiona Guardar','#22C55E'); } }); }
   var galInp=G('wk-gallery-input');
   if(galInp){ galInp.addEventListener('change',async function(e){ var files=Array.from(e.target.files); if(!files.length) return; toast('Subiendo '+files.length+' foto(s)...','#F59E0B'); for(var i=0;i<files.length;i++){ var f=files[i]; if(!validImageType(f)) continue; var url=await uploadToImgBB(f); if(url&&CUR_WORKER){ if(!CUR_WORKER.photos) CUR_WORKER.photos=[]; if(CUR_WORKER.photos.length>=20){ toast('Máximo 20 fotos','#EF4444'); return; } CUR_WORKER.photos.push(url); saveDB(); renderWorkerGallery(); } } toast('Fotos subidas','#22C55E'); }); }
   var svcInp=G('wk-sv-photo-input');
