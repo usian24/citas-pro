@@ -658,15 +658,29 @@ window.removeProdPhoto = function(index, event) {
 function renderProdPhotoPreview() {
   const container = document.getElementById('prod-photo-preview');
   if (!tempProdPhotos.length) {
-    container.innerHTML = '<div style="font-size:13px;color:var(--muted);width:100%;text-align:center;">Añadir foto</div>';
+    container.innerHTML = '<div style="font-size:13px;color:var(--muted)">Añadir foto</div>';
+    container.onclick = () => document.getElementById('prod-photo-input').click();
+    container.classList.add('photo-upload');
+    container.style.padding = '';
+    container.style.border = '';
+    container.style.background = '';
+    container.style.cursor = '';
     return;
   }
+  
+  container.onclick = null;
+  container.classList.remove('photo-upload');
+  container.style.cursor = 'default';
+  container.style.padding = '12px';
+  container.style.border = '1px solid var(--b)';
+  container.style.background = 'transparent';
+
   let html = '<div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">';
   tempProdPhotos.forEach((url, i) => {
     html += `
       <div style="position:relative; width:60px; height:60px; border-radius:8px; overflow:hidden; border:1px solid var(--b);">
         <img src="${url}" style="width:100%; height:100%; object-fit:cover;">
-        <div onclick="removeProdPhoto(${i}, event)" style="position:absolute; top:2px; right:2px; background:rgba(239,68,68,0.9); color:#fff; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; font-weight:bold;">×</div>
+        <div onclick="removeProdPhoto(${i}, event)" style="position:absolute; top:2px; right:2px; background:rgba(239,68,68,0.9); color:#fff; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; font-weight:bold; z-index:10;">×</div>
       </div>
     `;
   });
@@ -676,8 +690,6 @@ function renderProdPhotoPreview() {
     `;
   }
   html += '</div>';
-  // Evitamos que al hacer clic en las miniaturas se vuelva a abrir el file input,
-  // el input ahora se abrirá solo con el botón [+] generado arriba si hay menos de 3 fotos.
   container.innerHTML = html;
 }
 
