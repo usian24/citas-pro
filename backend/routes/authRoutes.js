@@ -68,15 +68,12 @@ router.post('/login', async (req, res) => {
     // 2. Si no es dueño, buscar en trabajadores (workers)
     const { data: workerData, error: workerError } = await supabase
       .from('workers')
-      .select('id, business_id, name, email, password, active')
+      .select('id, business_id, name, email, password')
       .ilike('email', inputEmail)
       .eq('password', password)
       .single();
 
     if (workerData && !workerError) {
-      if (workerData.active === false) {
-        return res.status(401).json({ error: 'Tu cuenta de trabajador está inactiva.' });
-      }
       return res.status(200).json({ 
         success: true, 
         type: 'worker', 
