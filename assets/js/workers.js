@@ -793,12 +793,43 @@ function renderWorkerDailyTimeline(dateStr) {
     endHour = Math.max(endHour, targetEnd);
   }
 
-  var totalHeight=(endHour-startHour)*60*pxPerMin;
-  var html='<div class="tl-wrap"><div class="tl-grid"><div class="tl-times"><div class="tl-header"></div><div class="tl-body" style="height:'+totalHeight+'px;background:none;">';
-  for(var h=startHour;h<=endHour;h++) html+='<div class="tl-time-lbl" style="top:'+((h-startHour)*60*pxPerMin)+'px">'+String(h).padStart(2,'0')+':00</div>';
-  html+='</div></div><div class="tl-col"><div class="tl-header"><div style="font-size:12px;font-weight:800;color:var(--blue)">Mi Agenda</div></div><div class="tl-body" style="height:'+totalHeight+'px;background-size:100% '+(60*pxPerMin)+'px;">';
-  if(typeof generateBlockedTimeHTML==='function') html+=generateBlockedTimeHTML(CUR_WORKER,dateStr,startHour,endHour,pxPerMin);
-  wAppts.forEach(function(a,i){ if(typeof generateTimelineApptHTML==='function') html+=generateTimelineApptHTML(a,CUR_WORKER,startHour,pxPerMin,i,'openWorkerApptDetail'); });
-  html+='</div></div></div></div>';
-  container.innerHTML=html;
+  function buildTimelineSegment(segStartHour, segEndHour, title, apptsOffsetIndex) {
+    var totalHeight=(segEndHour-segStartHour)*60*pxPerMin;
+    var segAppts = wAppts.filter(function(a){
+      var parts = String(a.time || '00:00').split(':');
+      var h = parseInt(parts[0], 10);
+      return !isNaN(h) && h >= segStartHour && h < segEndHour;
+    });
+
+    var segHtml='<div class="tl-wrap"><div class="tl-grid"><div class="tl-times"><div class="tl-header"></div><div class="tl-body" style="height:'+totalHeight+'px;background:none;">';
+    for(var hh=segStartHour;hh<=segEndHour;hh++) segHtml+='<div class="tl-time-lbl" style="top:'+((hh-segStartHour)*60*pxPerMin)+'px">'+String(hh).padStart(2,'0')+':00</div>';
+    segHtml+='</div></div><div class="tl-col"><div class="tl-header"><div style="font-size:12px;font-weight:800;color:var(--blue)">'+title+'</div></div><div class="tl-body" style="height:'+totalHeight+'px;background-size:100% '+(60*pxPerMin)+'px;">';
+    if(typeof generateBlockedTimeHTML==='function') segHtml+=generateBlockedTimeHTML(CUR_WORKER,dateStr,segStartHour,segEndHour,pxPerMin);
+    segAppts.forEach(function(a,i){
+      if(typeof generateTimelineApptHTML==='function') segHtml+=generateTimelineApptHTML(a,CUR_WORKER,segStartHour,pxPerMin,(apptsOffsetIndex||0)+i,'openWorkerApptDetail');
+    });
+    segHtml+='</div></div></div></div>';
+    return segHtml;
+  }
+
+  var totalHours = endHour - startHour;
+  if (totalHours < 10) {
+    container.classList.remove('wk-split-timeline');
+    container.innerHTML = buildTimelineSegment(startHour, endHour, 'Mi Agenda', 0);
+    return;
+  }
+
+  var splitHour = startHour + Math.ceil(totalHours / 2);
+  container.classList.add('wk-split-timeline');
+  container.innerHTML =
+    '<div class="wk-timeline-phase">' +
+      '<div class="wk-timeline-sticky">' +
+        buildTimelineSegment(startHour, splitHour, 'Mi Agenda · Mañana', 0) +
+      '</div>' +
+    '</div>' +
+    '<div class="wk-timeline-phase">' +
+      '<div class="wk-timeline-sticky">' +
+        buildTimelineSegment(splitHour, endHour, 'Mi Agenda · Tarde', 1000) +
+      '</div>' +
+    '</div>';
 }
