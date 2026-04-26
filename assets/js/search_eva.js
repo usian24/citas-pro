@@ -88,72 +88,11 @@
   });
 
   window.loadBarberPortal = function(bizId) {
-    var biz = null;
-    
-    // Búsqueda estricta para asegurar que carga la barbería correcta
-    if (typeof DB !== 'undefined' && DB.businesses) {
-      biz = DB.businesses.find(function(b) { return String(b.id) === String(bizId); });
-    }
-    if (!biz && typeof getBizById === 'function') {
-      biz = getBizById(bizId);
-    }
-    
-    if (!biz) return;
-
-    var cover = document.getElementById('bp-cover');
-    if (biz.cover) {
-      cover.style.backgroundImage = 'url(' + sanitizeHtml(biz.cover) + ')';
+    if (typeof loadBizDirect === 'function') {
+      loadBizDirect(bizId);
     } else {
-      cover.style.backgroundImage = 'none'; 
-      cover.style.backgroundColor = 'var(--bg3)';
+      console.error("Falta loadBizDirect de client-portal.js");
     }
-
-    var logo = document.getElementById('bp-logo');
-    if (biz.logo) logo.innerHTML = '<img src="' + sanitizeHtml(biz.logo) + '" style="width:100%;height:100%;object-fit:cover;" alt="Logo"/>';
-    else logo.textContent = (biz.name || '?').charAt(0).toUpperCase();
-
-    document.getElementById('bp-name').textContent = biz.name || 'Barbería';
-    document.getElementById('bp-desc').textContent = (biz.addr || '') + (biz.city ? ', ' + biz.city : '');
-    document.getElementById('bs-name').textContent = biz.name || 'Barbería';
-
-    var socialsContainer = document.getElementById('bp-socials');
-    var socialsHtml = '';
-    
-    if (biz.insta) {
-      var rawInsta = biz.insta.split('?')[0];
-      var cleanInsta = rawInsta.replace(/(https?:)?(\/\/)?(www\.)?instagram\.com\/?/i, '').replace(/[@/]/g, '').trim();
-      var igUrl = 'https://www.instagram.com/' + cleanInsta;
-      
-      socialsHtml += '<a href="' + sanitizeHtml(igUrl) + '" target="_blank" style="color:var(--text); transition:opacity 0.2s" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>';
-    }
-    
-    if (biz.facebook) {
-      var rawFb = biz.facebook.split('?')[0];
-      var cleanFb = rawFb.replace(/(https?:)?(\/\/)?(www\.)?facebook\.com\/?/i, '').replace(/^\//, '').trim();
-      var fbUrl = 'https://www.facebook.com/' + cleanFb;
-      
-      socialsHtml += '<a href="' + sanitizeHtml(fbUrl) + '" target="_blank" style="color:var(--text); transition:opacity 0.2s" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>';
-    }
-    
-    if (biz.x_url) {
-      var rawX = biz.x_url.split('?')[0];
-      var cleanX = rawX.replace(/(https?:)?(\/\/)?(www\.)?(x\.com|twitter\.com)\/?/i, '').replace(/[@/]/g, '').trim();
-      var xUrl = 'https://x.com/' + cleanX;
-      
-      socialsHtml += '<a href="' + sanitizeHtml(xUrl) + '" target="_blank" style="color:var(--text); transition:opacity 0.2s" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg></a>';
-    }
-    
-    socialsContainer.innerHTML = socialsHtml;
-
-    document.getElementById('bp-btn-book').onclick = function() {
-      if (typeof loadBizDirect === 'function') loadBizDirect(bizId);
-    };
-    
-    document.getElementById('bp-btn-shop').onclick = function() {
-      if (typeof goTo === 'function') goTo('s-barber-shop');
-    };
-
-    if (typeof goTo === 'function') goTo('s-barber-portal');
   };
 
   // -----------------------------------------
