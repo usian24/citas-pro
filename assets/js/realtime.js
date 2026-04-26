@@ -4,8 +4,8 @@
    REALTIME.JS — Supabase Realtime (VERSIÓN DEFINITIVA)
 ══════════════════════════════════════════════════ */
 
-var SUPABASE_RT_URL  = 'https://fcbbquvuffpmudvwqgbg.supabase.co';   
-var SUPABASE_RT_KEY  = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF'; 
+var SUPABASE_RT_URL  = 'https://krbtoepzoorpdedtykug.supabase.co';   
+var SUPABASE_RT_KEY  = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-'; 
 
 var _supaRT = null;     
 var _rtChannel = null;  
