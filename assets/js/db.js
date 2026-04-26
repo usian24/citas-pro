@@ -124,6 +124,12 @@ function saveDB() {
         if (wInCur) {
           if (CUR_WORKER.photo) wInCur.photo = CUR_WORKER.photo;
           if (CUR_WORKER.cover) wInCur.cover = CUR_WORKER.cover;
+          if (CUR_WORKER.horario) wInCur.horario = CUR_WORKER.horario;
+          if (CUR_WORKER.services) wInCur.services = CUR_WORKER.services;
+          if (CUR_WORKER.name) wInCur.name = CUR_WORKER.name;
+          if (CUR_WORKER.phone) wInCur.phone = CUR_WORKER.phone;
+          if (CUR_WORKER.spec) wInCur.spec = CUR_WORKER.spec;
+          if (CUR_WORKER.email) wInCur.email = CUR_WORKER.email;
         }
       }
 
