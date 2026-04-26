@@ -812,24 +812,6 @@ function renderWorkerDailyTimeline(dateStr) {
     return segHtml;
   }
 
-  var totalHours = endHour - startHour;
-  if (totalHours < 10) {
-    container.classList.remove('wk-split-timeline');
-    container.innerHTML = buildTimelineSegment(startHour, endHour, 'Mi Agenda', 0);
-    return;
-  }
-
-  var splitHour = startHour + Math.ceil(totalHours / 2);
-  container.classList.add('wk-split-timeline');
-  container.innerHTML =
-    '<div class="wk-timeline-phase">' +
-      '<div class="wk-timeline-sticky">' +
-        buildTimelineSegment(startHour, splitHour, 'Mi Agenda · Mañana', 0) +
-      '</div>' +
-    '</div>' +
-    '<div class="wk-timeline-phase">' +
-      '<div class="wk-timeline-sticky">' +
-        buildTimelineSegment(splitHour, endHour, 'Mi Agenda · Tarde', 1000) +
-      '</div>' +
-    '</div>';
+  container.classList.remove('wk-split-timeline');
+  container.innerHTML = buildTimelineSegment(startHour, endHour, 'Mi Agenda', 0);
 }

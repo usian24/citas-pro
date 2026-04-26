@@ -949,21 +949,6 @@ body.dia .fu.d6 > div > div:nth-child(3) > div:nth-child(3) > strong,
   background: repeating-linear-gradient(45deg, rgba(0,0,0,0.04), rgba(0,0,0,0.04) 10px, transparent 10px, transparent 20px);
 }
 
-/* Worker agenda: split sticky sections (no inner scroll) */
-#wk-daily-timeline.wk-split-timeline{
-  display:block;
-  max-height:none !important;
-  overflow:visible !important;
-}
-#wk-daily-timeline.wk-split-timeline .wk-timeline-phase{
-  min-height:72vh;
-  position:relative;
-  margin-bottom:10px;
-}
-#wk-daily-timeline.wk-split-timeline .wk-timeline-sticky{
-  position:sticky;
-  top:122px;
-}
 /* ══════════════════════════════════════════════════
    🖥️ DASHBOARD CORPORATIVO PREMIUM (PC Y LAPTOPS)
    ══════════════════════════════════════════════════ */
