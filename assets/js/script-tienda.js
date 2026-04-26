@@ -7,8 +7,9 @@
 // • Buscador interno en el panel admin
 // ─────────────────────────────────────────────────────
 
-const SUPABASE_URL      = 'https://fcbbquvuffpmudvwqgbg.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF';
+// DEV Supabase
+const SUPABASE_URL      = 'https://krbtoepzoorpdedtykug.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
 const tiendaSupa        = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let tempProdPhotos      = [];
