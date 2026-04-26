@@ -733,12 +733,71 @@ function initWorkerAgenda() {
 
 function renderWorkerDailyTimeline(dateStr) {
   var container=G('wk-daily-timeline'); if(!container||!CUR_WORKER) return;
-  var startHour=7, endHour=22, pxPerMin=1.5, totalHeight=(endHour-startHour)*60*pxPerMin;
+  var pxPerMin=1.5;
+  var startHour=8, endHour=20;
+  var minHour=23, maxHour=0;
+
+  // 1) Ajustar por horario real del trabajador para ese día
+  try {
+    var d = new Date(dateStr + 'T12:00');
+    var dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    var dayName = dayNames[d.getDay()];
+    var wh = (CUR_WORKER.horario || []).find(function(h){ return h.day === dayName; });
+    if (wh && wh.open) {
+      var dayStarts = [];
+      var dayEnds = [];
+      var f1 = wh.from1 || wh.from;
+      var t1 = wh.to1 || wh.to;
+      if (f1 && t1) {
+        dayStarts.push(parseInt(String(f1).split(':')[0], 10));
+        dayEnds.push(parseInt(String(t1).split(':')[0], 10));
+      }
+      if (wh.hasBreak && wh.from2 && wh.to2) {
+        dayStarts.push(parseInt(String(wh.from2).split(':')[0], 10));
+        dayEnds.push(parseInt(String(wh.to2).split(':')[0], 10));
+      }
+      if (dayStarts.length && dayEnds.length) {
+        minHour = Math.min(minHour, Math.min.apply(null, dayStarts));
+        maxHour = Math.max(maxHour, Math.max.apply(null, dayEnds));
+      }
+    }
+  } catch(e) {}
+
+  // 2) Ajustar por citas del día (si existen)
+  var wAppts=(CUR_WORKER.appointments||[]).filter(function(a){ return a.date===dateStr&&a.status!=='cancelled'; });
+  wAppts.forEach(function(a){
+    var parts = String(a.time || '00:00').split(':');
+    var h = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10) || 0;
+    if (isNaN(h)) return;
+
+    var dur = 30;
+    if (CUR_WORKER.services && CUR_WORKER.services.length) {
+      var svc = CUR_WORKER.services.find(function(s){ return s.name === a.svc; });
+      if (svc) dur = parseInt(svc.dur, 10) || 30;
+    }
+    var endMins = (h * 60 + m) + dur;
+    var endHourAppt = Math.ceil(endMins / 60);
+
+    minHour = Math.min(minHour, h);
+    maxHour = Math.max(maxHour, endHourAppt);
+  });
+
+  // 3) Rango final compacto (con margen) y límites seguros
+  if (minHour <= maxHour) {
+    startHour = Math.max(6, minHour - 1);
+    endHour = Math.min(23, maxHour + 1);
+  }
+  if (endHour - startHour < 8) {
+    var targetEnd = Math.min(23, startHour + 8);
+    endHour = Math.max(endHour, targetEnd);
+  }
+
+  var totalHeight=(endHour-startHour)*60*pxPerMin;
   var html='<div class="tl-wrap"><div class="tl-grid"><div class="tl-times"><div class="tl-header"></div><div class="tl-body" style="height:'+totalHeight+'px;background:none;">';
   for(var h=startHour;h<=endHour;h++) html+='<div class="tl-time-lbl" style="top:'+((h-startHour)*60*pxPerMin)+'px">'+String(h).padStart(2,'0')+':00</div>';
   html+='</div></div><div class="tl-col"><div class="tl-header"><div style="font-size:12px;font-weight:800;color:var(--blue)">Mi Agenda</div></div><div class="tl-body" style="height:'+totalHeight+'px;background-size:100% '+(60*pxPerMin)+'px;">';
   if(typeof generateBlockedTimeHTML==='function') html+=generateBlockedTimeHTML(CUR_WORKER,dateStr,startHour,endHour,pxPerMin);
-  var wAppts=(CUR_WORKER.appointments||[]).filter(function(a){ return a.date===dateStr&&a.status!=='cancelled'; });
   wAppts.forEach(function(a,i){ if(typeof generateTimelineApptHTML==='function') html+=generateTimelineApptHTML(a,CUR_WORKER,startHour,pxPerMin,i,'openWorkerApptDetail'); });
   html+='</div></div></div></div>';
   container.innerHTML=html;
