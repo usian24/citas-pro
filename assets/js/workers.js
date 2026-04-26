@@ -49,13 +49,16 @@ function initWorkerPanel() {
   }
   T('wk-hdr-nm', CUR_WORKER.name);
  
+  var bizName = CUR ? (CUR.name || 'Mi Negocio') : 'Mi Negocio';
   var bizAv = G('wk-biz-av');
   if (bizAv) {
-    if (CUR.logo) bizAv.innerHTML = '<img src="'+sanitizeImageDataURL(CUR.logo)+'" style="width:100%;height:100%;object-fit:cover" alt="Logo"/>';
-    else bizAv.textContent = (CUR.name||'?').charAt(0).toUpperCase();
+    if (CUR && CUR.logo) bizAv.innerHTML = '<img src="'+sanitizeImageDataURL(CUR.logo)+'" style="width:100%;height:100%;object-fit:cover" alt="Logo"/>';
+    else bizAv.textContent = bizName.charAt(0).toUpperCase();
   }
-  T('wk-biz-nm', CUR.name);
-  T('wk-greeting', 'Bienvenido, ' + (CUR_WORKER.name || 'Trabajador'));
+  T('wk-biz-nm', bizName);
+ 
+  var firstName = (CUR_WORKER.name || 'Trabajador').split(' ')[0];
+  T('wk-greeting', 'Bienvenido, ' + firstName);
  
   /* Stats home — usando timezone del negocio */
   var _hoyDate = (typeof ahoraEnNegocio === 'function') ? ahoraEnNegocio(CUR.country || 'PE') : new Date();
@@ -341,7 +344,7 @@ function renderWorkerServices() {
   if(svcs.length){
     H('wk-svcs-list', svcs.map(function(s){
       var thumb=s.photo?'<img src="'+sanitizeImageDataURL(s.photo)+'" style="width:46px;height:46px;border-radius:11px;object-fit:cover;flex-shrink:0" alt="Servicio">'
-        :'<div style="width:46px;height:46px;border-radius:11px;background:var(--bblue);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">✂</div>';
+        :'<div style="width:46px;height:46px;border-radius:11px;background:var(--bblue);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></div>';
       return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:10px">'
         +thumb+'<div style="flex:1"><div style="font-weight:700;font-size:14px">'+san(s.name)+'</div>'
         +'<div style="font-size:12px;color:var(--muted);margin-top:2px">'+s.dur+'min'+(s.desc?' · '+san(s.desc):'')+'</div></div>'
@@ -762,7 +765,7 @@ function renderWorkerNotifications() {
         +(!n.read?'<div style="text-align:right;margin-top:8px"><button onclick="markWorkerNotifRead('+i+')" style="background:var(--bblue);border:none;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;padding:6px 12px;border-radius:12px">Marcar como leída</button></div>':'')
         +'</div>';
     }).join(''));
-  } else { H('wk-notif-list','<div style="text-align:center;padding:40px 20px;color:var(--muted)"><div style="font-size:32px;margin-bottom:10px">📭</div><div style="font-size:14px">No tienes notificaciones nuevas</div></div>'); }
+  } else { H('wk-notif-list','<div style="text-align:center;padding:40px 20px;color:var(--muted)"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;opacity:0.4"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 0 0-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/></svg><div style="font-size:14px">No tienes notificaciones nuevas</div></div>'); }
   var clearBtn=G('clear-notif-btn');
   if(clearBtn){ clearBtn.onclick=function(){ openConfirmModal('Limpiar Notificaciones','¿Borrar todas las notificaciones?',function(){ CUR_WORKER.notifications=[]; saveDB(); renderWorkerNotifications(); renderWorkerNotifBadge(); toast('Notificaciones borradas','#475569'); }); }; }
 }

@@ -1,205 +1,307 @@
-  <div class="topbar">
-    <div class="wk-identity-wrap">
-      <div class="wk-avatar-stack">
-        <div id="wk-hdr-av" class="wk-avatar-main" onclick="workerTab('perfil')"></div>
-        <div id="wk-biz-av" class="wk-avatar-chip"></div>
-      </div>
-      <div class="wk-identity-text">
-        <div class="wk-worker-name" id="wk-hdr-nm">Trabajador</div>
-        <div class="wk-biz-name" id="wk-biz-nm"></div>
-      </div>
+<div class="topbar">
+  <div class="wk-identity-wrap">
+    <div class="wk-avatar-stack">
+      <div id="wk-hdr-av" class="wk-avatar-main" onclick="workerTab('perfil')"></div>
+      <div id="wk-biz-av" class="wk-avatar-chip"></div>
     </div>
-    <div style="display:flex;gap:7px;align-items:center">
-      <button onclick="openWorkerNotifs()" style="position:relative;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2)">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        <span id="wn-notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;font-weight:700"></span>
-      </button>
-      <button onclick="openWorkerConfig()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2)">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      </button>
-      <button id="wk-out-btn" class="btn btn-ghost btn-sm" style="width:auto;padding:8px 14px;font-size:12px">Salir</button>
+    <div class="wk-identity-text">
+      <div class="wk-worker-name" id="wk-hdr-nm">Trabajador</div>
+      <div class="wk-biz-name" style="display:flex;align-items:center;gap:4px;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18"></path>
+          <path d="M5 21V7l8-4v18"></path>
+          <path d="M19 21V11l-6-3"></path>
+          <path d="M9 9v.01"></path>
+          <path d="M9 12v.01"></path>
+          <path d="M9 15v.01"></path>
+          <path d="M9 18v.01"></path>
+        </svg>
+        <span id="wk-biz-nm"></span>
+      </div>
     </div>
   </div>
-  <div class="bnav">
-    <div class="bn on" id="wn-home"      onclick="workerTab('home')">Inicio</div>
-    <div class="bn"    id="wn-agenda"    onclick="workerTab('agenda')">Agenda</div>
-    <div class="bn"    id="wn-servicios" onclick="workerTab('servicios')">Servicios</div>
-    <div class="bn"    id="wn-finanzas"  onclick="workerTab('finanzas')">Finanzas</div>
-    <div class="bn"    id="wn-horario"   onclick="workerTab('horario')">Horario</div>
-    <div class="bn"    id="wn-perfil"    onclick="workerTab('perfil')">Perfil</div>
+  <div style="display:flex;gap:7px;align-items:center">
+    <button onclick="openWorkerNotifs()"
+      style="position:relative;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+      <span id="wn-notif-badge"
+        style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;font-weight:700"></span>
+    </button>
+    <button onclick="openWorkerConfig()"
+      style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path
+          d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+        </path>
+      </svg>
+    </button>
+    <button id="wk-out-btn" class="btn btn-ghost btn-sm"
+      style="width:auto;padding:8px 14px;font-size:12px">Salir</button>
   </div>
-  <div style="padding:14px 14px 90px">
-    <div class="pane on" id="wp-home">
-      <div style="font-size:20px;font-weight:900;margin-bottom:14px" id="wk-greeting">Bienvenido</div>
-      <div class="stats2">
-        <div class="sbox"><div class="slbl">Citas hoy</div><div class="snum" style="color:var(--blue)" id="wk-today">0</div></div>
-        <div class="sbox"><div class="slbl">Ingresos hoy</div><div class="snum" style="color:var(--green)" id="wk-rev">0</div></div>
-        <div class="sbox"><div class="slbl">Esta semana</div><div class="snum" style="color:var(--blue)" id="wk-week">0</div></div>
-        <div class="sbox"><div class="slbl">Este mes</div><div class="snum" style="color:var(--gold)" id="wk-month">0</div></div>
+</div>
+<div class="bnav">
+  <div class="bn on" id="wn-home" onclick="workerTab('home')">Inicio</div>
+  <div class="bn" id="wn-agenda" onclick="workerTab('agenda')">Agenda</div>
+  <div class="bn" id="wn-servicios" onclick="workerTab('servicios')">Servicios</div>
+  <div class="bn" id="wn-finanzas" onclick="workerTab('finanzas')">Finanzas</div>
+  <div class="bn" id="wn-horario" onclick="workerTab('horario')">Horario</div>
+  <div class="bn" id="wn-perfil" onclick="workerTab('perfil')">Perfil</div>
+</div>
+<div style="padding:14px 14px 90px">
+  <div class="pane on" id="wp-home">
+    <div style="font-size:20px;font-weight:900;margin-bottom:14px" id="wk-greeting">Bienvenido</div>
+    <div class="stats2">
+      <div class="sbox">
+        <div class="slbl">Citas hoy</div>
+        <div class="snum" style="color:var(--blue)" id="wk-today">0</div>
       </div>
-      <div class="link-box" style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🔗 Link de reservas de la barbería</div>
-        <div style="font-size:13px;color:var(--t2);word-break:break-all;margin-bottom:10px" id="wk-link-show"></div>
-        <div style="display:flex;gap:7px">
-          <button class="btn btn-dark btn-sm" style="flex:1" id="wk-copy-link">Copiar</button>
-          <a id="wk-wa-share" href="#" target="_blank" rel="noopener noreferrer"><button class="btn btn-green btn-sm btn-icon" title="Compartir por WhatsApp"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></button></a>
-        </div>
+      <div class="sbox">
+        <div class="slbl">Ingresos hoy</div>
+        <div class="snum" style="color:var(--green)" id="wk-rev">0</div>
       </div>
-      <div class="sec-hdr"><span class="sec-ttl">Mis citas de hoy</span></div>
-      <div id="wk-appts"></div>
+      <div class="sbox">
+        <div class="slbl">Esta semana</div>
+        <div class="snum" style="color:var(--blue)" id="wk-week">0</div>
+      </div>
+      <div class="sbox">
+        <div class="slbl">Este mes</div>
+        <div class="snum" style="color:var(--gold)" id="wk-month">0</div>
+      </div>
     </div>
-    <div class="pane" id="wp-agenda">
-      <div class="sec-hdr"><span class="sec-ttl">Mi agenda</span></div>
-      <div class="card" style="margin-bottom:14px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <button onclick="prevWorkerMonth()" style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--rpill);padding:7px 14px;color:var(--t2);cursor:pointer;font-size:14px">‹</button>
-          <span style="font-size:14px;font-weight:700" id="wk-cal-title"></span>
-          <button onclick="nextWorkerMonth()" style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--rpill);padding:7px 14px;color:var(--t2);cursor:pointer;font-size:14px">›</button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px">
-          <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">D</div><div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">L</div><div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">M</div><div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">X</div><div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">J</div><div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">V</div><div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">S</div>
-        </div>
-        <div class="cal-grid" id="wk-cal-grid"></div>
+    <div class="link-box" style="margin-bottom:14px">
+      <div
+        style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+        🔗 Link de reservas de la barbería</div>
+      <div style="font-size:13px;color:var(--t2);word-break:break-all;margin-bottom:10px" id="wk-link-show"></div>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-dark btn-sm" style="flex:1" id="wk-copy-link">Copiar</button>
+        <a id="wk-wa-share" href="#" target="_blank" rel="noopener noreferrer"><button
+            class="btn btn-green btn-sm btn-icon" title="Compartir por WhatsApp"><svg xmlns="http://www.w3.org/2000/svg"
+              width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+            </svg></button></a>
       </div>
-      <div id="wk-agenda-day-label" style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px"></div>
-      <div id="wk-agenda-list"></div>
-      <div id="wk-daily-timeline"></div>
     </div>
-    <div class="pane" id="wp-semana">
-  <div class="sec-hdr">
-    <span class="sec-ttl">Mi Semana</span>
-    <div style="font-size:11px;color:var(--blue);font-weight:700;background:var(--bblue);padding:4px 10px;border-radius:12px;">Desliza ↔</div>
+    <div class="sec-hdr"><span class="sec-ttl">Mis citas de hoy</span></div>
+    <div id="wk-appts"></div>
   </div>
-  <div class="tip-box" style="margin-bottom:12px">Visualiza todos tus turnos de la semana. Las áreas rayadas son horas fuera de tu horario.</div>
-  <div class="card" style="padding:0;overflow:hidden;border-radius:16px;">
-    <div class="weekly-scroll">
-      <div class="weekly-grid" id="wk-weekly-grid">
-        <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Cargando horario semanal...</div>
+  <div class="pane" id="wp-agenda">
+    <div class="sec-hdr"><span class="sec-ttl">Mi agenda</span></div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <button onclick="prevWorkerMonth()"
+          style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--rpill);padding:7px 14px;color:var(--t2);cursor:pointer;font-size:14px">‹</button>
+        <span style="font-size:14px;font-weight:700" id="wk-cal-title"></span>
+        <button onclick="nextWorkerMonth()"
+          style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--rpill);padding:7px 14px;color:var(--t2);cursor:pointer;font-size:14px">›</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px">
+        <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">D</div>
+        <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">L</div>
+        <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">M</div>
+        <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">X</div>
+        <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">J</div>
+        <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">V</div>
+        <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">S</div>
+      </div>
+      <div class="cal-grid" id="wk-cal-grid"></div>
+    </div>
+    <div id="wk-agenda-day-label"
+      style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+    </div>
+    <div id="wk-agenda-list"></div>
+    <div id="wk-daily-timeline"></div>
+  </div>
+  <div class="pane" id="wp-semana">
+    <div class="sec-hdr">
+      <span class="sec-ttl">Mi Semana</span>
+      <div
+        style="font-size:11px;color:var(--blue);font-weight:700;background:var(--bblue);padding:4px 10px;border-radius:12px;">
+        Desliza ↔</div>
+    </div>
+    <div class="tip-box" style="margin-bottom:12px">Visualiza todos tus turnos de la semana. Las áreas rayadas son horas
+      fuera de tu horario.</div>
+    <div class="card" style="padding:0;overflow:hidden;border-radius:16px;">
+      <div class="weekly-scroll">
+        <div class="weekly-grid" id="wk-weekly-grid">
+          <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Cargando horario semanal...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pane" id="wp-servicios">
+    <div class="sec-hdr"><span class="sec-ttl">Mis servicios</span><button class="btn btn-blue btn-sm"
+        style="width:auto" id="wk-add-svc-btn">Añadir +</button></div>
+    <div class="tip-box" style="margin-bottom:12px">Los clientes verán estos servicios cuando te elijan.</div>
+    <div id="wk-svcs-list"></div>
+  </div>
+  <div class="pane" id="wp-finanzas">
+    <div class="sec-hdr"><span class="sec-ttl">Mis finanzas</span></div>
+    <div class="stats2">
+      <div class="sbox">
+        <div class="slbl">Ingresos mes</div>
+        <div class="snum" style="color:var(--green)" id="wk-fin-ing">0</div>
+      </div>
+      <div class="sbox">
+        <div class="slbl">Clientes únicos</div>
+        <div class="snum" style="color:var(--blue)" id="wk-fin-clients">0</div>
+      </div>
+      <div class="sbox">
+        <div class="slbl">Servicio top</div>
+        <div class="snum" style="font-size:14px;color:var(--gold)" id="wk-fin-top-svc">—</div>
+      </div>
+      <div class="sbox">
+        <div class="slbl">Ticket medio</div>
+        <div class="snum" style="font-size:18px;color:var(--purple)" id="wk-fin-ticket">0</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="sec-hdr"><span class="sec-ttl">Ingresos por mes</span></div>
+      <div class="chart" id="wk-fin-chart" style="height:70px"></div>
+      <div style="display:flex;gap:4px;margin-top:6px" id="wk-fin-months"></div>
+    </div>
+    <div class="sec-hdr"><span class="sec-ttl">Historial</span></div>
+    <div id="wk-appts-fin"></div>
+  </div>
+  <div class="pane" id="wp-horario">
+    <div class="sec-hdr"><span class="sec-ttl">Mi horario</span></div>
+    <div class="tip-box">Los clientes solo podrán reservar en tus horas disponibles. --formato 24H</div>
+    <div id="wk-horario-days"></div>
+    <button class="btn btn-blue" id="save-wk-horario-btn" onclick="saveWorkerHorario()" style="margin-top:14px">Guardar
+      horario</button>
+  </div>
+  <div class="pane" id="wp-perfil">
+    <div class="sec-hdr"><span class="sec-ttl">Mi perfil</span></div>
+    <div class="card" style="margin-bottom:12px; padding: 0;">
+      <div id="wk-profile-cover" class="cover-container">
+        <button class="cover-btn" onclick="document.getElementById('wk-profile-cover-input').click()">Editar
+          portada</button>
+        <input type="file" id="wk-profile-cover-input" accept="image/jpeg,image/png,image/webp" style="display:none" />
+        <div id="wk-profile-photo-preview" class="cover-avatar"
+          onclick="document.getElementById('wk-profile-photo-input').click()" style="cursor:pointer"
+          title="Cambiar foto">T</div>
+        <input type="file" id="wk-profile-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none" />
+      </div>
+      <div style="padding: 40px 14px 14px;">
+        <div
+          style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px; text-align:center">
+          Datos Personales</div>
+        <div class="field"><label>Nombre</label><input class="inp" id="wk-pf-nm" maxlength="60" /></div>
+        <div class="field"><label>Teléfono</label><input class="inp" id="wk-pf-phone" type="tel" maxlength="20" /></div>
+        <div class="field"><label>Especialidad</label><input class="inp" id="wk-pf-spec"
+            placeholder="Ej: Cortes clásicos, barba..." maxlength="80" /></div>
+        <div class="field"><label>Email</label><input class="inp" id="wk-pf-email" type="email" disabled
+            style="opacity:.6" /></div>
+        <button class="btn btn-blue" id="save-wk-profile-btn">Guardar perfil</button>
       </div>
     </div>
   </div>
 </div>
-    <div class="pane" id="wp-servicios">
-      <div class="sec-hdr"><span class="sec-ttl">Mis servicios</span><button class="btn btn-blue btn-sm" style="width:auto" id="wk-add-svc-btn">Añadir +</button></div>
-      <div class="tip-box" style="margin-bottom:12px">Los clientes verán estos servicios cuando te elijan.</div>
-      <div id="wk-svcs-list"></div>
+</div>
+
+<!-- Modal: Configuración -->
+<div id="ov-config" class="overlay">
+  <div class="ov-wrap">
+    <div class="ov-hdr">
+      <div class="ov-ttl">Configuración</div>
+      <button class="ov-close" onclick="closeOv('ov-config')">×</button>
     </div>
-    <div class="pane" id="wp-finanzas">
-      <div class="sec-hdr"><span class="sec-ttl">Mis finanzas</span></div>
-      <div class="stats2">
-        <div class="sbox"><div class="slbl">Ingresos mes</div><div class="snum" style="color:var(--green)" id="wk-fin-ing">0</div></div>
-        <div class="sbox"><div class="slbl">Clientes únicos</div><div class="snum" style="color:var(--blue)" id="wk-fin-clients">0</div></div>
-        <div class="sbox"><div class="slbl">Servicio top</div><div class="snum" style="font-size:14px;color:var(--gold)" id="wk-fin-top-svc">—</div></div>
-        <div class="sbox"><div class="slbl">Ticket medio</div><div class="snum" style="font-size:18px;color:var(--purple)" id="wk-fin-ticket">0</div></div>
-      </div>
-      <div class="card" style="margin-bottom:14px">
-        <div class="sec-hdr"><span class="sec-ttl">Ingresos por mes</span></div>
-        <div class="chart" id="wk-fin-chart" style="height:70px"></div>
-        <div style="display:flex;gap:4px;margin-top:6px" id="wk-fin-months"></div>
-      </div>
-      <div class="sec-hdr"><span class="sec-ttl">Historial</span></div>
-      <div id="wk-appts-fin"></div>
-    </div>
-    <div class="pane" id="wp-horario">
-      <div class="sec-hdr"><span class="sec-ttl">Mi horario</span></div>
-      <div class="tip-box">Los clientes solo podrán reservar en tus horas disponibles. --formato 24H</div>
-      <div id="wk-horario-days"></div>
-      <button class="btn btn-blue" id="save-wk-horario-btn" onclick="saveWorkerHorario()" style="margin-top:14px">Guardar horario</button>
-    </div>
-    <div class="pane" id="wp-perfil">
-      <div class="sec-hdr"><span class="sec-ttl">Mi perfil</span></div>
-      <div class="card" style="margin-bottom:12px; padding: 0;">
-        <div id="wk-profile-cover" class="cover-container">
-           <button class="cover-btn" onclick="document.getElementById('wk-profile-cover-input').click()">Editar portada</button>
-           <input type="file" id="wk-profile-cover-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
-           <div id="wk-profile-photo-preview" class="cover-avatar" onclick="document.getElementById('wk-profile-photo-input').click()" style="cursor:pointer" title="Cambiar foto">T</div>
-           <input type="file" id="wk-profile-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
-        </div>
-        <div style="padding: 40px 14px 14px;">
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px; text-align:center">Datos Personales</div>
-            <div class="field"><label>Nombre</label><input class="inp" id="wk-pf-nm" maxlength="60"/></div>
-            <div class="field"><label>Teléfono</label><input class="inp" id="wk-pf-phone" type="tel" maxlength="20"/></div>
-            <div class="field"><label>Especialidad</label><input class="inp" id="wk-pf-spec" placeholder="Ej: Cortes clásicos, barba..." maxlength="80"/></div>
-            <div class="field"><label>Email</label><input class="inp" id="wk-pf-email" type="email" disabled style="opacity:.6"/></div>
-            <button class="btn btn-blue" id="save-wk-profile-btn">Guardar perfil</button>
+    <div class="ov-body">
+
+      <div class="card" style="margin-bottom:12px">
+        <div
+          style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">
+          Apariencia</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:14px;font-weight:700">Modo Oscuro</div>
+          <div class="toggle" id="toggle-dark-mode" onclick="toggleTheme(); this.classList.toggle('on')"></div>
         </div>
       </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div
+          style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">
+          Notificaciones</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-size:14px;font-weight:700">Recibir alertas push</div>
+          <div class="toggle" id="toggle-push-notifs" onclick="toggleWorkerPush()"></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">Recibe notificaciones en tu dispositivo cuando un
+          cliente reserve o cancele una cita.</div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div
+          style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">
+          Cambiar contraseña</div>
+        <div class="field">
+          <label>Nueva contraseña</label>
+          <div style="position:relative">
+            <input class="inp" id="wk-pass-new" type="password" placeholder="Mínimo 6 caracteres"
+              style="padding-right:50px" />
+            <button type="button" onclick="togglePassEye('wk-pass-new', this)"
+              style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Confirmar contraseña</label>
+          <div style="position:relative">
+            <input class="inp" id="wk-pass-confirm" type="password" placeholder="Repetir contraseña"
+              style="padding-right:50px" />
+            <button type="button" onclick="togglePassEye('wk-pass-confirm', this)"
+              style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="wk-pass-err" class="err-box"></div>
+        <button class="btn btn-dark" id="save-wk-pass-btn">Actualizar contraseña</button>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div
+          style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">
+          Mi barbería</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px" id="wk-pf-biz-name"></div>
+        <div style="font-size:12px;color:var(--t2)" id="wk-pf-biz-addr"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Modal: Configuración -->
-  <div id="ov-config" class="overlay">
-    <div class="ov-wrap">
-      <div class="ov-hdr">
-        <div class="ov-ttl">Configuración</div>
-        <button class="ov-close" onclick="closeOv('ov-config')">×</button>
+<!-- Modal: Notificaciones -->
+<div id="ov-notifications" class="overlay">
+  <div class="ov-wrap">
+    <div class="ov-hdr">
+      <div class="ov-ttl">Notificaciones</div>
+      <button class="ov-close" onclick="closeOv('ov-notifications')">×</button>
+    </div>
+    <div class="ov-body">
+      <div style="text-align:right;margin-bottom:10px">
+        <button id="clear-notif-btn" class="btn btn-ghost btn-sm"
+          style="width:auto;color:var(--red);font-size:12px">Vaciar todas</button>
       </div>
-      <div class="ov-body">
-        
-        <div class="card" style="margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Apariencia</div>
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div style="font-size:14px;font-weight:700">Modo Oscuro</div>
-            <div class="toggle" id="toggle-dark-mode" onclick="toggleTheme(); this.classList.toggle('on')"></div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Notificaciones</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div style="font-size:14px;font-weight:700">Recibir alertas push</div>
-            <div class="toggle" id="toggle-push-notifs" onclick="toggleWorkerPush()"></div>
-          </div>
-          <div style="font-size:12px;color:var(--muted);line-height:1.5">Recibe notificaciones en tu dispositivo cuando un cliente reserve o cancele una cita.</div>
-        </div>
-
-        <div class="card" style="margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
-          <div class="field">
-            <label>Nueva contraseña</label>
-            <div style="position:relative">
-              <input class="inp" id="wk-pass-new" type="password" placeholder="Mínimo 6 caracteres" style="padding-right:50px"/>
-              <button type="button" onclick="togglePassEye('wk-pass-new', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              </button>
-            </div>
-          </div>
-          <div class="field">
-            <label>Confirmar contraseña</label>
-            <div style="position:relative">
-              <input class="inp" id="wk-pass-confirm" type="password" placeholder="Repetir contraseña" style="padding-right:50px"/>
-              <button type="button" onclick="togglePassEye('wk-pass-confirm', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              </button>
-            </div>
-          </div>
-          <div id="wk-pass-err" class="err-box"></div>
-          <button class="btn btn-dark" id="save-wk-pass-btn">Actualizar contraseña</button>
-        </div>
-
-        <div class="card" style="margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Mi barbería</div>
-          <div style="font-size:15px;font-weight:700;margin-bottom:4px" id="wk-pf-biz-name"></div>
-          <div style="font-size:12px;color:var(--t2)" id="wk-pf-biz-addr"></div>
-        </div>
-      </div>
+      <div id="wk-notif-list"></div>
     </div>
   </div>
-
-  <!-- Modal: Notificaciones -->
-  <div id="ov-notifications" class="overlay">
-    <div class="ov-wrap">
-      <div class="ov-hdr">
-        <div class="ov-ttl">Notificaciones</div>
-        <button class="ov-close" onclick="closeOv('ov-notifications')">×</button>
-      </div>
-      <div class="ov-body">
-        <div style="text-align:right;margin-bottom:10px">
-          <button id="clear-notif-btn" class="btn btn-ghost btn-sm" style="width:auto;color:var(--red);font-size:12px">Vaciar todas</button>
-        </div>
-        <div id="wk-notif-list"></div>
-      </div>
-    </div>
-  </div>
-  </div>
+</div>
+</div>
