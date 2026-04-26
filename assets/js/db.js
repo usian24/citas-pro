@@ -233,6 +233,20 @@ function syncServicesToCloud(biz) {
     });
   });
 
+  (biz.services || []).forEach(function(s) {
+    allSvcs.push({
+      id:          String(s.id),
+      business_id: biz.id,
+      worker_id:   '',
+      name:        s.name || '',
+      description: s.desc || '',
+      price:       parseFloat(s.price) || 0,
+      duration:    parseInt(s.dur) || 30,
+      color:       s.color || '',
+      image:       s.photo || ''
+    });
+  });
+
   if (allSvcs.length === 0) return;
 
   fetch('/api/sync', {

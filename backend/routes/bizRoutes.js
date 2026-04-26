@@ -133,7 +133,21 @@ router.get('/get-biz', async (req, res) => {
     // Mapear campos snake_case
     biz.joinDate = biz.join_date;
     biz.desc = biz.desc_text || '';
-    biz.services = biz.services || [];
+    var unassignedSvcs = (services || []).filter(function(s) {
+      return !s.worker_id;
+    });
+    biz.services = unassignedSvcs.map(function(s) {
+      return {
+        id: s.id,
+        name: s.name || '',
+        price: parseFloat(s.price) || 0,
+        dur: parseInt(s.duration) || 30,
+        desc: s.description || '',
+        color: s.color || '',
+        photo: s.image || ''
+      };
+    });
+
     biz.photos = biz.photos || [];
     biz.horario = biz.horario || [];
 
@@ -228,7 +242,15 @@ router.get('/get-db', verifyToken, async (req, res) => {
       });
 
       biz.joinDate = biz.join_date; biz.desc = biz.desc_text || '';
-      biz.services = biz.services || []; biz.photos = biz.photos || []; biz.horario = biz.horario || [];
+      var unassignedSvcs = (services || []).filter(function(s) { return !s.worker_id; });
+      biz.services = unassignedSvcs.map(function(s) {
+        return {
+          id: s.id, name: s.name || '', price: parseFloat(s.price) || 0, dur: parseInt(s.duration) || 30,
+          desc: s.description || '', color: s.color || '', photo: s.image || ''
+        };
+      });
+
+      biz.photos = biz.photos || []; biz.horario = biz.horario || [];
     }
 
     return res.status(200).json(businesses || []);

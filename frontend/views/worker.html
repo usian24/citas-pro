@@ -10,10 +10,13 @@
       </div>
     </div>
     <div style="display:flex;gap:7px;align-items:center">
-      <button onclick="toggleTheme()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <button onclick="openWorkerNotifs()" style="position:relative;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        <span id="wn-notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;font-weight:700"></span>
       </button>
-      <button class="btn btn-ghost btn-sm" style="width:auto" id="wk-out-btn">Salir</button>
+      <button onclick="openWorkerConfig()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
     </div>
   </div>
   <div class="bnav">
@@ -23,10 +26,6 @@
     <div class="bn"    id="wn-finanzas"  onclick="workerTab('finanzas')">Finanzas</div>
     <div class="bn"    id="wn-horario"   onclick="workerTab('horario')">Horario</div>
     <div class="bn"    id="wn-perfil"    onclick="workerTab('perfil')">Perfil</div>
-    <div class="bn"    id="wn-notif"     onclick="workerTab('notif')" style="position:relative">
-      Notif
-      <span id="wn-notif-badge" style="display:none;position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;font-weight:700"></span>
-    </div>
   </div>
   <div style="padding:14px 14px 90px">
     <div class="pane on" id="wp-home">
@@ -124,28 +123,6 @@
             <button class="btn btn-blue" id="save-wk-profile-btn">Guardar perfil</button>
         </div>
       </div>
-      <div class="card" style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
-        <div class="field">
-          <label>Nueva contraseña</label>
-          <div style="position:relative">
-            <input class="inp" id="wk-pass-new" type="password" placeholder="Mínimo 6 caracteres" style="padding-right:50px"/>
-            <button type="button" onclick="togglePassEye('wk-pass-new', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </button>
-          </div>
-        </div>
-        <div class="field">
-          <label>Confirmar contraseña</label>
-          <div style="position:relative">
-            <input class="inp" id="wk-pass-confirm" type="password" placeholder="Repetir contraseña" style="padding-right:50px"/>
-            <button type="button" onclick="togglePassEye('wk-pass-confirm', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </button>
-          </div>
-        </div>
-        <div id="wk-pass-err" class="err-box"></div>
-        <button class="btn btn-dark" id="save-wk-pass-btn">Actualizar contraseña</button>
       </div>
       <div class="card">
         <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Mi barbería</div>
@@ -153,10 +130,76 @@
         <div style="font-size:13px;color:var(--t2)" id="wk-pf-biz-addr"></div>
       </div>
     </div>
-    <div class="pane" id="wp-notif">
-      <div class="sec-hdr">
-        <span class="sec-ttl">Notificaciones <span id="wk-notif-badge" style="display:none;background:var(--red);color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;font-weight:700"></span></span>
+  </div>
+
+  <!-- Modal: Configuración -->
+  <div id="ov-config" class="overlay">
+    <div class="ov-wrap">
+      <div class="ov-hdr">
+        <div class="ov-ttl">Configuración</div>
+        <button class="ov-close" onclick="closeOv('ov-config')">×</button>
       </div>
-      <div id="wk-notif-list"></div>
+      <div class="ov-body">
+        
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Apariencia</div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:14px;font-weight:700">Modo Oscuro</div>
+            <div class="toggle" id="toggle-dark-mode" onclick="toggleTheme(); this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Notificaciones</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-size:14px;font-weight:700">Recibir alertas push</div>
+            <div class="toggle" id="toggle-push-notifs" onclick="toggleWorkerPush()"></div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5">Recibe notificaciones en tu dispositivo cuando un cliente reserve o cancele una cita.</div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
+          <div class="field">
+            <label>Nueva contraseña</label>
+            <div style="position:relative">
+              <input class="inp" id="wk-pass-new" type="password" placeholder="Mínimo 6 caracteres" style="padding-right:50px"/>
+              <button type="button" onclick="togglePassEye('wk-pass-new', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Confirmar contraseña</label>
+            <div style="position:relative">
+              <input class="inp" id="wk-pass-confirm" type="password" placeholder="Repetir contraseña" style="padding-right:50px"/>
+              <button type="button" onclick="togglePassEye('wk-pass-confirm', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;width:32px;height:32px">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+          <div id="wk-pass-err" class="err-box"></div>
+          <button class="btn btn-dark" id="save-wk-pass-btn">Actualizar contraseña</button>
+        </div>
+
+        <button class="btn btn-red" id="wk-out-btn-modal" onclick="G('wk-out-btn').click()" style="margin-top:20px">Cerrar Sesión</button>
+      </div>
     </div>
+  </div>
+
+  <!-- Modal: Notificaciones -->
+  <div id="ov-notifications" class="overlay">
+    <div class="ov-wrap">
+      <div class="ov-hdr">
+        <div class="ov-ttl">Notificaciones</div>
+        <button class="ov-close" onclick="closeOv('ov-notifications')">×</button>
+      </div>
+      <div class="ov-body">
+        <div style="text-align:right;margin-bottom:10px">
+          <button id="clear-notif-btn" class="btn btn-ghost btn-sm" style="width:auto;color:var(--red);font-size:12px">Vaciar todas</button>
+        </div>
+        <div id="wk-notif-list"></div>
+      </div>
+    </div>
+  </div>
   </div>

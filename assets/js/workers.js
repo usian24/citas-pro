@@ -187,14 +187,13 @@ function initWorkerPanel() {
 
 
 function workerTab(tab) {
-  var tabs = ['home','agenda','semana','servicios','galeria','finanzas','horario','perfil','notif'];
+  var tabs = ['home','agenda','semana','servicios','galeria','finanzas','horario','perfil'];
   for (var i=0;i<tabs.length;i++) {
     var t=tabs[i]; var pa=G('wp-'+t), bt=G('wn-'+t);
     if(pa) pa.classList[t===tab?'add':'remove']('on');
     if(bt) bt.classList[t===tab?'add':'remove']('on');
   }
   if(tab==='agenda')  initWorkerAgenda();
-  if(tab==='notif')   renderWorkerNotifications();
   if(tab==='horario'){
     renderWorkerHorario();
     if(window.innerWidth>=1024) setTimeout(function(){ if(typeof initHorarioSplit==='function') initHorarioSplit(); },200);
@@ -202,6 +201,43 @@ function workerTab(tab) {
   if(tab==='finanzas') renderWorkerFinances();
   if(tab==='home' && typeof renderWorkerHomeStats==='function') renderWorkerHomeStats();
 }
+
+/* ══════════════════════════
+   MODALES DE TRABAJADOR
+══════════════════════════ */
+function openWorkerConfig() {
+  openOv('ov-config');
+  var tgl = G('toggle-push-notifs');
+  if (tgl) {
+    if (Notification.permission === 'granted') tgl.classList.add('on');
+    else tgl.classList.remove('on');
+  }
+}
+
+function openWorkerNotifs() {
+  renderWorkerNotifications();
+  openOv('ov-notifications');
+}
+
+window.toggleWorkerPush = function() {
+  var tgl = G('toggle-push-notifs');
+  if (!tgl) return;
+  if (tgl.classList.contains('on')) {
+    toast('Debes desactivar las notificaciones desde la configuración de tu navegador', '#F59E0B');
+  } else {
+    if ('Notification' in window) {
+      Notification.requestPermission().then(function(p) {
+        if (p === 'granted') {
+          tgl.classList.add('on');
+          initWorkerPanel(); // Se encarga de suscribir
+          toast('Notificaciones activadas', '#22C55E');
+        } else {
+          toast('Permiso denegado', '#EF4444');
+        }
+      });
+    }
+  }
+};
 
 /* ══════════════════════════
    CITAS HOY — solo las del trabajador
