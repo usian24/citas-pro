@@ -424,6 +424,15 @@ function bizTab(tab) {
   }
 }
 
+function openBizConfig() {
+  openOv('ov-config-biz');
+  var tgl = G('toggle-dark-mode-biz');
+  if (tgl) {
+    if (document.documentElement.classList.contains('dark')) tgl.classList.add('on');
+    else tgl.classList.remove('on');
+  }
+}
+
 /* ══════════════════════════
    CITAS HOY (dueño ve todo)
 ══════════════════════════ */

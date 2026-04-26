@@ -722,6 +722,9 @@ window.onload = async function() {
   window.deleteBiz         = deleteBiz;
   window.copyText          = copyText;
   window.filterClientBiz   = filterClientBiz;
+  window.openBizConfig     = typeof openBizConfig === 'function' ? openBizConfig : function(){};
+  window.openWorkerConfig  = typeof openWorkerConfig === 'function' ? openWorkerConfig : function(){};
+  window.openWorkerNotifs  = typeof openWorkerNotifs === 'function' ? openWorkerNotifs : function(){};
   
   window.prevMonth         = typeof prevMonth === 'function' ? prevMonth : function(){};
   window.nextMonth         = typeof nextMonth === 'function' ? nextMonth : function(){};

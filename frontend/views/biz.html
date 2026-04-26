@@ -151,6 +151,8 @@
         <button onclick="openBizConfig()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </button>
+        <!-- Botón oculto para trigger de logout (usado desde el modal de config) -->
+        <button id="biz-out-btn" style="display:none"></button>
       </div>
     </div>
     <div class="bnav">
@@ -272,6 +274,26 @@
           <div style="font-size:24px;font-weight:900;color:var(--blue3);margin-bottom:6px"><span class="precio-local-solo">10€</span><span style="font-size:13px;font-weight:500;color:var(--t2)">/mes · IVA incl.</span></div>
         </div>
         <a href="https://wa.me/34611200984?text=Necesito%20ayuda%20con%20Citas%20Pro" target="_blank" rel="noopener noreferrer"><button class="btn btn-green">💬 Soporte por WhatsApp</button></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Configuración Dueño -->
+  <div id="ov-config-biz" class="overlay">
+    <div class="ov-wrap">
+      <div class="ov-hdr">
+        <div class="ov-ttl">Configuración</div>
+        <button class="ov-close" onclick="closeOv('ov-config-biz')">×</button>
+      </div>
+      <div class="ov-body">
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Apariencia</div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:14px;font-weight:700">Modo Oscuro</div>
+            <div class="toggle" id="toggle-dark-mode-biz" onclick="toggleTheme(); this.classList.toggle('on')"></div>
+          </div>
+        </div>
+        <button class="btn btn-red" onclick="G('biz-out-btn').click()" style="margin-top:20px">Cerrar Sesión</button>
       </div>
     </div>
   </div>
