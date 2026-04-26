@@ -292,7 +292,7 @@ router.post('/update-biz', async (req, res) => {
       logo: data.logo || '',
       cover: data.cover || '',
       insta: data.insta || '',
-      joinDate: data.joinDate || new Date().toISOString().split('T')[0],
+      join_date: data.joinDate || new Date().toISOString().split('T')[0],
       horario: Array.isArray(data.horario) ? data.horario : [],
       photos: Array.isArray(data.photos) ? data.photos : []
     };

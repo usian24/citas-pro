@@ -32,54 +32,50 @@ async function doLogin() {
   var key = 'login_' + inputLower;
   if(!checkRateLimit(key)) { showErr('li-err','Demasiados intentos. Espera 5 minutos.'); return; }
 
-  /* 1 — Buscar como dueño de negocio (Local) */
-  var biz = DB.businesses.filter(function(b){
-    return (b.email||'').toLowerCase() === inputLower && ((b.pass || b.password || '') === pass);
-  })[0];
-
-  if(biz) {
-    resetRateLimit(key);
-    if(isBizExpired(biz)) { showPaywall(biz.name); return; }
-    DB.currentBiz    = biz.id;
-    DB.currentWorker = null;
-    saveDB();
-    closeOv('ov-login');
-    toast('Bienvenido/a ' + san(biz.owner || biz.name), '#22C55E');
-    setTimeout(function(){ goBiz(); }, 300);
-    return;
-  }
-
-  /* 2 — Buscar como trabajador (Local) */
-  var foundWorker = null, foundBiz = null;
-  DB.businesses.forEach(function(b) {
-    (b.workers||[]).forEach(function(w) {
-      if((w.email||'').toLowerCase() === inputLower && ((w.pass || w.password || '') === pass) && w.active) {
-        foundWorker = w;
-        foundBiz    = b;
-      }
-    });
-  });
-
-  if(foundWorker) {
-    resetRateLimit(key);
-    if(isBizExpired(foundBiz)) { showPaywall(foundBiz.name); return; }
-    DB.currentWorker = { bizId: foundBiz.id, workerId: foundWorker.id };
-    DB.currentBiz    = null;
-    saveDB();
-    closeOv('ov-login');
-    toast('Bienvenido/a ' + san(foundWorker.name), '#22C55E');
-    setTimeout(function(){ goWorker(); }, 300);
-    return;
-  }
-
-  /* 3 — Buscar como SUPER ADMIN en Supabase (API) */
   try {
     var btn = G('li-btn-login');
     var originalText = btn ? btn.textContent : 'Acceder';
     if(btn) btn.textContent = 'Verificando...';
 
-    // Mandamos las credenciales al "Guardia" en Netlify
-    let res = await fetch('/api/admin-login', {
+    // 1 — Intentar Login como Dueño o Trabajador a través de la API
+    let res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: inputLower, password: pass })
+    });
+
+    if (res.ok) {
+      if(btn) btn.textContent = originalText;
+      let data = await res.json();
+      resetRateLimit(key);
+
+      if (data.type === 'business') {
+        var biz = data.biz;
+        DB.currentBiz    = biz.id;
+        DB.currentWorker = null;
+        saveDB();
+        closeOv('ov-login');
+        toast('Bienvenido/a ' + san(biz.name || biz.owner || ''), '#22C55E');
+        // Obligamos a descargar los datos privados del negocio antes de redirigir
+        if (typeof forceCloudSync === 'function') await forceCloudSync();
+        setTimeout(function(){ goBiz(); }, 300);
+        return;
+      } 
+      else if (data.type === 'worker') {
+        var worker = data.worker;
+        DB.currentWorker = { bizId: worker.business_id, workerId: worker.id };
+        DB.currentBiz    = null;
+        saveDB();
+        closeOv('ov-login');
+        toast('Bienvenido/a ' + san(worker.name), '#22C55E');
+        if (typeof forceCloudSync === 'function') await forceCloudSync();
+        setTimeout(function(){ goWorker(); }, 300);
+        return;
+      }
+    }
+
+    // 2 — Si falló, intentar Login como SUPER ADMIN a través de la API
+    let adminRes = await fetch('/api/admin-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: inputLower, password: pass })
@@ -87,32 +83,32 @@ async function doLogin() {
     
     if(btn) btn.textContent = originalText;
 
-    if (res.ok) {
-       let data = await res.json();
+    if (adminRes.ok) {
+       let data = await adminRes.json();
        if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
        resetRateLimit(key); 
        DB.admin.auth = true; 
        saveDB(); 
        closeOv('ov-login');
        toast('Bienvenido, Super Admin', '#4A7FD4');
-       
+       if (typeof forceCloudSync === 'function') await forceCloudSync();
        setTimeout(function(){
-           showAdminPanel(); // <-- AHORA SÍ, ESTA ES LA PUERTA AL PANEL REAL
-           
-           // Conectar Realtime si existe
+           showAdminPanel();
            if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
        }, 300);
        return;
     }
+
+    // 3 — Si ninguno funcionó
+    showErr('li-err','Email o contraseña incorrectos.');
+    var p = G('li-pass'); if(p) p.value='';
+
   } catch (error) {
-     console.error('Error al intentar login de admin:', error);
+     console.error('Error al intentar login:', error);
      var btn = G('li-btn-login');
      if(btn) btn.textContent = 'Acceder';
+     showErr('li-err','Error de red. Inténtalo de nuevo.');
   }
-
-  /* 4 — Si nada funcionó: Credenciales incorrectas */
-  showErr('li-err','Email o contraseña incorrectos.');
-  var p = G('li-pass'); if(p) p.value='';
 }
 
 /* ══════════════════════════
