@@ -655,12 +655,66 @@ function saveWorkerPassword() {
 ══════════════════════════ */
 function syncWorkerToCloud() {
   if(!CUR_WORKER||!CUR) return;
-  fetch('/api/save-worker',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'upsert',worker:{id:CUR_WORKER.id,business_id:CUR.id,name:CUR_WORKER.name||'',email:CUR_WORKER.email||'',password:CUR_WORKER.pass||CUR_WORKER.password||'',phone:CUR_WORKER.phone||'',avatar:CUR_WORKER.photo||'',cover:CUR_WORKER.cover||'',role:CUR_WORKER.spec||'barber',horario:CUR_WORKER.horario||[]}})}).catch(function(e){});
+  return fetch('/api/save-worker',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      action:'upsert',
+      worker:{
+        id:CUR_WORKER.id,
+        business_id:CUR.id,
+        name:CUR_WORKER.name||'',
+        email:CUR_WORKER.email||'',
+        password:CUR_WORKER.pass||CUR_WORKER.password||'',
+        phone:CUR_WORKER.phone||'',
+        avatar:CUR_WORKER.photo||'',
+        cover:CUR_WORKER.cover||'',
+        role:CUR_WORKER.spec||'barber',
+        horario:CUR_WORKER.horario||[]
+      }
+    })
+  }).then(function(res){
+    if(!res.ok) throw new Error('No se pudo guardar en la nube');
+    return res.json().catch(function(){ return { success:true }; });
+  });
 }
 
-function saveWorkerHorario() {
+function commitWorkerHorarioFromDOM() {
+  if(!CUR_WORKER||!Array.isArray(CUR_WORKER.horario)) return;
+  var root = G('wk-horario-days');
+  if(!root) return;
+  var inputs = root.querySelectorAll('input[type="time"]');
+  for (var i=0; i<inputs.length; i++) {
+    var el = inputs[i];
+    if (typeof window._wkHorarioChange === 'function') window._wkHorarioChange(el);
+  }
+}
+
+async function saveWorkerHorario() {
   if(!CUR_WORKER) return;
-  syncWorkerToCloud(); saveDB(); toast('Horario guardado','#22C55E');
+  commitWorkerHorarioFromDOM();
+  saveDB();
+
+  var btn = G('save-wk-horario-btn');
+  var prevTxt = btn ? btn.textContent : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    btn.style.opacity = '.85';
+  }
+
+  try {
+    await syncWorkerToCloud();
+    toast('Horario guardado','#22C55E');
+  } catch (e) {
+    toast('No se pudo guardar. Intenta de nuevo','#EF4444');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = prevTxt || 'Guardar horario';
+      btn.style.opacity = '1';
+    }
+  }
 }
 
 /* ══════════════════════════
