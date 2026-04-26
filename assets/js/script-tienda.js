@@ -11,7 +11,7 @@ const SUPABASE_URL      = 'https://fcbbquvuffpmudvwqgbg.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF';
 const tiendaSupa        = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let tempProdPhoto      = null;
+let tempProdPhotos      = [];
 let editingProdId      = null;
 let categoriasActuales = [];
 let todosLosProductos  = []; // cache para el buscador admin
@@ -597,29 +597,29 @@ function openProdModal() {
   const descEl  = document.getElementById('prod-discount');
   if (stockEl) stockEl.value   = '';
   if (descEl)  descEl.value    = '0';
-  tempProdPhoto = null;
-  document.getElementById('prod-photo-preview').innerHTML =
-    '<div style="font-size:13px;color:var(--muted)">Añadir foto</div>';
+  tempProdPhotos = [];
+  renderProdPhotoPreview();
   
   // Asignar el listener de forma segura aquí
   const fileInput = document.getElementById('prod-photo-input');
   if (fileInput && !fileInput.dataset.listener) {
     fileInput.dataset.listener = 'true';
     fileInput.addEventListener('change', async function(e) {
+      if (tempProdPhotos.length >= 3) return;
       const f = e.target.files[0]; if (!f) return;
       document.getElementById('prod-photo-preview').innerHTML =
         '<span style="color:var(--blue);font-weight:700;">Subiendo... ⏳</span>';
       if (typeof uploadToImgBB === 'function') {
         const url = await uploadToImgBB(f);
         if (url) {
-          tempProdPhoto = url;
-          document.getElementById('prod-photo-preview').innerHTML =
-            `<img src="${url}" style="width:100%;height:80px;object-fit:cover;border-radius:12px;">`;
+          tempProdPhotos.push(url);
+          renderProdPhotoPreview();
         } else {
           document.getElementById('prod-photo-preview').innerHTML =
             '<span style="color:var(--red);font-size:12px;">Error al subir foto</span>';
         }
       }
+      fileInput.value = ''; // Reset input
     });
   }
 
@@ -640,15 +640,56 @@ async function editProduct(id) {
     const descEl  = document.getElementById('prod-discount');
     if (stockEl) stockEl.value = data.stock != null ? data.stock : '';
     if (descEl)  descEl.value  = data.discount_percent || 0;
-    tempProdPhoto = data.image;
-    document.getElementById('prod-photo-preview').innerHTML = data.image
-      ? `<img src="${data.image}" style="width:100%;height:80px;object-fit:cover;border-radius:12px;">`
-      : '<div style="font-size:13px;color:var(--muted)">Añadir foto</div>';
+    tempProdPhotos = window.parseFotos ? window.parseFotos(data.image) : (data.image ? [data.image] : []);
+    renderProdPhotoPreview();
     openOv('ov-tienda-prod');
   } catch(err) {
     mostrarAlertaTienda('No pudimos cargar el producto.','Error','❌');
   }
 }
+
+// Función para renderizar el preview de fotos
+window.removeProdPhoto = function(index, event) {
+  event.stopPropagation();
+  tempProdPhotos.splice(index, 1);
+  renderProdPhotoPreview();
+};
+
+function renderProdPhotoPreview() {
+  const container = document.getElementById('prod-photo-preview');
+  if (!tempProdPhotos.length) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--muted);width:100%;text-align:center;">Añadir foto</div>';
+    return;
+  }
+  let html = '<div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">';
+  tempProdPhotos.forEach((url, i) => {
+    html += `
+      <div style="position:relative; width:60px; height:60px; border-radius:8px; overflow:hidden; border:1px solid var(--b);">
+        <img src="${url}" style="width:100%; height:100%; object-fit:cover;">
+        <div onclick="removeProdPhoto(${i}, event)" style="position:absolute; top:2px; right:2px; background:rgba(239,68,68,0.9); color:#fff; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; font-weight:bold;">×</div>
+      </div>
+    `;
+  });
+  if (tempProdPhotos.length < 3) {
+    html += `
+      <div style="width:60px; height:60px; border-radius:8px; border:1px dashed var(--b); display:flex; align-items:center; justify-content:center; color:var(--muted); cursor:pointer; font-size:20px;" onclick="document.getElementById('prod-photo-input').click()">+</div>
+    `;
+  }
+  html += '</div>';
+  // Evitamos que al hacer clic en las miniaturas se vuelva a abrir el file input,
+  // el input ahora se abrirá solo con el botón [+] generado arriba si hay menos de 3 fotos.
+  container.innerHTML = html;
+}
+
+// Asegurar parseFotos global
+window.parseFotos = function(imgData) {
+  if (!imgData) return [];
+  try {
+    const arr = JSON.parse(imgData);
+    if (Array.isArray(arr)) return arr;
+  } catch(e) {}
+  return [imgData];
+};
 
 // (El listener se movió a openProdModal para evitar errores si el HTML no está cargado)
 
@@ -666,10 +707,12 @@ async function saveProduct() {
     mostrarAlertaTienda('El nombre y el precio son obligatorios.','Faltan datos','💰'); return;
   }
 
+  const finalImageStr = tempProdPhotos.length > 0 ? JSON.stringify(tempProdPhotos) : '';
+
   const productoData = {
     business_id: CUR.id, name, description: desc, price,
     stock, discount_percent: discount,
-    image: tempProdPhoto || '', category: cat
+    image: finalImageStr, category: cat
   };
 
   try {

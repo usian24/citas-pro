@@ -214,6 +214,18 @@ function renderSeccion(titulo, prods, catKey) {
 }
 
 // ════════════════════════════════════════════
+// PARSE FOTOS
+// ════════════════════════════════════════════
+window.parseFotos = function(imgData) {
+  if (!imgData) return [];
+  try {
+    const arr = JSON.parse(imgData);
+    if (Array.isArray(arr)) return arr;
+  } catch(e) {}
+  return [imgData];
+};
+
+// ════════════════════════════════════════════
 // TARJETA
 // ════════════════════════════════════════════
 function renderCard(p, likes, animIdx) {
@@ -223,7 +235,8 @@ function renderCard(p, likes, animIdx) {
   const descuento  = parseFloat(p.discount_percent)||0;
   const precioFinal = descuento>0 ? precio*(1-descuento/100) : precio;
   const stock      = p.stock!=null ? parseInt(p.stock) : null;
-  const img        = p.image || 'https://placehold.co/300x300/ffffff/4A7FD4?text=Producto';
+  const fotos      = parseFotos(p.image);
+  const firstImg   = fotos.length > 0 ? fotos[0] : 'https://placehold.co/300x300/ffffff/4A7FD4?text=Producto';
   const catName    = (p.category||'General').trim();
 
   let stockHtml = '';
@@ -251,6 +264,21 @@ function renderCard(p, likes, animIdx) {
   const badgeHtml  = descuento>0 ? `<div class="p-discount-badge">-${Math.round(descuento)}%</div>` : '';
   const btnDisabled = stock!==null && stock<=0;
 
+  // Renderizar Slider o Imagen simple
+  let imgHtml = '';
+  if (fotos.length > 1) {
+    // Generar animación auto rotativa
+    imgHtml = `
+      <div class="p-img-slider-wrap" onclick="abrirModalProducto('${p.id}')">
+        <div class="p-img-slider slider-count-${fotos.length}">
+          ${fotos.map(f => `<img src="${f}" alt="${p.name}" loading="lazy"/>`).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    imgHtml = `<img src="${firstImg}" alt="${p.name}" loading="lazy" onclick="abrirModalProducto('${p.id}')" style="cursor:pointer;" />`;
+  }
+
   return `
     <div class="p-card" style="animation-delay:${animIdx*0.06}s">
       <div class="p-img-wrap">
@@ -262,7 +290,7 @@ function renderCard(p, likes, animIdx) {
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>
         </div>
-        <img src="${img}" alt="${p.name}" loading="lazy"/>
+        ${imgHtml}
       </div>
       <div class="p-info">
         <div class="p-tag">${catName}</div>
@@ -423,7 +451,8 @@ function renderCartItems() {
     const desc       = parseFloat(p.discount_percent)||0;
     const precioUnit = precioFinalProducto(p);
     const subtotal   = precioUnit * item.cantidad;
-    const img        = p.image || 'https://placehold.co/300x300/ffffff/4A7FD4?text=Producto';
+    const fotos      = parseFotos(p.image);
+    const img        = fotos.length > 0 ? fotos[0] : 'https://placehold.co/300x300/ffffff/4A7FD4?text=Producto';
     const catName    = (p.category||'General').trim();
 
     const precioHtml = desc>0
@@ -530,3 +559,108 @@ function mostrarToast(msg) {
     if (diff > 80) cerrarCarrito();
   }, {passive:true});
 })();
+
+// ════════════════════════════════════════════
+// MODAL DETALLE DE PRODUCTO
+// ════════════════════════════════════════════
+function abrirModalProducto(id) {
+  const prod = productosDB.find(p => p.id === id);
+  if (!prod) return;
+
+  const fotos = parseFotos(prod.image);
+  const firstImg = fotos.length > 0 ? fotos[0] : 'https://placehold.co/300x300/ffffff/4A7FD4?text=Producto';
+
+  let galeriaHtml = '';
+  if (fotos.length > 1) {
+    galeriaHtml = `
+      <div class="pm-gallery">
+        <div class="pm-gallery-track">
+          ${fotos.map(f => `<div class="pm-gallery-item"><img src="${f}" alt="${prod.name}"></div>`).join('')}
+        </div>
+        <div class="pm-gallery-dots">
+          ${fotos.map((_, i) => `<div class="pm-dot ${i===0?'active':''}"></div>`).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    galeriaHtml = `
+      <div class="pm-gallery">
+        <img src="${firstImg}" alt="${prod.name}" class="pm-single-img">
+      </div>
+    `;
+  }
+
+  const precio = parseFloat(prod.price) || 0;
+  const desc = parseFloat(prod.discount_percent) || 0;
+  const precioFinal = desc > 0 ? precio * (1 - desc/100) : precio;
+  const precioHtml = desc > 0
+    ? `<div class="pm-price-wrap"><div class="pm-price-old">${moneda(precio)}</div><div class="pm-price-new discounted">${moneda(precioFinal)}</div></div>`
+    : `<div class="pm-price-wrap"><div class="pm-price-new">${moneda(precio)}</div></div>`;
+
+  const btnDisabled = prod.stock != null && prod.stock <= 0;
+  const likes = getLikes();
+  const liked = !!likes[prod.id];
+  const estrellas = calcularEstrellas(prod.rating||0);
+
+  const modalHtml = `
+    <div class="prod-modal-overlay" id="prod-modal-overlay" onclick="cerrarModalProducto(event)">
+      <div class="prod-modal-content" onclick="event.stopPropagation()">
+        <button class="pm-close" onclick="cerrarModalProducto(null, true)">×</button>
+        ${galeriaHtml}
+        <div class="pm-info">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div class="pm-cat">${(prod.category||'General').trim()}</div>
+              <h2 class="pm-title">${prod.name}</h2>
+              <div class="pm-stars">
+                ${[1,2,3,4,5].map(i=>`<span class="star${i<=estrellas?' on':''}">★</span>`).join('')}
+                <span class="p-stars-count">${prod.rating||0}</span>
+              </div>
+            </div>
+            <div class="p-like ${liked?'active':''}" onclick="toggleLike(this,'${prod.id}')" style="position:static; margin-top:5px; border-color:var(--b);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="${liked?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </div>
+          </div>
+          ${precioHtml}
+          ${prod.description ? `<p class="pm-desc">${prod.description}</p>` : ''}
+        </div>
+        <div class="pm-footer">
+          <button class="pm-add-btn" ${btnDisabled?'disabled':''} onclick="agregarAlCarritoDesdeModal('${prod.id}')">
+            ${btnDisabled ? 'Sin stock' : 'Añadir al carrito'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  document.body.style.overflow = 'hidden';
+
+  // Lógica de dots para la galería (Scroll snapping tracker)
+  if (fotos.length > 1) {
+    const track = document.querySelector('.pm-gallery-track');
+    const dots = document.querySelectorAll('.pm-dot');
+    track.addEventListener('scroll', () => {
+      const scrollRatio = track.scrollLeft / track.clientWidth;
+      const index = Math.round(scrollRatio);
+      dots.forEach((d, i) => d.classList.toggle('active', i === index));
+    });
+  }
+}
+
+function cerrarModalProducto(event, force = false) {
+  if (force || event.target.id === 'prod-modal-overlay') {
+    const modal = document.getElementById('prod-modal-overlay');
+    if (modal) {
+      modal.remove();
+      document.body.style.overflow = '';
+    }
+  }
+}
+
+function agregarAlCarritoDesdeModal(id) {
+  agregarAlCarrito(id);
+  cerrarModalProducto(null, true);
+}
