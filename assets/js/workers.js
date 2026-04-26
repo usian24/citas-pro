@@ -48,7 +48,6 @@ function initWorkerPanel() {
     else av.textContent = (CUR_WORKER.name||'?').charAt(0).toUpperCase();
   }
   T('wk-hdr-nm', CUR_WORKER.name);
-  T('wk-hdr-biz', CUR.name);
  
   var bizAv = G('wk-biz-av');
   if (bizAv) {
@@ -56,6 +55,7 @@ function initWorkerPanel() {
     else bizAv.textContent = (CUR.name||'?').charAt(0).toUpperCase();
   }
   T('wk-biz-nm', CUR.name);
+  T('wk-greeting', 'Bienvenido, ' + (CUR_WORKER.name || 'Trabajador'));
  
   /* Stats home — usando timezone del negocio */
   var _hoyDate = (typeof ahoraEnNegocio === 'function') ? ahoraEnNegocio(CUR.country || 'PE') : new Date();
