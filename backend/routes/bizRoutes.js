@@ -5,6 +5,26 @@ const { verifyToken } = require('../middlewares/auth');
 const router = express.Router();
 
 // ═══════════════════════════════════════
+// RUTA: NEGOCIOS PÚBLICOS (PARA BÚSQUEDA)
+// ═══════════════════════════════════════
+router.get('/public-businesses', async (req, res) => {
+  try {
+    const { data: businesses, error } = await supabase
+      .from('businesses')
+      .select('id, name, city, type, logo, cover, addr, insta, facebook, x_url');
+
+    if (error) {
+      return res.status(500).json({ error: 'Error obteniendo negocios públicos' });
+    }
+
+    return res.status(200).json(businesses);
+  } catch (err) {
+    console.error('Server error get-public-businesses:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════
 // RUTA 2: OBTENER DATOS DEL NEGOCIO (GET-BIZ)
 // ═══════════════════════════════════════
 router.get('/get-biz', async (req, res) => {

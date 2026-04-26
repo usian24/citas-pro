@@ -451,19 +451,37 @@ async function forceCloudSync() {
           }
         }
       }
-    } else if (DB && (DB.currentBiz || DB.currentWorker)) {
-      var bizId = DB.currentBiz || (DB.currentWorker ? DB.currentWorker.bizId : null);
-      if (bizId && typeof fetchBizFromCloud === 'function' && typeof syncBizToLocal === 'function') {
-        var cloudBiz = await fetchBizFromCloud(bizId);
-        if (cloudBiz) {
-          syncBizToLocal(cloudBiz);
-          saveDB();
-          if (DB.currentBiz && typeof initBizPanel === 'function') initBizPanel();
-          if (DB.currentWorker && typeof initWorkerPanel === 'function') initWorkerPanel();
+    } else {
+      // 1. Buscar lista de negocios públicos
+      var pubRes = await fetch('/api/public-businesses');
+      if (pubRes.ok) {
+        var publicBiz = await pubRes.json();
+        var localDB = loadDB();
+        if (localDB.currentBiz || localDB.currentWorker) {
+           var myBizId = localDB.currentBiz || (localDB.currentWorker ? localDB.currentWorker.bizId : null);
+           var myPrivateBiz = localDB.businesses.find(b => b.id === myBizId);
+           localDB.businesses = publicBiz.map(pb => (myPrivateBiz && pb.id === myBizId) ? myPrivateBiz : pb);
+        } else {
+           localDB.businesses = publicBiz;
+        }
+        localStorage.setItem(DBKEY, JSON.stringify(localDB));
+        DB = localDB;
+      }
+      // 2. Si está logueado, sincronizar su negocio localmente
+      if (DB && (DB.currentBiz || DB.currentWorker)) {
+        var bizId = DB.currentBiz || (DB.currentWorker ? DB.currentWorker.bizId : null);
+        if (bizId && typeof fetchBizFromCloud === 'function' && typeof syncBizToLocal === 'function') {
+          var cloudBiz = await fetchBizFromCloud(bizId);
+          if (cloudBiz) {
+            syncBizToLocal(cloudBiz);
+            saveDB();
+            if (DB.currentBiz && typeof initBizPanel === 'function') initBizPanel();
+            if (DB.currentWorker && typeof initWorkerPanel === 'function') initWorkerPanel();
+          }
         }
       }
     }
-  } catch(e) {}
+  } catch(e) { console.error("Error sync:", e); }
 }
 
 window.addEventListener('load', function() { setTimeout(forceCloudSync, 500); });
