@@ -397,6 +397,7 @@ function initBizPanel() {
   var pfIn=G('pf-insta'); if(pfIn) pfIn.value=CUR.insta||'';
   var pfFb=G('pf-facebook'); if(pfFb) pfFb.value=CUR.facebook||'';
   var pfX=G('pf-xurl'); if(pfX) pfX.value=CUR.x_url||'';
+  var pfTk=G('pf-tiktok'); if(pfTk) pfTk.value=CUR.tiktok||'';
   var pfDs=G('pf-desc'); if(pfDs) pfDs.value=CUR.desc||'';
   var pfPs=G('pf-plan-status');
   if(pfPs) pfPs.textContent=CUR.plan==='active'?'Plan activo · Próxima factura el día 1':CUR.plan==='trial'?'En período de prueba gratuito':'Suscripción vencida — contacta soporte';
@@ -930,9 +931,9 @@ function saveAppt() {
 function saveBizProfile() {
   if(!CUR) return;
   var nm=sanitizeText(V('pf-nm')),addr=sanitizeText(V('pf-addr')),phone=sanitizeText(V('pf-phone')),desc=sanitizeText(V('pf-desc'));
-  var insta=sanitizeText(V('pf-insta')),facebook=sanitizeText(V('pf-facebook')),x_url=sanitizeText(V('pf-xurl'));
+  var insta=sanitizeText(V('pf-insta')),facebook=sanitizeText(V('pf-facebook')),x_url=sanitizeText(V('pf-xurl')),tiktok=sanitizeText(V('pf-tiktok'));
   if(!nm){ toast('El nombre no puede estar vacío','#EF4444'); return; }
   CUR.name=nm; CUR.addr=addr; CUR.phone=phone; CUR.desc=desc.slice(0,300);
-  CUR.insta=insta; CUR.facebook=facebook; CUR.x_url=x_url;
+  CUR.insta=insta; CUR.facebook=facebook; CUR.x_url=x_url; CUR.tiktok=tiktok;
   saveDB(); initBizPanel(); toast('Perfil guardado','#4A7FD4');
 }

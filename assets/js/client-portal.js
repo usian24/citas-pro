@@ -96,6 +96,14 @@ function loadBizDirect(bizId) {
     socialsHtml += '<a href="' + xUrl + '" target="_blank" style="color:var(--blue);transition:opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733-16z"></path><path d="M4 20l6.768-6.768m2.46-2.46l6.772-6.772"></path></svg></a>';
   }
 
+  if (biz.tiktok) {
+    var rawTk = biz.tiktok.split('?')[0];
+    var cleanTk = rawTk.replace(/(https?:)?(\/\/)?(www\.)?tiktok\.com\/?@?/i, '').replace(/[@/]/g, '').trim();
+    var tkUrl = 'https://www.tiktok.com/@' + cleanTk;
+    
+    socialsHtml += '<a href="' + tkUrl + '" target="_blank" style="color:var(--blue);transition:opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.2 8.2 0 0 0 4.79 1.52V6.76a4.84 4.84 0 0 1-1.02-.07z"/></svg></a>';
+  }
+
   var bpSocials = G('bp-socials');
   if (bpSocials) bpSocials.innerHTML = socialsHtml;
   var chSocials = G('ch-socials');

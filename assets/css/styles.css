@@ -45,6 +45,23 @@ a{text-decoration:none;color:inherit}
 .inp{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:16px 18px;font-size:15px;color:var(--text);outline:none;transition:all .2s;-webkit-appearance:none;appearance:none;font-weight:500}
 .inp:focus{border-color:var(--blue);background:rgba(74,127,212,.08);box-shadow:0 0 0 3px rgba(74,127,212,.1)}
 .inp::placeholder{color:var(--muted)}
+/* Neutralizar autofill blanco del navegador */
+.inp:-webkit-autofill,
+.inp:-webkit-autofill:hover,
+.inp:-webkit-autofill:focus,
+.inp:-webkit-autofill:active{
+  -webkit-box-shadow:0 0 0 1000px rgba(255,255,255,.07) inset !important;
+  -webkit-text-fill-color:var(--text) !important;
+  caret-color:var(--text);
+  transition:background-color 9999s ease-in-out 0s;
+}
+[data-theme="light"] .inp:-webkit-autofill,
+[data-theme="light"] .inp:-webkit-autofill:hover,
+[data-theme="light"] .inp:-webkit-autofill:focus,
+[data-theme="light"] .inp:-webkit-autofill:active{
+  -webkit-box-shadow:0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color:#1f2937 !important;
+}
 .field{margin-bottom:16px}
 .field label{display:block;font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px}
 
