@@ -615,8 +615,8 @@ function openProdModal() {
           tempProdPhotos.push(url);
           renderProdPhotoPreview();
         } else {
-          document.getElementById('prod-photo-preview').innerHTML =
-            '<span style="color:var(--red);font-size:12px;">Error al subir foto</span>';
+          mostrarAlertaTienda('Error al subir la foto. Comprueba tu conexión o tipo de archivo.', 'Error', '❌');
+          renderProdPhotoPreview();
         }
       }
       fileInput.value = ''; // Reset input
