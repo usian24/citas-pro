@@ -274,8 +274,14 @@ function renderAdmCard(p) {
   const desc      = parseFloat(p.discount_percent) || 0;
   const precioFin = desc > 0 ? precio * (1 - desc/100) : precio;
   const stock     = p.stock != null ? parseInt(p.stock) : null;
-  const img       = p.image
-    ? `<img src="${p.image}" loading="lazy" style="max-width:100%;max-height:100%;object-fit:contain;mix-blend-mode:multiply;">`
+  let primerImg = null;
+  if (p.image) {
+    const fotos = window.parseFotos ? window.parseFotos(p.image) : [p.image];
+    primerImg = fotos[0] || null;
+  }
+  
+  const img = primerImg
+    ? `<img src="${primerImg}" loading="lazy" style="max-width:100%;max-height:100%;object-fit:contain;mix-blend-mode:multiply;">`
     : `<div class="no-img">🛍️</div>`;
 
   const badgeDesc = desc > 0 ? `<div class="adm-p-desc-badge">-${Math.round(desc)}%</div>` : '';
