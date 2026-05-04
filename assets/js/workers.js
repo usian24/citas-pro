@@ -85,7 +85,6 @@ function initWorkerPanel() {
   if (waShare) waShare.href = 'https://wa.me/?text='+encodeURIComponent('Reserva tu cita con '+CUR_WORKER.name+' en '+CUR.name+' → https://'+link);
  
   renderWorkerNotifBadge();
-  renderWorkerTodayAppts(todayA);
   renderWorkerServices();
   renderWorkerGallery();
   renderWorkerFinances();
@@ -245,15 +244,6 @@ window.toggleWorkerPush = function() {
 /* ══════════════════════════
    CITAS HOY — solo las del trabajador
 ══════════════════════════ */
-function renderWorkerTodayAppts(appts) {
-  if (!appts && CUR_WORKER) {
-    var today = new Date().toISOString().split('T')[0];
-    appts = (CUR_WORKER.appointments||[]).filter(function(a){ return a.date===today && a.status!=='cancelled'; });
-  }
-  H('wk-appts', appts&&appts.length ? appts.map(function(a){ return workerApptRowH(a); }).join('')
-    : '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">Sin citas para hoy</div></div>');
-}
-
 function workerApptRowH(a) {
   var sc={ confirmed:{c:'var(--blue)',bg:'rgba(74,127,212,.1)',l:'Conf.'}, rescheduled:{c:'#F59E0B',bg:'rgba(245,158,11,.15)',l:'Reag.'}, in_progress:{c:'#A855F7',bg:'rgba(168,85,247,.15)',l:'En curso'}, pending:{c:'var(--gold)',bg:'rgba(245,158,11,.1)',l:'Pend.'}, completed:{c:'var(--green)',bg:'rgba(34,197,94,.1)',l:'Hecho'}, cancelled:{c:'var(--red)',bg:'rgba(239,68,68,.1)',l:'Canc.'} }[a.status]||{c:'var(--blue)',bg:'rgba(74,127,212,.1)',l:'Conf.'};
   var initials=san((a.client||'?').split(' ').map(function(n){ return n[0]||''; }).slice(0,2).join('').toUpperCase());
@@ -295,7 +285,7 @@ function openWorkerApptDetail(id) {
 function updateWorkerApptStatus(id, status) {
   if (!CUR_WORKER) return;
   (CUR_WORKER.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; });
-  saveDB(); closeOv('ov-wk-appt-detail'); renderWorkerTodayAppts(); initWorkerAgenda(); renderWorkerFinances();
+  saveDB(); closeOv('ov-wk-appt-detail'); initWorkerAgenda(); renderWorkerFinances();
   toast(status==='completed'?'Cita completada':'Cita cancelada', status==='completed'?'#22C55E':'#EF4444');
 }
 

@@ -1,15 +1,16 @@
+
 'use strict';
 
 /* ══════════════════════════════════════════════════
    REALTIME.JS — Supabase Realtime (VERSIÓN DEFINITIVA)
 ══════════════════════════════════════════════════ */
 
-var SUPABASE_RT_URL  = 'https://krbtoepzoorpdedtykug.supabase.co';   
-var SUPABASE_RT_KEY  = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-'; 
+var SUPABASE_RT_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
+var SUPABASE_RT_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
 
-var _supaRT = null;     
-var _rtChannel = null;  
-var _rtBizChannel = null; 
+var _supaRT = null;
+var _rtChannel = null;
+var _rtBizChannel = null;
 
 var _refreshTimerWorker = null;
 var _refreshTimerBiz = null;
@@ -70,48 +71,48 @@ function subscribeBizRealtime(bizId) {
 ══════════════════════════ */
 function handleAppointmentChange(payload, workerId, bizId) {
   var eventType = payload.eventType;
-  var newData   = payload.new || {};
+  var newData = payload.new || {};
 
   if (!CUR_WORKER || CUR_WORKER.id !== workerId) return;
 
-  var localAppt = (CUR_WORKER.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
+  var localAppt = (CUR_WORKER.appointments || []).find(function (a) { return String(a.id) === String(newData.id); });
 
   var isRealChange = false;
   var notifType = '', notifTitle = '', notifDetail = '';
 
-  var clientName   = newData.client_name || newData.client || 'Cliente';
-  var serviceName  = newData.service_name || newData.svc || 'Servicio';
+  var clientName = newData.client_name || newData.client || 'Cliente';
+  var serviceName = newData.service_name || newData.svc || 'Servicio';
   var servicePrice = newData.service_price !== undefined ? newData.service_price : (newData.price || 0);
 
   if (eventType === 'INSERT') {
     if (!localAppt) {
       isRealChange = true;
-      notifType    = 'new_booking';
-      notifTitle   = 'Nueva cita: ' + clientName;
-      notifDetail  = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') + ' • ' + money(servicePrice);
+      notifType = 'new_booking';
+      notifTitle = 'Nueva cita: ' + clientName;
+      notifDetail = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '') + ' • ' + money(servicePrice);
     }
   } else if (eventType === 'UPDATE') {
     if (localAppt) {
-      var changedStatus      = (newData.status !== localAppt.status);
-      var changedDateOrTime  = (newData.date !== localAppt.date) || (newData.time !== localAppt.time);
+      var changedStatus = (newData.status !== localAppt.status);
+      var changedDateOrTime = (newData.date !== localAppt.date) || (newData.time !== localAppt.time);
       if (changedStatus && newData.status === 'cancelled' && localAppt.status !== 'cancelled') {
         isRealChange = true;
-        notifType    = 'booking_cancel';
-        notifTitle   = 'Cita cancelada: ' + clientName;
-        notifDetail  = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '');
+        notifType = 'booking_cancel';
+        notifTitle = 'Cita cancelada: ' + clientName;
+        notifDetail = serviceName + ' • ' + (newData.date || '') + ' a las ' + (newData.time || '');
       } else if (changedDateOrTime) {
         isRealChange = true;
-        notifType    = 'booking_modify';
-        notifTitle   = 'Cita modificada: ' + clientName;
-        notifDetail  = 'Nuevo horario: ' + (newData.date || '') + ' a las ' + (newData.time || '');
+        notifType = 'booking_modify';
+        notifTitle = 'Cita modificada: ' + clientName;
+        notifDetail = 'Nuevo horario: ' + (newData.date || '') + ' a las ' + (newData.time || '');
       }
     }
   } else if (eventType === 'DELETE') {
     if (localAppt) {
       isRealChange = true;
-      notifType    = 'booking_cancel';
-      notifTitle   = '🗑️ Cita eliminada: ' + (localAppt.client || 'Cliente');
-      notifDetail  = (localAppt.svc || '') + ' • ' + (localAppt.date || '');
+      notifType = 'booking_cancel';
+      notifTitle = '🗑️ Cita eliminada: ' + (localAppt.client || 'Cliente');
+      notifDetail = (localAppt.svc || '') + ' • ' + (localAppt.date || '');
     }
   }
 
@@ -120,7 +121,7 @@ function handleAppointmentChange(payload, workerId, bizId) {
   }
 
   if (_refreshTimerWorker) clearTimeout(_refreshTimerWorker);
-  _refreshTimerWorker = setTimeout(function() { safeRefreshWorkerUI(workerId, bizId); }, 1000);
+  _refreshTimerWorker = setTimeout(function () { safeRefreshWorkerUI(workerId, bizId); }, 1000);
 }
 
 /* ══════════════════════════
@@ -128,17 +129,17 @@ function handleAppointmentChange(payload, workerId, bizId) {
 ══════════════════════════ */
 function handleBizAppointmentChange(payload, bizId) {
   var eventType = payload.eventType;
-  var newData   = payload.new || {};
+  var newData = payload.new || {};
 
   if (!CUR || CUR.id !== bizId) return;
 
   var localAppt = null;
-  (CUR.workers || []).forEach(function(w) {
-    var found = (w.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
+  (CUR.workers || []).forEach(function (w) {
+    var found = (w.appointments || []).find(function (a) { return String(a.id) === String(newData.id); });
     if (found) localAppt = found;
   });
   if (!localAppt) {
-    var found = (CUR.appointments || []).find(function(a) { return String(a.id) === String(newData.id); });
+    var found = (CUR.appointments || []).find(function (a) { return String(a.id) === String(newData.id); });
     if (found) localAppt = found;
   }
 
@@ -151,7 +152,7 @@ function handleBizAppointmentChange(payload, bizId) {
   }
 
   if (_refreshTimerBiz) clearTimeout(_refreshTimerBiz);
-  _refreshTimerBiz = setTimeout(function() { safeRefreshBizUI(bizId); }, 1000);
+  _refreshTimerBiz = setTimeout(function () { safeRefreshBizUI(bizId); }, 1000);
 }
 
 /* ══════════════════════════
@@ -162,7 +163,7 @@ function createRealtimeNotification(workerId, bizId, notif) {
 
   var notifObj = {
     type: notif.type,
-    msg:  notif.title,
+    msg: notif.title,
     data: { detail: notif.detail },
     date: new Date().toISOString(),
     read: false
@@ -204,7 +205,7 @@ function createRealtimeNotification(workerId, bizId, notif) {
         body: notif.detail || '', icon: '/assets/img/image.png',
         tag: 'citaspro-' + notif.type, renotify: true
       });
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -213,10 +214,10 @@ function createRealtimeNotification(workerId, bizId, notif) {
 ══════════════════════════ */
 function showFloatingNotification(notif) {
   var old = document.querySelectorAll('.rt-notif-banner');
-  old.forEach(function(el) { el.remove(); });
+  old.forEach(function (el) { el.remove(); });
 
   var colors = {
-    new_booking:    { bg: 'rgba(34,197,94,.15)', border: 'rgba(34,197,94,.4)', icon: '📅' },
+    new_booking: { bg: 'rgba(34,197,94,.15)', border: 'rgba(34,197,94,.4)', icon: '📅' },
     booking_cancel: { bg: 'rgba(239,68,68,.15)', border: 'rgba(239,68,68,.4)', icon: '❌' },
     booking_modify: { bg: 'rgba(245,158,11,.15)', border: 'rgba(245,158,11,.4)', icon: '✏️' }
   };
@@ -260,7 +261,7 @@ function showFloatingNotification(notif) {
 ══════════════════════════ */
 function requestNotificationPermission() {
   if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission().catch(function(){});
+    Notification.requestPermission().catch(function () { });
   }
 }
 
@@ -298,11 +299,11 @@ function playNotificationSound(type) {
     gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + 0.5);
     osc.start(_audioCtx.currentTime);
     osc.stop(_audioCtx.currentTime + 0.5);
-  } catch (e) {}
+  } catch (e) { }
 }
 
-document.addEventListener('click', function() {
-  if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume().catch(function(){});
+document.addEventListener('click', function () {
+  if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume().catch(function () { });
 }, { once: false });
 
 /* ══════════════════════════
@@ -337,25 +338,24 @@ async function safeRefreshWorkerUI(workerId, bizId) {
   if (typeof fetchBizFromCloud !== 'function') return;
   const freshData = await fetchBizFromCloud(bizId);
   if (!freshData) return;
-  let index = DB.businesses.findIndex(function(b) { return b.id === bizId; });
+  let index = DB.businesses.findIndex(function (b) { return b.id === bizId; });
   if (index >= 0) {
     let oldBiz = DB.businesses[index];
     if (oldBiz.notifications) freshData.notifications = oldBiz.notifications;
-    (freshData.workers || []).forEach(function(fw) {
-      let oldW = (oldBiz.workers || []).find(function(ow) { return ow.id === fw.id; });
+    (freshData.workers || []).forEach(function (fw) {
+      let oldW = (oldBiz.workers || []).find(function (ow) { return ow.id === fw.id; });
       if (oldW && oldW.notifications) fw.notifications = oldW.notifications;
     });
     DB.businesses[index] = freshData;
   }
   CUR = freshData;
-  let freshWorker = CUR.workers.find(function(w) { return w.id === workerId; });
+  let freshWorker = CUR.workers.find(function (w) { return w.id === workerId; });
   if (freshWorker) CUR_WORKER = freshWorker;
   if (typeof saveDB === 'function') saveDB();
   var activePane = document.querySelector('#s-worker .pane.on');
   if (activePane) {
     var pid = activePane.id;
     if (pid === 'wp-home') {
-      if (typeof renderWorkerTodayAppts === 'function') renderWorkerTodayAppts();
       if (typeof renderWorkerHomeStats === 'function') renderWorkerHomeStats();
     } else if (pid === 'wp-agenda') {
       if (typeof initWorkerAgenda === 'function') initWorkerAgenda();
@@ -371,12 +371,12 @@ async function safeRefreshBizUI(bizId) {
   if (typeof fetchBizFromCloud !== 'function') return;
   const freshData = await fetchBizFromCloud(bizId);
   if (!freshData) return;
-  let index = DB.businesses.findIndex(function(b) { return b.id === bizId; });
+  let index = DB.businesses.findIndex(function (b) { return b.id === bizId; });
   if (index >= 0) {
     let oldBiz = DB.businesses[index];
     if (oldBiz.notifications) freshData.notifications = oldBiz.notifications;
-    (freshData.workers || []).forEach(function(fw) {
-      let oldW = (oldBiz.workers || []).find(function(ow) { return ow.id === fw.id; });
+    (freshData.workers || []).forEach(function (fw) {
+      let oldW = (oldBiz.workers || []).find(function (ow) { return ow.id === fw.id; });
       if (oldW && oldW.notifications) fw.notifications = oldW.notifications;
     });
     DB.businesses[index] = freshData;
@@ -387,7 +387,6 @@ async function safeRefreshBizUI(bizId) {
   if (activePane) {
     var pid = activePane.id;
     if (pid === 'bp-home') {
-      if (typeof renderTodayAppts === 'function') renderTodayAppts();
       if (typeof renderBizHomeStats === 'function') renderBizHomeStats();
     } else if (pid === 'bp-agenda') {
       if (typeof initAgenda === 'function') initAgenda();
@@ -424,9 +423,9 @@ function connectRealtimeForCurrentUser() {
 window.addEventListener('load', function () { setTimeout(connectRealtimeForCurrentUser, 1500); });
 window.addEventListener('beforeunload', function () { unsubscribeRealtime(); });
 
-window.initSupabaseRealtime          = initSupabaseRealtime;
-window.subscribeWorkerRealtime       = subscribeWorkerRealtime;
-window.subscribeBizRealtime          = subscribeBizRealtime;
-window.unsubscribeRealtime           = unsubscribeRealtime;
+window.initSupabaseRealtime = initSupabaseRealtime;
+window.subscribeWorkerRealtime = subscribeWorkerRealtime;
+window.subscribeBizRealtime = subscribeBizRealtime;
+window.unsubscribeRealtime = unsubscribeRealtime;
 window.connectRealtimeForCurrentUser = connectRealtimeForCurrentUser;
 window.requestNotificationPermission = requestNotificationPermission;
