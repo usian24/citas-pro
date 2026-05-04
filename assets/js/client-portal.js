@@ -39,6 +39,15 @@ function getNowInBizTimezone(country) {
 function loadBizDirect(bizId) {
   var biz = getBizById(bizId);
   if (!biz) { toast('Negocio no encontrado', '#EF4444'); return; }
+  
+  // 🛡️ ESCUDO: Si la barbería está suspendida o expirada, bloquear la entrada a los clientes
+  if (biz.plan === 'expired' || biz.plan === 'suspended') {
+    var bp = G('s-barber-portal');
+    if (bp) bp.innerHTML = '<div style="padding:60px 20px;text-align:center;margin-top:10vh;animation:popIn .4s ease"><div style="font-size:50px;margin-bottom:16px">🔒</div><h2 style="color:var(--text);font-size:22px;margin-bottom:10px;font-weight:900">Negocio Inactivo</h2><p style="color:var(--t2);font-size:14px;line-height:1.6">Esta barbería no puede recibir reservas en este momento.</p><button onclick="goTo(\'s-portal\')" class="btn btn-dark" style="margin-top:24px;display:inline-flex;width:auto">Volver al inicio</button></div>';
+    goTo('s-barber-portal');
+    return;
+  }
+
   DB.currentBiz = null;
   DB.currentWorker = null;
   initCSEL();

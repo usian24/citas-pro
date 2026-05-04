@@ -270,10 +270,17 @@ router.post('/delete-biz', async (req, res) => {
       return res.status(400).json({ error: 'Falta el ID del negocio' });
     }
 
-    const { error } = await supabase
-      .from('businesses')
-      .delete()
-      .eq('id', id);
+    // 1. 🧹 BARRIDO EN CASCADA MANUAL: Eliminar todos los registros dependientes primero para evitar el error 23503 de Supabase
+    await supabase.from('appointments').delete().eq('business_id', id);
+    await supabase.from('products').delete().eq('business_id', id);
+    await supabase.from('services').delete().eq('business_id', id);
+    await supabase.from('clients').delete().eq('business_id', id);
+    await supabase.from('push_subscriptions').delete().eq('business_id', id);
+    await supabase.from('notifications').delete().eq('business_id', id);
+    await supabase.from('workers').delete().eq('business_id', id);
+
+    // 2. 🔥 Finalmente, eliminar el negocio limpio
+    const { error } = await supabase.from('businesses').delete().eq('id', id);
 
     if (error) {
       console.error("Error de Supabase al eliminar:", error);

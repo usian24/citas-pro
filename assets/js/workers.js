@@ -11,6 +11,14 @@ function showWorkerPanel() {
   var biz = getBizById(DB.currentWorker.bizId);
   var worker = getWorkerById(DB.currentWorker.bizId, DB.currentWorker.workerId);
   if (!biz || !worker) { goTo('s-portal'); return; }
+
+  // 🛡️ ESCUDO: Bloquear el acceso a trabajadores si el negocio está suspendido
+  if (biz.plan === 'expired' || biz.plan === 'suspended') {
+    toast('El negocio está inactivo por falta de pago o suspensión.', '#EF4444');
+    goTo('s-portal');
+    return;
+  }
+
   CUR_WORKER = worker; CUR = biz;
   goTo('s-worker'); initWorkerPanel();
 }
