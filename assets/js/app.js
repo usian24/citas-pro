@@ -447,10 +447,12 @@ window.onload = async function() {
   initREG(); 
   initCSEL();
   initTheme();
-  initGoogleTranslate();
   
   // ¡MUY IMPORTANTE! Restaurar la sesión DESPUÉS de que bootComponents haya insertado el HTML de las vistas.
   if (typeof restaurarSesion === 'function') restaurarSesion();
+  
+  // Sincronizar visualmente los interruptores de idioma ahora que los componentes ya existen
+  if (typeof window.syncLanguageToggles === 'function') window.syncLanguageToggles();
 
   /* Cerrar overlays al click en fondo */
   document.querySelectorAll('.ov').forEach(function(o) {
