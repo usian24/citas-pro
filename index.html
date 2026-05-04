@@ -79,8 +79,8 @@
             stroke-linejoin="round" fill="none" />
         </svg>
       </div>
-      <h1 class="fu d1"
-        style="font-size:52px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#fff 25%,#7EB8FF 65%,#4A7FD4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:10px">
+      <h1 class="fu d1 notranslate"
+        style="font-size:clamp(32px, 10vw, 52px);font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#fff 25%,#7EB8FF 65%,#4A7FD4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:10px">
         CITAS PRO</h1>
       <p class="fu d2" style="font-size:15px;color:var(--t2);max-width:300px;line-height:1.65;margin-bottom:0;">La app
         más completa para gestionar tu negocio</p>
@@ -275,6 +275,10 @@
         new google.translate.TranslateElement({ pageLanguage: 'es', includedLanguages: 'en,es', autoDisplay: false }, 'google_translate_element');
         setTimeout(function () {
           var savedLang = localStorage.getItem('citaspro_lang');
+          if (!savedLang) {
+            localStorage.setItem('citaspro_lang', 'es');
+            savedLang = 'es';
+          }
           if (savedLang && savedLang === 'en') {
             window.changeLanguage('en');
           }

@@ -2429,3 +2429,6 @@ body { top: 0 !important; position: static !important; }
 .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
 /* Ocultar el nuevo widget flotante de Google si aparece */
 .VIpgJd-ZVi9od-ORHb-OEVmcd, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf { display: none !important; }
+.goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; pointer-events: none !important; }
+/* Ocultar el widget flotante y el tooltip emergente al tocar palabras */
+.VIpgJd-ZVi9od-ORHb-OEVmcd, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf, #goog-gt-tt { display: none !important; }
