@@ -2421,7 +2421,7 @@ body.dia .fu.d6>div>div:nth-child(3)>div:nth-child(3)>strong,
 /* ── OCULTAR UI DE GOOGLE TRANSLATE ── */
 .skiptranslate iframe { display: none !important; }
 body { top: 0 !important; }
-#google_translate_element { display: none !important; }
+#google_translate_element { position: absolute !important; opacity: 0 !important; z-index: -999 !important; pointer-events: none !important; }
 .goog-te-banner-frame { display: none !important; }
 .goog-tooltip { display: none !important; }
 .goog-tooltip:hover { display: none !important; }

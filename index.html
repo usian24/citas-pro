@@ -219,7 +219,9 @@
   function initGoogleTranslate() {
     var div = document.createElement('div');
     div.id = 'google_translate_element';
-    div.style.display = 'none';
+    div.style.position = 'absolute';
+    div.style.opacity = '0';
+    div.style.zIndex = '-999';
     document.body.appendChild(div);
 
     var script = document.createElement('script');
@@ -257,6 +259,8 @@
       selectField.value = langCode;
       selectField.dispatchEvent(new Event("change"));
       localStorage.setItem('citaspro_lang', langCode);
+    } else {
+      setTimeout(function() { window.changeLanguage(langCode); }, 500);
     }
   };
 
