@@ -68,17 +68,11 @@ window.buildLoyaltyHtml = function(a, allAppts) {
      var dateA = new Date(a.date + 'T' + (a.time||'00:00'));
      if (dateX >= dateA) return false;
      
-     // 1. Identificación exacta por Teléfono (solo números)
-     var p1 = String(a.phone||'').replace(/\D/g,'');
-     var p2 = String(x.phone||'').replace(/\D/g,'');
-     if (p1 && p2 && p1 === p2) return true;
-
-     // 2. Identificación exacta por Correo Electrónico
+     // Identificación EXACTA por Correo Electrónico (Login Automático)
      var e1 = String(a.email||'').toLowerCase().trim();
      var e2 = String(x.email||'').toLowerCase().trim();
      if (e1 && e2 && e1 === e2) return true;
      
-     // Ya NO cruzamos por nombre para evitar falsos positivos con nombres comunes
      return false;
   }).length;
 
@@ -124,10 +118,7 @@ window.buildClientLoyaltyHtml = function(bizId, phone, email, name) {
   
   var pastCompleted = allAppts.filter(function(x) {
      if (x.status !== 'completed') return false;
-     var p1 = String(phone||'').replace(/\D/g,'');
-     var p2 = String(x.phone||'').replace(/\D/g,'');
-     if (p1 && p2 && p1 === p2) return true;
-
+     // Identificación EXACTA por Correo Electrónico (Login Automático)
      var e1 = String(email||'').toLowerCase().trim();
      var e2 = String(x.email||'').toLowerCase().trim();
      if (e1 && e2 && e1 === e2) return true;
@@ -175,8 +166,7 @@ window.checkLoyaltyReward = function(bizId, appt) {
   var pastCompleted = allAppts.filter(function(x) {
      if (x.status !== 'completed' || String(x.id) === String(appt.id)) return false;
      if (x.date && appt.date && new Date(x.date) > new Date(appt.date)) return false;
-     var p1 = String(appt.phone||'').replace(/\D/g,''); var p2 = String(x.phone||'').replace(/\D/g,'');
-     if (p1 && p2 && p1 === p2) return true;
+     // Identificación EXACTA por Correo Electrónico
      var e1 = String(appt.email||'').toLowerCase().trim(); var e2 = String(x.email||'').toLowerCase().trim();
      if (e1 && e2 && e1 === e2) return true;
      return false;

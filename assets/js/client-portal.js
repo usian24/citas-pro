@@ -161,11 +161,13 @@ function updateBookingProgress(step) {
 function clStep2() {
   var name = sanitizeText(V('cl-name'));
   var phone = sanitizeText(V('cl-phone'));
+  var email = V('cl-email').trim().toLowerCase();
   var err = G('cl-err1');
   if (!name || name.length < 2) { if(err){ err.textContent='Introduce tu nombre completo.'; err.style.display='block'; } return; }
   if (!phone || !validPhone(phone)) { if(err){ err.textContent='Introduce un número de teléfono válido.'; err.style.display='block'; } return; }
+  if (!email || !validEmail(email)) { if(err){ err.textContent='Introduce un correo electrónico válido para registrar tu Racha.'; err.style.display='block'; } return; }
   if (err) err.style.display = 'none';
-  CSEL.clientName = name; CSEL.clientPhone = phone; CSEL.clientEmail = sanitizeText(V('cl-email'));
+  CSEL.clientName = name; CSEL.clientPhone = phone; CSEL.clientEmail = email;
   buildWorkerCards(); clGoStep(2);
 }
 
@@ -395,7 +397,7 @@ function confirmBooking() {
   var name = CSEL.clientName || sanitizeText(V('cl-name'));
   var phone = CSEL.clientPhone || sanitizeText(V('cl-phone'));
   var email = CSEL.clientEmail || sanitizeText(V('cl-email'));
-  if (!name||!phone||!CSEL.svc||!CSEL.date||!CSEL.time||!CSEL.workerId) {
+  if (!name||!phone||!email||!CSEL.svc||!CSEL.date||!CSEL.time||!CSEL.workerId) {
     toast('Faltan datos. Vuelve atrás y completa todo.','#EF4444'); return;
   }
   var biz = getBizById(CSEL.bizId); if (!biz) return;
