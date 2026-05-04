@@ -825,7 +825,13 @@ window.onload = async function () {
   on('cl-back-btn', 'click', function () { goTo('s-portal'); });
   on('cs1-next', 'click', clStep2);
   on('cs2-next', 'click', function () { clStep4(); });
-  on('cs2-back', 'click', function () { clGoStep(1); });
+  on('cs2-back', 'click', function () { 
+    var n = G('cl-name'), p = G('cl-phone'), e = G('cl-email');
+    if (n && CSEL.clientName) n.value = CSEL.clientName;
+    if (p && CSEL.clientPhone) p.value = CSEL.clientPhone;
+    if (e && CSEL.clientEmail) e.value = CSEL.clientEmail;
+    clGoStep(1); 
+  });
   on('cs3-next', 'click', clStep4);
   on('cs3-back', 'click', function () { clGoStep(2); });
   on('cs4-next', 'click', clStep5);
