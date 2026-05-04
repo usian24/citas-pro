@@ -399,6 +399,18 @@ function initBizPanel() {
   var pfTk = G('pf-tiktok'); if (pfTk) pfTk.value = CUR.tiktok || '';
   var pfDs = G('pf-desc'); if (pfDs) pfDs.value = CUR.desc || '';
   var pfPs = G('pf-plan-status');
+
+  var pfLoyaltyToggle = G('toggle-loyalty');
+  var pfLoyaltyStamps = G('pf-loyalty-stamps');
+  if (pfLoyaltyToggle) {
+    var isActive = CUR.loyalty && CUR.loyalty.active !== undefined ? CUR.loyalty.active : true;
+    if (isActive) pfLoyaltyToggle.classList.add('on');
+    else pfLoyaltyToggle.classList.remove('on');
+  }
+  if (pfLoyaltyStamps) {
+    pfLoyaltyStamps.value = (CUR.loyalty && CUR.loyalty.stamps) ? CUR.loyalty.stamps : 10;
+  }
+
   if (pfPs) pfPs.textContent = CUR.plan === 'active' ? 'Plan activo · Próxima factura el día 1' : CUR.plan === 'trial' ? 'En período de prueba gratuito' : 'Suscripción vencida — contacta soporte';
   var pfPb = G('pf-plan-badge'); if (pfPb) pfPb.innerHTML = planTag(CUR.plan);
 
@@ -448,7 +460,7 @@ function openApptDetail(id) {
   (CUR.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (ap) { if (String(ap.id) === String(id)) a = ap; }); });
   (CUR.appointments || []).forEach(function (ap) { if (String(ap.id) === String(id)) a = ap; });
   if (!a) return;
-  
+
   var loyaltyHtml = typeof buildLoyaltyHtml === 'function' ? buildLoyaltyHtml(a, _getAllAppts()) : '';
   H('appt-detail-content', '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:var(--r);padding:16px;margin-bottom:14px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="appt-avatar" style="width:52px;height:52px;font-size:20px">' + san((a.client || '?').split(' ').map(function (n) { return n[0] || ''; }).slice(0, 2).join('').toUpperCase()) + '</div><div><div style="font-size:18px;font-weight:900">' + san(a.client) + '</div>' + (a.phone ? '<div style="font-size:14px;color:var(--blue3);margin-top:3px;font-weight:600">' + san(a.phone) + '</div>' : '') + (a.email ? '<div style="font-size:13px;color:var(--t2);margin-top:2px">' + san(a.email) + '</div>' : '') + '</div></div></div>' + loyaltyHtml + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div class="sbox"><div class="slbl">Fecha</div><div style="font-size:14px;font-weight:700">' + san(a.date) + '</div></div><div class="sbox"><div class="slbl">Hora</div><div style="font-size:18px;font-weight:900;color:var(--blue)">' + san(a.time) + '</div></div><div class="sbox"><div class="slbl">Servicio</div><div style="font-size:13px;font-weight:700">' + san(a.svc) + '</div></div><div class="sbox"><div class="slbl">Total</div><div style="font-size:18px;font-weight:900;color:var(--green)">' + money(a.price) + '</div></div></div>');
   var waBtn = G('appt-wa-btn'); if (waBtn && a.phone) waBtn.href = 'https://wa.me/' + a.phone.replace(/\D/g, '') + '?text=' + encodeURIComponent('Hola ' + a.client + ', te recordamos tu cita en ' + CUR.name + ' el ' + a.date + ' a las ' + a.time + '.');
@@ -932,5 +944,12 @@ function saveBizProfile() {
   if (!nm) { toast('El nombre no puede estar vacío', '#EF4444'); return; }
   CUR.name = nm; CUR.addr = addr; CUR.phone = phone; CUR.desc = desc.slice(0, 300);
   CUR.insta = insta; CUR.facebook = facebook; CUR.x_url = x_url; CUR.tiktok = tiktok;
+
+  if (!CUR.loyalty) CUR.loyalty = {};
+  var tglLoyalty = G('toggle-loyalty');
+  CUR.loyalty.active = tglLoyalty && tglLoyalty.classList.contains('on');
+  var stmps = safeInt(V('pf-loyalty-stamps'), 10);
+  CUR.loyalty.stamps = stmps > 1 ? stmps : 10;
+
   saveDB(); initBizPanel(); toast('Perfil guardado', '#4A7FD4');
 }

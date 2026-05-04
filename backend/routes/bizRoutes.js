@@ -251,6 +251,7 @@ router.get('/get-db', verifyToken, async (req, res) => {
       });
 
       biz.photos = biz.photos || []; biz.horario = biz.horario || [];
+      biz.loyalty = biz.loyalty || { active: true, stamps: 10 };
     }
 
     return res.status(200).json(businesses || []);
@@ -330,6 +331,7 @@ router.post('/update-biz', async (req, res) => {
     if (data.expires_at !== undefined) payload.expires_at = data.expires_at;
     if (data.horario !== undefined) payload.horario = Array.isArray(data.horario) ? data.horario : [];
     if (data.photos !== undefined) payload.photos = Array.isArray(data.photos) ? data.photos : [];
+    if (data.loyalty !== undefined) payload.loyalty = data.loyalty;
 
     if (data.pass || data.password) {
       payload.password = data.pass || data.password;

@@ -449,6 +449,21 @@
               placeholder="Ej: https://tiktok.com/@tunegocio" maxlength="150" autocomplete="off" /></div>
           <div class="field"><label>Descripción</label><textarea class="inp" id="pf-desc" rows="3"
               placeholder="Describe tu negocio..." maxlength="300" style="resize:vertical"></textarea></div>
+              
+          <div class="card" style="margin-bottom:20px; padding: 18px; border-color:var(--blue); background:rgba(74,127,212,.03)">
+            <div style="font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px; text-align:center">
+              🎁 Programa de Fidelidad (Rachas)
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div style="font-size:14px;font-weight:700">Activar Cita Gratis</div>
+              <div class="toggle" id="toggle-loyalty" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label>Número de citas para el premio</label>
+              <input class="inp" id="pf-loyalty-stamps" type="number" min="2" max="20" placeholder="Ej: 10" />
+            </div>
+          </div>
+
           <button class="btn btn-blue" id="save-profile-btn">Guardar cambios</button>
         </div>
       </div>
