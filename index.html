@@ -213,6 +213,54 @@
       .then(function(reg) { console.log('SW registrado:', reg.scope); })
       .catch(function(e) { console.error('SW error:', e); });
   }
+  /* ══════════════════════════
+     IDIOMA (Traducción Invisible)
+  ══════════════════════════ */
+  function initGoogleTranslate() {
+    var div = document.createElement('div');
+    div.id = 'google_translate_element';
+    div.style.display = 'none';
+    document.body.appendChild(div);
+
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    document.body.appendChild(script);
+
+    window.googleTranslateElementInit = function() {
+      new google.translate.TranslateElement({pageLanguage: 'es', includedLanguages: 'en,es', autoDisplay: false}, 'google_translate_element');
+      setTimeout(function() {
+        var savedLang = localStorage.getItem('citaspro_lang');
+        if (savedLang && savedLang === 'en') {
+          window.changeLanguage('en');
+          document.querySelectorAll('.lang-toggle').forEach(function(el) { 
+            el.classList.add('on'); 
+            if (el.tagName === 'BUTTON') el.textContent = 'ES';
+          });
+        }
+      }, 1000);
+    };
+  }
+
+  window.toggleLanguage = function(el) {
+    var isEn = el.classList.toggle('on');
+    window.changeLanguage(isEn ? 'en' : 'es');
+    document.querySelectorAll('.lang-toggle').forEach(function(t) {
+      if (t !== el) t.classList[isEn ? 'add' : 'remove']('on');
+      if (t.tagName === 'BUTTON') t.textContent = isEn ? 'ES' : 'EN';
+    });
+  };
+
+  window.changeLanguage = function(langCode) {
+    var selectField = document.querySelector("select.goog-te-combo");
+    if (selectField) {
+      selectField.value = langCode;
+      selectField.dispatchEvent(new Event("change"));
+      localStorage.setItem('citaspro_lang', langCode);
+    }
+  };
+
+  initGoogleTranslate();
 </script>
 </body>
 </html>
