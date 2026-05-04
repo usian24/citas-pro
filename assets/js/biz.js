@@ -409,14 +409,14 @@ function initBizPanel() {
    TABS DUEÑO
 ══════════════════════════ */
 function bizTab(tab) {
-  var tabs = ['home', 'agenda', 'equipo', 'tienda', 'finanzas', 'perfil'];
+  var tabs = ['home', 'agenda', 'equipo', 'tienda', 'finanzas', 'historial', 'perfil'];
   for (var i = 0; i < tabs.length; i++) {
     var t = tabs[i]; var pa = G('bp-' + t), bt = G('bn-' + t);
     if (pa) pa.classList[t === tab ? 'add' : 'remove']('on');
     if (bt) bt.classList[t === tab ? 'add' : 'remove']('on');
   }
   if (tab === 'agenda') { DB = loadDB(); CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : CUR; initAgenda(); }
-  if (tab === 'finanzas') renderBizFinances();
+  if (tab === 'finanzas' || tab === 'historial') renderBizFinanzas();
   if (tab === 'home') {
     DB = loadDB(); CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : CUR;
     if (typeof renderBizHomeStats === 'function') renderBizHomeStats();

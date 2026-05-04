@@ -360,7 +360,7 @@ async function safeRefreshWorkerUI(workerId, bizId) {
     } else if (pid === 'wp-agenda') {
       if (typeof initWorkerAgenda === 'function') initWorkerAgenda();
       if (typeof renderWorkerCalendar === 'function') renderWorkerCalendar();
-    } else if (pid === 'wp-finanzas') {
+    } else if (pid === 'wp-finanzas' || pid === 'wp-historial') {
       if (typeof renderWorkerFinanzas === 'function') renderWorkerFinanzas();
       else if (typeof renderWorkerFinances === 'function') renderWorkerFinances();
     }
@@ -391,7 +391,7 @@ async function safeRefreshBizUI(bizId) {
     } else if (pid === 'bp-agenda') {
       if (typeof initAgenda === 'function') initAgenda();
       if (typeof renderCalendar === 'function') renderCalendar();
-    } else if (pid === 'bp-finanzas') {
+    } else if (pid === 'bp-finanzas' || pid === 'bp-historial') {
       if (typeof renderBizFinanzas === 'function') renderBizFinanzas();
       else if (typeof renderBizFinances === 'function') renderBizFinances();
     }

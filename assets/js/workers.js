@@ -189,7 +189,7 @@ function initWorkerPanel() {
 
 
 function workerTab(tab) {
-  var tabs = ['home','agenda','semana','servicios','galeria','finanzas','horario','perfil'];
+  var tabs = ['home','agenda','semana','servicios','galeria','finanzas','historial','horario','perfil'];
   for (var i=0;i<tabs.length;i++) {
     var t=tabs[i]; var pa=G('wp-'+t), bt=G('wn-'+t);
     if(pa) pa.classList[t===tab?'add':'remove']('on');
@@ -200,7 +200,7 @@ function workerTab(tab) {
     renderWorkerHorario();
     if(window.innerWidth>=1024) setTimeout(function(){ if(typeof initHorarioSplit==='function') initHorarioSplit(); },200);
   }
-  if(tab==='finanzas') renderWorkerFinances();
+  if(tab==='finanzas' || tab==='historial') renderWorkerFinances();
   if(tab==='home' && typeof renderWorkerHomeStats==='function') renderWorkerHomeStats();
 }
 

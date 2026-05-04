@@ -262,7 +262,7 @@ function renderBizFinanzas() {
   renderFinanceChart('fin-chart', 'fin-months', stats.monthlyRevenue);
 
   // Historial
-  renderFinanceHistory('biz-appts-fin', allAppts, 30);
+  renderFinanceHistory('biz-appts-fin', allAppts, 100);
 }
 
 /* ══════════════════════════
@@ -297,7 +297,7 @@ function renderWorkerFinanzas() {
   renderFinanceChart('wk-fin-chart', 'wk-fin-months', stats.monthlyRevenue);
 
   // Historial
-  renderFinanceHistory('wk-appts-fin', appts, 30);
+  renderFinanceHistory('wk-appts-fin', appts, 100);
 }
 
 /* ══════════════════════════

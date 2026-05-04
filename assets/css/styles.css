@@ -2314,45 +2314,24 @@ body.dia .fu.d6>div>div:nth-child(3)>div:nth-child(3)>strong,
   /* ── 3. FINANZAS ── */
   #bp-finanzas.on,
   #wp-finanzas.on {
-    display: grid !important;
-    grid-template-columns: 2fr 1fr;
-    /* Gráficos izquierda, Historial derecha */
-    gap: 24px 32px;
-    align-items: start;
-  }
-
-  #bp-finanzas.on>.sec-hdr:first-child,
-  #wp-finanzas.on>.sec-hdr:first-child {
-    grid-column: 1 / -1;
-    margin-bottom: 0;
+    display: block !important;
   }
 
   #bp-finanzas.on>.stats2,
   #wp-finanzas.on>.stats2 {
-    grid-column: 1 / -1;
     grid-template-columns: repeat(4, 1fr) !important;
   }
 
-  #bp-finanzas.on>.card,
-  #wp-finanzas.on>.card {
-    grid-column: 1 / 2;
-  }
-
-  #bp-finanzas.on>.sec-hdr:nth-of-type(2),
-  #wp-finanzas.on>.sec-hdr:nth-of-type(2) {
-    grid-column: 2 / 3;
-    grid-row: 3 / 4;
-    margin-top: 0;
+  #bp-historial.on,
+  #wp-historial.on {
+    display: block !important;
   }
 
   #biz-appts-fin,
   #wk-appts-fin {
-    grid-column: 2 / 3;
-    grid-row: 4 / 6;
-    max-height: 600px;
+    max-height: calc(100vh - 200px);
     overflow-y: auto;
     padding-right: 8px;
-    /* Scroll solo para el historial */
   }
 
   /* ── 4. HORARIO (LA SOLUCIÓN AL SCROLL INFINITO) ── */
