@@ -2420,15 +2420,44 @@ body.dia .fu.d6>div>div:nth-child(3)>div:nth-child(3)>strong,
 }
 
 /* ── OCULTAR UI DE GOOGLE TRANSLATE (GLOBAL) ── */
-.skiptranslate iframe { display: none !important; }
-body { top: 0 !important; position: static !important; }
-#google_translate_element { position: absolute !important; opacity: 0 !important; z-index: -999 !important; pointer-events: none !important; }
-.goog-te-banner-frame { display: none !important; }
-.goog-tooltip { display: none !important; }
-.goog-tooltip:hover { display: none !important; }
-.goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
-/* Ocultar el nuevo widget flotante de Google si aparece */
-.VIpgJd-ZVi9od-ORHb-OEVmcd, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf { display: none !important; }
-.goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; pointer-events: none !important; }
+.skiptranslate iframe {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+  position: static !important;
+}
+
+#google_translate_element {
+  position: absolute !important;
+  opacity: 0 !important;
+  z-index: -999 !important;
+  pointer-events: none !important;
+}
+
+.goog-te-banner-frame {
+  display: none !important;
+}
+
+.goog-tooltip {
+  display: none !important;
+}
+
+.goog-tooltip:hover {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}
+
 /* Ocultar el widget flotante y el tooltip emergente al tocar palabras */
-.VIpgJd-ZVi9od-ORHb-OEVmcd, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf, #goog-gt-tt { display: none !important; }
+.VIpgJd-ZVi9od-ORHb-OEVmcd,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+#goog-gt-tt {
+  display: none !important;
+}
