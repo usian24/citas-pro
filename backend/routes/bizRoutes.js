@@ -335,7 +335,16 @@ router.post('/update-biz', async (req, res) => {
       payload.password = data.pass || data.password;
     }
 
-    const { error } = await supabase.from('businesses').upsert(payload);
+    let error;
+    // Si el payload no tiene 'name', es una actualización parcial (ej. activar o suspender).
+    // Usamos .update() para evitar el error "not-null constraint" de Supabase en inserts.
+    if (payload.name === undefined) {
+      const resUpdate = await supabase.from('businesses').update(payload).eq('id', payload.id);
+      error = resUpdate.error;
+    } else {
+      const resUpsert = await supabase.from('businesses').upsert(payload);
+      error = resUpsert.error;
+    }
 
     if (error) {
       return res.status(400).json({ success: false, error: 'Rechazo Supabase: ' + error.message });
