@@ -1978,41 +1978,6 @@ body.dia .fu.d6>div>div:nth-child(3)>div:nth-child(3)>strong,
   }
 }
 
-@keyframes parpadeoRapido {
-  0% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-
-  100% {
-    opacity: 0.6;
-    transform: scale(1.3) rotate(-5deg);
-  }
-}
-
-@keyframes ofertaShine {
-  0% {
-    transform: translateX(-150%) skewX(-25deg);
-  }
-
-  20%,
-  100% {
-    transform: translateX(200%) skewX(-25deg);
-  }
-}
-
-@keyframes ofertaPulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.02);
-  }
-}
-
 @keyframes scrollPills {
   0% {
     transform: translateX(0);
