@@ -247,10 +247,10 @@ a {
 .inp:-webkit-autofill:hover,
 .inp:-webkit-autofill:focus,
 .inp:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, .07) inset !important;
+  -webkit-box-shadow: 0 0 0 1000px #141824 inset !important;
   -webkit-text-fill-color: #F1F5F9 !important;
   caret-color: #F1F5F9 !important;
-  transition: background-color 9999s ease-in-out 0s;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 [data-theme="light"] .inp:-webkit-autofill,
