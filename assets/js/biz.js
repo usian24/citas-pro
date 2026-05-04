@@ -448,7 +448,9 @@ function openApptDetail(id) {
   (CUR.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (ap) { if (String(ap.id) === String(id)) a = ap; }); });
   (CUR.appointments || []).forEach(function (ap) { if (String(ap.id) === String(id)) a = ap; });
   if (!a) return;
-  H('appt-detail-content', '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:var(--r);padding:16px;margin-bottom:14px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="appt-avatar" style="width:52px;height:52px;font-size:20px">' + san((a.client || '?').split(' ').map(function (n) { return n[0] || ''; }).slice(0, 2).join('').toUpperCase()) + '</div><div><div style="font-size:18px;font-weight:900">' + san(a.client) + '</div>' + (a.phone ? '<div style="font-size:14px;color:var(--blue3);margin-top:3px;font-weight:600">' + san(a.phone) + '</div>' : '') + (a.email ? '<div style="font-size:13px;color:var(--t2);margin-top:2px">' + san(a.email) + '</div>' : '') + '</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div class="sbox"><div class="slbl">Fecha</div><div style="font-size:14px;font-weight:700">' + san(a.date) + '</div></div><div class="sbox"><div class="slbl">Hora</div><div style="font-size:18px;font-weight:900;color:var(--blue)">' + san(a.time) + '</div></div><div class="sbox"><div class="slbl">Servicio</div><div style="font-size:13px;font-weight:700">' + san(a.svc) + '</div></div><div class="sbox"><div class="slbl">Total</div><div style="font-size:18px;font-weight:900;color:var(--green)">' + money(a.price) + '</div></div></div>');
+  
+  var loyaltyHtml = typeof buildLoyaltyHtml === 'function' ? buildLoyaltyHtml(a, _getAllAppts()) : '';
+  H('appt-detail-content', '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:var(--r);padding:16px;margin-bottom:14px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="appt-avatar" style="width:52px;height:52px;font-size:20px">' + san((a.client || '?').split(' ').map(function (n) { return n[0] || ''; }).slice(0, 2).join('').toUpperCase()) + '</div><div><div style="font-size:18px;font-weight:900">' + san(a.client) + '</div>' + (a.phone ? '<div style="font-size:14px;color:var(--blue3);margin-top:3px;font-weight:600">' + san(a.phone) + '</div>' : '') + (a.email ? '<div style="font-size:13px;color:var(--t2);margin-top:2px">' + san(a.email) + '</div>' : '') + '</div></div></div>' + loyaltyHtml + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div class="sbox"><div class="slbl">Fecha</div><div style="font-size:14px;font-weight:700">' + san(a.date) + '</div></div><div class="sbox"><div class="slbl">Hora</div><div style="font-size:18px;font-weight:900;color:var(--blue)">' + san(a.time) + '</div></div><div class="sbox"><div class="slbl">Servicio</div><div style="font-size:13px;font-weight:700">' + san(a.svc) + '</div></div><div class="sbox"><div class="slbl">Total</div><div style="font-size:18px;font-weight:900;color:var(--green)">' + money(a.price) + '</div></div></div>');
   var waBtn = G('appt-wa-btn'); if (waBtn && a.phone) waBtn.href = 'https://wa.me/' + a.phone.replace(/\D/g, '') + '?text=' + encodeURIComponent('Hola ' + a.client + ', te recordamos tu cita en ' + CUR.name + ' el ' + a.date + ' a las ' + a.time + '.');
   var cb = G('appt-complete-btn'); if (cb) cb.onclick = function () { updateApptStatus(id, 'completed'); };
   var ca = G('appt-cancel-btn'); if (ca) ca.onclick = function () { updateApptStatus(id, 'cancelled'); };
@@ -457,10 +459,15 @@ function openApptDetail(id) {
 
 function updateApptStatus(id, status) {
   if (!CUR) return;
-  (CUR.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (a) { if (String(a.id) === String(id)) a.status = status; }); });
-  (CUR.appointments || []).forEach(function (a) { if (String(a.id) === String(id)) a.status = status; });
+  var targetAppt = null;
+  (CUR.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (a) { if (String(a.id) === String(id)) { a.status = status; targetAppt = a; } }); });
+  (CUR.appointments || []).forEach(function (a) { if (String(a.id) === String(id)) { a.status = status; targetAppt = a; } });
   saveDB(); closeOv('ov-appt-detail'); initAgenda(); renderBizFinances();
   toast(status === 'completed' ? 'Cita completada' : 'Cita cancelada', status === 'completed' ? '#22C55E' : '#EF4444');
+
+  if (status === 'completed' && targetAppt && typeof checkLoyaltyReward === 'function') {
+    checkLoyaltyReward(CUR.id, targetAppt);
+  }
 }
 
 /* ══════════════════════════

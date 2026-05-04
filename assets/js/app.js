@@ -53,6 +53,139 @@ function openQRModal() {
   if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita en ' + CUR.name + ' → ' + link);
   openOv('ov-qr');
 }
+
+/* ══════════════════════════
+   FIDELIZACIÓN (TARJETA DE SELLOS)
+══════════════════════════ */
+window.buildLoyaltyHtml = function(a, allAppts) {
+  if (!a || !allAppts) return '';
+  
+  // Buscar cuántas citas completadas tuvo el cliente ANTES de esta cita
+  var pastCompleted = allAppts.filter(function(x) {
+     if (x.status !== 'completed' || String(x.id) === String(a.id)) return false;
+     // Solo contar citas que sucedieron antes que la actual
+     var dateX = new Date(x.date + 'T' + (x.time||'00:00'));
+     var dateA = new Date(a.date + 'T' + (a.time||'00:00'));
+     if (dateX >= dateA) return false;
+     
+     // 1. Identificación exacta por Teléfono (solo números)
+     var p1 = String(a.phone||'').replace(/\D/g,'');
+     var p2 = String(x.phone||'').replace(/\D/g,'');
+     if (p1 && p2 && p1 === p2) return true;
+
+     // 2. Identificación exacta por Correo Electrónico
+     var e1 = String(a.email||'').toLowerCase().trim();
+     var e2 = String(x.email||'').toLowerCase().trim();
+     if (e1 && e2 && e1 === e2) return true;
+     
+     // Ya NO cruzamos por nombre para evitar falsos positivos con nombres comunes
+     return false;
+  }).length;
+
+  // REGLA: Mostrar a los trabajadores o administradores SOLO a partir de la racha 3 (2 citas completadas en el pasado)
+  if (pastCompleted < 2) return '';
+
+  var stampsBefore = pastCompleted % 10;
+  var currentStamps = a.status === 'completed' ? (pastCompleted + 1) % 10 : stampsBefore;
+  var displayStamps = (a.status === 'completed' && stampsBefore === 9) ? 10 : currentStamps;
+
+  var circles = '';
+  for(var i=1; i<=10; i++) {
+     var isOn = i <= displayStamps;
+     if (i === 10) {
+        circles += '<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:'+(isOn?'var(--green)':'var(--bg3)')+';border:1px solid '+(isOn?'var(--green)':'var(--b)')+';color:#fff;box-shadow:'+(isOn?'0 0 10px rgba(34,197,94,.4)':'none')+';transition:all .3s">🎁</div>';
+     } else {
+        circles += '<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:'+(isOn?'var(--blue)':'var(--bg3)')+';border:1px solid '+(isOn?'var(--blue)':'var(--b)')+';color:'+(isOn?'#fff':'transparent')+';transition:all .3s">✓</div>';
+     }
+  }
+
+  var msg = '';
+  if (displayStamps === 10) msg = '<span style="color:var(--green);font-weight:800">¡Premio canjeado en esta asistencia! 🎉</span>';
+  else if (stampsBefore === 9 && a.status !== 'completed') msg = '<span style="color:var(--green);font-weight:800;font-size:12px">🎁 ¡Esta asistencia es el premio! (Gratis)</span>';
+  else msg = 'Faltan ' + (10 - displayStamps) + ' asistencias para el premio.';
+
+  return '<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;padding:16px;margin-bottom:14px">'
+       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+       + '<div style="font-size:13px;font-weight:800;color:var(--text)">Racha de Asistencias</div>'
+       + '<div style="font-size:11px;font-weight:700;color:var(--blue);background:var(--bblue);padding:3px 8px;border-radius:8px">'+displayStamps+'/10 Rachas</div>'
+       + '</div>'
+       + '<div style="display:flex;justify-content:space-between;gap:4px;margin-bottom:12px">' + circles + '</div>'
+       + '<div style="text-align:center;font-size:11px;color:var(--muted)">' + msg + '</div>'
+       + '</div>';
+};
+
+window.buildClientLoyaltyHtml = function(bizId, phone, email, name) {
+  var biz = typeof getBizById === 'function' ? getBizById(bizId) : null;
+  if (!biz && typeof DB !== 'undefined' && DB.businesses) biz = DB.businesses.find(b => b.id === bizId);
+  if (!biz) return '';
+  var allAppts = [];
+  (biz.workers || []).forEach(function(w){ (w.appointments || []).forEach(function(ap){ allAppts.push(ap); }); });
+  (biz.appointments || []).forEach(function(ap){ allAppts.push(ap); });
+  
+  var pastCompleted = allAppts.filter(function(x) {
+     if (x.status !== 'completed') return false;
+     var p1 = String(phone||'').replace(/\D/g,'');
+     var p2 = String(x.phone||'').replace(/\D/g,'');
+     if (p1 && p2 && p1 === p2) return true;
+
+     var e1 = String(email||'').toLowerCase().trim();
+     var e2 = String(x.email||'').toLowerCase().trim();
+     if (e1 && e2 && e1 === e2) return true;
+     return false;
+  }).length;
+
+  var currentStamps = pastCompleted % 10;
+  
+  var circles = '';
+  for(var i=1; i<=10; i++) {
+     var isOn = i <= currentStamps;
+     if (i === 10) {
+        circles += '<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:'+(isOn?'var(--green)':'var(--bg3)')+';border:1px solid '+(isOn?'var(--green)':'var(--b)')+';color:#fff;box-shadow:'+(isOn?'0 0 10px rgba(34,197,94,.4)':'none')+';transition:all .3s">🎁</div>';
+     } else {
+        circles += '<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:'+(isOn?'var(--blue)':'var(--bg3)')+';border:1px solid '+(isOn?'var(--blue)':'var(--b)')+';color:'+(isOn?'#fff':'transparent')+';transition:all .3s">✓</div>';
+     }
+  }
+
+  var msg = '';
+  if (currentStamps === 9) msg = '<span style="color:var(--green);font-weight:800">¡Tu próxima cita es el premio! 🎁 (Gratis)</span>';
+  else msg = 'Faltan ' + (10 - currentStamps) + ' asistencias para tu premio.';
+
+  var firstName = name ? name.split(' ')[0] : 'Cliente';
+
+  return '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:16px;padding:16px;margin-bottom:20px;animation:fadeUp .4s ease">'
+       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+       + '<div style="font-size:13px;font-weight:800;color:var(--text)">¡Hola, '+san(firstName)+'! Tu Racha actual</div>'
+       + '<div style="font-size:11px;font-weight:700;color:var(--blue);background:rgba(74,127,212,.15);padding:3px 8px;border-radius:8px">'+currentStamps+'/10 Rachas</div>'
+       + '</div>'
+       + '<div style="display:flex;justify-content:space-between;gap:4px;margin-bottom:12px">' + circles + '</div>'
+       + '<div style="text-align:center;font-size:12px;color:var(--blue3);font-weight:600">' + msg + '</div>'
+       + '</div>';
+};
+
+window.checkLoyaltyReward = function(bizId, appt) {
+  if (!appt || !appt.email) return;
+  var biz = typeof getBizById === 'function' ? getBizById(bizId) : null;
+  if (!biz && typeof DB !== 'undefined' && DB.businesses) biz = DB.businesses.find(b => b.id === bizId);
+  if (!biz) return;
+  
+  var allAppts = [];
+  (biz.workers || []).forEach(function(w){ (w.appointments || []).forEach(function(a){ allAppts.push(a); }); });
+  (biz.appointments || []).forEach(function(a){ allAppts.push(a); });
+  
+  var pastCompleted = allAppts.filter(function(x) {
+     if (x.status !== 'completed' || String(x.id) === String(appt.id)) return false;
+     if (x.date && appt.date && new Date(x.date) > new Date(appt.date)) return false;
+     var p1 = String(appt.phone||'').replace(/\D/g,''); var p2 = String(x.phone||'').replace(/\D/g,'');
+     if (p1 && p2 && p1 === p2) return true;
+     var e1 = String(appt.email||'').toLowerCase().trim(); var e2 = String(x.email||'').toLowerCase().trim();
+     if (e1 && e2 && e1 === e2) return true;
+     return false;
+  }).length;
+
+  if (pastCompleted % 10 === 9 && appt.status === 'completed') {
+     fetch('/api/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'loyalty_reward', to: appt.email, data: { clientName: appt.client, bizName: biz.name } }) }).catch(function(e){ console.error(e); });
+  }
+};
 /* ══════════════════════════
    SUPER ADMIN — LOGIN (SEGURO CON SUPABASE)
 ══════════════════════════ */

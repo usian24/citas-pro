@@ -81,6 +81,31 @@ router.post('/send-email', async (req, res) => {
         </div>
       `
     },
+    loyalty_reward: {
+      subject: `🎁 ¡Felicidades! Has ganado una recompensa en ${data?.bizName}`,
+      html: `
+        <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;background:#07090F;color:#F1F5F9;padding:40px 32px;border-radius:20px">
+          <div style="text-align:center;margin-bottom:32px">
+            <div style="font-size:56px;margin-bottom:12px">🎁</div>
+            <h2 style="font-size:22px;font-weight:900;margin:0">¡Completaste tu racha!</h2>
+            <p style="color:#94A3B8;margin-top:8px">Hola <strong style="color:#F1F5F9">${data?.clientName}</strong>, gracias por tu lealtad a <strong style="color:#F1F5F9">${data?.bizName}</strong>.</p>
+          </div>
+          <div style="background:#141824;border-radius:16px;padding:24px;margin-bottom:24px;text-align:center;border:1px solid #22C55E">
+            <h3 style="color:#22C55E;margin-top:0">¡Tu próxima cita es GRATIS!</h3>
+            <p style="font-size:14px;color:#94A3B8;line-height:1.6">
+              Has completado tus 10 asistencias y te has ganado un premio especial.
+              Muestra este correo en tu próxima visita o resérvala ahora mismo.
+            </p>
+          </div>
+          <a href="https://citasproonline.com" style="display:block;background:linear-gradient(135deg,#22C55E,#16A34A);color:#fff;padding:16px;border-radius:50px;text-align:center;font-weight:800;text-decoration:none;font-size:15px">
+            Reservar mi premio →
+          </a>
+          <div style="margin-top:32px;padding-top:20px;border-top:1px solid #1E2A40;text-align:center;font-size:11px;color:#475569">
+            © 2026 Citas Pro · <a href="https://citasproonline.com" style="color:#4A7FD4;text-decoration:none">citasproonline.com</a>
+          </div>
+        </div>
+      `
+    },
     new_booking_biz: {
       subject: `📅 Nueva cita de ${data?.clientName}`,
       html: `

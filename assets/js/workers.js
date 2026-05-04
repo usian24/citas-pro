@@ -262,6 +262,14 @@ function openWorkerApptDetail(id) {
   var a=null;
   (CUR_WORKER.appointments||[]).forEach(function(ap){ if(String(ap.id)===String(id)) a=ap; });
   if (!a) return;
+
+  var allAppts = [];
+  if (CUR) {
+    (CUR.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (ap) { allAppts.push(ap); }); });
+    (CUR.appointments || []).forEach(function (ap) { allAppts.push(ap); });
+  }
+  var loyaltyHtml = typeof buildLoyaltyHtml === 'function' ? buildLoyaltyHtml(a, allAppts) : '';
+
   H('wk-appt-detail-content',
     '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:var(--r);padding:16px;margin-bottom:14px">'
     +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
@@ -269,7 +277,7 @@ function openWorkerApptDetail(id) {
     +'<div><div style="font-size:18px;font-weight:900">'+san(a.client)+'</div>'
     +(a.phone?'<div style="font-size:14px;color:var(--blue3);margin-top:3px;font-weight:600">'+san(a.phone)+'</div>':'')
     +(a.email?'<div style="font-size:13px;color:var(--t2);margin-top:2px">'+san(a.email)+'</div>':'')
-    +'</div></div></div>'
+    +'</div></div></div>' + loyaltyHtml
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
     +'<div class="sbox"><div class="slbl">Fecha</div><div style="font-size:14px;font-weight:700">'+san(a.date)+'</div></div>'
     +'<div class="sbox"><div class="slbl">Hora</div><div style="font-size:18px;font-weight:900;color:var(--blue)">'+san(a.time)+'</div></div>'
@@ -284,9 +292,14 @@ function openWorkerApptDetail(id) {
 
 function updateWorkerApptStatus(id, status) {
   if (!CUR_WORKER) return;
-  (CUR_WORKER.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) a.status=status; });
+  var targetAppt = null;
+  (CUR_WORKER.appointments||[]).forEach(function(a){ if(String(a.id)===String(id)) { a.status=status; targetAppt = a; } });
   saveDB(); closeOv('ov-wk-appt-detail'); initWorkerAgenda(); renderWorkerFinances();
   toast(status==='completed'?'Cita completada':'Cita cancelada', status==='completed'?'#22C55E':'#EF4444');
+
+  if (status === 'completed' && targetAppt && typeof checkLoyaltyReward === 'function' && CUR) {
+    checkLoyaltyReward(CUR.id, targetAppt);
+  }
 }
 
 /* ══════════════════════════

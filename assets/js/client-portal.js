@@ -162,6 +162,21 @@ function clStep2() {
 
 function buildWorkerCards() {
   var biz = getBizById(CSEL.bizId); if (!biz) return;
+
+  var loyaltyHtml = '';
+  if (typeof buildClientLoyaltyHtml === 'function') {
+      loyaltyHtml = buildClientLoyaltyHtml(CSEL.bizId, CSEL.clientPhone, CSEL.clientEmail, CSEL.clientName);
+  }
+  
+  var loyaltyContainer = G('cl-loyalty-container');
+  if (!loyaltyContainer) {
+    loyaltyContainer = document.createElement('div');
+    loyaltyContainer.id = 'cl-loyalty-container';
+    var wl = G('cl-workers-list');
+    if (wl && wl.parentNode) wl.parentNode.insertBefore(loyaltyContainer, wl);
+  }
+  if (loyaltyContainer) loyaltyContainer.innerHTML = loyaltyHtml;
+
   var workers = (biz.workers || []).filter(function(w) { return w.active; });
   H('cl-workers-list', workers.length
     ? workers.map(function(w) {
