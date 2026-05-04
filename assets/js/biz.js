@@ -416,7 +416,7 @@ function bizTab(tab) {
     if (bt) bt.classList[t === tab ? 'add' : 'remove']('on');
   }
   if (tab === 'agenda') { DB = loadDB(); CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : CUR; initAgenda(); }
-  if (tab === 'finanzas' || tab === 'historial') renderBizFinanzas();
+  if (tab === 'finanzas' || tab === 'historial') renderBizFinances();
   if (tab === 'home') {
     DB = loadDB(); CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : CUR;
     if (typeof renderBizHomeStats === 'function') renderBizHomeStats();
@@ -739,11 +739,12 @@ function renderBizFinances() {
     html += '</tbody></table></div></div>';
   }
 
-  html += '<div class="sec-hdr"><span class="sec-ttl">Historial completo</span></div>';
-  var historial = paid.slice().sort(function (a, b) { return b.date.localeCompare(a.date); }).slice(0, 30);
-  html += historial.length ? historial.map(function (a) { return apptRowH(a); }).join('') : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Sin registros</div>';
-
   var el = G('bp-finanzas'); if (el) el.innerHTML = html;
+
+  // Generar historial exclusivamente en su propia pestaña
+  var historial = paid.slice().sort(function (a, b) { return b.date.localeCompare(a.date); }).slice(0, 100);
+  var histHtml = historial.length ? historial.map(function (a) { return apptRowH(a); }).join('') : '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Sin registros</div>';
+  var histEl = G('biz-appts-fin'); if (histEl) histEl.innerHTML = histHtml;
 }
 
 /* Helper para crear tarjeta KPI */
