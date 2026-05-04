@@ -298,38 +298,35 @@ router.post('/update-biz', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Falta el ID de la barbería' });
     }
 
-    // 🛡️ ESCUDO: Buscar si el negocio ya existe para rescatar su contraseña original
-    let existingPass = '';
-    const { data: existingBiz } = await supabase
-      .from('businesses')
-      .select('password')
-      .eq('id', data.id)
-      .single();
-    if (existingBiz) existingPass = existingBiz.password;
+    // Construir el payload de forma dinámica (solo con las propiedades que vienen en la petición)
+    const payload = { id: data.id };
 
-    const payload = {
-      id: data.id,
-      name: data.name || 'Sin nombre',
-      owner: data.owner || '',
-      email: data.email || '',
-      password: (data.pass || data.password) ? (data.pass || data.password) : existingPass,
-      phone: data.phone || '',
-      addr: data.addr || '',
-      city: data.city || '',
-      country: data.country || '',
-      type: data.type || '',
-      plan: data.plan || 'trial',
-      desc_text: data.desc || data.desc_text || '',
-      logo: data.logo || '',
-      cover: data.cover || '',
-      insta: data.insta || '',
-      facebook: data.facebook || '',
-      x_url: data.x_url || '',
-      tiktok: data.tiktok || '',
-      join_date: data.joinDate || new Date().toISOString().split('T')[0],
-      horario: Array.isArray(data.horario) ? data.horario : [],
-      photos: Array.isArray(data.photos) ? data.photos : []
-    };
+    if (data.name !== undefined) payload.name = data.name;
+    if (data.owner !== undefined) payload.owner = data.owner;
+    if (data.email !== undefined) payload.email = data.email;
+    if (data.phone !== undefined) payload.phone = data.phone;
+    if (data.addr !== undefined) payload.addr = data.addr;
+    if (data.city !== undefined) payload.city = data.city;
+    if (data.country !== undefined) payload.country = data.country;
+    if (data.type !== undefined) payload.type = data.type;
+    if (data.plan !== undefined) payload.plan = data.plan;
+    if (data.desc !== undefined) payload.desc_text = data.desc;
+    else if (data.desc_text !== undefined) payload.desc_text = data.desc_text;
+    if (data.logo !== undefined) payload.logo = data.logo;
+    if (data.cover !== undefined) payload.cover = data.cover;
+    if (data.insta !== undefined) payload.insta = data.insta;
+    if (data.facebook !== undefined) payload.facebook = data.facebook;
+    if (data.x_url !== undefined) payload.x_url = data.x_url;
+    if (data.tiktok !== undefined) payload.tiktok = data.tiktok;
+    if (data.joinDate !== undefined) payload.join_date = data.joinDate;
+    else if (data.join_date !== undefined) payload.join_date = data.join_date;
+    if (data.expires_at !== undefined) payload.expires_at = data.expires_at;
+    if (data.horario !== undefined) payload.horario = Array.isArray(data.horario) ? data.horario : [];
+    if (data.photos !== undefined) payload.photos = Array.isArray(data.photos) ? data.photos : [];
+
+    if (data.pass || data.password) {
+      payload.password = data.pass || data.password;
+    }
 
     const { error } = await supabase.from('businesses').upsert(payload);
 
