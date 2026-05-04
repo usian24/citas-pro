@@ -447,6 +447,7 @@ window.onload = async function() {
   initREG(); 
   initCSEL();
   initTheme();
+  initGoogleTranslate();
   
   // ¡MUY IMPORTANTE! Restaurar la sesión DESPUÉS de que bootComponents haya insertado el HTML de las vistas.
   if (typeof restaurarSesion === 'function') restaurarSesion();
