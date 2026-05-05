@@ -121,7 +121,7 @@ function handleAppointmentChange(payload, workerId, bizId) {
   }
 
   if (_refreshTimerWorker) clearTimeout(_refreshTimerWorker);
-  _refreshTimerWorker = setTimeout(function () { safeRefreshWorkerUI(workerId, bizId); }, 1000);
+  _refreshTimerWorker = setTimeout(function () { safeRefreshWorkerUI(workerId, bizId); }, 400);
 }
 
 /* ══════════════════════════
@@ -152,7 +152,7 @@ function handleBizAppointmentChange(payload, bizId) {
   }
 
   if (_refreshTimerBiz) clearTimeout(_refreshTimerBiz);
-  _refreshTimerBiz = setTimeout(function () { safeRefreshBizUI(bizId); }, 1000);
+  _refreshTimerBiz = setTimeout(function () { safeRefreshBizUI(bizId); }, 400);
 }
 
 /* ══════════════════════════

@@ -9,6 +9,10 @@ const router = express.Router();
 // ═══════════════════════════════════════
 router.get('/public-businesses', async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     const { data: businesses, error } = await supabase
       .from('businesses')
       .select('id, name, city, type, logo, cover, addr, insta, facebook, x_url');
@@ -29,6 +33,10 @@ router.get('/public-businesses', async (req, res) => {
 // ═══════════════════════════════════════
 router.get('/get-biz', async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     const bizId = req.query.id;
     if (!bizId) {
       return res.status(400).json({ error: 'Falta el ID del negocio' });
@@ -164,6 +172,10 @@ router.get('/get-biz', async (req, res) => {
 // ═══════════════════════════════════════
 router.get('/get-db', verifyToken, async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     const { data: businesses, error } = await supabase.from('businesses').select('*');
     if (error) { console.error('Error get-db:', error); return res.status(400).json([]); }
 
