@@ -557,7 +557,12 @@ function copyText(txt) {
 ══════════════════════════ */
 async function fetchBizFromCloud(bizId) {
   try {
-    const response = await fetch('/api/get-biz?id=' + bizId);
+    const response = await fetch('/api/get-biz?id=' + bizId + '&_t=' + Date.now(), {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
     if (response.ok) {
       const data = await response.json();
       return data;

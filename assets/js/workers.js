@@ -66,7 +66,7 @@ function initWorkerPanel() {
   T('wk-biz-nm', bizName);
 
   var firstName = (CUR_WORKER.name || 'Trabajador').split(' ')[0];
-  T('wk-greeting', 'Bienvenido, ' + firstName);
+  T('wk-greeting', '¡Hola, ' + firstName + '!');
 
   /* Stats home — usando timezone del negocio */
   var _hoyDate = (typeof ahoraEnNegocio === 'function') ? ahoraEnNegocio(CUR.country || 'PE') : new Date();
