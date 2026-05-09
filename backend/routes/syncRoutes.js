@@ -153,6 +153,25 @@ router.post('/sync', async (req, res) => {
         const esNueva      = !enSupabase && appt.status === 'confirmed';
         const esReagendada = appt.status === 'rescheduled' && !!enSupabase;
 
+        // 🛡️ PREVENCIÓN DE DOBLE RESERVA (RACE CONDITION)
+        if (appt.status !== 'cancelled') {
+          const { data: conflict } = await supabase
+            .from('appointments')
+            .select('id')
+            .eq('business_id', business_id)
+            .eq('worker_id', appt.worker_id || '')
+            .eq('date', appt.date)
+            .eq('time', appt.time)
+            .neq('status', 'cancelled')
+            .neq('id', String(appt.id))
+            .limit(1);
+
+          if (conflict && conflict.length > 0) {
+            apptErrors.push({ id: appt.id, msg: 'El horario de las ' + appt.time + ' acaba de ser ocupado por otra persona. Por favor elige otro.' });
+            continue; // Saltamos esta cita para no crear un duplicado
+          }
+        }
+
         const { error } = await supabase.from('appointments').upsert({
           id:            String(appt.id),
           business_id:   business_id,

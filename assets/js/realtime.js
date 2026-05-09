@@ -11,6 +11,7 @@ var SUPABASE_RT_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
 var _supaRT = null;
 var _rtChannel = null;
 var _rtBizChannel = null;
+var _rtClientChannel = null;
 
 var _refreshTimerWorker = null;
 var _refreshTimerBiz = null;
@@ -89,6 +90,44 @@ async function subscribeBizRealtime(bizId) {
       console.log('Biz Realtime Status:', status);
       if (status === 'SUBSCRIBED') showRealtimeIndicator(true);
     });
+}
+
+/* ══════════════════════════
+   SUSCRIPCIÓN PARA CLIENTES (PORTAL)
+══════════════════════════ */
+async function subscribeClientRealtime(bizId) {
+  if (!bizId) return;
+  var client = await initSupabaseRealtime();
+  if (!client) return;
+
+  if (_rtClientChannel) { _rtClientChannel.unsubscribe(); _rtClientChannel = null; }
+  var channelName = 'client-appointments-' + bizId;
+
+  _rtClientChannel = client
+    .channel(channelName)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: 'business_id=eq.' + bizId },
+      function (payload) {
+        safeRefreshClientUI(bizId);
+      }
+    )
+    .subscribe();
+}
+
+async function safeRefreshClientUI(bizId) {
+  if (typeof fetchBizFromCloud !== 'function') return;
+  const freshData = await fetchBizFromCloud(bizId);
+  if (!freshData) return;
+
+  let index = DB.businesses.findIndex(function (b) { return b.id === bizId; });
+  if (index >= 0) DB.businesses[index] = freshData;
+  else DB.businesses.push(freshData);
+
+  if (typeof CSEL !== 'undefined' && CSEL && CSEL.bizId === bizId) {
+    var s4 = document.getElementById('cs-4');
+    if (s4 && s4.classList.contains('on')) {
+       if (typeof buildTimes === 'function') buildTimes(CSEL.bizId, CSEL.workerId);
+    }
+  }
 }
 
 /* ══════════════════════════
@@ -460,11 +499,12 @@ async function safeRefreshBizUI(bizId) {
 function unsubscribeRealtime() {
   if (_rtChannel) { _rtChannel.unsubscribe(); _rtChannel = null; }
   if (_rtBizChannel) { _rtBizChannel.unsubscribe(); _rtBizChannel = null; }
+  if (_rtClientChannel) { _rtClientChannel.unsubscribe(); _rtClientChannel = null; }
   if (_smartPollTimer) { clearInterval(_smartPollTimer); _smartPollTimer = null; }
   showRealtimeIndicator(false);
 }
 
-document.addEventListener("visibilitychange", function() {
+document.addEventListener("visibilitychange", function () {
   if (!document.hidden) {
     // Forzar actualización instantánea al volver a mirar la pantalla
     if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && typeof DB !== 'undefined' && DB && DB.currentWorker) {
@@ -499,3 +539,5 @@ window.subscribeBizRealtime = subscribeBizRealtime;
 window.unsubscribeRealtime = unsubscribeRealtime;
 window.connectRealtimeForCurrentUser = connectRealtimeForCurrentUser;
 window.requestNotificationPermission = requestNotificationPermission;
+window.subscribeClientRealtime = subscribeClientRealtime;
+window.safeRefreshClientUI = safeRefreshClientUI;

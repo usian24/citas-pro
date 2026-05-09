@@ -139,6 +139,8 @@ function loadBizDirect(bizId) {
     };
   }
 
+  if (typeof subscribeClientRealtime === 'function') subscribeClientRealtime(bizId);
+
   goTo('s-barber-portal');
   window.scrollTo(0, 0);
 }
