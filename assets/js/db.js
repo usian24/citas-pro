@@ -166,7 +166,7 @@ function syncAppointmentsToCloud(biz) {
   (biz.workers || []).forEach(function(w) {
     if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR_WORKER.id !== w.id) return;
     (w.appointments || []).forEach(function(a) {
-      if (a.status === 'cancelled') return; // ✅ No sobreescribir cancelaciones
+      if (a.status === 'cancelled') return; // No sobreescribir cancelaciones
       allAppts.push({
         id:            String(a.id),
         business_id:   biz.id,
