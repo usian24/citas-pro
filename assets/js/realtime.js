@@ -21,8 +21,8 @@ async function loadSupabaseCDN() {
     if (typeof supabase !== 'undefined') return resolve(true);
     var script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-    script.onload = function() { resolve(true); };
-    script.onerror = function() { resolve(false); };
+    script.onload = function () { resolve(true); };
+    script.onerror = function () { resolve(false); };
     document.head.appendChild(script);
   });
 }
@@ -346,7 +346,7 @@ function showRealtimeIndicator(connected) {
 
 function startSmartPolling(workerId, bizId) {
   if (_smartPollTimer) clearInterval(_smartPollTimer);
-  _smartPollTimer = setInterval(function() {
+  _smartPollTimer = setInterval(function () {
     if (document.hidden) return; // Pausa si el usuario no está viendo la pantalla
     if (workerId && typeof CUR_WORKER !== 'undefined' && CUR_WORKER) {
       safeRefreshWorkerUI(workerId, bizId);
@@ -376,7 +376,7 @@ async function safeRefreshWorkerUI(workerId, bizId) {
   CUR = freshData;
   let freshWorker = CUR.workers.find(function (w) { return w.id === workerId; });
   if (freshWorker) CUR_WORKER = freshWorker;
-  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch(e) {}
+  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch (e) { }
   var activePane = document.querySelector('#s-worker .pane.on');
   if (activePane) {
     var pid = activePane.id;
@@ -407,7 +407,7 @@ async function safeRefreshBizUI(bizId) {
     DB.businesses[index] = freshData;
   }
   CUR = freshData;
-  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch(e) {}
+  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch (e) { }
   var activePane = document.querySelector('#s-biz .pane.on');
   if (activePane) {
     var pid = activePane.id;
