@@ -1,5 +1,93 @@
 'use strict';
 // admin.js
+
+async function dotsLogin() {
+  var email = V('dots-email').trim().toLowerCase();
+  var pass = V('dots-pass');
+  hideErr('dots-err');
+
+  if (!email || !pass) {
+    showErr('dots-err', 'Completa todos los campos.');
+    return;
+  }
+
+  var key = 'dots_' + email;
+  if (!checkRateLimit(key)) {
+    showErr('dots-err', 'Demasiados intentos. Espera 5 minutos.');
+    return;
+  }
+
+  try {
+    let res = await fetch('/api/admin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: email, password: pass })
+    });
+
+    if (res.ok) {
+      let data = await res.json();
+      if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
+      resetRateLimit(key);
+      DB.admin.auth = true;
+      saveDB();
+      hideErr('dots-err');
+      closeOv('ov-admin');
+      goTo('s-admin');
+      showAdminPanel();
+      if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
+      toast('Bienvenido/a, Admin', '#2855C8');
+    } else {
+      showErr('dots-err', 'Credenciales incorrectas.');
+      var p = G('dots-pass');
+      if (p) { p.value = ''; p.focus(); }
+    }
+  } catch (error) {
+    showErr('dots-err', 'Error de conexión con el servidor.');
+  }
+}
+
+async function doAdminLogin() {
+  var email = V('adm-email').trim().toLowerCase();
+  var pass = V('adm-pass');
+  hideErr('adm-err');
+
+  if (!email || !pass) {
+    showErr('adm-err', 'Escribe email y contraseña.');
+    return;
+  }
+
+  var key = 'admin_' + email;
+  if (!checkRateLimit(key)) {
+    showErr('adm-err', 'Demasiados intentos. Espera 5 minutos.');
+    return;
+  }
+
+  try {
+    let res = await fetch('/api/admin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: email, password: pass })
+    });
+
+    if (res.ok) {
+      let data = await res.json();
+      if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
+      resetRateLimit(key);
+      DB.admin.auth = true;
+      saveDB();
+      hideErr('adm-err');
+      showAdminPanel();
+      if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
+    } else {
+      showErr('adm-err', 'Credenciales incorrectas.');
+      var p = G('adm-pass');
+      if (p) { p.value = ''; p.focus(); }
+    }
+  } catch (error) {
+    showErr('adm-err', 'Error de conexión con el servidor.');
+  }
+}
+
 function doAdminLogout() {
   DB.admin.auth = false; saveDB();
   var l = G('adm-login'), p = G('adm-panel');
@@ -168,7 +256,7 @@ function renderAdminPaises() {
       var activos = activeCount[codigo] || 0;
 
       var mrrTotal = activos * cfg.price;
-      var mrrStr = cfg.simbolo + ' ' + mrrTotal.toLocaleString('en-US');
+      var mrrStr = cfg.symbol + ' ' + mrrTotal.toLocaleString('en-US');
 
       html += '<tr style="border-bottom:1px solid var(--b)">';
       html += '<td style="padding:14px 16px;font-weight:800;font-size:14px">' + flag + ' ' + codigo + '</td>';
@@ -467,4 +555,43 @@ async function suspendBiz(id) {
 function copyText(txt) {
   try { navigator.clipboard.writeText(txt); } catch (e) { }
   toast('Copiado', '#4A7FD4');
+}
+
+function deleteBiz(id) {
+  if (typeof closeOv === 'function') {
+    closeOv('ov-biz-profile');
+  }
+
+  setTimeout(function () {
+    openConfirmModal(
+      'Eliminar negocio',
+      '¿Estás seguro? Se eliminarán todos los datos, citas y trabajadores de este negocio de la base de datos.',
+      function () {
+        DB.businesses = DB.businesses.filter(function (b) { return b.id !== id; });
+        saveDB();
+        renderBizListAdmin(filterBiz());
+        renderDash();
+        checkNotifications();
+
+        toast('Eliminando de la nube...', '#F59E0B');
+
+        fetch('/api/delete-biz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: id })
+        })
+          .then(function (res) {
+            if (res.ok) {
+              toast('Negocio eliminado por completo', '#EF4444');
+            } else {
+              toast('Error al borrar de la base de datos', '#EF4444');
+            }
+          })
+          .catch(function (e) {
+            console.error('Error de red al eliminar en Supabase:', e);
+          });
+      }
+    );
+
+  }, 300);
 }
