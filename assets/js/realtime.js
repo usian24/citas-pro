@@ -14,9 +14,22 @@ var _rtBizChannel = null;
 
 var _refreshTimerWorker = null;
 var _refreshTimerBiz = null;
+var _smartPollTimer = null;
 
-function initSupabaseRealtime() {
+async function loadSupabaseCDN() {
+  return new Promise(function (resolve) {
+    if (typeof supabase !== 'undefined') return resolve(true);
+    var script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    script.onload = function() { resolve(true); };
+    script.onerror = function() { resolve(false); };
+    document.head.appendChild(script);
+  });
+}
+
+async function initSupabaseRealtime() {
   if (_supaRT) return _supaRT;
+  await loadSupabaseCDN();
   if (typeof supabase === 'undefined' || !supabase.createClient) return null;
   try {
     _supaRT = supabase.createClient(SUPABASE_RT_URL, SUPABASE_RT_KEY, {
@@ -29,9 +42,9 @@ function initSupabaseRealtime() {
 /* ══════════════════════════
    SUSCRIPCIÓN PARA TRABAJADORES
 ══════════════════════════ */
-function subscribeWorkerRealtime(workerId, bizId) {
+async function subscribeWorkerRealtime(workerId, bizId) {
   if (!workerId || !bizId) return;
-  var client = initSupabaseRealtime();
+  var client = await initSupabaseRealtime();
   if (!client) return;
 
   unsubscribeRealtime();
@@ -50,9 +63,9 @@ function subscribeWorkerRealtime(workerId, bizId) {
 /* ══════════════════════════
    SUSCRIPCIÓN PARA DUEÑOS
 ══════════════════════════ */
-function subscribeBizRealtime(bizId) {
+async function subscribeBizRealtime(bizId) {
   if (!bizId) return;
-  var client = initSupabaseRealtime();
+  var client = await initSupabaseRealtime();
   if (!client) return;
 
   if (_rtBizChannel) { _rtBizChannel.unsubscribe(); _rtBizChannel = null; }
@@ -331,6 +344,18 @@ function showRealtimeIndicator(connected) {
   }
 }
 
+function startSmartPolling(workerId, bizId) {
+  if (_smartPollTimer) clearInterval(_smartPollTimer);
+  _smartPollTimer = setInterval(function() {
+    if (document.hidden) return; // Pausa si el usuario no está viendo la pantalla
+    if (workerId && typeof CUR_WORKER !== 'undefined' && CUR_WORKER) {
+      safeRefreshWorkerUI(workerId, bizId);
+    } else if (bizId && typeof CUR !== 'undefined' && CUR) {
+      safeRefreshBizUI(bizId);
+    }
+  }, 10000); // Se actualiza solo y en silencio cada 10 segundos
+}
+
 /* ══════════════════════════
    REFRESH UI SEGURO
 ══════════════════════════ */
@@ -351,7 +376,7 @@ async function safeRefreshWorkerUI(workerId, bizId) {
   CUR = freshData;
   let freshWorker = CUR.workers.find(function (w) { return w.id === workerId; });
   if (freshWorker) CUR_WORKER = freshWorker;
-  if (typeof saveDB === 'function') saveDB();
+  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch(e) {}
   var activePane = document.querySelector('#s-worker .pane.on');
   if (activePane) {
     var pid = activePane.id;
@@ -382,7 +407,7 @@ async function safeRefreshBizUI(bizId) {
     DB.businesses[index] = freshData;
   }
   CUR = freshData;
-  if (typeof saveDB === 'function') saveDB();
+  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch(e) {}
   var activePane = document.querySelector('#s-biz .pane.on');
   if (activePane) {
     var pid = activePane.id;
@@ -404,17 +429,20 @@ async function safeRefreshBizUI(bizId) {
 function unsubscribeRealtime() {
   if (_rtChannel) { _rtChannel.unsubscribe(); _rtChannel = null; }
   if (_rtBizChannel) { _rtBizChannel.unsubscribe(); _rtBizChannel = null; }
+  if (_smartPollTimer) { clearInterval(_smartPollTimer); _smartPollTimer = null; }
   showRealtimeIndicator(false);
 }
 
 function connectRealtimeForCurrentUser() {
   if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && DB && DB.currentWorker) {
     subscribeWorkerRealtime(CUR_WORKER.id, DB.currentWorker.bizId);
+    startSmartPolling(CUR_WORKER.id, DB.currentWorker.bizId);
     requestNotificationPermission();
     return;
   }
   if (typeof CUR !== 'undefined' && CUR && CUR.id && DB && DB.currentBiz) {
     subscribeBizRealtime(CUR.id);
+    startSmartPolling(null, CUR.id);
     requestNotificationPermission();
     return;
   }
