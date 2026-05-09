@@ -520,7 +520,14 @@ async function checkManageAccess() {
       }
       if (data && data.appointment) {
         var a = data.appointment;
-        var biz = getBizById(a.business_id) || { id: a.business_id, name: 'Tu barbería', workers: [] };
+        
+        var biz = getBizById(a.business_id);
+        if (!biz && typeof fetchBizFromCloud === 'function') {
+          biz = await fetchBizFromCloud(a.business_id);
+          if (biz && typeof syncBizToLocal === 'function') syncBizToLocal(biz);
+        }
+        if (!biz) biz = { id: a.business_id, name: 'Tu barbería', workers: [] };
+
         var worker = (biz.workers || []).find(function(w) { return w.id === a.worker_id; }) || null;
         var normalizedAppt = {
           id: a.id, token: a.token, client: a.client_name, phone: a.client_phone,
@@ -664,44 +671,7 @@ function cancelApptByToken(token) {
       return;
     }
  
-    // 4. Notificar al trabajador si tenemos sus datos
-    if (found && found.worker) {
-      if (!found.worker.notifications) found.worker.notifications = [];
-      found.worker.notifications.unshift({
-        id: Date.now(), type: 'booking_cancel',
-        title: 'Cita cancelada: ' + found.appt.client,
-        msg: 'Cita cancelada: ' + found.appt.client,
-        body: 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time,
-        data: { detail: 'Canceló: ' + found.appt.svc + ' • ' + found.appt.date + ' a las ' + found.appt.time },
-        read: false, date: new Date().toISOString()
-      });
-      fetch('/api/save-worker', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'upsert', worker: {
-          id: found.worker.id, business_id: found.biz.id,
-          name: found.worker.name || '', email: found.worker.email || '',
-          password: found.worker.pass || found.worker.password || '',
-          phone: found.worker.phone || '', avatar: found.worker.photo || '',
-          cover: found.worker.cover || '', role: found.worker.spec || 'barber'
-        }})
-      }).catch(function(e) { console.error('Error guardando worker:', e); });
- 
-      if (found.worker.email) {
-        fetch('/api/send-email', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'booking_cancel', to: found.worker.email,
-            data: {
-              clientName: found.appt.client,
-              service: found.appt.svc,
-              date: found.appt.date,
-              time: found.appt.time
-            }
-          })
-        }).catch(function(e) { console.error('Error email:', e); });
-      }
-    }
- 
-    // 5. Cerrar y confirmar
+    // 4. Cerrar y confirmar
     window._cloudApptCache = null;
     _cloudApptCache = null;
     closeOv('ov-manage');
