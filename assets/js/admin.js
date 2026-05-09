@@ -12,6 +12,17 @@ function showAdminPanel() {
   var l = G('adm-login'), p = G('adm-panel');
   if (l) l.style.display = 'none';
   if (p) p.style.display = 'block';
+
+  // Inyectar pestaña de Países si no existe
+  var bnav = document.querySelector('#s-admin .bnav');
+  if (bnav && !G('at-paises')) {
+    bnav.insertAdjacentHTML('beforeend', '<div class="bn" id="at-paises" onclick="admTab(\'paises\')">Países</div>');
+  }
+  var container = document.querySelector('#s-admin > div:last-child');
+  if (container && !G('ap-paises')) {
+    container.insertAdjacentHTML('beforeend', '<div class="pane" id="ap-paises"></div>');
+  }
+
   renderDash();
   checkNotifications();
 }
@@ -20,7 +31,7 @@ function showAdminPanel() {
    ADMIN TABS
 ══════════════════════════ */
 function admTab(tab) {
-  var tabs = ['dashboard','negocios','suscripciones','ingresos','notificaciones','config'];
+  var tabs = ['dashboard', 'negocios', 'suscripciones', 'ingresos', 'notificaciones', 'config', 'paises'];
   for (var i = 0; i < tabs.length; i++) {
     var t = tabs[i];
     var pa = G('ap-' + t), bt = G('at-' + t);
@@ -31,6 +42,7 @@ function admTab(tab) {
   if (tab === 'suscripciones')  renderSubs();
   if (tab === 'ingresos')       renderRevenue();
   if (tab === 'notificaciones') renderNotifications();
+  if (tab === 'paises') renderAdminPaises();
 }
 
 function filterBiz() {
@@ -119,12 +131,14 @@ function openBizProfile(bizId) {
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
     + '<div class="sbox"><div class="slbl">Profesionales</div><div class="snum" style="color:var(--blue)">' + (b.barbers ? b.barbers.length : 0) + '</div></div>'
     + '<div class="sbox"><div class="slbl">Citas totales</div><div class="snum">' + (b.appointments ? b.appointments.length : 0) + '</div></div>'
-    + '<div class="sbox"><div class="slbl">Facturado</div><div class="snum" style="color:var(--green)">' + money(rev) + '</div></div>'
+    + '<div class="sbox"><div class="slbl">Ganancia Tienda</div><div class="snum" style="color:var(--green)">' + money(rev) + '</div></div>'
     + '<div class="sbox"><div class="slbl">Citas hoy</div><div class="snum" style="color:var(--blue)">' + todayA.length + '</div></div></div>'
     + (b.desc ? '<div class="card" style="margin-bottom:12px;font-size:13px;color:var(--t2);line-height:1.6">' + san(b.desc) + '</div>' : '')
     + '<div style="background:var(--bg3);border-radius:11px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
     + '<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">🔗 citaspro.app/b/' + sanitizeText(b.id) + '</span>'
     + '<button onclick="copyText(\'citaspro.app/b/' + sanitizeText(b.id) + '\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
+    + '<div style="font-size:12px;font-weight:800;margin-bottom:12px;color:var(--blue);text-transform:uppercase;letter-spacing:0.5px">💈 Perfiles del Equipo de Trabajo</div>'
+    + '<div style="margin-bottom:20px;max-height:300px;overflow-y:auto;padding-right:4px">' + workersHtml + '</div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
     + '<button onclick="extendTrial(\'' + sanitizeText(b.id) + '\')" class="btn btn-dark btn-sm" style="flex:1"> Extender prueba</button>'
     + '<button onclick="activateBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-green btn-sm" style="flex:1"> Activar</button>'
