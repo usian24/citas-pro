@@ -121,33 +121,46 @@ function renderAdminPaises() {
   var html = '<div class="sec-hdr"><span class="sec-ttl">Inteligencia Regional y Monedas</span></div>';
   html += '<div class="tip-box">Lista de países soportados, sus monedas y el precio de suscripción local que cobras como plataforma.</div>';
   html += '<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;overflow:hidden;overflow-x:auto;">';
-  html += '<table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left;min-width:500px;">';
-  html += '<thead style="background:var(--bblue);color:var(--blue);font-size:11px;text-transform:uppercase;"><tr><th style="padding:14px 16px">País</th><th style="padding:14px 16px">Moneda</th><th style="padding:14px 16px">Precio Suscripción</th><th style="padding:14px 16px">Tiendas Registradas</th></tr></thead>';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left;min-width:650px;">';
+  html += '<thead style="background:var(--bblue);color:var(--blue);font-size:11px;text-transform:uppercase;"><tr><th style="padding:14px 16px">País</th><th style="padding:14px 16px">Moneda</th><th style="padding:14px 16px">Suscripción</th><th style="padding:14px 16px">Tiendas Registradas</th><th style="padding:14px 16px">Tiendas Activas</th><th style="padding:14px 16px">MRR Estimado</th></tr></thead>';
   html += '<tbody>';
 
   var bizCount = {};
+  var activeCount = {};
   (DB.businesses || []).forEach(function (b) {
     var c = b.country || 'ES';
     bizCount[c] = (bizCount[c] || 0) + 1;
+    if (b.plan === 'active') {
+      activeCount[c] = (activeCount[c] || 0) + 1;
+    }
   });
 
   var configPaises = typeof PAIS_CONFIG !== 'undefined' ? PAIS_CONFIG : {};
   var paises = Object.keys(configPaises);
 
   if (paises.length === 0) {
-    html += '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">No hay configuración de países cargada.</td></tr>';
+    html += '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">No hay configuración de países cargada.</td></tr>';
   } else {
     paises.forEach(function (codigo) {
       var cfg = configPaises[codigo];
       var precio = (typeof PRECIO_SUSCRIPCION !== 'undefined' && PRECIO_SUSCRIPCION[codigo]) ? PRECIO_SUSCRIPCION[codigo] : '10€';
       var flag = FLAGS[codigo] || '🌍';
       var count = bizCount[codigo] || 0;
+      var activos = activeCount[codigo] || 0;
+
+      // Extraemos el número para calcular los ingresos mensuales por país
+      var numMatch = precio.replace(/\./g, '').match(/\d+/);
+      var numericPrice = numMatch ? parseInt(numMatch[0]) : 10;
+      var mrrTotal = activos * numericPrice;
+      var mrrStr = cfg.simbolo + ' ' + mrrTotal.toLocaleString('en-US');
 
       html += '<tr style="border-bottom:1px solid var(--b)">';
       html += '<td style="padding:14px 16px;font-weight:800;font-size:14px">' + flag + ' ' + codigo + '</td>';
       html += '<td style="padding:14px 16px;color:var(--t2)">' + san(cfg.nombre) + ' <strong style="color:var(--text)">(' + san(cfg.simbolo) + ')</strong></td>';
       html += '<td style="padding:14px 16px;font-weight:900;color:var(--green)">' + san(precio) + '<span style="font-size:10px;font-weight:normal;color:var(--muted)">/mes</span></td>';
-      html += '<td style="padding:14px 16px;">' + (count > 0 ? '<span style="background:rgba(74,127,212,.15);color:var(--blue);padding:4px 10px;border-radius:12px;font-weight:800;font-size:11px">' + count + ' tiendas</span>' : '<span style="color:var(--muted)">0</span>') + '</td>';
+      html += '<td style="padding:14px 16px;">' + (count > 0 ? '<span style="background:rgba(74,127,212,.15);color:var(--blue);padding:4px 10px;border-radius:12px;font-weight:800;font-size:11px">' + count + ' total</span>' : '<span style="color:var(--muted)">0</span>') + '</td>';
+      html += '<td style="padding:14px 16px;">' + (activos > 0 ? '<span style="background:rgba(34,197,94,.15);color:var(--green);padding:4px 10px;border-radius:12px;font-weight:800;font-size:11px">' + activos + ' activas</span>' : '<span style="color:var(--muted)">0</span>') + '</td>';
+      html += '<td style="padding:14px 16px;font-weight:800;color:var(--gold)">' + mrrStr + '</td>';
       html += '</tr>';
     });
   }
@@ -158,9 +171,33 @@ function renderAdminPaises() {
 
 function openBizProfile(bizId) {
   var b = DB.businesses.filter(function (x) { return x.id === bizId; })[0]; if (!b) return;
-  var rev = (b.appointments || []).reduce(function (s, a) { return s + (a.price || 0); }, 0);
-  var todayA = (b.appointments || []).filter(function (a) { return a.date === new Date().toISOString().split('T')[0]; });
+
+  var allAppts = [];
+  (b.workers || []).forEach(function (w) {
+    (w.appointments || []).forEach(function (a) { allAppts.push(a); });
+  });
+  (b.appointments || []).forEach(function (a) { allAppts.push(a); });
+
+  var rev = allAppts.reduce(function (s, a) { return s + (a.price || 0); }, 0);
+  var todayA = allAppts.filter(function (a) { return a.date === new Date().toISOString().split('T')[0]; });
   var av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : san((b.name || '?').charAt(0));
+
+  var workersHtml = '';
+  if (b.workers && b.workers.length > 0) {
+    workersHtml = b.workers.map(function(w) {
+      var wAv = w.photo ? '<img src="'+sanitizeImageDataURL(w.photo)+'" style="width:36px;height:36px;border-radius:10px;object-fit:cover">' : '<div style="width:36px;height:36px;border-radius:10px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px">'+san((w.name||'?').charAt(0).toUpperCase())+'</div>';
+      var apptsCount = w.appointments ? w.appointments.length : 0;
+      var wRev = (w.appointments || []).reduce(function(s, a) { return s + (parseFloat(a.price) || 0); }, 0);
+      return '<div style="display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--b);border-radius:12px;padding:10px;margin-bottom:8px;">' +
+             wAv +
+             '<div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--text)">'+san(w.name)+'</div><div style="font-size:11px;color:var(--muted)">'+san(w.spec || w.role || 'Profesional')+'</div></div>' +
+             '<div style="text-align:right"><div style="font-size:12px;font-weight:800;color:var(--green)">'+money(wRev)+'</div><div style="font-size:10px;color:var(--t2)">'+apptsCount+' citas</div></div>' +
+             '</div>';
+    }).join('');
+  } else {
+    workersHtml = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:14px;background:var(--bg);border-radius:12px;border:1px solid var(--b);">No hay profesionales registrados.</div>';
+  }
+
   H('adm-biz-profile',
     '<div style="display:flex;align-items:center;gap:14px;background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px;margin-bottom:16px">'
     + '<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0">' + av + '</div>'
@@ -168,14 +205,14 @@ function openBizProfile(bizId) {
     + '<div style="font-size:12px;color:var(--t2);margin-top:4px;line-height:2"> ' + san(b.owner) + '<br> ' + san(b.phone || '—') + '<br> ' + san(b.email || '—') + '<br> ' + san((b.addr || '') + ' ' + (b.city || '')) + '<br> ' + san(b.type || '—') + '</div>'
     + '<div style="margin-top:8px">' + planTag(b.plan) + '</div></div></div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
-    + '<div class="sbox"><div class="slbl">Profesionales</div><div class="snum" style="color:var(--blue)">' + (b.barbers ? b.barbers.length : 0) + '</div></div>'
-    + '<div class="sbox"><div class="slbl">Citas totales</div><div class="snum">' + (b.appointments ? b.appointments.length : 0) + '</div></div>'
-    + '<div class="sbox"><div class="slbl">Ganancia Tienda</div><div class="snum" style="color:var(--green)">' + money(rev) + '</div></div>'
+    + '<div class="sbox"><div class="slbl">Profesionales</div><div class="snum" style="color:var(--blue)">' + (b.workers ? b.workers.length : 0) + '</div></div>'
+    + '<div class="sbox"><div class="slbl">Citas totales</div><div class="snum">' + allAppts.length + '</div></div>'
+    + '<div class="sbox"><div class="slbl">Ingresos Generados</div><div class="snum" style="color:var(--green)">' + money(rev) + '</div></div>'
     + '<div class="sbox"><div class="slbl">Citas hoy</div><div class="snum" style="color:var(--blue)">' + todayA.length + '</div></div></div>'
     + (b.desc ? '<div class="card" style="margin-bottom:12px;font-size:13px;color:var(--t2);line-height:1.6">' + san(b.desc) + '</div>' : '')
     + '<div style="background:var(--bg3);border-radius:11px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
-    + '<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">🔗 citaspro.app/b/' + sanitizeText(b.id) + '</span>'
-    + '<button onclick="copyText(\'citaspro.app/b/' + sanitizeText(b.id) + '\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
+    + '<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">🔗 citasproonline.com/#b/' + sanitizeText(b.id) + '</span>'
+    + '<button onclick="copyText(\'https://citasproonline.com/#b/' + sanitizeText(b.id) + '\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
     + '<div style="font-size:12px;font-weight:800;margin-bottom:12px;color:var(--blue);text-transform:uppercase;letter-spacing:0.5px">💈 Perfiles del Equipo de Trabajo</div>'
     + '<div style="margin-bottom:20px;max-height:300px;overflow-y:auto;padding-right:4px">' + workersHtml + '</div>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
