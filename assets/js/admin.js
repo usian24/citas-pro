@@ -113,8 +113,47 @@ function bizCardH(b) {
     + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
     + '<div style="background:var(--bg3);border-radius:9px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--blue)">' + (b.barbers ? b.barbers.length : 0) + '</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Profesionales</div></div>'
     + '<div style="background:var(--bg3);border-radius:9px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800">' + (b.appointments ? b.appointments.length : 0) + '</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Citas</div></div>'
-    + '<div style="background:var(--bg3);border-radius:9px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--green)">' + money(rev) + '</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Facturado</div></div>'
+    + '<div style="background:var(--bg3);border-radius:9px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--green)">' + money(rev) + '</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Ganancia Tienda</div></div>'
     + '</div></div>';
+}
+
+function renderAdminPaises() {
+  var html = '<div class="sec-hdr"><span class="sec-ttl">Inteligencia Regional y Monedas</span></div>';
+  html += '<div class="tip-box">Lista de países soportados, sus monedas y el precio de suscripción local que cobras como plataforma.</div>';
+  html += '<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;overflow:hidden;overflow-x:auto;">';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left;min-width:500px;">';
+  html += '<thead style="background:var(--bblue);color:var(--blue);font-size:11px;text-transform:uppercase;"><tr><th style="padding:14px 16px">País</th><th style="padding:14px 16px">Moneda</th><th style="padding:14px 16px">Precio Suscripción</th><th style="padding:14px 16px">Tiendas Registradas</th></tr></thead>';
+  html += '<tbody>';
+
+  var bizCount = {};
+  (DB.businesses || []).forEach(function (b) {
+    var c = b.country || 'ES';
+    bizCount[c] = (bizCount[c] || 0) + 1;
+  });
+
+  var configPaises = typeof PAIS_CONFIG !== 'undefined' ? PAIS_CONFIG : {};
+  var paises = Object.keys(configPaises);
+
+  if (paises.length === 0) {
+    html += '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">No hay configuración de países cargada.</td></tr>';
+  } else {
+    paises.forEach(function (codigo) {
+      var cfg = configPaises[codigo];
+      var precio = (typeof PRECIO_SUSCRIPCION !== 'undefined' && PRECIO_SUSCRIPCION[codigo]) ? PRECIO_SUSCRIPCION[codigo] : '10€';
+      var flag = FLAGS[codigo] || '🌍';
+      var count = bizCount[codigo] || 0;
+
+      html += '<tr style="border-bottom:1px solid var(--b)">';
+      html += '<td style="padding:14px 16px;font-weight:800;font-size:14px">' + flag + ' ' + codigo + '</td>';
+      html += '<td style="padding:14px 16px;color:var(--t2)">' + san(cfg.nombre) + ' <strong style="color:var(--text)">(' + san(cfg.simbolo) + ')</strong></td>';
+      html += '<td style="padding:14px 16px;font-weight:900;color:var(--green)">' + san(precio) + '<span style="font-size:10px;font-weight:normal;color:var(--muted)">/mes</span></td>';
+      html += '<td style="padding:14px 16px;">' + (count > 0 ? '<span style="background:rgba(74,127,212,.15);color:var(--blue);padding:4px 10px;border-radius:12px;font-weight:800;font-size:11px">' + count + ' tiendas</span>' : '<span style="color:var(--muted)">0</span>') + '</td>';
+      html += '</tr>';
+    });
+  }
+  html += '</tbody></table></div>';
+  var pane = G('ap-paises');
+  if (pane) pane.innerHTML = html;
 }
 
 function openBizProfile(bizId) {
