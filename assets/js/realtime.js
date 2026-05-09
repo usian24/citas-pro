@@ -64,6 +64,7 @@ async function subscribeWorkerRealtime(workerId, bizId) {
       function (payload) { handleAppointmentChange(payload, workerId, bizId); }
     )
     .subscribe(function (status) {
+      console.log('Worker Realtime Status:', status);
       if (status === 'SUBSCRIBED') showRealtimeIndicator(true);
     });
 }
@@ -84,7 +85,10 @@ async function subscribeBizRealtime(bizId) {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: 'business_id=eq.' + bizId },
       function (payload) { handleBizAppointmentChange(payload, bizId); }
     )
-    .subscribe();
+    .subscribe(function (status) {
+      console.log('Biz Realtime Status:', status);
+      if (status === 'SUBSCRIBED') showRealtimeIndicator(true);
+    });
 }
 
 /* ══════════════════════════
@@ -459,6 +463,17 @@ function unsubscribeRealtime() {
   if (_smartPollTimer) { clearInterval(_smartPollTimer); _smartPollTimer = null; }
   showRealtimeIndicator(false);
 }
+
+document.addEventListener("visibilitychange", function() {
+  if (!document.hidden) {
+    // Forzar actualización instantánea al volver a mirar la pantalla
+    if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && typeof DB !== 'undefined' && DB && DB.currentWorker) {
+      safeRefreshWorkerUI(CUR_WORKER.id, DB.currentWorker.bizId);
+    } else if (typeof CUR !== 'undefined' && CUR && CUR.id && typeof DB !== 'undefined' && DB && DB.currentBiz) {
+      safeRefreshBizUI(CUR.id);
+    }
+  }
+});
 
 function connectRealtimeForCurrentUser() {
   if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && DB && DB.currentWorker) {
