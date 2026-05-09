@@ -695,7 +695,7 @@ async function checkLinkAccess() {
     if (bizId) {
       DB = loadDB();
       var biz = getBizById(bizId);
-      if (!biz && typeof fetchBizFromCloud === 'function') {
+      if ((!biz || !biz.workers) && typeof fetchBizFromCloud === 'function') {
         biz = await fetchBizFromCloud(bizId);
         if (biz && typeof syncBizToLocal === 'function') syncBizToLocal(biz);
       }

@@ -28,25 +28,25 @@ function sanitizeText(s) {
   return String(s).replace(/[<>"'`\/\\]/g, '').trim().slice(0, 300);
 }
 
-function safeNum(v, def) { 
+function safeNum(v, def) {
   if (v === null || v === undefined || v === '') return def || 0;
   var str = String(v).replace(',', '.');
-  var n = parseFloat(str); 
-  return isNaN(n) ? (def || 0) : Math.min(Math.max(n, 0), 999999); 
+  var n = parseFloat(str);
+  return isNaN(n) ? (def || 0) : Math.min(Math.max(n, 0), 999999);
 }
 
-function safeInt(v, def) { 
+function safeInt(v, def) {
   if (v === null || v === undefined || v === '') return def || 0;
-  var n = parseInt(v);   
-  return isNaN(n) ? (def || 0) : Math.min(Math.max(n, 0), 99999); 
+  var n = parseInt(v);
+  return isNaN(n) ? (def || 0) : Math.min(Math.max(n, 0), 99999);
 }
 
-function validEmail(e) { 
-  return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(String(e).trim()); 
+function validEmail(e) {
+  return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(String(e).trim());
 }
 
-function validPhone(p) { 
-  return String(p).replace(/\D/g, '').length >= 7; 
+function validPhone(p) {
+  return String(p).replace(/\D/g, '').length >= 7;
 }
 
 function passStrength(p) {
@@ -56,8 +56,8 @@ function passStrength(p) {
   return s;
 }
 
-function validImageType(f) { 
-  return ['image/jpeg', 'image/png', 'image/webp'].indexOf(f.type) >= 0 && f.size <= 5 * 1024 * 1024; 
+function validImageType(f) {
+  return ['image/jpeg', 'image/png', 'image/webp'].indexOf(f.type) >= 0 && f.size <= 5 * 1024 * 1024;
 }
 
 /* ══════════════════════════
@@ -75,21 +75,21 @@ function sanitizeImageDataURL(url) {
 ══════════════════════════ */
 var DBKEY = 'citaspro_v9';
 var DB, CUR, CUR_WORKER, REG, regStep, editSvc, editBar, CSEL;
-var calendarDate   = new Date();
+var calendarDate = new Date();
 var selectedCalDay = new Date().toISOString().split('T')[0];
 
-var FLAGS = { ES:'🇪🇸',CO:'🇨🇴',MX:'🇲🇽',AR:'🇦🇷',DE:'🇩🇪',NL:'🇳🇱',FR:'🇫🇷',CL:'🇨🇱',PE:'🇵🇪',US:'🇺🇸',BR:'🇧🇷',VE:'🇻🇪',EC:'🇪🇨',DO:'🇩🇴' };
-var MONTHS       = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-var MONTHS_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+var FLAGS = { ES: '🇪🇸', CO: '🇨🇴', MX: '🇲🇽', AR: '🇦🇷', DE: '🇩🇪', NL: '🇳🇱', FR: '🇫🇷', CL: '🇨🇱', PE: '🇵🇪', US: '🇺🇸', BR: '🇧🇷', VE: '🇻🇪', EC: '🇪🇨', DO: '🇩🇴' };
+var MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+var MONTHS_SHORT = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
 var DEFAULT_HORARIO = [
-  {day:'Lunes',    open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
-  {day:'Martes',   open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
-  {day:'Miércoles',open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
-  {day:'Jueves',   open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
-  {day:'Viernes',  open:true,  from1:'09:00', to1:'14:00', hasBreak:true,  from2:'15:00', to2:'20:00'},
-  {day:'Sábado',   open:true,  from1:'09:00', to1:'16:00', hasBreak:false, from2:'',      to2:''},
-  {day:'Domingo',  open:false, from1:'09:00', to1:'14:00', hasBreak:false, from2:'',      to2:''}
+  { day: 'Lunes', open: true, from1: '09:00', to1: '14:00', hasBreak: true, from2: '15:00', to2: '20:00' },
+  { day: 'Martes', open: true, from1: '09:00', to1: '14:00', hasBreak: true, from2: '15:00', to2: '20:00' },
+  { day: 'Miércoles', open: true, from1: '09:00', to1: '14:00', hasBreak: true, from2: '15:00', to2: '20:00' },
+  { day: 'Jueves', open: true, from1: '09:00', to1: '14:00', hasBreak: true, from2: '15:00', to2: '20:00' },
+  { day: 'Viernes', open: true, from1: '09:00', to1: '14:00', hasBreak: true, from2: '15:00', to2: '20:00' },
+  { day: 'Sábado', open: true, from1: '09:00', to1: '16:00', hasBreak: false, from2: '', to2: '' },
+  { day: 'Domingo', open: false, from1: '09:00', to1: '14:00', hasBreak: false, from2: '', to2: '' }
 ];
 
 /* ══════════════════════════
@@ -107,20 +107,20 @@ function loadDB() {
     if (!p || typeof p !== 'object') return defDB();
     if (!Array.isArray(p.businesses)) p.businesses = [];
     if (!p.admin || typeof p.admin !== 'object') p.admin = { auth: false };
-    p.businesses.forEach(function(b) {
+    p.businesses.forEach(function (b) {
       if (!Array.isArray(b.workers)) b.workers = [];
       if (!Array.isArray(b.appointments)) b.appointments = [];
     });
     if (!p.currentWorker) p.currentWorker = null;
     return p;
-  } catch(e) { return defDB(); }
+  } catch (e) { return defDB(); }
 }
 
 function saveDB() {
   try {
     if (DB && typeof DB === 'object') {
       if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR) {
-        var wInCur = (CUR.workers || []).find(function(w) { return w.id === CUR_WORKER.id; });
+        var wInCur = (CUR.workers || []).find(function (w) { return w.id === CUR_WORKER.id; });
         if (wInCur) {
           if (CUR_WORKER.photo) wInCur.photo = CUR_WORKER.photo;
           if (CUR_WORKER.cover) wInCur.cover = CUR_WORKER.cover;
@@ -140,17 +140,17 @@ function saveDB() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(CUR)
-        }).then(async function(res) {
+        }).then(async function (res) {
           if (!res.ok) { var err = await res.json(); console.error("ERROR SUPABASE (update-biz):", err.detalle || err.error); }
-        }).catch(function(e) {});
+        }).catch(function (e) { });
 
         syncAppointmentsToCloud(CUR);
         syncServicesToCloud(CUR);
       }
     }
-  } catch(e) { 
+  } catch (e) {
     console.error('saveDB error:', e.message);
-    toast('Error al guardar', '#EF4444'); 
+    toast('Error al guardar', '#EF4444');
   }
 }
 
@@ -163,47 +163,47 @@ function syncAppointmentsToCloud(biz) {
   if (!biz || !biz.id) return;
   var allAppts = [];
 
-  (biz.workers || []).forEach(function(w) {
+  (biz.workers || []).forEach(function (w) {
     if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR_WORKER.id !== w.id) return;
-    (w.appointments || []).forEach(function(a) {
+    (w.appointments || []).forEach(function (a) {
       if (a.status === 'cancelled') return; // No sobreescribir cancelaciones
       allAppts.push({
-        id:            String(a.id),
-        business_id:   biz.id,
-        worker_id:     w.id,
-        client_id:     '',
-        client_name:   a.client || '',
-        client_phone:  a.phone || '',
-        client_email:  a.email || '',
-        token:         a.token || '',
-        service_name:  a.svc || '',
+        id: String(a.id),
+        business_id: biz.id,
+        worker_id: w.id,
+        client_id: '',
+        client_name: a.client || '',
+        client_phone: a.phone || '',
+        client_email: a.email || '',
+        token: a.token || '',
+        service_name: a.svc || '',
         service_price: parseFloat(a.price) || 0,
-        date:          a.date || '',
-        time:          a.time || '',
-        status:        a.status || 'confirmed',
-        notes:         a.notes || ''
+        date: a.date || '',
+        time: a.time || '',
+        status: a.status || 'confirmed',
+        notes: a.notes || ''
       });
     });
   });
 
   if (typeof CUR_WORKER === 'undefined' || !CUR_WORKER) {
-    (biz.appointments || []).forEach(function(a) {
+    (biz.appointments || []).forEach(function (a) {
       if (a.status === 'cancelled') return; // ✅ No sobreescribir cancelaciones
       allAppts.push({
-        id:            String(a.id),
-        business_id:   biz.id,
-        worker_id:     '',
-        client_id:     '',
-        client_name:   a.client || '',
-        client_phone:  a.phone || '',
-        client_email:  a.email || '',
-        token:         a.token || '',
-        service_name:  a.svc || '',
+        id: String(a.id),
+        business_id: biz.id,
+        worker_id: '',
+        client_id: '',
+        client_name: a.client || '',
+        client_phone: a.phone || '',
+        client_email: a.email || '',
+        token: a.token || '',
+        service_name: a.svc || '',
         service_price: parseFloat(a.price) || 0,
-        date:          a.date || '',
-        time:          a.time || '',
-        status:        a.status || 'confirmed',
-        notes:         a.notes || ''
+        date: a.date || '',
+        time: a.time || '',
+        status: a.status || 'confirmed',
+        notes: a.notes || ''
       });
     });
   }
@@ -214,7 +214,7 @@ function syncAppointmentsToCloud(biz) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'appointments', business_id: biz.id, appointments: allAppts })
-  }).catch(function(e) { console.error('Error sync appointments:', e); });
+  }).catch(function (e) { console.error('Error sync appointments:', e); });
 }
 
 // Servicios
@@ -222,34 +222,34 @@ function syncServicesToCloud(biz) {
   if (!biz || !biz.id) return;
   var allSvcs = [];
 
-  (biz.workers || []).forEach(function(w) {
+  (biz.workers || []).forEach(function (w) {
     if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER && CUR_WORKER.id !== w.id) return;
-    (w.services || []).forEach(function(s) {
+    (w.services || []).forEach(function (s) {
       allSvcs.push({
-        id:          String(s.id),
+        id: String(s.id),
         business_id: biz.id,
-        worker_id:   w.id,
-        name:        s.name || '',
+        worker_id: w.id,
+        name: s.name || '',
         description: s.desc || '',
-        price:       parseFloat(s.price) || 0,
-        duration:    parseInt(s.dur) || 30,
-        color:       s.color || '',
-        image:       s.photo || ''
+        price: parseFloat(s.price) || 0,
+        duration: parseInt(s.dur) || 30,
+        color: s.color || '',
+        image: s.photo || ''
       });
     });
   });
 
-  (biz.services || []).forEach(function(s) {
+  (biz.services || []).forEach(function (s) {
     allSvcs.push({
-      id:          String(s.id),
+      id: String(s.id),
       business_id: biz.id,
-      worker_id:   '',
-      name:        s.name || '',
+      worker_id: '',
+      name: s.name || '',
       description: s.desc || '',
-      price:       parseFloat(s.price) || 0,
-      duration:    parseInt(s.dur) || 30,
-      color:       s.color || '',
-      image:       s.photo || ''
+      price: parseFloat(s.price) || 0,
+      duration: parseInt(s.dur) || 30,
+      color: s.color || '',
+      image: s.photo || ''
     });
   });
 
@@ -259,7 +259,7 @@ function syncServicesToCloud(biz) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type: 'services', business_id: biz.id, services: allSvcs })
-  }).catch(function(e) { console.error('Error sync services:', e); });
+  }).catch(function (e) { console.error('Error sync services:', e); });
 }
 
 // Cliente
@@ -269,20 +269,20 @@ function syncClientToCloud(bizId, client) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      type:          'client',
-      id:            'cl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
-      business_id:   bizId,
-      name:          client.name || '',
-      email:         client.email || '',
-      phone:         client.phone || '',
-      worker_id:     client.worker_id || '',
-      worker_name:   client.worker_name || '',
-      service_name:  client.service_name || '',
+      type: 'client',
+      id: 'cl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      business_id: bizId,
+      name: client.name || '',
+      email: client.email || '',
+      phone: client.phone || '',
+      worker_id: client.worker_id || '',
+      worker_name: client.worker_name || '',
+      service_name: client.service_name || '',
       service_price: client.service_price || 0,
-      date:          client.date || '',
-      time:          client.time || ''
+      date: client.date || '',
+      time: client.time || ''
     })
-  }).catch(function(e) { console.error('Error sync client:', e); });
+  }).catch(function (e) { console.error('Error sync client:', e); });
 }
 
 // Producto
@@ -292,19 +292,19 @@ function syncProductToCloud(bizId, product) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      type:          'product',
-      id:            product.id || ('prod_' + Date.now()),
-      business_id:   bizId,
-      name:          product.name || '',
-      description:   product.description || '',
-      price:         parseFloat(product.price) || 0,
-      stock:         parseInt(product.stock) || 0,
-      image:         product.image || '',
-      category:      product.category || '',
-      rating:        parseFloat(product.rating) || 0,
+      type: 'product',
+      id: product.id || ('prod_' + Date.now()),
+      business_id: bizId,
+      name: product.name || '',
+      description: product.description || '',
+      price: parseFloat(product.price) || 0,
+      stock: parseInt(product.stock) || 0,
+      image: product.image || '',
+      category: product.category || '',
+      rating: parseFloat(product.rating) || 0,
       reviews_count: parseInt(product.reviews_count) || 0
     })
-  }).catch(function(e) { console.error('Error sync product:', e); });
+  }).catch(function (e) { console.error('Error sync product:', e); });
 }
 
 /* ══════════════════════════
@@ -314,27 +314,27 @@ function money(n) {
   if (typeof formatMoney === 'function') return formatMoney(n, typeof getPaisActivo === 'function' ? getPaisActivo() : 'ES');
   return parseFloat(n || 0).toFixed(2) + '€';
 }
-function G(id)    { return document.getElementById(id); }
-function V(id)    { var e = G(id); return e ? e.value : ''; }
+function G(id) { return document.getElementById(id); }
+function V(id) { var e = G(id); return e ? e.value : ''; }
 function T(id, t) { var e = G(id); if (e) e.textContent = sanitizeText(t); }
 function H(id, h) { var e = G(id); if (e) e.innerHTML = h; }
 function on(id, ev, fn) { var e = G(id); if (e) e.addEventListener(ev, fn); }
-function openOv(id)   { var e = G(id); if (e) e.classList.add('on'); }
-function closeOv(id)  { var e = G(id); if (e) e.classList.remove('on'); }
+function openOv(id) { var e = G(id); if (e) e.classList.add('on'); }
+function closeOv(id) { var e = G(id); if (e) e.classList.remove('on'); }
 
 function showErr(id, msg) { var e = G(id); if (e) { e.textContent = msg; e.style.display = 'block'; } }
 function hideErr(id) { var e = G(id); if (e) e.style.display = 'none'; }
 
 function initREG() {
-  REG = { type:'', name:'', owner:'', email:'', pass:'', phone:'', addr:'', city:'', country:'ES', teamSize:'', services:[], photos:[], logo:'', cover:'' };
+  REG = { type: '', name: '', owner: '', email: '', pass: '', phone: '', addr: '', city: '', country: 'ES', teamSize: '', services: [], photos: [], logo: '', cover: '' };
   regStep = 0; editSvc = null; editBar = null;
 }
 
 function initCSEL() {
-  CSEL = { 
+  CSEL = {
     bizId: null, workerId: null, svc: null, svcPrice: 0, svcDur: 30,
     date: null, time: null, clientName: '', clientPhone: '', clientEmail: '',
-    bookingToken: null, editingToken: null 
+    bookingToken: null, editingToken: null
   };
 }
 
@@ -346,7 +346,7 @@ function toast(msg, color) {
   t.textContent = msg;
   t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:var(--rpill);font-weight:700;font-size:14px;z-index:99999;pointer-events:none;color:#fff;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5);background:' + (color || '#1A2540');
   document.body.appendChild(t);
-  setTimeout(function(){ if(t.parentNode) t.remove(); }, 2800);
+  setTimeout(function () { if (t.parentNode) t.remove(); }, 2800);
 }
 
 /* ══════════════════════════
@@ -404,12 +404,12 @@ function goClientFromBiz() {
    HELPERS DE DATOS Y NOTIFICACIONES
 ══════════════════════════ */
 function getBizById(id) {
-  return DB.businesses.filter(function(b){ return b.id === id; })[0] || null;
+  return DB.businesses.filter(function (b) { return b.id === id; })[0] || null;
 }
 
 function getWorkerById(bizId, workerId) {
   var biz = getBizById(bizId); if (!biz) return null;
-  return (biz.workers || []).filter(function(w){ return w.id === workerId; })[0] || null;
+  return (biz.workers || []).filter(function (w) { return w.id === workerId; })[0] || null;
 }
 
 function addNotificationToWorker(bizId, workerId, notif) {
@@ -431,8 +431,8 @@ function notifyWorker(bizId, workerId, type, title, data) {
 }
 
 function planTag(plan) {
-  var m = { active: { c:'#22C55E', l:'Activo' }, trial: { c:'#F59E0B', l:'Prueba' }, expired: { c:'#EF4444', l:'Vencido' } };
-  var x = m[plan] || { c:'#475569', l:'—' };
+  var m = { active: { c: '#22C55E', l: 'Activo' }, trial: { c: '#F59E0B', l: 'Prueba' }, expired: { c: '#EF4444', l: 'Vencido' } };
+  var x = m[plan] || { c: '#475569', l: '—' };
   return '<span style="background:' + x.c + '22;color:' + x.c + ';border:1px solid ' + x.c + '44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + x.l + '</span>';
 }
 
@@ -445,17 +445,17 @@ async function forceCloudSync() {
       var token = localStorage.getItem('citaspro_admin_token') || '';
       var headers = {};
       if (token) headers['Authorization'] = 'Bearer ' + token;
-      
+
       var res = await fetch('/api/get-db', { headers: headers });
       if (res.ok) {
         var cloudBusinesses = await res.json();
-        var local = loadDB(); 
-        local.businesses = cloudBusinesses; 
-        localStorage.setItem(DBKEY, JSON.stringify(local)); 
-        DB = local; 
+        var local = loadDB();
+        local.businesses = cloudBusinesses;
+        localStorage.setItem(DBKEY, JSON.stringify(local));
+        DB = local;
 
         if (typeof CUR !== 'undefined' && CUR && typeof initBizPanel === 'function') {
-          CUR = DB.businesses.find(function(b) { return b.id === CUR.id; }) || CUR;
+          CUR = DB.businesses.find(function (b) { return b.id === CUR.id; }) || CUR;
           initBizPanel();
         }
 
@@ -463,7 +463,7 @@ async function forceCloudSync() {
           var freshBiz = getBizById(DB.currentWorker.bizId);
           if (freshBiz) {
             CUR = freshBiz;
-            var freshWorker = (freshBiz.workers || []).find(function(w) { return w.id === DB.currentWorker.workerId; });
+            var freshWorker = (freshBiz.workers || []).find(function (w) { return w.id === DB.currentWorker.workerId; });
             if (freshWorker) {
               CUR_WORKER = freshWorker;
               if (typeof initWorkerPanel === 'function') initWorkerPanel();
@@ -477,13 +477,15 @@ async function forceCloudSync() {
       if (pubRes.ok) {
         var publicBiz = await pubRes.json();
         var localDB = loadDB();
-        if (localDB.currentBiz || localDB.currentWorker) {
-           var myBizId = localDB.currentBiz || (localDB.currentWorker ? localDB.currentWorker.bizId : null);
-           var myPrivateBiz = localDB.businesses.find(b => b.id === myBizId);
-           localDB.businesses = publicBiz.map(pb => (myPrivateBiz && pb.id === myBizId) ? myPrivateBiz : pb);
-        } else {
-           localDB.businesses = publicBiz;
-        }
+        // Mezclar sin perder los datos detallados (trabajadores, servicios) que ya tengamos en memoria
+        var mergedBizs = publicBiz.map(function (pb) {
+          var existing = localDB.businesses.find(function (b) { return b.id === pb.id; });
+          if (existing && existing.workers) {
+            return Object.assign({}, pb, existing);
+          }
+          return pb;
+        });
+        localDB.businesses = mergedBizs;
         localStorage.setItem(DBKEY, JSON.stringify(localDB));
         DB = localDB;
       }
@@ -501,10 +503,10 @@ async function forceCloudSync() {
         }
       }
     }
-  } catch(e) { console.error("Error sync:", e); }
+  } catch (e) { console.error("Error sync:", e); }
 }
 
-window.addEventListener('load', function() { setTimeout(forceCloudSync, 500); });
+window.addEventListener('load', function () { setTimeout(forceCloudSync, 500); });
 
 /* ══════════════════════════
    AUTO-LOGIN
@@ -518,10 +520,10 @@ function restaurarSesion() {
     var workerBiz = getBizById(DB.currentWorker.bizId);
     if (workerBiz) {
       CUR = workerBiz;
-      var w = (workerBiz.workers || []).find(function(x) { return x.id === DB.currentWorker.workerId; });
+      var w = (workerBiz.workers || []).find(function (x) { return x.id === DB.currentWorker.workerId; });
       if (w) CUR_WORKER = w;
       if (typeof goWorker === 'function') goWorker();
-      return; 
+      return;
     }
   }
 
