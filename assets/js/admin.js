@@ -38,9 +38,9 @@ function admTab(tab) {
     if (pa) pa.classList[t === tab ? 'add' : 'remove']('on');
     if (bt) bt.classList[t === tab ? 'add' : 'remove']('on');
   }
-  if (tab === 'negocios')       renderBizListAdmin(filterBiz());
-  if (tab === 'suscripciones')  renderSubs();
-  if (tab === 'ingresos')       renderRevenue();
+  if (tab === 'negocios') renderBizListAdmin(filterBiz());
+  if (tab === 'suscripciones') renderSubs();
+  if (tab === 'ingresos') renderRevenue();
   if (tab === 'notificaciones') renderNotifications();
   if (tab === 'paises') renderAdminPaises();
 }
@@ -48,8 +48,8 @@ function admTab(tab) {
 function filterBiz() {
   var q = (V('biz-search') || '').toLowerCase();
   var f = (V('biz-filter') || 'all');
-  return DB.businesses.filter(function(b) {
-    var mq = !q || (b.name||'').toLowerCase().indexOf(q) >= 0 || (b.city||'').toLowerCase().indexOf(q) >= 0 || (b.owner||'').toLowerCase().indexOf(q) >= 0;
+  return DB.businesses.filter(function (b) {
+    var mq = !q || (b.name || '').toLowerCase().indexOf(q) >= 0 || (b.city || '').toLowerCase().indexOf(q) >= 0 || (b.owner || '').toLowerCase().indexOf(q) >= 0;
     var mf = f === 'all' || (b.plan || '') == f;
     return mq && mf;
   });
@@ -79,32 +79,32 @@ function renderDash() {
   T('ds-arr', money(mrr * 12));
   var cl = Object.keys(ctry);
   T('ds-countries', cl.length);
-  T('ds-flags', cl.map(function(c) { return FLAGS[c] || '🌍'; }).join(' '));
+  T('ds-flags', cl.map(function (c) { return FLAGS[c] || '🌍'; }).join(' '));
   T('neg-badge', bizs.length);
   var vals = [0, 0, 0, 0, mrr > 0 ? Math.round(mrr * .4) : 0, mrr];
-  var max  = Math.max.apply(null, vals.concat([10]));
-  var mns  = ['Oct','Nov','Dic','Ene','Feb', MONTHS_SHORT[now.getMonth()]];
+  var max = Math.max.apply(null, vals.concat([10]));
+  var mns = ['Oct', 'Nov', 'Dic', 'Ene', 'Feb', MONTHS_SHORT[now.getMonth()]];
   var ch = G('ds-chart');
-  if (ch) ch.innerHTML = vals.map(function(v, i) {
+  if (ch) ch.innerHTML = vals.map(function (v, i) {
     return '<div class="bar' + (i === vals.length - 1 ? ' hi' : '') + '" style="height:' + Math.max(4, Math.round(v / max * 100)) + '%" title="' + money(v) + '"></div>';
   }).join('');
   var ml = G('ds-months');
-  if (ml) ml.innerHTML = mns.map(function(m, i) {
+  if (ml) ml.innerHTML = mns.map(function (m, i) {
     return '<div style="flex:1;text-align:center;font-size:9px;color:' + (i === mns.length - 1 ? 'var(--blue)' : 'var(--muted)') + ';font-weight:700">' + m + '</div>';
   }).join('');
-  var recent = bizs.slice().sort(function(a, b) { return (b.joinDate||'').localeCompare(a.joinDate||''); }).slice(0, 5);
+  var recent = bizs.slice().sort(function (a, b) { return (b.joinDate || '').localeCompare(a.joinDate || ''); }).slice(0, 5);
   H('ds-recent', recent.map(bizCardH).join(''));
 }
 
 function planTag(plan) {
-  var m = { active:{ c:'#22C55E', l:' Activo' }, trial:{ c:'#F59E0B', l:' Prueba' }, expired:{ c:'#EF4444', l:' Vencido' } };
-  var x = m[plan] || { c:'#475569', l:'—' };
+  var m = { active: { c: '#22C55E', l: ' Activo' }, trial: { c: '#F59E0B', l: ' Prueba' }, expired: { c: '#EF4444', l: ' Vencido' } };
+  var x = m[plan] || { c: '#475569', l: '—' };
   return '<span style="background:' + x.c + '22;color:' + x.c + ';border:1px solid ' + x.c + '44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + x.l + '</span>';
 }
 
 function bizCardH(b) {
-  var rev = (b.appointments || []).reduce(function(s, a) { return s + (a.price || 0); }, 0);
-  var av  = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : '<span>' + san((b.name || '?').charAt(0)) + '</span>';
+  var rev = (b.appointments || []).reduce(function (s, a) { return s + (a.price || 0); }, 0);
+  var av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : '<span>' + san((b.name || '?').charAt(0)) + '</span>';
   return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s" onclick="openBizProfile(\'' + sanitizeText(b.id) + '\')">'
     + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">'
     + '<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden">' + av + '</div>'
@@ -118,10 +118,10 @@ function bizCardH(b) {
 }
 
 function openBizProfile(bizId) {
-  var b = DB.businesses.filter(function(x) { return x.id === bizId; })[0]; if (!b) return;
-  var rev    = (b.appointments || []).reduce(function(s, a) { return s + (a.price || 0); }, 0);
-  var todayA = (b.appointments || []).filter(function(a) { return a.date === new Date().toISOString().split('T')[0]; });
-  var av     = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : san((b.name || '?').charAt(0));
+  var b = DB.businesses.filter(function (x) { return x.id === bizId; })[0]; if (!b) return;
+  var rev = (b.appointments || []).reduce(function (s, a) { return s + (a.price || 0); }, 0);
+  var todayA = (b.appointments || []).filter(function (a) { return a.date === new Date().toISOString().split('T')[0]; });
+  var av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : san((b.name || '?').charAt(0));
   H('adm-biz-profile',
     '<div style="display:flex;align-items:center;gap:14px;background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px;margin-bottom:16px">'
     + '<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0">' + av + '</div>'
@@ -153,35 +153,35 @@ function renderBizListAdmin(bizs) {
 
 function renderSubs() {
   H('adm-subs', DB.businesses.length
-    ? DB.businesses.map(function(b) {
-        return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px"><div style="flex:1"><div style="font-weight:700;font-size:14px">' + san(b.name) + '</div><div style="font-size:12px;color:var(--t2);margin-top:3px">' + san(b.email) + '</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Desde ' + san(b.joinDate || '—') + '</div></div>' + planTag(b.plan) + '</div>';
-      }).join('')
+    ? DB.businesses.map(function (b) {
+      return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px"><div style="flex:1"><div style="font-weight:700;font-size:14px">' + san(b.name) + '</div><div style="font-size:12px;color:var(--t2);margin-top:3px">' + san(b.email) + '</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Desde ' + san(b.joinDate || '—') + '</div></div>' + planTag(b.plan) + '</div>';
+    }).join('')
     : '<div style="text-align:center;color:var(--muted);padding:40px">Sin negocios registrados</div>');
 }
 
 function renderRevenue() {
-  var active = DB.businesses.filter(function(b) { return b.plan === 'active'; }).length;
+  var active = DB.businesses.filter(function (b) { return b.plan === 'active'; }).length;
   var m = active * 10;
   T('rev-m', money(m)); T('rev-y', money(m * 12)); T('rev-p6', money(m * 1.8)); T('rev-p12', money(m * 2.5));
   H('adm-proj', [
-    { l: 'Mes actual (' + active + ' activos)', v: m,       c: 'var(--green)' },
-    { l: 'En 3 meses (estimado)',               v: m * 1.3, c: 'var(--blue)'  },
-    { l: 'En 6 meses (estimado)',               v: m * 1.8, c: 'var(--gold)'  },
-    { l: 'En 1 year (estimado)',                 v: m * 2.5, c: 'var(--green)' }
-  ].map(function(r) {
+    { l: 'Mes actual (' + active + ' activos)', v: m, c: 'var(--green)' },
+    { l: 'En 3 meses (estimado)', v: m * 1.3, c: 'var(--blue)' },
+    { l: 'En 6 meses (estimado)', v: m * 1.8, c: 'var(--gold)' },
+    { l: 'En 1 year (estimado)', v: m * 2.5, c: 'var(--green)' }
+  ].map(function (r) {
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">' + r.l + '</span><span style="font-weight:800;font-size:17px;color:' + r.c + '">' + money(r.v) + '</span></div>';
   }).join(''));
 }
 
 function checkNotifications() {
   var notifs = [];
-  DB.businesses.forEach(function(b) {
-    if (b.plan === 'trial')   notifs.push({ type:'trial',   msg: b.name + ' está en período de prueba',          biz: b.id, color:'#F59E0B' });
-    if (b.plan === 'expired') notifs.push({ type:'expired', msg: b.name + ' tiene la suscripción vencida',        biz: b.id, color:'#EF4444' });
+  DB.businesses.forEach(function (b) {
+    if (b.plan === 'trial') notifs.push({ type: 'trial', msg: b.name + ' está en período de prueba', biz: b.id, color: '#F59E0B' });
+    if (b.plan === 'expired') notifs.push({ type: 'expired', msg: b.name + ' tiene la suscripción vencida', biz: b.id, color: '#EF4444' });
   });
   var week = new Date(); week.setDate(week.getDate() - 7);
-  DB.businesses.forEach(function(b) {
-    if (b.joinDate && new Date(b.joinDate) >= week) notifs.push({ type:'new', msg: 'Nuevo: ' + b.name + ' de ' + (b.city || b.country || '—'), biz: b.id, color:'#22C55E' });
+  DB.businesses.forEach(function (b) {
+    if (b.joinDate && new Date(b.joinDate) >= week) notifs.push({ type: 'new', msg: 'Nuevo: ' + b.name + ' de ' + (b.city || b.country || '—'), biz: b.id, color: '#22C55E' });
   });
   var dot = G('notif-dot');
   if (dot) dot.classList[notifs.length > 0 ? 'add' : 'remove']('on');
@@ -191,12 +191,12 @@ function checkNotifications() {
 function renderNotifications() {
   var notifs = window._notifs || [];
   H('notif-content', notifs.length
-    ? notifs.map(function(n) {
-        return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openBizProfile(\'' + sanitizeText(n.biz) + '\')">'
-          + '<div style="width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:' + n.color + '22">' + ({ trial:'', expired:'', new:'🆕' }[n.type] || '🔔') + '</div>'
-          + '<div style="flex:1"><div style="font-size:13px;font-weight:600">' + san(n.msg) + '</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Toca para ver detalles</div></div>'
-          + '<span style="color:var(--muted);font-size:16px">›</span></div>';
-      }).join('')
+    ? notifs.map(function (n) {
+      return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openBizProfile(\'' + sanitizeText(n.biz) + '\')">'
+        + '<div style="width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:' + n.color + '22">' + ({ trial: '', expired: '', new: '🆕' }[n.type] || '🔔') + '</div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600">' + san(n.msg) + '</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Toca para ver detalles</div></div>'
+        + '<span style="color:var(--muted);font-size:16px">›</span></div>';
+    }).join('')
     : '<div style="text-align:center;color:var(--muted);padding:36px"><div style="font-size:32px;margin-bottom:10px">🎉</div><div>Sin notificaciones</div></div>');
 }
 
@@ -210,9 +210,9 @@ async function updateBizOnCloud(biz) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(biz)
     });
-    
+
     let data = await res.json();
-    
+
     if (!data.success) {
       console.error('Error exacto de Supabase:', data);
       toast('Error en Base de Datos: ' + (data.error || 'Desconocido'), '#EF4444');
@@ -220,8 +220,8 @@ async function updateBizOnCloud(biz) {
     } else {
       toast('¡Guardado en Supabase exitoso!', '#22C55E');
     }
-  } catch(e) { 
-    console.error('Error de red:', e); 
+  } catch (e) {
+    console.error('Error de red:', e);
     toast('Error de conexión al guardar en la nube', '#EF4444');
   }
 }
@@ -233,29 +233,29 @@ async function updateBizStatusOnly(id, plan, expires_at) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: id, plan: plan, expires_at: expires_at })
     });
-    
+
     let data = await res.json();
     if (!data.success) {
       alert("❌ Supabase rechazó el guardado: " + data.error);
     }
-  } catch(e) { 
+  } catch (e) {
     alert("❌ Error de red, no se pudo conectar.");
   }
 }
 
 async function extendTrial(id) {
-  var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
-  if (b) { 
-    var d = new Date(); d.setDate(d.getDate() + 15); 
+  var b = DB.businesses.filter(function (x) { return x.id === id; })[0];
+  if (b) {
+    var d = new Date(); d.setDate(d.getDate() + 15);
     b.expires_at = d.toISOString().split('T')[0];
-    b.plan = 'trial'; 
-    saveDB(); 
+    b.plan = 'trial';
+    saveDB();
     toast('Guardando en la nube... ⏳', '#F59E0B');
-    
+
     await updateBizStatusOnly(id, 'trial', b.expires_at);
-    
-    toast('Prueba extendida 15 días', '#22C55E'); 
-    checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); 
+
+    toast('Prueba extendida 15 días', '#22C55E');
+    checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz());
   }
 }
 
@@ -263,21 +263,21 @@ async function extendTrial(id) {
 window._activateBizId = null;
 
 function activateBiz(id) {
-  window._activateBizId = id; 
-  closeOv('ov-biz-profile');  
-  
-  setTimeout(function() {
+  window._activateBizId = id;
+  closeOv('ov-biz-profile');
+
+  setTimeout(function () {
     var inp = G('act-months');
-    if(inp) inp.value = '1';    
-    openOv('ov-activate');      
+    if (inp) inp.value = '1';
+    openOv('ov-activate');
   }, 150);
 }
 
 async function confirmActivateBiz() {
   var id = window._activateBizId;
   if (!id) return;
-  
-  var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
+
+  var b = DB.businesses.filter(function (x) { return x.id === id; })[0];
   if (!b) return;
 
   var mesesStr = G('act-months').value;
@@ -290,7 +290,7 @@ async function confirmActivateBiz() {
   var baseDate = (b.plan === 'active' && b.expires_at && new Date(b.expires_at) > new Date()) ? new Date(b.expires_at) : new Date();
   baseDate.setMonth(baseDate.getMonth() + meses);
   b.expires_at = baseDate.toISOString().split('T')[0];
-  b.plan = 'active'; 
+  b.plan = 'active';
 
   if (!b.notifications) b.notifications = [];
   b.notifications.unshift({
@@ -299,31 +299,31 @@ async function confirmActivateBiz() {
     read: false, date: new Date().toISOString()
   });
 
-  saveDB(); 
+  saveDB();
   toast('Activando y guardando...', '#F59E0B');
-  
+
   await updateBizStatusOnly(id, 'active', b.expires_at);
-  
-  toast('Negocio activado por ' + meses + ' mes(es)', '#22C55E'); 
-  checkNotifications(); renderBizListAdmin(filterBiz()); renderDash(); 
-  openBizProfile(id); 
+
+  toast('Negocio activado por ' + meses + ' mes(es)', '#22C55E');
+  checkNotifications(); renderBizListAdmin(filterBiz()); renderDash();
+  openBizProfile(id);
 }
 
 async function suspendBiz(id) {
-  var b = DB.businesses.filter(function(x) { return x.id === id; })[0];
-  if (b) { 
-    b.plan = 'expired'; 
-    saveDB(); 
+  var b = DB.businesses.filter(function (x) { return x.id === id; })[0];
+  if (b) {
+    b.plan = 'expired';
+    saveDB();
     toast('Suspendiendo en la nube...', '#F59E0B');
-    
+
     await updateBizStatusOnly(id, 'expired', b.expires_at || null);
-    
-    toast('Negocio suspendido', '#EF4444'); 
-    checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash(); 
+
+    toast('Negocio suspendido', '#EF4444');
+    checkNotifications(); closeOv('ov-biz-profile'); renderBizListAdmin(filterBiz()); renderDash();
   }
 }
 
 function copyText(txt) {
-  try { navigator.clipboard.writeText(txt); } catch(e) {}
+  try { navigator.clipboard.writeText(txt); } catch (e) { }
   toast('Copiado', '#4A7FD4');
 }
