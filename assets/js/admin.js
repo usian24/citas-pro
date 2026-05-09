@@ -135,35 +135,50 @@ function renderAdminPaises() {
     }
   });
 
-  var configPaises = typeof PAIS_CONFIG !== 'undefined' ? PAIS_CONFIG : {};
-  var paises = Object.keys(configPaises);
+  // Diccionario nativo y robusto (Independiente de archivos externos)
+  var countryData = {
+    'ES': { name: 'España', currency: 'EUR', symbol: '€', price: 10 },
+    'CO': { name: 'Colombia', currency: 'COP', symbol: '$', price: 40000 },
+    'MX': { name: 'México', currency: 'MXN', symbol: '$', price: 200 },
+    'AR': { name: 'Argentina', currency: 'ARS', symbol: '$', price: 10000 },
+    'DE': { name: 'Alemania', currency: 'EUR', symbol: '€', price: 10 },
+    'NL': { name: 'Holanda', currency: 'EUR', symbol: '€', price: 10 },
+    'FR': { name: 'Francia', currency: 'EUR', symbol: '€', price: 10 },
+    'CL': { name: 'Chile', currency: 'CLP', symbol: '$', price: 10000 },
+    'PE': { name: 'Perú', currency: 'PEN', symbol: 'S/', price: 40 },
+    'US': { name: 'Estados Unidos', currency: 'USD', symbol: '$', price: 10 },
+    'DO': { name: 'Rep. Dominicana', currency: 'DOP', symbol: '$', price: 600 },
+    'VE': { name: 'Venezuela', currency: 'USD', symbol: '$', price: 10 },
+    'EC': { name: 'Ecuador', currency: 'USD', symbol: '$', price: 10 },
+    'BR': { name: 'Brasil', currency: 'BRL', symbol: 'R$', price: 50 }
+  };
 
-  if (paises.length === 0) {
-    html += '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">No hay configuración de países cargada.</td></tr>';
-  } else {
-    paises.forEach(function (codigo) {
-      var cfg = configPaises[codigo];
-      var precio = (typeof PRECIO_SUSCRIPCION !== 'undefined' && PRECIO_SUSCRIPCION[codigo]) ? PRECIO_SUSCRIPCION[codigo] : '10€';
-      var flag = FLAGS[codigo] || '🌍';
+  var flags = {
+    'ES': '🇪🇸', 'CO': '🇨🇴', 'MX': '🇲🇽', 'AR': '🇦🇷', 'DE': '🇩🇪',
+    'NL': '🇳🇱', 'FR': '🇫🇷', 'CL': '🇨🇱', 'PE': '🇵🇪', 'US': '🇺🇸',
+    'DO': '🇩🇴', 'VE': '🇻🇪', 'EC': '🇪🇨', 'BR': '🇧🇷'
+  };
+
+  var paises = Object.keys(countryData);
+
+  paises.forEach(function (codigo) {
+      var cfg = countryData[codigo];
+      var flag = flags[codigo] || '🌍';
       var count = bizCount[codigo] || 0;
       var activos = activeCount[codigo] || 0;
 
-      // Extraemos el número para calcular los ingresos mensuales por país
-      var numMatch = precio.replace(/\./g, '').match(/\d+/);
-      var numericPrice = numMatch ? parseInt(numMatch[0]) : 10;
-      var mrrTotal = activos * numericPrice;
+      var mrrTotal = activos * cfg.price;
       var mrrStr = cfg.simbolo + ' ' + mrrTotal.toLocaleString('en-US');
 
       html += '<tr style="border-bottom:1px solid var(--b)">';
       html += '<td style="padding:14px 16px;font-weight:800;font-size:14px">' + flag + ' ' + codigo + '</td>';
-      html += '<td style="padding:14px 16px;color:var(--t2)">' + san(cfg.nombre) + ' <strong style="color:var(--text)">(' + san(cfg.simbolo) + ')</strong></td>';
-      html += '<td style="padding:14px 16px;font-weight:900;color:var(--green)">' + san(precio) + '<span style="font-size:10px;font-weight:normal;color:var(--muted)">/mes</span></td>';
+      html += '<td style="padding:14px 16px;color:var(--t2)">' + san(cfg.name) + ' <strong style="color:var(--text)">(' + san(cfg.currency) + ')</strong></td>';
+      html += '<td style="padding:14px 16px;font-weight:900;color:var(--green)">' + cfg.symbol + cfg.price.toLocaleString('en-US') + '<span style="font-size:10px;font-weight:normal;color:var(--muted)">/mes</span></td>';
       html += '<td style="padding:14px 16px;">' + (count > 0 ? '<span style="background:rgba(74,127,212,.15);color:var(--blue);padding:4px 10px;border-radius:12px;font-weight:800;font-size:11px">' + count + ' total</span>' : '<span style="color:var(--muted)">0</span>') + '</td>';
       html += '<td style="padding:14px 16px;">' + (activos > 0 ? '<span style="background:rgba(34,197,94,.15);color:var(--green);padding:4px 10px;border-radius:12px;font-weight:800;font-size:11px">' + activos + ' activas</span>' : '<span style="color:var(--muted)">0</span>') + '</td>';
       html += '<td style="padding:14px 16px;font-weight:800;color:var(--gold)">' + mrrStr + '</td>';
       html += '</tr>';
-    });
-  }
+  });
   html += '</tbody></table></div>';
   var pane = G('ap-paises');
   if (pane) pane.innerHTML = html;
@@ -188,15 +203,27 @@ function openBizProfile(bizId) {
       var wAv = w.photo ? '<img src="'+sanitizeImageDataURL(w.photo)+'" style="width:36px;height:36px;border-radius:10px;object-fit:cover">' : '<div style="width:36px;height:36px;border-radius:10px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px">'+san((w.name||'?').charAt(0).toUpperCase())+'</div>';
       var apptsCount = w.appointments ? w.appointments.length : 0;
       var wRev = (w.appointments || []).reduce(function(s, a) { return s + (parseFloat(a.price) || 0); }, 0);
-      return '<div style="display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--b);border-radius:12px;padding:10px;margin-bottom:8px;">' +
+      return '<div onclick="openAdminWorkerProfile(\'' + bizId + '\', \'' + w.id + '\')" style="display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--b);border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer;transition:border-color 0.2s" onmouseover="this.style.borderColor=\'var(--blue)\'" onmouseout="this.style.borderColor=\'var(--b)\'">' +
              wAv +
              '<div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--text)">'+san(w.name)+'</div><div style="font-size:11px;color:var(--muted)">'+san(w.spec || w.role || 'Profesional')+'</div></div>' +
              '<div style="text-align:right"><div style="font-size:12px;font-weight:800;color:var(--green)">'+money(wRev)+'</div><div style="font-size:10px;color:var(--t2)">'+apptsCount+' citas</div></div>' +
+             '<div style="color:var(--muted);font-size:18px;margin-left:4px">›</div>' +
              '</div>';
     }).join('');
   } else {
     workersHtml = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:14px;background:var(--bg);border-radius:12px;border:1px solid var(--b);">No hay profesionales registrados.</div>';
   }
+
+  // Acordeón desplegable
+  var accordionHtml = '<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;overflow:hidden;margin-bottom:14px">' +
+    '<div onclick="var el=document.getElementById(\'wk-list-' + b.id + '\'); var icon=document.getElementById(\'wk-icon-' + b.id + '\'); if(el.style.display===\'none\'){el.style.display=\'block\';icon.style.transform=\'rotate(180deg)\'}else{el.style.display=\'none\';icon.style.transform=\'rotate(0deg)\'}" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:800;background:var(--bblue);color:var(--blue);font-size:13px;transition:background 0.2s" onmouseover="this.style.background=\'rgba(74,127,212,0.2)\'" onmouseout="this.style.background=\'var(--bblue)\'">' +
+    '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">💈</span> Ver Equipo de Trabajo (' + (b.workers ? b.workers.length : 0) + ')</div>' +
+    '<span id="wk-icon-' + b.id + '" style="transition:transform 0.3s;font-size:10px">▼</span>' +
+    '</div>' +
+    '<div id="wk-list-' + b.id + '" style="display:none;padding:14px;border-top:1px solid var(--b);background:var(--bg3)">' +
+    workersHtml +
+    '</div>' +
+    '</div>';
 
   H('adm-biz-profile',
     '<div style="display:flex;align-items:center;gap:14px;background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px;margin-bottom:16px">'
@@ -213,14 +240,52 @@ function openBizProfile(bizId) {
     + '<div style="background:var(--bg3);border-radius:11px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
     + '<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">🔗 citasproonline.com/#b/' + sanitizeText(b.id) + '</span>'
     + '<button onclick="copyText(\'https://citasproonline.com/#b/' + sanitizeText(b.id) + '\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
-    + '<div style="font-size:12px;font-weight:800;margin-bottom:12px;color:var(--blue);text-transform:uppercase;letter-spacing:0.5px">💈 Perfiles del Equipo de Trabajo</div>'
-    + '<div style="margin-bottom:20px;max-height:300px;overflow-y:auto;padding-right:4px">' + workersHtml + '</div>'
+    + accordionHtml
     + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
     + '<button onclick="extendTrial(\'' + sanitizeText(b.id) + '\')" class="btn btn-dark btn-sm" style="flex:1"> Extender prueba</button>'
     + '<button onclick="activateBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-green btn-sm" style="flex:1"> Activar</button>'
     + '<button onclick="suspendBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-red btn-sm" style="flex:1"> Suspender</button></div>'
   );
   openOv('ov-biz-profile');
+}
+
+function openAdminWorkerProfile(bizId, workerId) {
+  var b = DB.businesses.filter(function (x) { return x.id === bizId; })[0]; if (!b) return;
+  var w = (b.workers || []).filter(function (x) { return x.id === workerId; })[0]; if (!w) return;
+
+  var appts = w.appointments || [];
+  var rev = appts.reduce(function (s, a) { return s + (parseFloat(a.price) || 0); }, 0);
+  var servicesCount = w.services ? w.services.length : 0;
+
+  var av = w.photo ? '<img src="' + sanitizeImageDataURL(w.photo) + '" style="width:100%;height:100%;object-fit:cover" alt="Foto">' : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;font-weight:900">'+san((w.name||'?').charAt(0).toUpperCase())+'</div>';
+
+  var servicesHtml = '';
+  if (w.services && w.services.length > 0) {
+     servicesHtml = w.services.map(function(s) {
+       return '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--b);font-size:13px"><span style="color:var(--text);font-weight:600">'+san(s.name)+'</span><span style="color:var(--green);font-weight:800">'+money(parseFloat(s.price)||0)+'</span></div>';
+     }).join('');
+  } else {
+     servicesHtml = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No tiene servicios registrados.</div>';
+  }
+
+  var html = '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:20px">'
+    + '<div style="width:84px;height:84px;border-radius:24px;background:linear-gradient(135deg,#4A7FD4,#2855C8);margin-bottom:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.25);border:3px solid var(--b)">' + av + '</div>'
+    + '<div style="font-size:22px;font-weight:900;color:var(--text);letter-spacing:-0.5px">' + san(w.name) + '</div>'
+    + '<div style="font-size:13px;color:var(--blue);font-weight:800;margin-top:6px;text-transform:uppercase;letter-spacing:0.5px;background:var(--bblue);padding:4px 10px;border-radius:10px;display:inline-block">' + san(w.spec || w.role || 'Profesional') + '</div>'
+    + '<div style="font-size:13px;color:var(--t2);margin-top:12px;line-height:1.6">' + (w.email ? '✉️ ' + san(w.email) + '<br>' : '') + (w.phone ? '📱 ' + san(w.phone) : '') + '</div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">'
+    + '<div class="sbox" style="padding:16px;text-align:center"><div class="slbl">Citas Completadas</div><div class="snum" style="font-size:24px">' + appts.length + '</div></div>'
+    + '<div class="sbox" style="padding:16px;text-align:center"><div class="slbl">Ingresos Generados</div><div class="snum" style="font-size:24px;color:var(--green)">' + money(rev) + '</div></div>'
+    + '</div>'
+    + '<div class="card" style="padding:18px">'
+    + '<div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:14px;letter-spacing:0.5px">Catálogo de Servicios ('+servicesCount+')</div>'
+    + '<div style="max-height:180px;overflow-y:auto;padding-right:6px">' + servicesHtml + '</div>'
+    + '</div>'
+    + '<div style="margin-top:20px"><button class="btn btn-dark" onclick="closeOv(\'ov-worker-profile\')" style="width:100%;font-size:14px">Volver al negocio</button></div>';
+
+  H('worker-profile-content', html);
+  openOv('ov-worker-profile');
 }
 
 function renderBizListAdmin(bizs) {
