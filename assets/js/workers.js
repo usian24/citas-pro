@@ -187,7 +187,6 @@ function workerTab(tab) {
   if (tab === 'agenda') initWorkerAgenda();
   if (tab === 'horario') {
     renderWorkerHorario();
-    if (window.innerWidth >= 1024) setTimeout(function () { if (typeof initHorarioSplit === 'function') initHorarioSplit(); }, 200);
   }
   if (tab === 'finanzas' || tab === 'historial') renderWorkerFinances();
   if (tab === 'home' && typeof renderWorkerHomeStats === 'function') renderWorkerHomeStats();
@@ -600,14 +599,12 @@ window.toggleWorkerBreak = function (i) {
   var h = CUR_WORKER.horario[i]; h.hasBreak = !h.hasBreak;
   if (h.hasBreak && !h.from2) { h.from2 = '16:00'; h.to2 = '20:00'; } if (!h.hasBreak) { h.from2 = ''; h.to2 = ''; }
   renderWorkerHorario();
-  if (window.innerWidth >= 1024) setTimeout(function () { if (typeof initHorarioSplit === 'function') initHorarioSplit(); }, 100);
 };
 
 window.toggleWorkerHorarioDay = function (i) {
   if (!CUR_WORKER || !CUR_WORKER.horario || !CUR_WORKER.horario[i]) return;
   CUR_WORKER.horario[i].open = !CUR_WORKER.horario[i].open;
   renderWorkerHorario();
-  if (window.innerWidth >= 1024) setTimeout(function () { if (typeof initHorarioSplit === 'function') initHorarioSplit(); }, 100);
 };
 
 /* ══════════════════════════
@@ -761,8 +758,8 @@ function renderWorkerNotifications() {
 
 function markWorkerNotifRead(index) {
   if (!CUR_WORKER || !CUR_WORKER.notifications || !CUR_WORKER.notifications[index]) return;
-    var n = CUR_WORKER.notifications[index];
-  
+  var n = CUR_WORKER.notifications[index];
+
   if (n.id) {
     fetch('/api/sync', {
       method: 'POST',
@@ -770,10 +767,10 @@ function markWorkerNotifRead(index) {
       body: JSON.stringify({ type: 'delete_notification', id: n.id })
     }).catch(function (e) { });
   }
-  
+
   CUR_WORKER.notifications.splice(index, 1);
-  saveDB(); 
-  renderWorkerNotifications(); 
+  saveDB();
+  renderWorkerNotifications();
   renderWorkerNotifBadge();
 }
 window.markWorkerNotifRead = markWorkerNotifRead;
