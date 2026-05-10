@@ -434,8 +434,6 @@ function confirmBooking() {
   }
 
 
-  var prevCUR = CUR; CUR = biz; saveDB(); CUR = prevCUR;
-
   fetch('/api/sync', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -452,9 +450,7 @@ function confirmBooking() {
 
   if (typeof syncClientToCloud === 'function') syncClientToCloud(CSEL.bizId, { name: name, phone: phone, email: email });
 
-  fetch('/api/update-biz', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(biz)
-  }).catch(function (e) { console.error('Error sync biz:', e); });
+  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch (e) { }
 
   if (worker.email) {
     fetch('/api/send-email', {

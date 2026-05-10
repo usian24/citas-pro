@@ -261,10 +261,12 @@ function createRealtimeNotification(workerId, bizId, notif) {
     if (CUR_WORKER.notifications.length > 50) CUR_WORKER.notifications.pop();
   }
 
-  // 2. ✅ Guardar en Supabase — persiste 30 días aunque se recargue
-  if (typeof saveNotificationToCloud === 'function') {
-    saveNotificationToCloud(workerId, bizId, notifObj);
-  }
+  // 2. ✅ Guardar en Supabase — COMENTADO
+  // El backend (syncRoutes.js) ya guarda la notificación en la base de datos 
+  // al insertar la cita. Si lo hacemos aquí también, se triplican los mensajes.
+  // if (typeof saveNotificationToCloud === 'function') {
+  //   saveNotificationToCloud(workerId, bizId, notifObj);
+  // }
 
   // 3. Guardar localStorage
   if (typeof saveDB === 'function') saveDB();
