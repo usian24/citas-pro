@@ -205,7 +205,11 @@ function sendPushToWorker(type, appt, worker) {
 /* ══════════════════════════
    CONFIRMAR RESERVA
 ══════════════════════════ */
+window._isBookingProcessing = false;
 function confirmBooking() {
+  if (window._isBookingProcessing) return;
+  window._isBookingProcessing = true;
+  setTimeout(function() { window._isBookingProcessing = false; }, 4000);
   var name = CSEL.clientName || sanitizeText(V('cl-name'));
   var phone = CSEL.clientPhone || sanitizeText(V('cl-phone'));
   var email = CSEL.clientEmail || sanitizeText(V('cl-email'));
