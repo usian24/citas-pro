@@ -387,6 +387,22 @@ function toggleTheme() {
    NAVEGACIÓN
 ══════════════════════════ */
 function goTo(id) {
+  // 🧹 1. Limpiaparabrisas: Restaurar scroll si estaba bloqueado
+  document.body.style.overflow = '';
+  
+  // 🧹 2. Limpiaparabrisas: Cerrar todos los modales oscuros genéricos (.ov)
+  document.querySelectorAll('.ov').forEach(function(o) { o.classList.remove('on'); });
+  
+  // 🧹 3. Limpiaparabrisas: Destruir modales a pantalla completa de la tienda
+  var prodModal = document.getElementById('prod-modal-overlay');
+  if (prodModal) prodModal.remove();
+
+  // 🧹 4. Limpiaparabrisas: Cerrar carrito de compras si se quedó abierto
+  var cartOv = document.getElementById('cart-overlay');
+  var cartDr = document.getElementById('cart-drawer');
+  if (cartOv) cartOv.classList.remove('on');
+  if (cartDr) cartDr.classList.remove('on');
+
   var ss = document.querySelectorAll('.scr');
   for (var i = 0; i < ss.length; i++) ss[i].classList.remove('on');
   var s = G(id); if (s) s.classList.add('on');

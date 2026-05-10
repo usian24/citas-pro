@@ -691,6 +691,8 @@ function initHorarioSplit() {
   // Scroll handler
   var topHeight = 0;
   function onScroll() {
+    // Si la pantalla de horario no está visible, no gastar memoria calculando el scroll
+    if (!wrap.offsetParent) return;
     if (!topHeight) topHeight = topWrap.offsetHeight;
     var rect = wrap.getBoundingClientRect();
     var topbarH = 74; // altura del topbar
