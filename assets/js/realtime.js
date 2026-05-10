@@ -117,6 +117,12 @@ async function safeRefreshClientUI(bizId) {
   if (typeof fetchBizFromCloud !== 'function') return;
   const freshData = await fetchBizFromCloud(bizId);
   if (!freshData) return;
+  
+  if (typeof window.autoCompletePastAppointments === 'function') {
+    if (window.autoCompletePastAppointments(freshData)) {
+      if (typeof syncAppointmentsToCloud === 'function') syncAppointmentsToCloud(freshData);
+    }
+  }
 
   let index = DB.businesses.findIndex(function (b) { return b.id === bizId; });
   if (index >= 0) DB.businesses[index] = freshData;
@@ -435,6 +441,12 @@ async function safeRefreshWorkerUI(workerId, bizId) {
   if (typeof fetchBizFromCloud !== 'function') return;
   const freshData = await fetchBizFromCloud(bizId);
   if (!freshData) return;
+
+  if (typeof window.autoCompletePastAppointments === 'function') {
+    if (window.autoCompletePastAppointments(freshData)) {
+      if (typeof syncAppointmentsToCloud === 'function') syncAppointmentsToCloud(freshData);
+    }
+  }
   let index = DB.businesses.findIndex(function (b) { return b.id === bizId; });
   if (index >= 0) {
     let oldBiz = DB.businesses[index];

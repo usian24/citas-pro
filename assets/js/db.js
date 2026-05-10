@@ -517,6 +517,41 @@ async function forceCloudSync() {
 
 window.addEventListener('load', function () { setTimeout(forceCloudSync, 500); });
 
+window.autoCompletePastAppointments = function(biz) {
+  if (!biz) return false;
+  var _ahora = (typeof ahoraEnNegocio === 'function') ? ahoraEnNegocio(biz.country || 'ES') : new Date();
+  var ahoraMins = _ahora.getHours() * 60 + _ahora.getMinutes();
+  var hoyStr = _ahora.getFullYear() + '-' + String(_ahora.getMonth() + 1).padStart(2, '0') + '-' + String(_ahora.getDate()).padStart(2, '0');
+  var cambios = false;
+
+  function checkAppt(a, services) {
+    if (a.status !== 'confirmed' && a.status !== 'rescheduled') return;
+    if (a.date > hoyStr) return;
+    if (a.date === hoyStr) {
+      var pts = (a.time || '00:00').split(':').map(Number);
+      var minCita = pts[0] * 60 + pts[1];
+      var dur = 30;
+      if (services && services.length) {
+        var svc = services.find(function (s) { return s.name === a.svc; });
+        if (svc) dur = parseInt(svc.dur) || 30;
+      }
+      if (ahoraMins < minCita + dur) return;
+    }
+    a.status = 'completed';
+    cambios = true;
+    
+    // Disparar recompensa de lealtad si se completó automáticamente
+    if (typeof checkLoyaltyReward === 'function' && biz.id) {
+      checkLoyaltyReward(biz.id, a);
+    }
+  }
+
+  (biz.workers || []).forEach(function (w) { (w.appointments || []).forEach(function(a) { checkAppt(a, w.services); }); });
+  (biz.appointments || []).forEach(function(a) { checkAppt(a, biz.services); });
+
+  return cambios;
+};
+
 /* ══════════════════════════
    AUTO-LOGIN
 ══════════════════════════ */

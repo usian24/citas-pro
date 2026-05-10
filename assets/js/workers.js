@@ -27,28 +27,9 @@ if (typeof registerFCMToken === 'function') registerFCMToken();
 function initWorkerPanel() {
   if (!CUR_WORKER || !CUR) return;
 
-  // ── Auto-completar citas pasadas (usando timezone del negocio) ──
-  var _ahora = (typeof ahoraEnNegocio === 'function') ? ahoraEnNegocio(CUR.country || 'PE') : new Date();
-  var ahoraMins = _ahora.getHours() * 60 + _ahora.getMinutes();
-  var hoyStr = _ahora.getFullYear() + '-' + String(_ahora.getMonth() + 1).padStart(2, '0') + '-' + String(_ahora.getDate()).padStart(2, '0');
-  var cambios = false;
-  (CUR_WORKER.appointments || []).forEach(function (a) {
-    if (a.status !== 'confirmed' && a.status !== 'rescheduled') return;
-    if (a.date > hoyStr) return;
-    if (a.date === hoyStr) {
-      var pts = (a.time || '00:00').split(':').map(Number);
-      var minCita = pts[0] * 60 + pts[1];
-      var dur = 30;
-      if (CUR_WORKER.services) {
-        var svc = CUR_WORKER.services.find(function (s) { return s.name === a.svc; });
-        if (svc) dur = parseInt(svc.dur) || 30;
-      }
-      if (ahoraMins < minCita + dur) return;
-    }
-    a.status = 'completed';
-    cambios = true;
-  });
-  if (cambios) saveDB();
+  if (typeof window.autoCompletePastAppointments === 'function') {
+    if (window.autoCompletePastAppointments(CUR)) saveDB();
+  }
 
   var av = G('wk-hdr-av');
   if (av) {

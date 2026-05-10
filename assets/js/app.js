@@ -223,6 +223,11 @@ async function fetchBizFromCloud(bizId) {
 }
 
 function syncBizToLocal(cloudData) {
+  if (typeof window.autoCompletePastAppointments === 'function') {
+    if (window.autoCompletePastAppointments(cloudData)) {
+      if (typeof syncAppointmentsToCloud === 'function') syncAppointmentsToCloud(cloudData);
+    }
+  }
   let index = DB.businesses.findIndex(b => b.id === cloudData.id);
   if (index >= 0) {
     DB.businesses[index] = cloudData;

@@ -336,6 +336,10 @@ function copyLink() {
 function initBizPanel() {
   if (!CUR) return;
 
+  if (typeof window.autoCompletePastAppointments === 'function') {
+    if (window.autoCompletePastAppointments(CUR)) saveDB();
+  }
+
   // ── Moneda y precio según país del negocio ──
   if (CUR.country && typeof guardarPaisEnCache === 'function') {
     guardarPaisEnCache(CUR.country);
