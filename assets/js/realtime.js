@@ -125,7 +125,7 @@ async function safeRefreshClientUI(bizId) {
   if (typeof CSEL !== 'undefined' && CSEL && CSEL.bizId === bizId) {
     var s4 = document.getElementById('cs-4');
     if (s4 && s4.classList.contains('on')) {
-       if (typeof buildTimes === 'function') buildTimes(CSEL.bizId, CSEL.workerId);
+      if (typeof buildTimes === 'function') buildTimes(CSEL.bizId, CSEL.workerId);
     }
   }
 }
@@ -240,7 +240,7 @@ function handleBizAppointmentChange(payload, bizId) {
 
 /* ══════════════════════════
    CREAR NOTIFICACIÓN REALTIME
-   ✅ Guarda en Supabase para que persista 30 días
+   ✅ Guarda en Supabase para que persista 7 días
 ══════════════════════════ */
 function createRealtimeNotification(workerId, bizId, notif) {
 

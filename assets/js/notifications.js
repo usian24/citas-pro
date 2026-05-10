@@ -3,7 +3,7 @@
 /* ══════════════════════════════════════════════════
    NOTIFICATIONS.JS
    Las notificaciones ahora se guardan en Supabase
-   y se eliminan automáticamente después de 30 días.
+   y se eliminan automáticamente después de 7 días.
 ══════════════════════════════════════════════════ */
 
 /* ══════════════════════════
@@ -15,11 +15,11 @@ async function loadWorkerNotificationsFromCloud(workerId) {
     var res = await fetch('/api/sync?worker_id=' + encodeURIComponent(workerId));
     if (!res.ok) return [];
     var data = await res.json();
-    return (data || []).map(function(n) {
+    return (data || []).map(function (n) {
       return {
-        id:   n.id,
+        id: n.id,
         type: n.type,
-        msg:  n.msg,
+        msg: n.msg,
         data: { detail: n.detail || '' },
         read: n.read,
         date: n.created_at ? n.created_at : new Date().toISOString()
@@ -39,14 +39,14 @@ function saveNotificationToCloud(workerId, bizId, notif) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-    type:        'notification',
-    type_notif:  notif.type || 'new_booking',
-    worker_id:   workerId,
-    business_id: bizId,
-    msg:         notif.msg || notif.title || '',
-    detail:      (notif.data && notif.data.detail) ? notif.data.detail : (notif.detail || '')
-  })
-  }).catch(function(e) { console.error('Error guardando notif:', e); });
+      type: 'notification',
+      type_notif: notif.type || 'new_booking',
+      worker_id: workerId,
+      business_id: bizId,
+      msg: notif.msg || notif.title || '',
+      detail: (notif.data && notif.data.detail) ? notif.data.detail : (notif.detail || '')
+    })
+  }).catch(function (e) { console.error('Error guardando notif:', e); });
 }
 
 /* ══════════════════════════
@@ -54,7 +54,7 @@ function saveNotificationToCloud(workerId, bizId, notif) {
 ══════════════════════════ */
 function renderWorkerNotifBadge() {
   if (!CUR_WORKER) return;
-  var notifs = (CUR_WORKER.notifications || []).filter(function(n){ return !n.read; });
+  var notifs = (CUR_WORKER.notifications || []).filter(function (n) { return !n.read; });
   var badge = G('wk-notif-badge');
   if (badge) {
     badge.textContent = notifs.length > 0 ? (notifs.length > 9 ? '9+' : notifs.length) : '';
@@ -83,32 +83,41 @@ async function renderWorkerNotifications() {
 
   // Marcar todas como leídas al abrir
   var hasUnread = false;
-  notifs.forEach(function(n){ if(!n.read){ n.read=true; hasUnread=true; } });
-  if (hasUnread) { saveDB(); renderWorkerNotifBadge(); }
+  notifs.forEach(function (n) { if (!n.read) { n.read = true; hasUnread = true; } });
+  if (hasUnread) {
+    saveDB();
+    renderWorkerNotifBadge();
+    // 🚀 El misil silencioso: borra de la base de datos apenas el trabajador las ve
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'clear_notifications', worker_id: CUR_WORKER.id })
+    }).catch(function (e) { });
+  }
 
   H('wk-notif-list', notifs.length
-    ? notifs.map(function(n){ return notifCardH(n); }).join('')
+    ? notifs.map(function (n) { return notifCardH(n); }).join('')
     : '<div style="text-align:center;padding:40px;color:var(--muted)">'
-      + '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;opacity:.4"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
-      + '<div style="font-size:14px">Sin notificaciones</div></div>');
+    + '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;opacity:.4"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+    + '<div style="font-size:14px">Sin notificaciones</div></div>');
 }
 
 function notifCardH(n) {
   var iconMap = {
-    new_booking:    { icon: notifIconBooking(),   color: '#22C55E' },
-    booking_cancel: { icon: notifIconCancel(),    color: '#EF4444' },
-    booking_modify: { icon: notifIconEdit(),      color: '#F59E0B' },
-    system:         { icon: notifIconInfo(),      color: '#4A7FD4' }
+    new_booking: { icon: notifIconBooking(), color: '#22C55E' },
+    booking_cancel: { icon: notifIconCancel(), color: '#EF4444' },
+    booking_modify: { icon: notifIconEdit(), color: '#F59E0B' },
+    system: { icon: notifIconInfo(), color: '#4A7FD4' }
   };
   var style = iconMap[n.type] || iconMap.system;
   var dateStr = '';
   try {
     var d = new Date(n.date);
-    dateStr = d.getDate() + ' ' + MONTHS_SHORT[d.getMonth()] + ' · ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-  } catch(e) {}
+    dateStr = d.getDate() + ' ' + MONTHS_SHORT[d.getMonth()] + ' · ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  } catch (e) { }
 
-  return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px'+(n.read?'':';border-left:3px solid '+style.color)+'">'
-    + '<div style="width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:'+style.color+'18;color:'+style.color+'">'
+  return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px' + (n.read ? '' : ';border-left:3px solid ' + style.color) + '">'
+    + '<div style="width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:' + style.color + '18;color:' + style.color + '">'
     + style.icon + '</div>'
     + '<div style="flex:1">'
     + '<div style="font-size:13px;font-weight:' + (n.read ? '500' : '700') + ';margin-bottom:4px">' + san(n.msg) + '</div>'
@@ -148,15 +157,20 @@ function clearWorkerNotifications() {
   openConfirmModal(
     'Limpiar notificaciones',
     '¿Eliminar todas las notificaciones?',
-    function() {
+    function () {
       CUR_WORKER.notifications = [];
       saveDB();
       renderWorkerNotifications();
       renderWorkerNotifBadge();
-      toast('Notificaciones eliminadas','#475569');
+      fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'clear_notifications', worker_id: CUR_WORKER.id })
+      }).catch(function (e) { });
+      toast('Notificaciones eliminadas', '#475569');
     }
   );
 }
 
-window.saveNotificationToCloud          = saveNotificationToCloud;
+window.saveNotificationToCloud = saveNotificationToCloud;
 window.loadWorkerNotificationsFromCloud = loadWorkerNotificationsFromCloud;

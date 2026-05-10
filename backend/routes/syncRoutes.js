@@ -28,13 +28,13 @@ async function enviarPushWorker(supabase, worker_id, title, body) {
     for (var sub of subs) {
       try {
         await webpush.sendNotification(sub.subscription, payload);
-      } catch(e) {
+      } catch (e) {
         if (e.statusCode === 410) {
           await supabase.from('push_subscriptions').delete().eq('worker_id', worker_id);
         }
       }
     }
-  } catch(e) {
+  } catch (e) {
     console.error('Error enviando push:', e.message);
   }
 }
@@ -82,24 +82,24 @@ router.post('/sync', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Faltan worker_id o business_id' });
       }
 
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       try {
         await supabase
           .from('notifications')
           .delete()
-          .lt('created_at', thirtyDaysAgo.toISOString());
-      } catch(e) {}
+          .lt('created_at', sevenDaysAgo.toISOString());
+      } catch (e) { }
 
       const { error } = await supabase
         .from('notifications')
         .insert({
-          worker_id:   worker_id,
+          worker_id: worker_id,
           business_id: business_id,
-          type:        notifType,
-          msg:         msg || '',
-          detail:      detail || '',
-          read:        false
+          type: notifType,
+          msg: msg || '',
+          detail: detail || '',
+          read: false
         });
 
       if (error) return res.status(500).json({ success: false, error: error.message });
@@ -150,7 +150,7 @@ router.post('/sync', async (req, res) => {
             .neq('id', String(appt.id));
         }
 
-        const esNueva      = !enSupabase && appt.status === 'confirmed';
+        const esNueva = !enSupabase && appt.status === 'confirmed';
         const esReagendada = appt.status === 'rescheduled' && !!enSupabase;
 
         // 🛡️ PREVENCIÓN DE DOBLE RESERVA (RACE CONDITION)
@@ -173,20 +173,20 @@ router.post('/sync', async (req, res) => {
         }
 
         const { error } = await supabase.from('appointments').upsert({
-          id:            String(appt.id),
-          business_id:   business_id,
-          worker_id:     appt.worker_id || '',
-          client_id:     appt.client_id || '',
-          client_name:   appt.client_name || '',
-          client_phone:  appt.client_phone || '',
-          client_email:  appt.client_email || appt.email || '',
-          notes:         appt.notes || '',
-          token:         appt.token || '',
-          service_name:  appt.service_name || '',
+          id: String(appt.id),
+          business_id: business_id,
+          worker_id: appt.worker_id || '',
+          client_id: appt.client_id || '',
+          client_name: appt.client_name || '',
+          client_phone: appt.client_phone || '',
+          client_email: appt.client_email || appt.email || '',
+          notes: appt.notes || '',
+          token: appt.token || '',
+          service_name: appt.service_name || '',
           service_price: parseFloat(appt.service_price) || 0,
-          date:          appt.date || '',
-          time:          appt.time || '',
-          status:        appt.status || 'confirmed'
+          date: appt.date || '',
+          time: appt.time || '',
+          status: appt.status || 'confirmed'
         }).select();
 
         if (error) {
@@ -203,12 +203,12 @@ router.post('/sync', async (req, res) => {
               (appt.client_name || 'Cliente') + ' · ' + (appt.service_name || '') + ' · ' + (appt.date || '') + ' a las ' + (appt.time || '')
             );
             await supabase.from('notifications').insert({
-              worker_id:   appt.worker_id,
+              worker_id: appt.worker_id,
               business_id: business_id,
-              type:        'new_booking',
-              msg:         'Nueva cita: ' + (appt.client_name || 'Cliente'),
-              detail:      (appt.service_name || '') + ' · ' + (appt.date || '') + ' a las ' + (appt.time || ''),
-              read:        false
+              type: 'new_booking',
+              msg: 'Nueva cita: ' + (appt.client_name || 'Cliente'),
+              detail: (appt.service_name || '') + ' · ' + (appt.date || '') + ' a las ' + (appt.time || ''),
+              read: false
             });
           } else if (esReagendada) {
             await enviarPushWorker(
@@ -218,12 +218,12 @@ router.post('/sync', async (req, res) => {
               (appt.client_name || 'Cliente') + ' cambió a ' + (appt.date || '') + ' a las ' + (appt.time || '')
             );
             await supabase.from('notifications').insert({
-              worker_id:   appt.worker_id,
+              worker_id: appt.worker_id,
               business_id: business_id,
-              type:        'booking_modify',
-              msg:         'Cita reagendada: ' + (appt.client_name || 'Cliente'),
-              detail:      (appt.service_name || '') + ' · ' + (appt.date || '') + ' a las ' + (appt.time || ''),
-              read:        false
+              type: 'booking_modify',
+              msg: 'Cita reagendada: ' + (appt.client_name || 'Cliente'),
+              detail: (appt.service_name || '') + ' · ' + (appt.date || '') + ' a las ' + (appt.time || ''),
+              read: false
             });
           }
         }
@@ -250,15 +250,15 @@ router.post('/sync', async (req, res) => {
         const finalWorkerId = svc.worker_id || worker_id || '';
 
         const { error } = await supabase.from('services').upsert({
-          id:          String(svc.id),
+          id: String(svc.id),
           business_id: business_id,
-          worker_id:   finalWorkerId,
-          name:        svc.name || '',
+          worker_id: finalWorkerId,
+          name: svc.name || '',
           description: svc.description || '',
-          price:       parseFloat(svc.price) || 0,
-          duration:    parseInt(svc.duration) || 30,
-          color:       svc.color || '',
-          image:       svc.image || ''
+          price: parseFloat(svc.price) || 0,
+          duration: parseInt(svc.duration) || 30,
+          color: svc.color || '',
+          image: svc.image || ''
         });
 
         if (error) {
@@ -300,11 +300,11 @@ router.post('/sync', async (req, res) => {
       }
 
       const payload = {
-        id:          data.id || ('cl_' + Date.now()),
+        id: data.id || ('cl_' + Date.now()),
         business_id: data.business_id,
-        name:        data.name || '',
-        email:       data.email || '',
-        phone:       data.phone || ''
+        name: data.name || '',
+        email: data.email || '',
+        phone: data.phone || ''
       };
 
       const { data: existing } = await supabase
@@ -336,15 +336,15 @@ router.post('/sync', async (req, res) => {
       }
 
       const { error } = await supabase.from('products').upsert({
-        id:            data.id || ('prod_' + Date.now()),
-        business_id:   data.business_id,
-        name:          data.name || '',
-        description:   data.description || '',
-        price:         parseFloat(data.price) || 0,
-        stock:         parseInt(data.stock) || 0,
-        image:         data.image || '',
-        category:      data.category || '',
-        rating:        parseFloat(data.rating) || 0,
+        id: data.id || ('prod_' + Date.now()),
+        business_id: data.business_id,
+        name: data.name || '',
+        description: data.description || '',
+        price: parseFloat(data.price) || 0,
+        stock: parseInt(data.stock) || 0,
+        image: data.image || '',
+        category: data.category || '',
+        rating: parseFloat(data.rating) || 0,
         reviews_count: parseInt(data.reviews_count) || 0
       });
 
