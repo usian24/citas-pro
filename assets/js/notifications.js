@@ -81,28 +81,14 @@ async function renderWorkerNotifications() {
 
   var notifs = CUR_WORKER.notifications || [];
 
-  // Marcar todas como leídas al abrir
-  var hasUnread = false;
-  notifs.forEach(function (n) { if (!n.read) { n.read = true; hasUnread = true; } });
-  if (hasUnread) {
-    saveDB();
-    renderWorkerNotifBadge();
-    // 🚀 El misil silencioso: borra de la base de datos apenas el trabajador las ve
-    fetch('/api/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'clear_notifications', worker_id: CUR_WORKER.id })
-    }).catch(function (e) { });
-  }
-
   H('wk-notif-list', notifs.length
-    ? notifs.map(function (n) { return notifCardH(n); }).join('')
+    ? notifs.map(function (n, i) { return notifCardH(n, i); }).join('')
     : '<div style="text-align:center;padding:40px;color:var(--muted)">'
     + '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;opacity:.4"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
     + '<div style="font-size:14px">Sin notificaciones</div></div>');
 }
 
-function notifCardH(n) {
+function notifCardH(n, i) {
   var iconMap = {
     new_booking: { icon: notifIconBooking(), color: '#22C55E' },
     booking_cancel: { icon: notifIconCancel(), color: '#EF4444' },
@@ -123,6 +109,7 @@ function notifCardH(n) {
     + '<div style="font-size:13px;font-weight:' + (n.read ? '500' : '700') + ';margin-bottom:4px">' + san(n.msg) + '</div>'
     + (n.data && n.data.detail ? '<div style="font-size:12px;color:var(--t2);margin-bottom:4px">' + san(n.data.detail) + '</div>' : '')
     + '<div style="font-size:11px;color:var(--muted)">' + dateStr + '</div>'
+    + (!n.read ? '<div style="text-align:right;margin-top:8px"><button onclick="markWorkerNotifRead(' + i + ')" style="background:var(--bblue);border:none;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;padding:6px 12px;border-radius:12px">Marcar como leída</button></div>' : '')
     + '</div></div>';
 }
 

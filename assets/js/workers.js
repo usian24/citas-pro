@@ -780,7 +780,20 @@ function renderWorkerNotifications() {
 
 function markWorkerNotifRead(index) {
   if (!CUR_WORKER || !CUR_WORKER.notifications || !CUR_WORKER.notifications[index]) return;
-  CUR_WORKER.notifications[index].read = true; saveDB(); renderWorkerNotifications(); renderWorkerNotifBadge();
+    var n = CUR_WORKER.notifications[index];
+  
+  if (n.id) {
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'delete_notification', id: n.id })
+    }).catch(function (e) { });
+  }
+  
+  CUR_WORKER.notifications.splice(index, 1);
+  saveDB(); 
+  renderWorkerNotifications(); 
+  renderWorkerNotifBadge();
 }
 window.markWorkerNotifRead = markWorkerNotifRead;
 

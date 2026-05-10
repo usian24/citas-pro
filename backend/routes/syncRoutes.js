@@ -107,6 +107,19 @@ router.post('/sync', async (req, res) => {
     }
 
     // ═══════════════════════════════════════
+    // ELIMINAR NOTIFICACIÓN INDIVIDUAL
+    // ═══════════════════════════════════════
+    if (type === 'delete_notification') {
+      const { id } = req.body;
+      if (!id) {
+        return res.status(400).json({ success: false, error: 'Falta el ID' });
+      }
+      const { error } = await supabase.from('notifications').delete().eq('id', id);
+      if (error) return res.status(500).json({ success: false, error: error.message });
+      return res.status(200).json({ success: true });
+    }
+
+    // ═══════════════════════════════════════
     // APPOINTMENTS — type: "appointments"
     // ═══════════════════════════════════════
     if (type === 'appointments') {
