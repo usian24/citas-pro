@@ -82,6 +82,12 @@ router.post('/sync', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Faltan worker_id o business_id' });
       }
 
+      // 🛡️ ESCUDO ANTI-DUPLICADOS: El backend ya crea estas notificaciones automáticamente.
+      // Si un frontend desactualizado (caché) intenta crearlas, las ignoramos silenciosamente.
+      if (notifType === 'new_booking' || notifType === 'booking_modify' || notifType === 'booking_cancel') {
+        return res.status(200).json({ success: true, ignored: true });
+      }
+
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       try {
