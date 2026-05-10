@@ -320,15 +320,15 @@ function T(id, t) { var e = G(id); if (e) e.textContent = sanitizeText(t); }
 function H(id, h) { var e = G(id); if (e) e.innerHTML = h; }
 function on(id, ev, fn) { var e = G(id); if (e) e.addEventListener(ev, fn); }
 function openOv(id) { var e = G(id); if (e) e.classList.add('on'); }
-function closeOv(id) { 
-  var e = G(id); 
+function closeOv(id) {
+  var e = G(id);
   if (e) {
-    e.classList.remove('on'); 
+    e.classList.remove('on');
     // Auto-eliminar notificaciones al cerrar el modal de la campana
     if (id === 'ov-notifications' && typeof autoClearWorkerNotifications === 'function') {
       autoClearWorkerNotifications();
     }
-  } 
+  }
 }
 
 function showErr(id, msg) { var e = G(id); if (e) { e.textContent = msg; e.style.display = 'block'; } }
@@ -517,7 +517,7 @@ async function forceCloudSync() {
 
 window.addEventListener('load', function () { setTimeout(forceCloudSync, 500); });
 
-window.autoCompletePastAppointments = function(biz) {
+window.autoCompletePastAppointments = function (biz) {
   if (!biz) return false;
   var _ahora = (typeof ahoraEnNegocio === 'function') ? ahoraEnNegocio(biz.country || 'ES') : new Date();
   var ahoraMins = _ahora.getHours() * 60 + _ahora.getMinutes();
@@ -539,15 +539,15 @@ window.autoCompletePastAppointments = function(biz) {
     }
     a.status = 'completed';
     cambios = true;
-    
+
     // Disparar recompensa de lealtad si se completó automáticamente
     if (typeof checkLoyaltyReward === 'function' && biz.id) {
       checkLoyaltyReward(biz.id, a);
     }
   }
 
-  (biz.workers || []).forEach(function (w) { (w.appointments || []).forEach(function(a) { checkAppt(a, w.services); }); });
-  (biz.appointments || []).forEach(function(a) { checkAppt(a, biz.services); });
+  (biz.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (a) { checkAppt(a, w.services); }); });
+  (biz.appointments || []).forEach(function (a) { checkAppt(a, biz.services); });
 
   return cambios;
 };
