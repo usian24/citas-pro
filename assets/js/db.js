@@ -320,7 +320,16 @@ function T(id, t) { var e = G(id); if (e) e.textContent = sanitizeText(t); }
 function H(id, h) { var e = G(id); if (e) e.innerHTML = h; }
 function on(id, ev, fn) { var e = G(id); if (e) e.addEventListener(ev, fn); }
 function openOv(id) { var e = G(id); if (e) e.classList.add('on'); }
-function closeOv(id) { var e = G(id); if (e) e.classList.remove('on'); }
+function closeOv(id) { 
+  var e = G(id); 
+  if (e) {
+    e.classList.remove('on'); 
+    // Auto-eliminar notificaciones al cerrar el modal de la campana
+    if (id === 'ov-notifications' && typeof autoClearWorkerNotifications === 'function') {
+      autoClearWorkerNotifications();
+    }
+  } 
+}
 
 function showErr(id, msg) { var e = G(id); if (e) { e.textContent = msg; e.style.display = 'block'; } }
 function hideErr(id) { var e = G(id); if (e) e.style.display = 'none'; }

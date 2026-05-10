@@ -159,5 +159,20 @@ function clearWorkerNotifications() {
   );
 }
 
+function autoClearWorkerNotifications() {
+  if (!CUR_WORKER || !CUR_WORKER.notifications || CUR_WORKER.notifications.length === 0) return;
+  
+  CUR_WORKER.notifications = [];
+  saveDB();
+  renderWorkerNotifBadge();
+  
+  fetch('/api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'clear_notifications', worker_id: CUR_WORKER.id })
+  }).catch(function (e) { });
+}
+
 window.saveNotificationToCloud = saveNotificationToCloud;
 window.loadWorkerNotificationsFromCloud = loadWorkerNotificationsFromCloud;
+window.autoClearWorkerNotifications = autoClearWorkerNotifications;

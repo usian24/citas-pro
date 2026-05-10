@@ -253,7 +253,7 @@ window.onload = async function () {
 
   /* Cerrar overlays al click en fondo */
   document.querySelectorAll('.ov').forEach(function (o) {
-    o.addEventListener('click', function (e) { if (e.target === o) o.classList.remove('on'); });
+    o.addEventListener('click', function (e) { if (e.target === o) closeOv(o.id); });
   });
 
   /* Cerrar dropdown país al click fuera */
