@@ -561,18 +561,6 @@ window.onload = async function () {
   window.confirmCancel = typeof confirmCancel === 'function' ? confirmCancel : function () { };
   window.REG = REG;
 
-  /* ══════════════════════════════════════════════════
-     STICKY SPLIT HORARIO — activar al pulsar tab
-  ══════════════════════════════════════════════════ */
-  if (window.innerWidth >= 1024) {
-    var horarioTabBtn = G('wn-horario');
-    if (horarioTabBtn) {
-      horarioTabBtn.addEventListener('click', function () {
-        setTimeout(initHorarioSplit, 200);
-      });
-    }
-  }
-
   /* ARRANQUE CONECTADO A LA NUBE */
   (async function startup() {
     const hash = window.location.hash;
