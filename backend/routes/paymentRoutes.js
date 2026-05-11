@@ -26,7 +26,7 @@ router.post('/stripe-checkout', async (req, res) => {
           product_data: {
             name: 'Citas Pro — Plan mensual',
             description: 'Gestión completa de citas: agenda, equipo, servicios, finanzas y más.',
-            images: ['https://citaspro.app/assets/img/logo-stripe.png']
+            images: ['https://citasproonline.com/assets/img/image.png']
           },
           unit_amount: 1000,
           recurring: {
@@ -40,8 +40,8 @@ router.post('/stripe-checkout', async (req, res) => {
         bizId: bizId,
         bizName: bizName || 'Sin nombre'
       },
-      success_url: `https://citaspro.app/?pago=ok&biz=${bizId}`,
-      cancel_url: `https://citaspro.app/?pago=cancelado`,
+      success_url: `https://citasproonline.com/?pago=ok&biz=${bizId}`,
+      cancel_url: `https://citasproonline.com/?pago=cancelado`,
       locale: 'es',
       allow_promotion_codes: true
     });

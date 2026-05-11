@@ -8,33 +8,33 @@
 // ─────────────────────────────────────────────────────
 
 // DEV Supabase
-const SUPABASE_URL      = 'https://krbtoepzoorpdedtykug.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
-const tiendaSupa        = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = window.AppEnv.SUPABASE_URL;
+const SUPABASE_KEY = window.AppEnv.SUPABASE_ANON_KEY;
+const tiendaSupa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let tempProdPhotos      = [];
-let editingProdId      = null;
+let tempProdPhotos = [];
+let editingProdId = null;
 let categoriasActuales = [];
-let todosLosProductos  = []; // cache para el buscador admin
+let todosLosProductos = []; // cache para el buscador admin
 
 // ══════════════════════════════════════════
 // ALERTAS Y CONFIRMACIONES
 // ══════════════════════════════════════════
 function mostrarAlertaTienda(mensaje, titulo = 'Aviso', icono = '⚠️') {
-  document.getElementById('ta-icon').innerText  = icono;
+  document.getElementById('ta-icon').innerText = icono;
   document.getElementById('ta-title').innerText = titulo;
-  document.getElementById('ta-msg').innerText   = mensaje;
+  document.getElementById('ta-msg').innerText = mensaje;
   openOv('ov-tienda-alert');
 }
 
 function confirmarAccionTienda(titulo, mensaje, onConfirm) {
   document.getElementById('confirm-title').innerText = titulo;
-  document.getElementById('confirm-msg').innerText   = mensaje;
-  ['confirm-ok-btn','confirm-cancel-btn'].forEach(id => {
+  document.getElementById('confirm-msg').innerText = mensaje;
+  ['confirm-ok-btn', 'confirm-cancel-btn'].forEach(id => {
     const o = document.getElementById(id), n = o.cloneNode(true);
     o.parentNode.replaceChild(n, o);
   });
-  document.getElementById('confirm-ok-btn').onclick     = () => { closeOv('ov-confirm'); onConfirm(); };
+  document.getElementById('confirm-ok-btn').onclick = () => { closeOv('ov-confirm'); onConfirm(); };
   document.getElementById('confirm-cancel-btn').onclick = () => closeOv('ov-confirm');
   openOv('ov-confirm');
 }
@@ -152,7 +152,7 @@ async function renderTiendaAdmin() {
   if (!CUR) return;
 
   const prodList = document.getElementById('biz-productos-list');
-  const catList  = document.getElementById('biz-categorias-list');
+  const catList = document.getElementById('biz-categorias-list');
   const datalist = document.getElementById('cat-list');
 
   prodList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--blue);">Cargando... ⏳</div>';
@@ -167,7 +167,7 @@ async function renderTiendaAdmin() {
 
     todosLosProductos = productos || [];
 
-    const deBD = [...new Set(todosLosProductos.map(p => (p.category||'').trim()).filter(Boolean))];
+    const deBD = [...new Set(todosLosProductos.map(p => (p.category || '').trim()).filter(Boolean))];
     categoriasActuales = [...new Set([...deBD, ...categoriasActuales])].sort();
 
     if (datalist) datalist.innerHTML = categoriasActuales.map(c => `<option value="${c}">`).join('');
@@ -208,7 +208,7 @@ function renderProductosAdmin(productos) {
 function filtrarProductosAdmin(termino) {
   const text = termino.toLowerCase().trim();
   const filtrados = text
-    ? todosLosProductos.filter(p => (p.name||'').toLowerCase().includes(text))
+    ? todosLosProductos.filter(p => (p.name || '').toLowerCase().includes(text))
     : todosLosProductos;
   renderSeccionesAdmin(filtrados);
 }
@@ -229,9 +229,9 @@ function renderSeccionesAdmin(productos) {
 
   let html = renderAdmSeccion('📦 Todos los productos', productos, null);
 
-  const cats = [...new Set(productos.map(p=>(p.category||'').trim()).filter(Boolean))].sort();
+  const cats = [...new Set(productos.map(p => (p.category || '').trim()).filter(Boolean))].sort();
   cats.forEach(cat => {
-    const prods = productos.filter(p => (p.category||'').trim() === cat);
+    const prods = productos.filter(p => (p.category || '').trim() === cat);
     html += renderAdmSeccion(cat, prods, cat);
   });
 
@@ -253,7 +253,7 @@ function renderAdmSeccion(titulo, productos, catKey) {
   ).join('');
 
   const btnCatDesc = catKey
-    ? `<span class="btn-cat-desc" onclick="abrirDescuentoCategoria('${catKey.replace(/'/g,"\\'")}')">
+    ? `<span class="btn-cat-desc" onclick="abrirDescuentoCategoria('${catKey.replace(/'/g, "\\'")}')">
          🏷️ Descuento a categoría
        </span>`
     : '';
@@ -270,16 +270,16 @@ function renderAdmSeccion(titulo, productos, catKey) {
 }
 
 function renderAdmCard(p) {
-  const precio    = parseFloat(p.price) || 0;
-  const desc      = parseFloat(p.discount_percent) || 0;
-  const precioFin = desc > 0 ? precio * (1 - desc/100) : precio;
-  const stock     = p.stock != null ? parseInt(p.stock) : null;
+  const precio = parseFloat(p.price) || 0;
+  const desc = parseFloat(p.discount_percent) || 0;
+  const precioFin = desc > 0 ? precio * (1 - desc / 100) : precio;
+  const stock = p.stock != null ? parseInt(p.stock) : null;
   let primerImg = null;
   if (p.image) {
     const fotos = window.parseFotos ? window.parseFotos(p.image) : [p.image];
     primerImg = fotos[0] || null;
   }
-  
+
   const img = primerImg
     ? `<img src="${primerImg}" loading="lazy" style="max-width:100%;max-height:100%;object-fit:contain;mix-blend-mode:multiply;">`
     : `<div class="no-img">🛍️</div>`;
@@ -293,9 +293,9 @@ function renderAdmCard(p) {
 
   let stockHtml = '';
   if (stock !== null) {
-    if (stock <= 0)   stockHtml = '<div class="adm-p-stock out">Sin stock</div>';
-    else if (stock<=5)stockHtml = `<div class="adm-p-stock low">Stock: ${stock}</div>`;
-    else              stockHtml = `<div class="adm-p-stock ok">Stock: ${stock}</div>`;
+    if (stock <= 0) stockHtml = '<div class="adm-p-stock out">Sin stock</div>';
+    else if (stock <= 5) stockHtml = `<div class="adm-p-stock low">Stock: ${stock}</div>`;
+    else stockHtml = `<div class="adm-p-stock ok">Stock: ${stock}</div>`;
   }
 
   return `
@@ -309,7 +309,7 @@ function renderAdmCard(p) {
         ${img}
       </div>
       <div class="adm-p-info">
-        <div class="adm-p-cat">${(p.category||'General').trim()}</div>
+        <div class="adm-p-cat">${(p.category || 'General').trim()}</div>
         <div class="adm-p-name">${p.name}</div>
         ${precioHtml}
         ${stockHtml}
@@ -329,8 +329,8 @@ function renderPillsCategorias(catList, productos) {
     return;
   }
   catList.innerHTML = categoriasActuales.map(cat => {
-    const count   = productos.filter(p => (p.category||'').trim() === cat).length;
-    const safecat = cat.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const count = productos.filter(p => (p.category || '').trim() === cat).length;
+    const safecat = cat.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     return `
       <div onclick="abrirGestionCategoria('${safecat}')"
            style="display:inline-flex;align-items:center;gap:7px;background:var(--card);
@@ -375,7 +375,7 @@ function abrirDescuentoCategoria(catNombre) {
         <button class="btn btn-ghost" onclick="closeOv('ov-cat-desc')" style="font-size:13px;">Cancelar</button>
       </div>`;
     document.body.appendChild(ov);
-    document.getElementById('catdesc-input').addEventListener('input', function() {
+    document.getElementById('catdesc-input').addEventListener('input', function () {
       const v = parseFloat(this.value) || 0;
       const prev = document.getElementById('catdesc-preview');
       if (v > 0) {
@@ -387,10 +387,10 @@ function abrirDescuentoCategoria(catNombre) {
   }
 
   ov.dataset.cat = catNombre;
-  const prods = todosLosProductos.filter(p => (p.category||'').trim() === catNombre);
+  const prods = todosLosProductos.filter(p => (p.category || '').trim() === catNombre);
   document.getElementById('catdesc-titulo').textContent = `Descuento: ${catNombre}`;
   document.getElementById('catdesc-info').innerHTML =
-    `Aplicará el descuento a <strong style="color:var(--blue)">${prods.length} producto${prods.length!==1?'s':''}</strong> de esta categoría.`;
+    `Aplicará el descuento a <strong style="color:var(--blue)">${prods.length} producto${prods.length !== 1 ? 's' : ''}</strong> de esta categoría.`;
   document.getElementById('catdesc-input').value = '';
   document.getElementById('catdesc-preview').textContent = '';
   openOv(ovId);
@@ -398,10 +398,10 @@ function abrirDescuentoCategoria(catNombre) {
 }
 
 async function aplicarDescuentoCategoria() {
-  const ov      = document.getElementById('ov-cat-desc');
-  const cat     = ov.dataset.cat;
-  const valor   = parseFloat(document.getElementById('catdesc-input').value);
-  const btn     = document.getElementById('catdesc-btn');
+  const ov = document.getElementById('ov-cat-desc');
+  const cat = ov.dataset.cat;
+  const valor = parseFloat(document.getElementById('catdesc-input').value);
+  const btn = document.getElementById('catdesc-btn');
 
   if (isNaN(valor) || valor < 0 || valor > 90) {
     mostrarAlertaTienda('Introduce un número entre 0 y 90.', 'Valor inválido', '⚠️'); return;
@@ -469,8 +469,8 @@ function abrirModalNuevaCategoria() {
 }
 
 function guardarNuevaCategoria() {
-  const input  = document.getElementById('nueva-cat-input');
-  const errEl  = document.getElementById('nueva-cat-err');
+  const input = document.getElementById('nueva-cat-input');
+  const errEl = document.getElementById('nueva-cat-err');
   const nombre = input.value.trim();
   errEl.style.display = 'none';
   if (!nombre) {
@@ -525,19 +525,19 @@ function abrirGestionCategoria(catNombre) {
     document.body.appendChild(ov);
   }
   ov.dataset.catActual = catNombre;
-  document.getElementById('catm-title').textContent  = `Categoría: ${catNombre}`;
-  document.getElementById('catm-new-name').value     = catNombre;
-  document.getElementById('catm-info').textContent   = 'Contando productos...';
+  document.getElementById('catm-title').textContent = `Categoría: ${catNombre}`;
+  document.getElementById('catm-new-name').value = catNombre;
+  document.getElementById('catm-info').textContent = 'Contando productos...';
   document.getElementById('catm-delete-info').innerHTML =
     `Quitará <strong>"${catNombre}"</strong> de todos sus productos. Los productos <strong>no se borran</strong>.`;
   openOv(ovId);
   tiendaSupa.from('products')
-    .select('id', { count:'exact', head:true })
+    .select('id', { count: 'exact', head: true })
     .eq('business_id', CUR.id).eq('category', catNombre)
     .then(({ count }) => {
       const el = document.getElementById('catm-info');
       if (el) el.innerHTML =
-        `<strong style="color:var(--blue)">${count||0} producto${count!==1?'s':''}</strong> en esta categoría.`;
+        `<strong style="color:var(--blue)">${count || 0} producto${count !== 1 ? 's' : ''}</strong> en esta categoría.`;
     });
 }
 
@@ -545,10 +545,10 @@ async function renombrarCategoria() {
   const ov = document.getElementById('ov-cat-manager');
   const catVieja = ov.dataset.catActual;
   const catNueva = document.getElementById('catm-new-name').value.trim();
-  if (!catNueva) { mostrarAlertaTienda('Escribe el nuevo nombre.','Vacío','✏️'); return; }
+  if (!catNueva) { mostrarAlertaTienda('Escribe el nuevo nombre.', 'Vacío', '✏️'); return; }
   if (catNueva === catVieja) { closeOv('ov-cat-manager'); return; }
-  if (categoriasActuales.some(c => c.toLowerCase()===catNueva.toLowerCase() && c!==catVieja)) {
-    mostrarAlertaTienda(`Ya existe "${catNueva}".`,'Duplicado','⚠️'); return;
+  if (categoriasActuales.some(c => c.toLowerCase() === catNueva.toLowerCase() && c !== catVieja)) {
+    mostrarAlertaTienda(`Ya existe "${catNueva}".`, 'Duplicado', '⚠️'); return;
   }
   try {
     const { error } = await tiendaSupa.from('products')
@@ -557,9 +557,9 @@ async function renombrarCategoria() {
     const idx = categoriasActuales.indexOf(catVieja);
     if (idx !== -1) { categoriasActuales[idx] = catNueva; categoriasActuales.sort(); }
     closeOv('ov-cat-manager');
-    mostrarAlertaTienda(`"${catVieja}" → "${catNueva}".`,'¡Hecho!','✅');
+    mostrarAlertaTienda(`"${catVieja}" → "${catNueva}".`, '¡Hecho!', '✅');
     renderTiendaAdmin();
-  } catch(err) { mostrarAlertaTienda('No se pudo renombrar.','Error','❌'); }
+  } catch (err) { mostrarAlertaTienda('No se pudo renombrar.', 'Error', '❌'); }
 }
 
 function iniciarEliminarCategoria() {
@@ -582,9 +582,9 @@ async function eliminarCategoria(catNombre) {
       .update({ category: null }).eq('business_id', CUR.id).eq('category', catNombre);
     if (error) throw error;
     categoriasActuales = categoriasActuales.filter(c => c !== catNombre);
-    mostrarAlertaTienda(`"${catNombre}" eliminada.`,'Eliminada','🗑️');
+    mostrarAlertaTienda(`"${catNombre}" eliminada.`, 'Eliminada', '🗑️');
     renderTiendaAdmin();
-  } catch(err) { mostrarAlertaTienda('No se pudo eliminar.','Error','❌'); }
+  } catch (err) { mostrarAlertaTienda('No se pudo eliminar.', 'Error', '❌'); }
 }
 
 // ══════════════════════════════════════════
@@ -592,26 +592,26 @@ async function eliminarCategoria(catNombre) {
 // ══════════════════════════════════════════
 function openProdModal() {
   if (!categoriasActuales.length) {
-    mostrarAlertaTienda('Primero crea una categoría con el botón "+ Categoría".','Sin categorías','🏷️');
+    mostrarAlertaTienda('Primero crea una categoría con el botón "+ Categoría".', 'Sin categorías', '🏷️');
     return;
   }
   editingProdId = null;
-  document.getElementById('prod-name').value    = '';
-  document.getElementById('prod-price').value   = '';
-  document.getElementById('prod-desc').value    = '';
-  document.getElementById('prod-cat').value     = '';
+  document.getElementById('prod-name').value = '';
+  document.getElementById('prod-price').value = '';
+  document.getElementById('prod-desc').value = '';
+  document.getElementById('prod-cat').value = '';
   const stockEl = document.getElementById('prod-stock');
-  const descEl  = document.getElementById('prod-discount');
-  if (stockEl) stockEl.value   = '';
-  if (descEl)  descEl.value    = '0';
+  const descEl = document.getElementById('prod-discount');
+  if (stockEl) stockEl.value = '';
+  if (descEl) descEl.value = '0';
   tempProdPhotos = [];
   renderProdPhotoPreview();
-  
+
   // Asignar el listener de forma segura aquí
   const fileInput = document.getElementById('prod-photo-input');
   if (fileInput && !fileInput.dataset.listener) {
     fileInput.dataset.listener = 'true';
-    fileInput.addEventListener('change', async function(e) {
+    fileInput.addEventListener('change', async function (e) {
       if (tempProdPhotos.length >= 3) return;
       const f = e.target.files[0]; if (!f) return;
       document.getElementById('prod-photo-preview').innerHTML =
@@ -639,24 +639,24 @@ async function editProduct(id) {
     if (error) throw error;
     if (!data) return;
     editingProdId = id;
-    document.getElementById('prod-name').value  = data.name;
+    document.getElementById('prod-name').value = data.name;
     document.getElementById('prod-price').value = data.price;
-    document.getElementById('prod-desc').value  = data.description || '';
-    document.getElementById('prod-cat').value   = (data.category||'').trim();
+    document.getElementById('prod-desc').value = data.description || '';
+    document.getElementById('prod-cat').value = (data.category || '').trim();
     const stockEl = document.getElementById('prod-stock');
-    const descEl  = document.getElementById('prod-discount');
+    const descEl = document.getElementById('prod-discount');
     if (stockEl) stockEl.value = data.stock != null ? data.stock : '';
-    if (descEl)  descEl.value  = data.discount_percent || 0;
+    if (descEl) descEl.value = data.discount_percent || 0;
     tempProdPhotos = window.parseFotos ? window.parseFotos(data.image) : (data.image ? [data.image] : []);
     renderProdPhotoPreview();
     openOv('ov-tienda-prod');
-  } catch(err) {
-    mostrarAlertaTienda('No pudimos cargar el producto.','Error','❌');
+  } catch (err) {
+    mostrarAlertaTienda('No pudimos cargar el producto.', 'Error', '❌');
   }
 }
 
 // Función para renderizar el preview de fotos
-window.removeProdPhoto = function(index, event) {
+window.removeProdPhoto = function (index, event) {
   event.stopPropagation();
   tempProdPhotos.splice(index, 1);
   renderProdPhotoPreview();
@@ -674,7 +674,7 @@ function renderProdPhotoPreview() {
     container.style.cursor = '';
     return;
   }
-  
+
   container.onclick = null;
   container.classList.remove('photo-upload');
   container.style.cursor = 'default';
@@ -701,29 +701,29 @@ function renderProdPhotoPreview() {
 }
 
 // Asegurar parseFotos global
-window.parseFotos = function(imgData) {
+window.parseFotos = function (imgData) {
   if (!imgData) return [];
   try {
     const arr = JSON.parse(imgData);
     if (Array.isArray(arr)) return arr;
-  } catch(e) {}
+  } catch (e) { }
   return [imgData];
 };
 
 // (El listener se movió a openProdModal para evitar errores si el HTML no está cargado)
 
 async function saveProduct() {
-  const name     = document.getElementById('prod-name').value.trim();
-  const price    = parseFloat(document.getElementById('prod-price').value);
-  const desc     = document.getElementById('prod-desc').value.trim();
-  const cat      = document.getElementById('prod-cat').value.trim() || 'General';
-  const stockEl  = document.getElementById('prod-stock');
-  const descEl   = document.getElementById('prod-discount');
-  const stock    = stockEl ? (stockEl.value !== '' ? parseInt(stockEl.value) : 0) : 0;
-  const discount = descEl  ? (parseFloat(descEl.value) || 0) : 0;
+  const name = document.getElementById('prod-name').value.trim();
+  const price = parseFloat(document.getElementById('prod-price').value);
+  const desc = document.getElementById('prod-desc').value.trim();
+  const cat = document.getElementById('prod-cat').value.trim() || 'General';
+  const stockEl = document.getElementById('prod-stock');
+  const descEl = document.getElementById('prod-discount');
+  const stock = stockEl ? (stockEl.value !== '' ? parseInt(stockEl.value) : 0) : 0;
+  const discount = descEl ? (parseFloat(descEl.value) || 0) : 0;
 
   if (!name || isNaN(price)) {
-    mostrarAlertaTienda('El nombre y el precio son obligatorios.','Faltan datos','💰'); return;
+    mostrarAlertaTienda('El nombre y el precio son obligatorios.', 'Faltan datos', '💰'); return;
   }
 
   const finalImageStr = tempProdPhotos.length > 0 ? JSON.stringify(tempProdPhotos) : '';
@@ -738,12 +738,12 @@ async function saveProduct() {
     if (editingProdId) {
       const { error } = await tiendaSupa.from('products').update(productoData).eq('id', editingProdId);
       if (error) throw error;
-      mostrarAlertaTienda('Producto actualizado.','¡Listo!','✏️');
+      mostrarAlertaTienda('Producto actualizado.', '¡Listo!', '✏️');
     } else {
-      productoData.id     = crypto.randomUUID ? crypto.randomUUID() : ('prod_'+Math.random().toString(36).slice(2));
+      productoData.id = crypto.randomUUID ? crypto.randomUUID() : ('prod_' + Math.random().toString(36).slice(2));
       productoData.rating = 0;
       let { error } = await tiendaSupa.from('products').insert([productoData]);
-      
+
       // Sincronización automática de emergencia si la barbería no existe en Supabase
       if (error && error.code === '23503') {
         console.log('Sincronizando barbería a Supabase automáticamente...');
@@ -755,15 +755,15 @@ async function saveProduct() {
         const retry = await tiendaSupa.from('products').insert([productoData]);
         error = retry.error;
       }
-      
+
       if (error) throw error;
-      mostrarAlertaTienda('Producto publicado.','¡Éxito!','✅');
+      mostrarAlertaTienda('Producto publicado.', '¡Éxito!', '✅');
     }
     renderTiendaAdmin();
     closeOv('ov-tienda-prod');
-  } catch(err) {
+  } catch (err) {
     console.error('Error guardando:', err);
-    mostrarAlertaTienda('Error al guardar. Revisa tu conexión.','Error','❌');
+    mostrarAlertaTienda('Error al guardar. Revisa tu conexión.', 'Error', '❌');
   }
 }
 
@@ -777,7 +777,7 @@ function deleteProduct(id, event) {
         const { error } = await tiendaSupa.from('products').delete().eq('id', id);
         if (error) throw error;
         renderTiendaAdmin();
-      } catch(err) { mostrarAlertaTienda('No se pudo eliminar.','Error','❌'); }
+      } catch (err) { mostrarAlertaTienda('No se pudo eliminar.', 'Error', '❌'); }
     }
   );
 }
@@ -786,7 +786,7 @@ function deleteProduct(id, event) {
 // ENGANCHE DE TABS
 // ══════════════════════════════════════════
 const fnOriginalBizTab = window.bizTab;
-window.bizTab = function(tab) {
+window.bizTab = function (tab) {
   if (fnOriginalBizTab) fnOriginalBizTab(tab);
   if (tab === 'tienda') renderTiendaAdmin();
 };

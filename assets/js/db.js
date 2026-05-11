@@ -1,5 +1,20 @@
 'use strict';
 //db.js 
+
+/* ══════════════════════════
+   DETECTOR DE ENTORNO (PROD vs DEV)
+══════════════════════════ */
+window.AppEnv = (function () {
+  var hostname = window.location.hostname;
+  var isProd = hostname === 'citasproonline.com' || hostname === 'www.citasproonline.com';
+
+  return {
+    isProd: isProd,
+    SUPABASE_URL: isProd ? 'https://fcbbquvuffpmudvwqgbg.supabase.co' : 'https://krbtoepzoorpdedtykug.supabase.co',
+    SUPABASE_ANON_KEY: isProd ? 'sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF' : 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-'
+  };
+})();
+
 /* ══════════════════════════
    SECURITY
 ══════════════════════════ */

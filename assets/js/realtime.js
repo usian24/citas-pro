@@ -5,8 +5,8 @@
    REALTIME.JS — Supabase Realtime (VERSIÓN DEFINITIVA)
 ══════════════════════════════════════════════════ */
 
-var SUPABASE_RT_URL = 'https://krbtoepzoorpdedtykug.supabase.co';
-var SUPABASE_RT_KEY = 'sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-';
+var SUPABASE_RT_URL = window.AppEnv.SUPABASE_URL;
+var SUPABASE_RT_KEY = window.AppEnv.SUPABASE_ANON_KEY;
 
 var _supaRT = null;
 var _rtChannel = null;
@@ -117,7 +117,7 @@ async function safeRefreshClientUI(bizId) {
   if (typeof fetchBizFromCloud !== 'function') return;
   const freshData = await fetchBizFromCloud(bizId);
   if (!freshData) return;
-  
+
   if (typeof window.autoCompletePastAppointments === 'function') {
     if (window.autoCompletePastAppointments(freshData)) {
       if (typeof syncAppointmentsToCloud === 'function') syncAppointmentsToCloud(freshData);
