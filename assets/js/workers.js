@@ -267,6 +267,8 @@ function openWorkerApptDetail(id) {
   }
   var loyaltyHtml = typeof buildLoyaltyHtml === 'function' ? buildLoyaltyHtml(a, allAppts) : '';
 
+  var waLink = a.phone ? 'https://wa.me/' + a.phone.replace(/\D/g, '') + '?text=' + encodeURIComponent('Hola ' + a.client + ', te escribo por tu cita en ' + (CUR ? CUR.name : 'nuestro local') + ' el ' + a.date + ' a las ' + a.time + '.') : '#';
+
   H('wk-appt-detail-content',
     '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:var(--r);padding:16px;margin-bottom:14px">'
     + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
@@ -280,22 +282,71 @@ function openWorkerApptDetail(id) {
     + '<div class="sbox"><div class="slbl">Hora</div><div style="font-size:18px;font-weight:900;color:var(--blue)">' + san(a.time) + '</div></div>'
     + '<div class="sbox"><div class="slbl">Servicio</div><div style="font-size:13px;font-weight:700">' + san(a.svc) + '</div></div>'
     + '<div class="sbox"><div class="slbl">Total</div><div style="font-size:18px;font-weight:900;color:var(--green)">' + money(a.price) + '</div></div>'
-    + '</div>');
-  var waBtn = G('wk-appt-wa-btn'); if (waBtn && a.phone) waBtn.href = 'https://wa.me/' + a.phone.replace(/\D/g, '') + '?text=' + encodeURIComponent('Hola ' + a.client + ', te recuerdo tu cita en ' + CUR.name + ' el ' + a.date + ' a las ' + a.time + '.');
-  var cb = G('wk-appt-complete-btn'); if (cb) cb.onclick = function () { updateWorkerApptStatus(id, 'completed'); };
-  var ca = G('wk-appt-cancel-btn'); if (ca) ca.onclick = function () { updateWorkerApptStatus(id, 'cancelled'); };
+    + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px">'
+    + (a.phone ? '<a href="' + waLink + '" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;text-decoration:none;padding:12px;border-radius:12px;font-weight:800;font-size:15px;box-shadow:0 4px 12px rgba(37,211,102,0.3);"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Contactar por WhatsApp</a>' : '')
+    + '<button onclick="openWorkerRescheduleModal(\'' + id + '\')" style="width:100%;background:rgba(245,158,11,.15);color:#F59E0B;border:1px solid rgba(245,158,11,.3);padding:12px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;">🔄 Reagendar Cita</button>'
+    + '<div style="display:flex;gap:10px;">'
+    + '<button onclick="updateWorkerApptStatus(\'' + id + '\', \'completed\')" style="flex:1;background:rgba(34,197,94,.15);color:#22C55E;border:1px solid rgba(34,197,94,.3);padding:12px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;">✓ Completar</button>'
+    + '<button onclick="updateWorkerApptStatus(\'' + id + '\', \'cancelled\')" style="flex:1;background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.3);padding:12px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;">× Cancelar</button>'
+    + '</div>'
+    + '</div>'
+  );
   openOv('ov-wk-appt-detail');
 }
 
-function updateWorkerApptStatus(id, status) {
+async function updateWorkerApptStatus(id, status) {
   if (!CUR_WORKER) return;
   var targetAppt = null;
   (CUR_WORKER.appointments || []).forEach(function (a) { if (String(a.id) === String(id)) { a.status = status; targetAppt = a; } });
-  saveDB(); closeOv('ov-wk-appt-detail'); initWorkerAgenda(); renderWorkerFinances();
-  toast(status === 'completed' ? 'Cita completada' : 'Cita cancelada', status === 'completed' ? '#22C55E' : '#EF4444');
+  if (!targetAppt) return;
+
+  closeOv('ov-wk-appt-detail');
+  initWorkerAgenda();
+  renderWorkerFinances();
+  toast('Procesando...', '#F59E0B');
+
+  try {
+    // Fuerza la orden directo a la Base de Datos para asegurar el 10000% de confiabilidad
+    const payload = {
+      type: 'appointments',
+      business_id: CUR.id,
+      appointments: [{
+        id: String(targetAppt.id),
+        business_id: CUR.id,
+        worker_id: CUR_WORKER.id,
+        client_id: '',
+        client_name: targetAppt.client || '',
+        client_phone: targetAppt.phone || '',
+        client_email: targetAppt.email || '',
+        token: targetAppt.token || '',
+        service_name: targetAppt.svc || '',
+        service_price: parseFloat(targetAppt.price) || 0,
+        date: targetAppt.date || '',
+        time: targetAppt.time || '',
+        status: targetAppt.status,
+        notes: targetAppt.notes || ''
+      }]
+    };
+
+    const res = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Error DB');
+
+    saveDB(); // Actualiza el cache local después de confirmar éxito
+    toast(status === 'completed' ? 'Cita completada con éxito' : 'Cita cancelada con éxito', status === 'completed' ? '#22C55E' : '#EF4444');
 
   if (status === 'completed' && targetAppt && typeof checkLoyaltyReward === 'function' && CUR) {
     checkLoyaltyReward(CUR.id, targetAppt);
+  }
+  } catch (err) {
+    console.error(err);
+    toast('Error al sincronizar con la nube', '#EF4444');
   }
 }
 
@@ -997,4 +1048,214 @@ window.executeBulkDelete = async function() {
       toast('Citas eliminadas al 100%', '#22C55E');
     } catch (e) { toast('Error: ' + e.message, '#EF4444'); }
   });
+};
+
+/* ══════════════════════════════════════════════
+   REAGENDAR CITA (MODAL INTERNO DEL TRABAJADOR)
+══════════════════════════════════════════════ */
+window._rescheduleApptId = null;
+window._rescheduleSelectedTime = null;
+
+window.openWorkerRescheduleModal = function(id) {
+  closeOv('ov-wk-appt-detail');
+  var appt = (CUR_WORKER.appointments || []).find(function(a) { return String(a.id) === String(id); });
+  if (!appt) return;
+
+  window._rescheduleApptId = id;
+  window._rescheduleSelectedTime = null;
+
+  var ov = document.getElementById('ov-wk-reschedule');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'ov-wk-reschedule';
+    ov.className = 'ov';
+    document.body.appendChild(ov);
+  }
+
+  ov.innerHTML = '<div class="modal" onclick="event.stopPropagation()">'
+    + '<div class="mhdr">'
+    + '<span class="mttl">Reagendar Cita</span>'
+    + '<div class="xbtn" onclick="closeOv(\'ov-wk-reschedule\')">×</div>'
+    + '</div>'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text);">' + san(appt.client) + ' — <span style="color:var(--blue);">' + san(appt.svc) + '</span></div>'
+    + '<div class="field">'
+    + '<label>Selecciona la nueva fecha</label>'
+    + '<input type="date" id="wk-resched-date" class="inp" value="' + appt.date + '" onchange="renderWorkerRescheduleTimes()">'
+    + '</div>'
+    + '<div class="field">'
+    + '<label>Horarios disponibles</label>'
+    + '<div id="wk-resched-times" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>'
+    + '</div>'
+    + '<button class="btn btn-blue" onclick="confirmWorkerReschedule()" style="width:100%;margin-top:14px;">Confirmar Horario</button>'
+    + '</div>';
+
+  openOv('ov-wk-reschedule');
+  renderWorkerRescheduleTimes();
+};
+
+window.renderWorkerRescheduleTimes = function() {
+  var appt = (CUR_WORKER.appointments || []).find(function(a) { return String(a.id) === String(window._rescheduleApptId); });
+  if (!appt) return;
+
+  var dateStr = document.getElementById('wk-resched-date').value;
+  var timesEl = document.getElementById('wk-resched-times');
+  if (!dateStr) {
+    timesEl.innerHTML = '<div style="font-size:13px;color:var(--muted);">Selecciona una fecha</div>';
+    return;
+  }
+
+  var dur = 30;
+  if (CUR_WORKER.services) {
+    var sObj = CUR_WORKER.services.find(function(s) { return s.name === appt.svc; });
+    if (sObj) dur = parseInt(sObj.dur) || 30;
+  }
+
+  var d = new Date(dateStr + 'T12:00');
+  var dayName = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
+  var hDay = (CUR_WORKER.horario || []).find(function(h) { return h.day === dayName; }) || {open:true, from1:'09:00', to1:'14:00'};
+
+  if (!hDay.open) {
+    timesEl.innerHTML = '<div style="font-size:13px;padding:10px;background:rgba(239,68,68,.1);color:var(--red);border-radius:8px;width:100%;text-align:center;font-weight:700;">Día no laborable</div>';
+    return;
+  }
+
+  var times = [];
+  function addInterval(startStr, endStr) {
+    if (!startStr || !endStr) return;
+    var p1 = startStr.split(':').map(Number), p2 = endStr.split(':').map(Number);
+    var fM = p1[0]*60 + p1[1], tM = p2[0]*60 + p2[1];
+    for (var m = fM; m <= tM - dur; m += 30) {
+      var h = Math.floor(m/60), mn = m%60;
+      times.push(String(h).padStart(2,'0') + ':' + String(mn).padStart(2,'0'));
+    }
+  }
+  addInterval(hDay.from1 || hDay.from, hDay.to1 || hDay.to);
+  if (hDay.hasBreak) addInterval(hDay.from2, hDay.to2);
+
+  var blocked = {};
+  (CUR_WORKER.appointments || []).forEach(function(a) {
+    if (a.date === dateStr && a.status !== 'cancelled' && String(a.id) !== String(appt.id)) {
+      var sDur = 30;
+      var sObj = (CUR_WORKER.services||[]).find(function(s) { return s.name === a.svc; });
+      if (sObj) sDur = parseInt(sObj.dur)||30;
+      var pts = a.time.split(':').map(Number);
+      var st = pts[0]*60 + pts[1];
+      for(var i=0; i<sDur; i+=30) blocked[st+i] = true;
+    }
+  });
+
+  var validTimes = times.filter(function(t) {
+    var pts = t.split(':').map(Number);
+    var st = pts[0]*60 + pts[1];
+    for(var i=0; i<dur; i+=30) {
+      if (blocked[st+i]) return false;
+    }
+    return true;
+  });
+
+  if (validTimes.length === 0) {
+    timesEl.innerHTML = '<div style="font-size:13px;padding:10px;background:rgba(245,158,11,.1);color:var(--gold);border-radius:8px;width:100%;text-align:center;font-weight:700;">Sin horarios disponibles para la duración ('+dur+' min)</div>';
+    return;
+  }
+
+  window._rescheduleSelectedTime = null;
+  timesEl.innerHTML = validTimes.map(function(t) {
+    return '<div class="topt-resched" data-tm="'+t+'" onclick="window._selectRescheduleTime(this, \''+t+'\')" style="padding:8px 14px;background:var(--card);border:1px solid var(--b);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;">'+t+'</div>';
+  }).join('');
+};
+
+window._selectRescheduleTime = function(el, time) {
+  document.querySelectorAll('.topt-resched').forEach(function(e) {
+    e.style.background = 'var(--card)';
+    e.style.color = 'var(--text)';
+    e.style.borderColor = 'var(--b)';
+  });
+  el.style.background = 'rgba(74,127,212,.15)';
+  el.style.color = 'var(--blue)';
+  el.style.borderColor = 'var(--blue)';
+  window._rescheduleSelectedTime = time;
+};
+
+window.confirmWorkerReschedule = async function() {
+  if (!window._rescheduleSelectedTime) {
+    toast('Selecciona un horario de la lista', '#EF4444');
+    return;
+  }
+  var newDate = document.getElementById('wk-resched-date').value;
+  var newTime = window._rescheduleSelectedTime;
+  var apptId = window._rescheduleApptId;
+
+  var appt = (CUR_WORKER.appointments || []).find(function(a) { return String(a.id) === String(apptId); });
+  if (!appt) return;
+
+  var oldDate = appt.date;
+  var oldTime = appt.time;
+
+  appt.date = newDate;
+  appt.time = newTime;
+  appt.status = 'confirmed'; // Lo mantenemos en estado confirmado para no requerir nuevo ID
+
+  closeOv('ov-wk-reschedule');
+  initWorkerAgenda();
+  renderWorkerCalendar();
+  toast('Procesando reagendamiento...', '#F59E0B');
+
+  try {
+    const payload = {
+      type: 'appointments',
+      business_id: CUR.id,
+      appointments: [{
+        id: String(appt.id),
+        business_id: CUR.id,
+        worker_id: CUR_WORKER.id,
+        client_name: appt.client || '',
+        client_phone: appt.phone || '',
+        client_email: appt.email || '',
+        token: appt.token || '',
+        service_name: appt.svc || '',
+        service_price: parseFloat(appt.price) || 0,
+        date: appt.date,
+        time: appt.time,
+        status: appt.status,
+        notes: appt.notes || ''
+      }]
+    };
+
+    const res = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Error DB');
+
+    saveDB();
+    toast('Cita reagendada con éxito', '#22C55E');
+    
+    if (appt.email) {
+        fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'booking_confirmed',
+                to: appt.email,
+                data: {
+                    bizName: CUR.name,
+                    service: appt.svc,
+                    date: appt.date,
+                    time: appt.time,
+                    price: money(appt.price)
+                }
+            })
+        }).catch(function(e){});
+    }
+  } catch (err) {
+    console.error(err);
+    appt.date = oldDate;
+    appt.time = oldTime;
+    initWorkerAgenda();
+    renderWorkerCalendar();
+    toast('Error al reagendar en la nube', '#EF4444');
+  }
 };

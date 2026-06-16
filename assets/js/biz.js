@@ -466,23 +466,73 @@ function openApptDetail(id) {
   if (!a) return;
 
   var loyaltyHtml = typeof buildLoyaltyHtml === 'function' ? buildLoyaltyHtml(a, _getAllAppts()) : '';
-  H('appt-detail-content', '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:var(--r);padding:16px;margin-bottom:14px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="appt-avatar" style="width:52px;height:52px;font-size:20px">' + san((a.client || '?').split(' ').map(function (n) { return n[0] || ''; }).slice(0, 2).join('').toUpperCase()) + '</div><div><div style="font-size:18px;font-weight:900">' + san(a.client) + '</div>' + (a.phone ? '<div style="font-size:14px;color:var(--blue3);margin-top:3px;font-weight:600">' + san(a.phone) + '</div>' : '') + (a.email ? '<div style="font-size:13px;color:var(--t2);margin-top:2px">' + san(a.email) + '</div>' : '') + '</div></div></div>' + loyaltyHtml + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div class="sbox"><div class="slbl">Fecha</div><div style="font-size:14px;font-weight:700">' + san(a.date) + '</div></div><div class="sbox"><div class="slbl">Hora</div><div style="font-size:18px;font-weight:900;color:var(--blue)">' + san(a.time) + '</div></div><div class="sbox"><div class="slbl">Servicio</div><div style="font-size:13px;font-weight:700">' + san(a.svc) + '</div></div><div class="sbox"><div class="slbl">Total</div><div style="font-size:18px;font-weight:900;color:var(--green)">' + money(a.price) + '</div></div></div>');
-  var waBtn = G('appt-wa-btn'); if (waBtn && a.phone) waBtn.href = 'https://wa.me/' + a.phone.replace(/\D/g, '') + '?text=' + encodeURIComponent('Hola ' + a.client + ', te recordamos tu cita en ' + CUR.name + ' el ' + a.date + ' a las ' + a.time + '.');
-  var cb = G('appt-complete-btn'); if (cb) cb.onclick = function () { updateApptStatus(id, 'completed'); };
-  var ca = G('appt-cancel-btn'); if (ca) ca.onclick = function () { updateApptStatus(id, 'cancelled'); };
+  var waLink = a.phone ? 'https://wa.me/' + a.phone.replace(/\D/g, '') + '?text=' + encodeURIComponent('Hola ' + a.client + ', te recordamos tu cita en ' + CUR.name + ' el ' + a.date + ' a las ' + a.time + '.') : '#';
+
+  H('appt-detail-content', '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:var(--r);padding:16px;margin-bottom:14px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="appt-avatar" style="width:52px;height:52px;font-size:20px">' + san((a.client || '?').split(' ').map(function (n) { return n[0] || ''; }).slice(0, 2).join('').toUpperCase()) + '</div><div><div style="font-size:18px;font-weight:900">' + san(a.client) + '</div>' + (a.phone ? '<div style="font-size:14px;color:var(--blue3);margin-top:3px;font-weight:600">' + san(a.phone) + '</div>' : '') + (a.email ? '<div style="font-size:13px;color:var(--t2);margin-top:2px">' + san(a.email) + '</div>' : '') + '</div></div></div>' + loyaltyHtml + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div class="sbox"><div class="slbl">Fecha</div><div style="font-size:14px;font-weight:700">' + san(a.date) + '</div></div><div class="sbox"><div class="slbl">Hora</div><div style="font-size:18px;font-weight:900;color:var(--blue)">' + san(a.time) + '</div></div><div class="sbox"><div class="slbl">Servicio</div><div style="font-size:13px;font-weight:700">' + san(a.svc) + '</div></div><div class="sbox"><div class="slbl">Total</div><div style="font-size:18px;font-weight:900;color:var(--green)">' + money(a.price) + '</div></div></div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px">'
+    + (a.phone ? '<a href="' + waLink + '" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;text-decoration:none;padding:12px;border-radius:12px;font-weight:800;font-size:15px;box-shadow:0 4px 12px rgba(37,211,102,0.3);"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Contactar por WhatsApp</a>' : '')
+    + '<div style="display:flex;gap:10px;">'
+    + '<button onclick="updateApptStatus(\'' + id + '\', \'completed\')" style="flex:1;background:rgba(34,197,94,.15);color:#22C55E;border:1px solid rgba(34,197,94,.3);padding:12px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;">✓ Completar</button>'
+    + '<button onclick="updateApptStatus(\'' + id + '\', \'cancelled\')" style="flex:1;background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.3);padding:12px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;">× Cancelar</button>'
+    + '</div>'
+    + '</div>'
+  );
   openOv('ov-appt-detail');
 }
 
-function updateApptStatus(id, status) {
+async function updateApptStatus(id, status) {
   if (!CUR) return;
   var targetAppt = null;
-  (CUR.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (a) { if (String(a.id) === String(id)) { a.status = status; targetAppt = a; } }); });
+  var targetWorkerId = '';
+  (CUR.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (a) { if (String(a.id) === String(id)) { a.status = status; targetAppt = a; targetWorkerId = w.id; } }); });
   (CUR.appointments || []).forEach(function (a) { if (String(a.id) === String(id)) { a.status = status; targetAppt = a; } });
-  saveDB(); closeOv('ov-appt-detail'); initAgenda(); renderBizFinances();
-  toast(status === 'completed' ? 'Cita completada' : 'Cita cancelada', status === 'completed' ? '#22C55E' : '#EF4444');
+  if (!targetAppt) return;
+
+  closeOv('ov-appt-detail');
+  initAgenda();
+  renderBizFinances();
+  toast('Procesando...', '#F59E0B');
+
+  try {
+    const payload = {
+      type: 'appointments',
+      business_id: CUR.id,
+      appointments: [{
+        id: String(targetAppt.id),
+        business_id: CUR.id,
+        worker_id: targetWorkerId,
+        client_id: '',
+        client_name: targetAppt.client || '',
+        client_phone: targetAppt.phone || '',
+        client_email: targetAppt.email || '',
+        token: targetAppt.token || '',
+        service_name: targetAppt.svc || '',
+        service_price: parseFloat(targetAppt.price) || 0,
+        date: targetAppt.date || '',
+        time: targetAppt.time || '',
+        status: targetAppt.status,
+        notes: targetAppt.notes || ''
+      }]
+    };
+
+    const res = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Error DB');
+
+    saveDB();
+    toast(status === 'completed' ? 'Cita completada con éxito' : 'Cita cancelada con éxito', status === 'completed' ? '#22C55E' : '#EF4444');
 
   if (status === 'completed' && targetAppt && typeof checkLoyaltyReward === 'function') {
     checkLoyaltyReward(CUR.id, targetAppt);
+  }
+  } catch (err) {
+    console.error(err);
+    toast('Error al sincronizar con la nube', '#EF4444');
   }
 }
 
