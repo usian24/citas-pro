@@ -1008,7 +1008,7 @@ function showFloatingDeleteButton() {
     btn.innerHTML = `
       <div onclick="executeBulkDelete()" style="width:64px;height:64px;background:var(--red,#EF4444);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(239,68,68,0.6);color:white;font-size:28px;cursor:pointer;">X</div>
       <div id="bulk-delete-count" style="position:absolute;top:-5px;right:-5px;background:var(--card,#fff);color:var(--red,#EF4444);font-weight:900;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid var(--red,#EF4444);">1</div>
-      <div onclick="exitSelectMode()" style="margin-top:10px;font-size:12px;font-weight:bold;color:var(--text);background:var(--card);padding:10px 12px;border-radius:12px;box-shadow:0 4px 10px rgba(9, 24, 231, 0.93);cursor:pointer;">Cancelar</div>
+      <div onclick="exitSelectMode()" style="margin-top:10px;font-size:14px;font-weight:bold;color:var(--text);background:var(--card);padding:20px 12px;border-radius:12px;box-shadow:0 4px 10px rgba(9, 24, 231, 0.93);cursor:pointer;">Cancelar</div>
     `;
     btn.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;align-items:center;animation:popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);';
     document.body.appendChild(btn);
