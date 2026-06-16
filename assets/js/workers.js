@@ -955,7 +955,7 @@ function showFloatingDeleteButton() {
     btn = document.createElement('div');
     btn.id = 'bulk-delete-btn';
     btn.innerHTML = `
-      <div onclick="executeBulkDelete()" style="width:64px;height:64px;background:var(--red,#EF4444);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(239,68,68,0.6);color:white;font-size:28px;cursor:pointer;">🗑️</div>
+      <div onclick="executeBulkDelete()" style="width:64px;height:64px;background:var(--red,#EF4444);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(239,68,68,0.6);color:white;font-size:28px;cursor:pointer;">X</div>
       <div id="bulk-delete-count" style="position:absolute;top:-5px;right:-5px;background:var(--card,#fff);color:var(--red,#EF4444);font-weight:900;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid var(--red,#EF4444);">1</div>
       <div onclick="exitSelectMode()" style="margin-top:10px;font-size:12px;font-weight:bold;color:var(--text);background:var(--card);padding:4px 12px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.1);cursor:pointer;">Cancelar</div>
     `;

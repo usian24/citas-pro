@@ -412,6 +412,24 @@ function confirmBooking() {
   var worker = (biz.workers || []).filter(function (w) { return w.id === CSEL.workerId; })[0]; if (!worker) return;
   var isModifying = !!CSEL.editingToken;
   var dup = false;
+
+  // 🛡️ ESCUDO DE SEGURIDAD UFFF: Solo 1 cita activa por Email
+  if (!isModifying && email) {
+    var allApptsToCheck = [];
+    (biz.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (a) { allApptsToCheck.push(a); }); });
+    (biz.appointments || []).forEach(function (a) { allApptsToCheck.push(a); });
+
+    var citaActiva = allApptsToCheck.find(function(a) {
+      return a.email && a.email.toLowerCase() === email.toLowerCase() && a.status !== 'completed' && a.status !== 'cancelled';
+    });
+
+    if (citaActiva) {
+      toast('🚫 Ya tienes una cita el ' + citaActiva.date + ' a las ' + citaActiva.time + '. Modifícala o cancélala desde el correo que te enviamos, o contactando al profesional.', '#EF4444');
+      window._isBookingProcessing = false;
+      return;
+    }
+  }
+
   (worker.appointments || []).forEach(function (a) {
     if (a.date === CSEL.date && a.time === CSEL.time && a.status !== 'cancelled') {
       if (isModifying && a.token === CSEL.editingToken) return;

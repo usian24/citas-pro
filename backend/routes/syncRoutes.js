@@ -211,6 +211,28 @@ router.post('/sync', async (req, res) => {
         const esNueva = !enSupabase && appt.status === 'confirmed';
         const esReagendada = appt.status === 'rescheduled' && !!enSupabase;
 
+        // 🛡️ ESCUDO ANTI-SPAM (SOLO 1 CITA ACTIVA POR EMAIL)
+        if (appt.status !== 'cancelled' && appt.status !== 'completed' && !esReagendada && (appt.client_email || appt.email)) {
+          const emailToCheck = appt.client_email || appt.email;
+          const { data: userConflicts } = await supabase
+            .from('appointments')
+            .select('id, date, time')
+            .eq('business_id', business_id)
+            .ilike('client_email', emailToCheck)
+            .neq('status', 'cancelled')
+            .neq('status', 'completed')
+            .neq('id', String(appt.id))
+            .limit(1);
+
+          if (userConflicts && userConflicts.length > 0) {
+            apptErrors.push({ 
+              id: appt.id, 
+              msg: 'Ya tienes una cita activa el ' + userConflicts[0].date + ' a las ' + userConflicts[0].time + '. Por favor complétala o cancélala antes de agendar otra.' 
+            });
+            continue; 
+          }
+        }
+
         // 🛡️ PREVENCIÓN DE DOBLE RESERVA (RACE CONDITION - CAPA DE APLICACIÓN)
         // NOTA: Para una seguridad absoluta contra condiciones de carrera milimétricas,
         // debes agregar este índice único en tu base de datos Supabase mediante SQL:
