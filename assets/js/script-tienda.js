@@ -17,6 +17,17 @@ let editingProdId = null;
 let categoriasActuales = [];
 let todosLosProductos = []; // cache para el buscador admin
 
+// Helper de seguridad para prevenir XSS (Cross-Site Scripting)
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // ══════════════════════════════════════════
 // ALERTAS Y CONFIRMACIONES
 // ══════════════════════════════════════════
@@ -253,7 +264,7 @@ function renderAdmSeccion(titulo, productos, catKey) {
   ).join('');
 
   const btnCatDesc = catKey
-    ? `<span class="btn-cat-desc" onclick="abrirDescuentoCategoria('${catKey.replace(/'/g, "\\'")}')">
+    ? `<span class="btn-cat-desc" onclick="abrirDescuentoCategoria('${escapeHTML(catKey.replace(/'/g, "\\'"))}')">
          🏷️ Descuento a categoría
        </span>`
     : '';
@@ -261,7 +272,7 @@ function renderAdmSeccion(titulo, productos, catKey) {
   return `
     <div class="adm-seccion">
       <div class="adm-seccion-hdr">
-        ${titulo}
+        ${escapeHTML(titulo)}
         <span class="cnt">${productos.length}</span>
         ${btnCatDesc}
       </div>
@@ -299,18 +310,18 @@ function renderAdmCard(p) {
   }
 
   return `
-    <div class="adm-p-card" onclick="editProduct('${p.id}')">
+    <div class="adm-p-card" onclick="editProduct('${escapeHTML(p.id)}')">
       <div class="adm-p-img">
         ${badgeDesc}
         <div class="adm-p-actions">
-          <button class="btn-edit" onclick="editProduct('${p.id}')" title="Editar">✏️</button>
-          <button class="btn-del"  onclick="deleteProduct('${p.id}',event)" title="Eliminar">×</button>
+          <button class="btn-edit" onclick="editProduct('${escapeHTML(p.id)}')" title="Editar">✏️</button>
+          <button class="btn-del"  onclick="deleteProduct('${escapeHTML(p.id)}',event)" title="Eliminar">×</button>
         </div>
         ${img}
       </div>
       <div class="adm-p-info">
-        <div class="adm-p-cat">${(p.category || 'General').trim()}</div>
-        <div class="adm-p-name">${p.name}</div>
+        <div class="adm-p-cat">${escapeHTML((p.category || 'General').trim())}</div>
+        <div class="adm-p-name">${escapeHTML(p.name)}</div>
         ${precioHtml}
         ${stockHtml}
       </div>
@@ -332,14 +343,14 @@ function renderPillsCategorias(catList, productos) {
     const count = productos.filter(p => (p.category || '').trim() === cat).length;
     const safecat = cat.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     return `
-      <div onclick="abrirGestionCategoria('${safecat}')"
+      <div onclick="abrirGestionCategoria('${escapeHTML(safecat)}')"
            style="display:inline-flex;align-items:center;gap:7px;background:var(--card);
                   border:1.5px solid var(--b);color:var(--text);padding:7px 14px;
                   border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0;
                   cursor:pointer;transition:all .2s;user-select:none;"
            onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)';"
            onmouseout="this.style.borderColor='var(--b)';this.style.color='var(--text)';">
-        ${cat}
+        ${escapeHTML(cat)}
         <span style="background:rgba(74,127,212,.12);color:var(--blue);font-size:10px;
                      font-weight:800;padding:2px 6px;border-radius:8px;">${count}</span>
         <span style="font-size:12px;opacity:.4;">✏️</span>

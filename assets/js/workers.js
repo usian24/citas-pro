@@ -246,6 +246,15 @@ function workerApptRowH(a) {
 }
 
 function openWorkerApptDetail(id) {
+  // Interceptor: Si estamos en modo de borrar, seleccionamos en lugar de abrir
+  if (window._isApptSelectMode) {
+    window._toggleApptSelection(id);
+    return;
+  }
+  if (window._justActivatedSelectMode) {
+    window._justActivatedSelectMode = false;
+    return;
+  }
   if (!CUR_WORKER) return;
   var a = null;
   (CUR_WORKER.appointments || []).forEach(function (ap) { if (String(ap.id) === String(id)) a = ap; });
@@ -871,3 +880,121 @@ function renderWorkerDailyTimeline(dateStr) {
   container.classList.remove('wk-split-timeline');
   container.innerHTML = buildTimelineSegment(startHour, endHour, 'Mi Agenda', 0);
 }
+
+/* ══════════════════════════════════════════════
+   ELIMINACIÓN EN BLOQUE (LONG PRESS Y SELECCIÓN)
+══════════════════════════════════════════════ */
+window._isApptSelectMode = false;
+window._justActivatedSelectMode = false;
+window._selectedAppts = new Set();
+let _pressTimer = null;
+
+// Detectar toques y clics para el "Long Press"
+document.addEventListener('touchstart', handleApptTouchStart, { passive: true });
+document.addEventListener('touchend', handleApptTouchEnd);
+document.addEventListener('touchmove', handleApptTouchEnd, { passive: true });
+document.addEventListener('mousedown', handleApptTouchStart);
+document.addEventListener('mouseup', handleApptTouchEnd);
+document.addEventListener('mousemove', handleApptTouchEnd);
+
+function handleApptTouchStart(e) {
+  const card = e.target.closest('[onclick*="openWorkerApptDetail"]');
+  if (!card) return;
+  
+  _pressTimer = setTimeout(() => {
+    activateSelectMode(card);
+  }, 600); // 600 milisegundos para activar
+}
+
+function handleApptTouchEnd() {
+  if (_pressTimer) clearTimeout(_pressTimer);
+  _pressTimer = null;
+}
+
+function activateSelectMode(card) {
+  window._isApptSelectMode = true;
+  window._justActivatedSelectMode = true;
+  if (navigator.vibrate) navigator.vibrate(50); // Vibración si el móvil lo soporta
+  
+  // Extraer el ID de la cita desde el atributo onclick
+  const match = card.getAttribute('onclick').match(/'([^']+)'/);
+  if (match) window._toggleApptSelection(match[1]);
+  showFloatingDeleteButton();
+}
+
+window._toggleApptSelection = function(id) {
+  if (window._selectedAppts.has(id)) {
+    window._selectedAppts.delete(id);
+  } else {
+    window._selectedAppts.add(id);
+  }
+
+  // Aplicar estilos a todas las representaciones de la cita (Agenda y Lista)
+  document.querySelectorAll(`[onclick*="openWorkerApptDetail('${id}')"]`).forEach(el => {
+    if (window._selectedAppts.has(id)) {
+      el.style.outline = '3px solid #EF4444';
+      el.style.transform = 'scale(0.95)';
+      el.style.transition = 'all 0.2s ease';
+      el.style.opacity = '0.85';
+      el.style.boxShadow = '0 0 15px rgba(239,68,68,0.4)';
+    } else {
+      el.style.outline = '';
+      el.style.transform = '';
+      el.style.opacity = '1';
+      el.style.boxShadow = '';
+    }
+  });
+
+  updateFloatingDeleteButton();
+  if (window._selectedAppts.size === 0) exitSelectMode();
+};
+
+function showFloatingDeleteButton() {
+  let btn = document.getElementById('bulk-delete-btn');
+  if (!btn) {
+    btn = document.createElement('div');
+    btn.id = 'bulk-delete-btn';
+    btn.innerHTML = `
+      <div onclick="executeBulkDelete()" style="width:64px;height:64px;background:var(--red,#EF4444);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(239,68,68,0.6);color:white;font-size:28px;cursor:pointer;">🗑️</div>
+      <div id="bulk-delete-count" style="position:absolute;top:-5px;right:-5px;background:var(--card,#fff);color:var(--red,#EF4444);font-weight:900;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid var(--red,#EF4444);">1</div>
+      <div onclick="exitSelectMode()" style="margin-top:10px;font-size:12px;font-weight:bold;color:var(--text);background:var(--card);padding:4px 12px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.1);cursor:pointer;">Cancelar</div>
+    `;
+    btn.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:999999;display:flex;flex-direction:column;align-items:center;animation:popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);';
+    document.body.appendChild(btn);
+  }
+}
+
+function updateFloatingDeleteButton() {
+  const countEl = document.getElementById('bulk-delete-count');
+  if (countEl) countEl.textContent = window._selectedAppts.size;
+}
+
+window.exitSelectMode = function() {
+  window._isApptSelectMode = false;
+  const ids = Array.from(window._selectedAppts);
+  ids.forEach(id => {
+    window._selectedAppts.delete(id);
+    document.querySelectorAll(`[onclick*="openWorkerApptDetail('${id}')"]`).forEach(el => {
+      el.style.outline = ''; el.style.transform = ''; el.style.opacity = '1'; el.style.boxShadow = '';
+    });
+  });
+  window._selectedAppts.clear();
+  const btn = document.getElementById('bulk-delete-btn');
+  if (btn) btn.remove();
+};
+
+window.executeBulkDelete = async function() {
+  if (window._selectedAppts.size === 0) return;
+  const idsToDelete = Array.from(window._selectedAppts);
+  openConfirmModal('Eliminar citas', '¿Seguro que deseas destruir ' + idsToDelete.length + ' cita(s) PERMANENTEMENTE?', async () => {
+    toast('Eliminando...', '#F59E0B');
+    try {
+      const res = await fetch('/api/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'delete_appointments_bulk', business_id: CUR.id, ids: idsToDelete }) });
+      const data = await res.json(); if (!data.success) throw new Error(data.error);
+      if (CUR_WORKER && CUR_WORKER.appointments) CUR_WORKER.appointments = CUR_WORKER.appointments.filter(a => !idsToDelete.includes(String(a.id)));
+      if (CUR && CUR.appointments) CUR.appointments = CUR.appointments.filter(a => !idsToDelete.includes(String(a.id)));
+      saveDB(); exitSelectMode(); initWorkerAgenda(); renderWorkerFinances();
+      toast('Citas eliminadas al 100%', '#22C55E');
+    } catch (e) { toast('Error: ' + e.message, '#EF4444'); }
+  });
+};

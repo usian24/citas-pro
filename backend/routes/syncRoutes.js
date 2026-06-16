@@ -30,12 +30,15 @@ async function enviarPushWorker(supabase, worker_id, title, body) {
         await webpush.sendNotification(sub.subscription, payload);
       } catch (e) {
         if (e.statusCode === 410) {
+              // La suscripción expiró o fue revocada por el usuario
           await supabase.from('push_subscriptions').delete().eq('worker_id', worker_id);
+            } else {
+              console.error(`Error enviando notificación Push (Status ${e.statusCode}):`, e.message);
         }
       }
     }
   } catch (e) {
-    console.error('Error enviando push:', e.message);
+        console.error('Error obteniendo suscripciones push:', e.message);
   }
 }
 
@@ -95,7 +98,9 @@ router.post('/sync', async (req, res) => {
           .from('notifications')
           .delete()
           .lt('created_at', sevenDaysAgo.toISOString());
-      } catch (e) { }
+      } catch (e) {
+        console.error('Info: Error no crítico limpiando notificaciones:', e.message);
+      }
 
       const { error } = await supabase
         .from('notifications')
@@ -136,6 +141,27 @@ router.post('/sync', async (req, res) => {
       const { error } = await supabase.from('notifications').delete().eq('id', id);
       if (error) return res.status(500).json({ success: false, error: error.message });
       return res.status(200).json({ success: true });
+    }
+
+    // ═══════════════════════════════════════
+    // DELETE APPOINTMENTS BULK (BORRADO DEFINITIVO)
+    // ═══════════════════════════════════════
+    if (type === 'delete_appointments_bulk') {
+      const { business_id, ids } = req.body;
+      if (!business_id || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ success: false, error: 'Datos incompletos' });
+      }
+
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('business_id', business_id)
+        .in('id', ids);
+
+      if (error) {
+        return res.status(500).json({ success: false, error: error.message });
+      }
+      return res.status(200).json({ success: true, deleted: ids.length });
     }
 
     // ═══════════════════════════════════════
@@ -185,9 +211,12 @@ router.post('/sync', async (req, res) => {
         const esNueva = !enSupabase && appt.status === 'confirmed';
         const esReagendada = appt.status === 'rescheduled' && !!enSupabase;
 
-        // 🛡️ PREVENCIÓN DE DOBLE RESERVA (RACE CONDITION)
+        // 🛡️ PREVENCIÓN DE DOBLE RESERVA (RACE CONDITION - CAPA DE APLICACIÓN)
+        // NOTA: Para una seguridad absoluta contra condiciones de carrera milimétricas,
+        // debes agregar este índice único en tu base de datos Supabase mediante SQL:
+        // CREATE UNIQUE INDEX unique_active_appointment ON appointments (business_id, worker_id, date, time) WHERE status != 'cancelled';
         if (appt.status !== 'cancelled') {
-          const { data: conflict } = await supabase
+          const { data: conflict, error: conflictError } = await supabase
             .from('appointments')
             .select('id')
             .eq('business_id', business_id)
@@ -197,6 +226,10 @@ router.post('/sync', async (req, res) => {
             .neq('status', 'cancelled')
             .neq('id', String(appt.id))
             .limit(1);
+
+          if (conflictError) {
+            console.error('Error verificando conflicto de cita:', conflictError.message);
+          }
 
           if (conflict && conflict.length > 0) {
             apptErrors.push({ id: appt.id, msg: 'El horario de las ' + appt.time + ' acaba de ser ocupado por otra persona. Por favor elige otro.' });
@@ -222,7 +255,11 @@ router.post('/sync', async (req, res) => {
         }).select();
 
         if (error) {
-          apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
+          if (error.code === '23505') {
+            apptErrors.push({ id: appt.id, msg: 'Ups, el horario de las ' + appt.time + ' acaba de ser reservado por alguien más. Por favor, elige otro.' });
+          } else {
+            apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
+          }
           continue;
         }
 
