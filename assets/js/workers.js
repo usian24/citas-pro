@@ -269,6 +269,12 @@ function openWorkerApptDetail(id) {
 
   var waLink = a.phone ? 'https://wa.me/' + a.phone.replace(/\D/g, '') + '?text=' + encodeURIComponent('Hola ' + a.client + ', te escribo por tu cita en ' + (CUR ? CUR.name : 'nuestro local') + ' el ' + a.date + ' a las ' + a.time + '.') : '#';
 
+  // 🧹 LIMPIEZA DE BOTONES ANTIGUOS (HARDCODEADOS EN HTML)
+  ['wk-appt-wa-btn', 'wk-appt-complete-btn', 'wk-appt-cancel-btn'].forEach(function(b) {
+    var el = document.getElementById(b);
+    if (el) el.remove(); // Los arrancamos del DOM para evitar duplicados
+  });
+
   H('wk-appt-detail-content',
     '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:var(--r);padding:16px;margin-bottom:14px">'
     + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'

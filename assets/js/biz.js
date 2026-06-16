@@ -468,9 +468,16 @@ function openApptDetail(id) {
   var loyaltyHtml = typeof buildLoyaltyHtml === 'function' ? buildLoyaltyHtml(a, _getAllAppts()) : '';
   var waLink = a.phone ? 'https://wa.me/' + a.phone.replace(/\D/g, '') + '?text=' + encodeURIComponent('Hola ' + a.client + ', te recordamos tu cita en ' + CUR.name + ' el ' + a.date + ' a las ' + a.time + '.') : '#';
 
+  // 🧹 LIMPIEZA DE BOTONES ANTIGUOS (HARDCODEADOS EN HTML)
+  ['appt-wa-btn', 'appt-complete-btn', 'appt-cancel-btn'].forEach(function(b) {
+    var el = document.getElementById(b);
+    if (el) el.remove(); // Eliminamos los antiguos (con emoji) para evitar duplicados
+  });
+
   H('appt-detail-content', '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:var(--r);padding:16px;margin-bottom:14px"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="appt-avatar" style="width:52px;height:52px;font-size:20px">' + san((a.client || '?').split(' ').map(function (n) { return n[0] || ''; }).slice(0, 2).join('').toUpperCase()) + '</div><div><div style="font-size:18px;font-weight:900">' + san(a.client) + '</div>' + (a.phone ? '<div style="font-size:14px;color:var(--blue3);margin-top:3px;font-weight:600">' + san(a.phone) + '</div>' : '') + (a.email ? '<div style="font-size:13px;color:var(--t2);margin-top:2px">' + san(a.email) + '</div>' : '') + '</div></div></div>' + loyaltyHtml + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div class="sbox"><div class="slbl">Fecha</div><div style="font-size:14px;font-weight:700">' + san(a.date) + '</div></div><div class="sbox"><div class="slbl">Hora</div><div style="font-size:18px;font-weight:900;color:var(--blue)">' + san(a.time) + '</div></div><div class="sbox"><div class="slbl">Servicio</div><div style="font-size:13px;font-weight:700">' + san(a.svc) + '</div></div><div class="sbox"><div class="slbl">Total</div><div style="font-size:18px;font-weight:900;color:var(--green)">' + money(a.price) + '</div></div></div>'
     + '<div style="display:flex;flex-direction:column;gap:8px">'
     + (a.phone ? '<a href="' + waLink + '" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;text-decoration:none;padding:12px;border-radius:12px;font-weight:800;font-size:15px;box-shadow:0 4px 12px rgba(37,211,102,0.3);"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Contactar por WhatsApp</a>' : '')
+    + '<button onclick="openRescheduleModal(\'' + id + '\')" style="width:100%;background:rgba(245,158,11,.15);color:#F59E0B;border:1px solid rgba(245,158,11,.3);padding:12px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;margin-bottom:8px">🔄 Reagendar Cita</button>'
     + '<div style="display:flex;gap:10px;">'
     + '<button onclick="updateApptStatus(\'' + id + '\', \'completed\')" style="flex:1;background:rgba(34,197,94,.15);color:#22C55E;border:1px solid rgba(34,197,94,.3);padding:12px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;">✓ Completar</button>'
     + '<button onclick="updateApptStatus(\'' + id + '\', \'cancelled\')" style="flex:1;background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.3);padding:12px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;transition:all 0.2s;">× Cancelar</button>'
@@ -535,6 +542,247 @@ async function updateApptStatus(id, status) {
     toast('Error al sincronizar con la nube', '#EF4444');
   }
 }
+
+/* ══════════════════════════════════════════════
+   REAGENDAR CITA (MODAL INTERNO DEL DUEÑO)
+══════════════════════════════════════════════ */
+window._bizRescheduleApptId = null;
+window._bizRescheduleSelectedTime = null;
+
+window.openRescheduleModal = function(id) {
+  closeOv('ov-appt-detail');
+  var appt = null;
+  var worker = null;
+  (CUR.workers || []).forEach(function(w) {
+    var found = (w.appointments || []).find(function(a) { return String(a.id) === String(id); });
+    if (found) { appt = found; worker = w; }
+  });
+  if (!appt) {
+    appt = (CUR.appointments || []).find(function(a) { return String(a.id) === String(id); });
+  }
+  if (!appt) return;
+
+  window._bizRescheduleApptId = id;
+  window._bizRescheduleSelectedTime = null;
+
+  var ov = document.getElementById('ov-biz-reschedule');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'ov-biz-reschedule';
+    ov.className = 'ov';
+    document.body.appendChild(ov);
+  }
+
+  ov.innerHTML = '<div class="modal" onclick="event.stopPropagation()">'
+    + '<div class="mhdr">'
+    + '<span class="mttl">Reagendar Cita</span>'
+    + '<div class="xbtn" onclick="closeOv(\'ov-biz-reschedule\')">×</div>'
+    + '</div>'
+    + '<div style="font-size:14px;font-weight:700;margin-bottom:14px;color:var(--text);">' + san(appt.client) + ' — <span style="color:var(--blue);">' + san(appt.svc) + '</span></div>'
+    + '<div class="field">'
+    + '<label>Selecciona la nueva fecha</label>'
+    + '<input type="date" id="biz-resched-date" class="inp" value="' + appt.date + '" onchange="renderBizRescheduleTimes()">'
+    + '</div>'
+    + '<div class="field">'
+    + '<label>Horarios disponibles</label>'
+    + '<div id="biz-resched-times" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>'
+    + '</div>'
+    + '<button class="btn btn-blue" onclick="confirmBizReschedule()" style="width:100%;margin-top:14px;">Confirmar Horario</button>'
+    + '</div>';
+
+  openOv('ov-biz-reschedule');
+  renderBizRescheduleTimes();
+};
+
+window.renderBizRescheduleTimes = function() {
+  var apptId = window._bizRescheduleApptId;
+  var appt = null;
+  var worker = null;
+  (CUR.workers || []).forEach(function(w) {
+    var found = (w.appointments || []).find(function(a) { return String(a.id) === String(apptId); });
+    if (found) { appt = found; worker = w; }
+  });
+  if (!appt) {
+    appt = (CUR.appointments || []).find(function(a) { return String(a.id) === String(apptId); });
+  }
+  if (!appt) return;
+
+  var dateStr = document.getElementById('biz-resched-date').value;
+  var timesEl = document.getElementById('biz-resched-times');
+  if (!dateStr) {
+    timesEl.innerHTML = '<div style="font-size:13px;color:var(--muted);">Selecciona una fecha</div>';
+    return;
+  }
+
+  var dur = 30;
+  var svcList = worker ? worker.services : CUR.services;
+  if (svcList) {
+    var sObj = svcList.find(function(s) { return s.name === appt.svc; });
+    if (sObj) dur = parseInt(sObj.dur) || 30;
+  }
+
+  var d = new Date(dateStr + 'T12:00');
+  var dayName = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
+  var horario = worker ? worker.horario : CUR.horario;
+  var hDay = (horario || []).find(function(h) { return h.day === dayName; }) || {open:true, from1:'09:00', to1:'14:00'};
+
+  if (!hDay.open) {
+    timesEl.innerHTML = '<div style="font-size:13px;padding:10px;background:rgba(239,68,68,.1);color:var(--red);border-radius:8px;width:100%;text-align:center;font-weight:700;">Día no laborable</div>';
+    return;
+  }
+
+  var times = [];
+  function addInterval(startStr, endStr) {
+    if (!startStr || !endStr) return;
+    var p1 = startStr.split(':').map(Number), p2 = endStr.split(':').map(Number);
+    var fM = p1[0]*60 + p1[1], tM = p2[0]*60 + p2[1];
+    for (var m = fM; m <= tM - dur; m += 30) {
+      var h = Math.floor(m/60), mn = m%60;
+      times.push(String(h).padStart(2,'0') + ':' + String(mn).padStart(2,'0'));
+    }
+  }
+  addInterval(hDay.from1 || hDay.from, hDay.to1 || hDay.to);
+  if (hDay.hasBreak) addInterval(hDay.from2, hDay.to2);
+
+  var blocked = {};
+  var allAppts = worker ? worker.appointments : CUR.appointments;
+  (allAppts || []).forEach(function(a) {
+    if (a.date === dateStr && a.status !== 'cancelled' && String(a.id) !== String(appt.id)) {
+      var sDur = 30;
+      var sList = worker ? worker.services : CUR.services;
+      if (sList) {
+        var sObj = sList.find(function(s) { return s.name === a.svc; });
+        if (sObj) sDur = parseInt(sObj.dur)||30;
+      }
+      var pts = a.time.split(':').map(Number);
+      var st = pts[0]*60 + pts[1];
+      for(var i=0; i<sDur; i+=30) blocked[st+i] = true;
+    }
+  });
+
+  var validTimes = times.filter(function(t) {
+    var pts = t.split(':').map(Number);
+    var st = pts[0]*60 + pts[1];
+    for(var i=0; i<dur; i+=30) {
+      if (blocked[st+i]) return false;
+    }
+    return true;
+  });
+
+  if (validTimes.length === 0) {
+    timesEl.innerHTML = '<div style="font-size:13px;padding:10px;background:rgba(245,158,11,.1);color:var(--gold);border-radius:8px;width:100%;text-align:center;font-weight:700;">Sin horarios disponibles para la duración ('+dur+' min)</div>';
+    return;
+  }
+
+  window._bizRescheduleSelectedTime = null;
+  timesEl.innerHTML = validTimes.map(function(t) {
+    return '<div class="topt-resched" data-tm="'+t+'" onclick="window._selectBizRescheduleTime(this, \''+t+'\')" style="padding:8px 14px;background:var(--card);border:1px solid var(--b);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;">'+t+'</div>';
+  }).join('');
+};
+
+window._selectBizRescheduleTime = function(el, time) {
+  document.querySelectorAll('#ov-biz-reschedule .topt-resched').forEach(function(e) {
+    e.style.background = 'var(--card)';
+    e.style.color = 'var(--text)';
+    e.style.borderColor = 'var(--b)';
+  });
+  el.style.background = 'rgba(74,127,212,.15)';
+  el.style.color = 'var(--blue)';
+  el.style.borderColor = 'var(--blue)';
+  window._bizRescheduleSelectedTime = time;
+};
+
+window.confirmBizReschedule = async function() {
+  if (!window._bizRescheduleSelectedTime) {
+    toast('Selecciona un horario de la lista', '#EF4444');
+    return;
+  }
+  var newDate = document.getElementById('biz-resched-date').value;
+  var newTime = window._bizRescheduleSelectedTime;
+  var apptId = window._bizRescheduleApptId;
+
+  var appt = null;
+  var workerId = '';
+  (CUR.workers || []).forEach(function(w) {
+    var found = (w.appointments || []).find(function(a) { return String(a.id) === String(apptId); });
+    if (found) { appt = found; workerId = w.id; }
+  });
+  if (!appt) {
+    appt = (CUR.appointments || []).find(function(a) { return String(a.id) === String(apptId); });
+  }
+  if (!appt) return;
+
+  var oldDate = appt.date;
+  var oldTime = appt.time;
+
+  appt.date = newDate;
+  appt.time = newTime;
+  appt.status = 'confirmed';
+
+  closeOv('ov-biz-reschedule');
+  initAgenda();
+  renderCalendar();
+  toast('Procesando reagendamiento...', '#F59E0B');
+
+  try {
+    const payload = {
+      type: 'appointments',
+      business_id: CUR.id,
+      appointments: [{
+        id: String(appt.id),
+        business_id: CUR.id,
+        worker_id: workerId,
+        client_name: appt.client || '',
+        client_phone: appt.phone || '',
+        client_email: appt.email || '',
+        token: appt.token || '',
+        service_name: appt.svc || '',
+        service_price: parseFloat(appt.price) || 0,
+        date: appt.date,
+        time: appt.time,
+        status: appt.status,
+        notes: appt.notes || ''
+      }]
+    };
+
+    const res = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Error DB');
+
+    saveDB();
+    toast('Cita reagendada con éxito', '#22C55E');
+    
+    if (appt.email) {
+        fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'booking_confirmed',
+                to: appt.email,
+                data: {
+                    bizName: CUR.name,
+                    service: appt.svc,
+                    date: appt.date,
+                    time: appt.time,
+                    price: money(appt.price)
+                }
+            })
+        }).catch(function(e){});
+    }
+  } catch (err) {
+    console.error(err);
+    appt.date = oldDate;
+    appt.time = oldTime;
+    initAgenda();
+    renderCalendar();
+    toast('Error al reagendar en la nube', '#EF4444');
+  }
+};
 
 /* ══════════════════════════
    EQUIPO — con ingresos del día y del mes por trabajador
