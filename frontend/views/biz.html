@@ -57,7 +57,7 @@
     <div style="font-size:24px;font-weight:900;margin-bottom:6px">Datos del negocio</div>
     <div class="field"><label>Nombre del negocio</label><input class="inp" id="br-bizname"
         placeholder="Ej: La 40 Barber Shop" maxlength="80" autocomplete="organization" /></div>
-    <div class="field"><label>Tu nombre</label><input class="inp" id="br-owner" placeholder="Ej: Versa Aguilar"
+    <div class="field"><label>Tu nombre</label><input class="inp" id="br-owner" placeholder="Ej: Carlos Pérez"
         maxlength="60" autocomplete="name" /></div>
     <div class="field"><label>Teléfono / WhatsApp</label><input class="inp" id="br-phone" type="tel"
         placeholder="+34 600 000 000" maxlength="20" autocomplete="tel" /></div>
@@ -199,7 +199,6 @@
     <input type="file" id="biz-cover-input" accept="image/jpeg,image/png,image/webp" style="display:none" />
     <input type="file" id="logo-input" accept="image/jpeg,image/png,image/webp" style="display:none" />
 
-    <!-- Portada -->
     <div onclick="document.getElementById('biz-cover-input').click()"
       style="width:100%;height:140px;border-radius:16px;background:var(--bg3);border:2px dashed rgba(74,127,212,.3);cursor:pointer;position:relative;overflow:hidden;margin-bottom:16px;"
       id="reg-cover-preview">
@@ -210,7 +209,6 @@
       </div>
     </div>
 
-    <!-- Logo -->
     <div onclick="document.getElementById('logo-input').click()"
       style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#4A7FD4,#2855C8);border:3px solid var(--b);cursor:pointer;position:relative;overflow:hidden;margin-bottom:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;"
       id="logo-preview">
@@ -469,21 +467,52 @@
           <button class="btn btn-blue" id="save-profile-btn">Guardar cambios</button>
         </div>
       </div>
-      <div class="card" style="margin-bottom:12px">
-        <div
-          style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">
-          💳 Mi suscripción</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <div>
-            <div style="font-weight:700;margin-bottom:3px">Plan Citas Pro</div>
-            <div style="font-size:12px;color:var(--muted)" id="pf-plan-status">Cargando...</div>
-          </div>
-          <span id="pf-plan-badge"></span>
+
+      <div class="card" style="margin-bottom:12px" id="suscripcion-card">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">
+          💳 Mi suscripción
         </div>
-        <div style="font-size:24px;font-weight:900;color:var(--blue3);margin-bottom:6px"><span
-            class="precio-local-solo">10€</span><span style="font-size:13px;font-weight:500;color:var(--t2)">/mes · IVA
-            incl.</span></div>
+      
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <div>
+            <div style="font-weight:700;margin-bottom:3px">Plan Actual</div>
+            <div style="font-size:12px;color:var(--muted)" id="pf-plan-status">Prueba (Trial)</div>
+          </div>
+          <span id="pf-plan-badge" style="background:rgba(255,255,255,0.1);padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700">GRATIS</span>
+        </div>
+      
+        <div id="upgrade-options">
+          <div style="font-size:14px;font-weight:800;margin-bottom:12px">Mejorar a Citas Pro 🚀</div>
+      
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="background:var(--bg3);border:1px solid var(--b);border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:700;font-size:14px">Mensual</div>
+                <div style="font-size:12px;color:var(--t2)">$12 USD / mes</div>
+              </div>
+              <a href="#" class="lemonsqueezy-button btn btn-dark btn-sm" id="btn-mensual" style="width:auto;margin:0;padding:6px 12px">Elegir</a>
+            </div>
+      
+            <div style="background:rgba(74,127,212,.05);border:1px solid var(--blue);border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center;position:relative">
+              <div style="position:absolute;top:-8px;right:12px;background:var(--blue);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;text-transform:uppercase">Popular</div>
+              <div>
+                <div style="font-weight:700;font-size:14px">Trimestral</div>
+                <div style="font-size:12px;color:var(--t2)">$25 USD / 3 meses</div>
+              </div>
+              <a href="#" class="lemonsqueezy-button btn btn-blue btn-sm" id="btn-trimestral" style="width:auto;margin:0;padding:6px 12px">Elegir</a>
+            </div>
+      
+            <div style="background:var(--bg3);border:1px solid var(--b);border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:700;font-size:14px">Anual</div>
+                <div style="font-size:12px;color:var(--t2)">$100 USD / año</div>
+              </div>
+              <a href="#" class="lemonsqueezy-button btn btn-dark btn-sm" id="btn-anual" style="width:auto;margin:0;padding:6px 12px">Elegir</a>
+            </div>
+          </div>
+        </div>
       </div>
+
       <a href="https://wa.me/34611200984?text=Necesito%20ayuda%20con%20Citas%20Pro" target="_blank"
         rel="noopener noreferrer"><button class="btn btn-green" style="gap:10px"><svg xmlns="http://www.w3.org/2000/svg"
             width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -494,7 +523,6 @@
   </div>
 </div>
 
-<!-- Modal: Configuración Dueño -->
 <div id="ov-config-biz" class="overlay">
   <div class="ov-wrap">
     <div class="ov-hdr">
@@ -524,3 +552,5 @@
     </div>
   </div>
 </div>
+
+<script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script>

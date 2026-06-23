@@ -11,9 +11,16 @@ const paymentRoutes = require('../backend/routes/paymentRoutes');
 
 const app = express();
 
-// Middlewares: Filtros de entrada
-app.use(cors()); // Permite que tu frontend se comunique con este backend sin bloqueos
-app.use(express.json()); // Traduce los datos que manda tu frontend a formato JSON entendible
+// Middlewares: Filtro de entrada para CORS
+app.use(cors());
+
+// 🚨 LA MAGIA ESTÁ AQUÍ 🚨
+// Colocamos las rutas de pago ANTES de que express.json() transforme el texto.
+// Así Lemon Squeezy puede pasar su firma criptográfica intacta.
+app.use('/api', paymentRoutes);
+
+// Ahora sí, traducimos todo el resto a JSON para el resto de Citas Pro
+app.use(express.json());
 
 // ═══════════════════════════════════════
 // REGISTRO DE RUTAS MODULARES
@@ -24,12 +31,10 @@ app.use('/api', syncRoutes);
 app.use('/api', workerRoutes);
 app.use('/api', appointmentRoutes);
 app.use('/api', utilRoutes);
-app.use('/api', paymentRoutes);
 
 // Rutas "comodín" por si alguien pide algo que no existe
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada en el Cerebro' });
 });
 
-// Exportamos la aplicación para que Vercel la ejecute
 module.exports = app;
