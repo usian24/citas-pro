@@ -418,6 +418,9 @@ function initBizPanel() {
   if (pfPs) pfPs.textContent = CUR.plan === 'active' ? 'Plan activo · Próxima factura el día 1' : CUR.plan === 'trial' ? 'En período de prueba gratuito' : 'Suscripción vencida — contacta soporte';
   var pfPb = G('pf-plan-badge'); if (pfPb) pfPb.innerHTML = planTag(CUR.plan);
 
+  // 🚀 INYECTAMOS LA LÓGICA DE PAGOS AQUÍ (Justo antes de abrir el tab)
+  configurarBotonesDePago();
+
   bizTab('home');
 }
 
@@ -1254,4 +1257,63 @@ function saveBizProfile() {
   CUR.loyalty.stamps = stmps > 1 ? stmps : 10;
 
   saveDB(); initBizPanel(); toast('Perfil guardado', '#4A7FD4');
+
+}
+/* ══════════════════════════════════════════════════════════════
+   INTEGRACIÓN DE PAGOS - LEMON SQUEEZY (PLAY STORE FRIENDLY)
+══════════════════════════════════════════════════════════════ */
+function configurarBotonesDePago() {
+  // Asegurarnos de que el negocio está cargado
+  if (!CUR || !CUR.id) return;
+
+  // 1. Aquí pondrás los 3 enlaces que te dé Lemon Squeezy
+  // (Por ahora pon cualquier texto, luego los reemplazas)
+  var linkMensual = "https://tu-tienda.lemonsqueezy.com/checkout/buy/ID_MENSUAL";
+  var linkTrimestral = "https://tu-tienda.lemonsqueezy.com/checkout/buy/ID_TRIMESTRAL";
+  var linkAnual = "https://tu-tienda.lemonsqueezy.com/checkout/buy/ID_ANUAL";
+
+  // 2. El truco maestro: Le pegamos el ID de tu base de datos al final del link
+  // Esto es lo que viaja a Lemon Squeezy y regresa a tu Webhook en Vercel
+  var parametroMagico = "?checkout[custom][bizId]=" + CUR.id;
+
+  // 3. Seleccionamos los botones del HTML
+  var btnM = document.getElementById('btn-mensual');
+  var btnT = document.getElementById('btn-trimestral');
+  var btnA = document.getElementById('btn-anual');
+
+  // 4. Les inyectamos el link completo y forzamos que abran fuera de la app (target=_blank)
+  if (btnM) { 
+    btnM.href = linkMensual + parametroMagico; 
+    btnM.target = "_blank"; // Vital para la Play Store
+  }
+  if (btnT) { 
+    btnT.href = linkTrimestral + parametroMagico; 
+    btnT.target = "_blank"; 
+  }
+  if (btnA) { 
+    btnA.href = linkAnual + parametroMagico; 
+    btnA.target = "_blank"; 
+  }
+
+  // 5. Lógica de UI: Si el usuario ya pagó, ocultamos los botones de comprar
+  var upgradeBox = document.getElementById('upgrade-options');
+  var planStatus = document.getElementById('pf-plan-status');
+  var planBadge = document.getElementById('pf-plan-badge');
+
+  if (CUR.plan === 'active') {
+    if (upgradeBox) upgradeBox.style.display = 'none';
+    if (planStatus) planStatus.textContent = 'Pro (' + (CUR.expires_at || 'Suscripción Activa') + ')';
+    if (planBadge) {
+      planBadge.textContent = 'ACTIVO';
+      planBadge.style.background = 'rgba(34,197,94,0.1)';
+      planBadge.style.color = 'var(--green)';
+    }
+  } else if (CUR.plan === 'expired') {
+    if (planStatus) planStatus.textContent = 'Vencido. Por favor renueva.';
+    if (planBadge) {
+      planBadge.textContent = 'VENCIDO';
+      planBadge.style.background = 'rgba(239,68,68,0.1)';
+      planBadge.style.color = 'var(--red)';
+    }
+  }
 }
