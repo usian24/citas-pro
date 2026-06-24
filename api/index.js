@@ -14,17 +14,21 @@ const app = express();
 // Middlewares: Filtro de entrada para CORS
 app.use(cors());
 
-// 🚨 LA MAGIA ESTÁ AQUÍ 🚨
-// Colocamos las rutas de pago ANTES de que express.json() transforme el texto.
-// Así Lemon Squeezy puede pasar su firma criptográfica intacta.
-app.use('/api', paymentRoutes);
-
-// Ahora sí, traducimos todo el resto a JSON para el resto de Citas Pro
-app.use(express.json());
+// 🚨 LA VACUNA 🚨
+// Le decimos a Vercel que lea todo como JSON, PERO que haga una copia exacta 
+// del texto crudo (rawBody) SOLO si la ruta es el webhook.
+app.use(express.json({
+  verify: (req, res, buf) => {
+    if (req.originalUrl && req.originalUrl.includes('/webhook')) {
+      req.rawBody = buf.toString('utf8');
+    }
+  }
+}));
 
 // ═══════════════════════════════════════
 // REGISTRO DE RUTAS MODULARES
 // ═══════════════════════════════════════
+app.use('/api', paymentRoutes);
 app.use('/api', authRoutes);
 app.use('/api', bizRoutes);
 app.use('/api', syncRoutes);

@@ -3,22 +3,24 @@ const router = express.Router();
 const crypto = require('crypto');
 const supabase = require('../db');
 
-// Ruta del Webhook: Usamos express.raw() para leer el texto puro y no romper la firma
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+// Ruta del Webhook
+router.post('/webhook', async (req, res) => {
   try {
-    // 1. Verificación de Seguridad (Firma de Lemon Squeezy)
+    // 1. Verificación de Seguridad usando la copia exacta (rawBody) de la vacuna
     const secret = process.env.LEMON_WEBHOOK_SECRET; 
     const hmac = crypto.createHmac('sha256', secret);
-    const digest = Buffer.from(hmac.update(req.body).digest('hex'), 'utf8');
+    
+    const digest = Buffer.from(hmac.update(req.rawBody || '').digest('hex'), 'utf8');
     const signature = Buffer.from(req.headers['x-signature'] || '', 'utf8');
 
-    if (!crypto.timingSafeEqual(digest, signature)) {
+    // Validación extra: Si las longitudes no coinciden, fallamos rápido para evitar que el servidor crashee
+    if (digest.length !== signature.length || !crypto.timingSafeEqual(digest, signature)) {
       console.log('[ERROR] Intento de pago rechazado: Firma de seguridad invalida.');
       return res.status(401).json({ error: 'Firma invalida' });
     }
 
-    // 2. Extraer y traducir los datos a JSON manualmente
-    const payload = JSON.parse(req.body.toString());
+    // 2. Extraer los datos (Gracias a la vacuna, req.body ya viene como JSON listo para usar)
+    const payload = req.body;
     const eventName = payload.meta.event_name;
     
     // Datos identificadores
@@ -27,17 +29,17 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const variantId = payload.data.attributes.variant_id;
     const subscriptionId = payload.data.id;
 
-    // Extraemos la fecha inteligente de Lemon Squeezy (renovacion o fin)
+    // Extraemos la fecha inteligente de Lemon Squeezy
     const renewsAt = payload.data.attributes.renews_at;
     const endsAt = payload.data.attributes.ends_at;
     const rawDate = endsAt || renewsAt; 
     
-    // Lo formateamos a YYYY-MM-DD para que tu Super Admin lo lea perfecto
+    // Lo formateamos a YYYY-MM-DD
     const expiresAt = rawDate ? rawDate.split('T')[0] : null;
 
     console.log(`[INFO] Recibido Webhook de Lemon Squeezy: ${eventName} para negocio: ${bizId}`);
 
-    // 3A. Logica Positiva: Compra o Renovacion automatica
+    // 3A. Lógica Positiva: Compra o Renovación automática
     if (eventName === 'subscription_created' || eventName === 'subscription_updated') {
       
       const { error } = await supabase
@@ -45,7 +47,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         .update({
           plan: 'active',
           subscription_status: 'active',
-          expires_at: expiresAt, // Tu sistema inteligente leera esto
+          expires_at: expiresAt, 
           lemon_customer_id: customerId.toString(),
           lemon_subscription_id: subscriptionId.toString(),
           lemon_variant_id: variantId.toString()
@@ -60,8 +62,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       console.log(`[SUCCESS] Negocio ${bizId} actualizado, plan activo hasta ${expiresAt}.`);
     }
 
-    // 3B. Logica Negativa: Suscripcion Expirada o Tarjeta Rechazada Definitiva
-    else if (eventName === 'subscription_expired') {
+    // 3B. Lógica Negativa: Suscripción Expirada O Cancelada
+    else if (eventName === 'subscription_expired' || eventName === 'subscription_cancelled') {
       
       const { error } = await supabase
         .from('businesses')
@@ -76,10 +78,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         return res.status(500).json({ error: 'Error actualizando base de datos' });
       }
 
-      console.log(`[WARNING] Negocio ${bizId} ha expirado y fue bloqueado en el sistema.`);
+      console.log(`[WARNING] Negocio ${bizId} ha expirado o cancelado y fue bloqueado.`);
     }
 
-    // 4. Confirmacion de exito a los servidores de Lemon Squeezy
+    // 4. Confirmación de éxito a los servidores de Lemon Squeezy
     res.status(200).send('Webhook procesado OK');
 
   } catch (error) {
