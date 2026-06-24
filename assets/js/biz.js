@@ -1302,18 +1302,35 @@ function configurarBotonesDePago() {
 
   if (CUR.plan === 'active') {
     if (upgradeBox) upgradeBox.style.display = 'none';
-    if (planStatus) planStatus.textContent = 'Pro (' + (CUR.expires_at || 'Suscripción Activa') + ')';
+    
+    // Mostramos el nombre del plan (SaaS Pro) y el rango de fechas exactas
+    var inicio = CUR.join_date ? CUR.join_date : 'Inicio';
+    var fin = CUR.expires_at ? CUR.expires_at : 'Renovación automática';
+    if (planStatus) planStatus.innerHTML = '<span style="color:var(--text);font-weight:bold;">SaaS Pro</span> <span style="font-size:12px;color:var(--muted)">(' + inicio + ' al ' + fin + ')</span>';
+    
     if (planBadge) {
       planBadge.textContent = 'ACTIVO';
       planBadge.style.background = 'rgba(34,197,94,0.1)';
       planBadge.style.color = 'var(--green)';
     }
   } else if (CUR.plan === 'expired') {
-    if (planStatus) planStatus.textContent = 'Vencido. Por favor renueva.';
+    if (upgradeBox) upgradeBox.style.display = 'block'; // Mostramos botones para que paguen
+    if (planStatus) planStatus.innerHTML = '<span style="color:var(--text);font-weight:bold;">SaaS Free</span> <span style="font-size:12px;color:var(--red)">(Suscripción Vencida. Por favor, renueva tu plan.)</span>';
     if (planBadge) {
       planBadge.textContent = 'VENCIDO';
       planBadge.style.background = 'rgba(239,68,68,0.1)';
       planBadge.style.color = 'var(--red)';
+    }
+  } else if (CUR.plan === 'trial') {
+    if (upgradeBox) upgradeBox.style.display = 'block'; // Mostramos botones para que se animen a comprar
+    
+    var finPrueba = CUR.expires_at ? CUR.expires_at : 'Pronto';
+    if (planStatus) planStatus.innerHTML = '<span style="color:var(--text);font-weight:bold;">SaaS Free</span> <span style="font-size:12px;color:var(--gold)">(Prueba gratuita hasta el ' + finPrueba + ')</span>';
+    
+    if (planBadge) {
+      planBadge.textContent = 'TRIAL';
+      planBadge.style.background = 'rgba(245,158,11,0.1)';
+      planBadge.style.color = 'var(--gold)';
     }
   }
 }
