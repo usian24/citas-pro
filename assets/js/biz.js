@@ -1268,9 +1268,9 @@ function configurarBotonesDePago() {
 
   // 1. Aquí pondrás los 3 enlaces que te dé Lemon Squeezy
   // (Por ahora pon cualquier texto, luego los reemplazas)
-  var linkMensual = "https://tu-tienda.lemonsqueezy.com/checkout/buy/ID_MENSUAL";
-  var linkTrimestral = "https://tu-tienda.lemonsqueezy.com/checkout/buy/ID_TRIMESTRAL";
-  var linkAnual = "https://tu-tienda.lemonsqueezy.com/checkout/buy/ID_ANUAL";
+  var linkMensual = "https://citasproonline.lemonsqueezy.com/checkout/buy/3119a496-8da6-43d6-95a1-62e9f87c7cc7";
+  var linkTrimestral = "https://citasproonline.lemonsqueezy.com/checkout/buy/98f45e0a-463e-46bc-b2e7-5d5507d9c44e";
+  var linkAnual = "https://citasproonline.lemonsqueezy.com/checkout/buy/35d225c4-16c1-493d-8e6e-683c6bb07929";
 
   // 2. El truco maestro: Le pegamos el ID de tu base de datos al final del link
   // Esto es lo que viaja a Lemon Squeezy y regresa a tu Webhook en Vercel
