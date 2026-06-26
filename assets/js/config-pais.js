@@ -5,6 +5,7 @@
 // 1. money() se sobreescribe ANTES de que db.js defina la suya
 // 2. Cuando CUR carga, refreshMoney() repinta todos los precios
 // 3. Si country es NULL en Supabase, lo lee del localStorage
+// 4. Precios adaptados con equivalencia en USD para mayor confianza
 // ══════════════════════════════════════════════════════════════
 
 // ─────────────────────────────────────────
@@ -17,7 +18,7 @@ var PAIS_CONFIG = {
   AR: { simbolo:'$',   nombre:'Peso argentino',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Argentina/Buenos_Aires',    decimales:2 },
   PE: { simbolo:'S/',  nombre:'Sol peruano',       posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Lima',                      decimales:2 },
   CL: { simbolo:'$',   nombre:'Peso chileno',      posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Santiago',                  decimales:0 },
-  VE: { simbolo:'Bs.', nombre:'Bolívar',            posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Caracas',                  decimales:2 },
+  VE: { simbolo:'Bs.', nombre:'Bolívar',           posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Caracas',                   decimales:2 },
   EC: { simbolo:'$',   nombre:'Dólar (Ecuador)',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Guayaquil',                 decimales:2 },
   DO: { simbolo:'RD$', nombre:'Peso dominicano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Santo_Domingo',             decimales:2 },
   US: { simbolo:'$',   nombre:'Dólar americano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/New_York',                  decimales:2 },
@@ -102,17 +103,28 @@ function refreshMoneyUI() {
 }
 
 // ─────────────────────────────────────────
-// 7. PRECIO DE SUSCRIPCIÓN
+// 7. PRECIO DE SUSCRIPCIÓN (Visuales + USD)
 // ─────────────────────────────────────────
 var PRECIO_SUSCRIPCION = {
-  PE:'S/ 30', ES:'10€', CO:'$ 40.000', MX:'$ 200',
-  CL:'$ 10.000', AR:'$ 10.000', US:'$ 15',
-  BR:'R$ 50', VE:'$10', EC:'$10', DO:'RD$ 600',
-  DE:'10€', NL:'10€', FR:'10€'
+  PE: 'S/ 25 / $6.60 USD',
+  EC: '$10 USD',
+  CO: '$ 25,248.62 / $6.50 USD',
+  US: '$15 USD',
+  MX: '$ 227.58 / $13 USD',
+  ES: '10€ / $11 USD',
+  CL: '$10 USD',
+  AR: '$ 10,830.13 / $12 USD',
+  // Los demás pasan al estándar global equivalente a $15 USD
+  BR: 'R$ 80 / $15 USD',
+  VE: 'Bs. 540 / $15 USD',
+  DO: 'RD$ 890 / $15 USD',
+  DE: '14€ / $15 USD',
+  NL: '14€ / $15 USD',
+  FR: '14€ / $15 USD'
 };
 
 function adaptarPrecioLocal(pais) {
-  var precio = PRECIO_SUSCRIPCION[pais] || '10€';
+  var precio = PRECIO_SUSCRIPCION[pais] || '$15 USD'; // Nuevo fallback global en 15 USD
   document.querySelectorAll('.precio-local-mes').forEach(function(el) {
     el.textContent = precio + '/mes';
   });
@@ -136,7 +148,7 @@ async function adaptarPrecioLocalPorIP() {
     adaptarPrecioLocal(paisIP);
     guardarPaisEnCache(paisIP);
   } catch(e) {
-    adaptarPrecioLocal('ES');
+    adaptarPrecioLocal('ES'); 
   }
 }
 

@@ -223,23 +223,23 @@ function renderAdminPaises() {
     }
   });
 
-  // Diccionario nativo y robusto (Independiente de archivos externos)
-  var countryData = {
-    'ES': { name: 'España', currency: 'EUR', symbol: '€', price: 10 },
-    'CO': { name: 'Colombia', currency: 'COP', symbol: '$', price: 40000 },
-    'MX': { name: 'México', currency: 'MXN', symbol: '$', price: 200 },
-    'AR': { name: 'Argentina', currency: 'ARS', symbol: '$', price: 10000 },
-    'DE': { name: 'Alemania', currency: 'EUR', symbol: '€', price: 10 },
-    'NL': { name: 'Holanda', currency: 'EUR', symbol: '€', price: 10 },
-    'FR': { name: 'Francia', currency: 'EUR', symbol: '€', price: 10 },
-    'CL': { name: 'Chile', currency: 'CLP', symbol: '$', price: 10000 },
-    'PE': { name: 'Perú', currency: 'PEN', symbol: 'S/', price: 40 },
-    'US': { name: 'Estados Unidos', currency: 'USD', symbol: '$', price: 10 },
-    'DO': { name: 'Rep. Dominicana', currency: 'DOP', symbol: '$', price: 600 },
-    'VE': { name: 'Venezuela', currency: 'USD', symbol: '$', price: 10 },
-    'EC': { name: 'Ecuador', currency: 'USD', symbol: '$', price: 10 },
-    'BR': { name: 'Brasil', currency: 'BRL', symbol: 'R$', price: 50 }
-  };
+ // Diccionario nativo y robusto (Independiente de archivos externos)
+var countryData = {
+  'ES': { name: 'España', currency: 'EUR', symbol: '€', price: 10 },
+  'CO': { name: 'Colombia', currency: 'COP', symbol: '$', price: 25248.62 },
+  'MX': { name: 'México', currency: 'MXN', symbol: '$', price: 227.58 },
+  'AR': { name: 'Argentina', currency: 'ARS', symbol: '$', price: 10830.13 },
+  'DE': { name: 'Alemania', currency: 'EUR', symbol: '€', price: 14 },
+  'NL': { name: 'Holanda', currency: 'EUR', symbol: '€', price: 14 },
+  'FR': { name: 'Francia', currency: 'EUR', symbol: '€', price: 14 },
+  'CL': { name: 'Chile', currency: 'USD', symbol: '$', price: 10 },
+  'PE': { name: 'Perú', currency: 'PEN', symbol: 'S/', price: 25 },
+  'US': { name: 'Estados Unidos', currency: 'USD', symbol: '$', price: 15 },
+  'DO': { name: 'Rep. Dominicana', currency: 'DOP', symbol: 'RD$', price: 890 },
+  'VE': { name: 'Venezuela', currency: 'USD', symbol: '$', price: 15 },
+  'EC': { name: 'Ecuador', currency: 'USD', symbol: '$', price: 10 },
+  'BR': { name: 'Brasil', currency: 'BRL', symbol: 'R$', price: 80 }
+};
 
   var flags = {
     'ES': '🇪🇸', 'CO': '🇨🇴', 'MX': '🇲🇽', 'AR': '🇦🇷', 'DE': '🇩🇪',

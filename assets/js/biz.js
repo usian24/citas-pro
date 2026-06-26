@@ -1259,62 +1259,162 @@ function saveBizProfile() {
   saveDB(); initBizPanel(); toast('Perfil guardado', '#4A7FD4');
 
 }
-/* ══════════════════════════════════════════════════════════════
-   INTEGRACIÓN DE PAGOS - LEMON SQUEEZY (PLAY STORE FRIENDLY)
-══════════════════════════════════════════════════════════════ */
+// ══════════════════════════════════════════════════════════════
+  //  INTEGRACIÓN DE PAGOS - LEMON SQUEEZY (PLAY STORE FRIENDLY)
+
 function configurarBotonesDePago() {
   // Asegurarnos de que el negocio está cargado
   if (!CUR || !CUR.id) return;
 
-  // 1. Aquí pondrás los 3 enlaces que te dé Lemon Squeezy
-  // (Por ahora pon cualquier texto, luego los reemplazas)
-  var linkMensual = "https://citasproonline.lemonsqueezy.com/checkout/buy/3119a496-8da6-43d6-95a1-62e9f87c7cc7";
-  var linkTrimestral = "https://citasproonline.lemonsqueezy.com/checkout/buy/98f45e0a-463e-46bc-b2e7-5d5507d9c44e";
-  var linkAnual = "https://citasproonline.lemonsqueezy.com/checkout/buy/35d225c4-16c1-493d-8e6e-683c6bb07929";
+  // 1. Obtenemos el país exacto usando tu función global (o el guardado en base de datos)
+  var pais = typeof getPaisActivo === 'function' ? getPaisActivo() : (CUR.country || 'GLOBAL');
 
-  // 2. El truco maestro: Le pegamos el ID de tu base de datos al final del link
-  // Esto es lo que viaja a Lemon Squeezy y regresa a tu Webhook en Vercel
+  // 2. TEXTOS VISUALES: Esto cambia lo que el cliente lee en tu página web
+  var TEXTOS_PLANES = {
+    PE: { m: "S/ 25 / $6.60 USD / mes", t: "S/ 75 / $19.80 USD / 3 meses", a: "S/ 300 / $79.20 USD / año" },
+    CO: { m: "$ 25,248 / $6.50 USD / mes", t: "$ 75,744 / $19.50 USD / 3 meses", a: "$ 302,976 / $78.00 USD / año" },
+    EC: { m: "$10.00 USD / mes", t: "$30.00 USD / 3 meses", a: "$120.00 USD / año" },
+    CL: { m: "$10.00 USD / mes", t: "$30.00 USD / 3 meses", a: "$120.00 USD / año" },
+    ES: { m: "10€ / $11.00 USD / mes", t: "30€ / $33.00 USD / 3 meses", a: "120€ / $132.00 USD / año" },
+    AR: { m: "$ 10,830 / $12.00 USD / mes", t: "$ 32,490 / $36.00 USD / 3 meses", a: "$ 129,960 / $144.00 USD / año" },
+    MX: { m: "$ 227.58 / $13.00 USD / mes", t: "$ 682.74 / $39.00 USD / 3 meses", a: "$ 2,730.96 / $156.00 USD / año" },
+    GLOBAL: { m: "$15.00 USD / mes", t: "$45.00 USD / 3 meses", a: "$180.00 USD / año" }
+  };
+
+  // 3. Biblioteca de Enlaces Lemon Squeezy por País
+  var LINKS_LEMON = {
+    PE: { 
+      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/6e795285-575c-482e-8f56-1e4659b214f4", 
+      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/d996da67-1f42-4df4-8606-3c81523d6897", 
+      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d0269cd4-9675-4c62-864f-f9e31f863b8a" 
+    },
+    CO: { 
+      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/6e795285-575c-482e-8f56-1e4659b214f4", 
+      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/d996da67-1f42-4df4-8606-3c81523d6897", 
+      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d0269cd4-9675-4c62-864f-f9e31f863b8a" 
+    },
+    MX: { 
+      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5afaef8a-752b-474d-8dc9-14f9efe58773", 
+      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/272cc6b5-fb57-4829-a722-73d388afc33b", 
+      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/0cdc9d31-1e37-4329-8061-040a3ae07656" 
+    },
+    AR: { 
+      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d961633c-5788-47a3-b8d1-ac818be8f6d6", 
+      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/40ab4189-4790-4316-82ea-c358553cef12", 
+      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/571ca211-0d43-4827-b008-a678a736cbb9" 
+    },
+    CL: { 
+      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/c0fc8bb8-3d18-44e1-97ee-759e43b5f510", 
+      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/8e9cf35f-7a93-4e9d-b096-f07cf4e54dc0", 
+      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5d77b654-121e-42d6-871d-5fb1593f2e11" 
+    },
+    EC: { 
+      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/c0fc8bb8-3d18-44e1-97ee-759e43b5f510", 
+      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/8e9cf35f-7a93-4e9d-b096-f07cf4e54dc0", 
+      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5d77b654-121e-42d6-871d-5fb1593f2e11" 
+    },
+    US: { 
+      mensual: "LINK_US_MENSUAL", 
+      trimestral: "LINK_US_TRIMESTRAL", 
+      anual: "LINK_US_ANUAL" 
+    },
+    ES: { 
+      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/4598f28d-6b5a-4b78-96d8-5b297b7b3d89", 
+      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/ce2e651b-7847-404a-9203-12ea45adbc68", 
+      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/2fe49ca1-185e-47ce-919f-98fdf39534fa" 
+    },
+    DE: { 
+      mensual: "LINK_DE_MENSUAL", 
+      trimestral: "LINK_DE_TRIMESTRAL", 
+      anual: "LINK_DE_ANUAL" 
+    },
+    NL: { 
+      mensual: "LINK_NL_MENSUAL", 
+      trimestral: "LINK_NL_TRIMESTRAL", 
+      anual: "LINK_NL_ANUAL" 
+    },
+    FR: { 
+      mensual: "LINK_FR_MENSUAL", 
+      trimestral: "LINK_FR_TRIMESTRAL", 
+      anual: "LINK_FR_ANUAL" 
+    },
+    DO: { 
+      mensual: "LINK_DO_MENSUAL", 
+      trimestral: "LINK_DO_TRIMESTRAL", 
+      anual: "LINK_DO_ANUAL" 
+    },
+    VE: { 
+      mensual: "LINK_VE_MENSUAL", 
+      trimestral: "LINK_VE_TRIMESTRAL", 
+      anual: "LINK_VE_ANUAL" 
+    },
+    BR: { 
+      mensual: "LINK_BR_MENSUAL", 
+      trimestral: "LINK_BR_TRIMESTRAL", 
+      anual: "LINK_BR_ANUAL" 
+    },
+    GLOBAL: { // Resto del mundo ($15 USD - TUS ENLACES ORIGINALES)
+      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/3119a496-8da6-43d6-95a1-62e9f87c7cc7",
+      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/98f45e0a-463e-46bc-b2e7-5d5507d9c44e",
+      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/35d225c4-16c1-493d-8e6e-683c6bb07929"
+    }
+  };
+
+  // 4. Elegimos el set de links y textos correctos
+  var textosActuales = TEXTOS_PLANES[pais] || TEXTOS_PLANES['GLOBAL'];
+  var linksActuales = LINKS_LEMON[pais] || LINKS_LEMON['GLOBAL'];
+
+  // 5. Actualizamos los textos visuales en el HTML
+  var txtM = document.getElementById('txt-precio-mensual');
+  var txtT = document.getElementById('txt-precio-trimestral');
+  var txtA = document.getElementById('txt-precio-anual');
+
+  if (txtM) txtM.textContent = textosActuales.m;
+  if (txtT) txtT.textContent = textosActuales.t;
+  if (txtA) txtA.textContent = textosActuales.a;
+
+  // 6. El truco maestro: Le pegamos el ID de tu base de datos al final del link
   var parametroMagico = "?checkout[custom][bizId]=" + CUR.id;
 
-  // 3. Seleccionamos los botones del HTML
+  // 7. Seleccionamos los botones del HTML e inyectamos los links (Con inteligencia de Fallback)
   var btnM = document.getElementById('btn-mensual');
   var btnT = document.getElementById('btn-trimestral');
   var btnA = document.getElementById('btn-anual');
 
-  // 4. Les inyectamos el link completo y forzamos que abran fuera de la app (target=_blank)
   if (btnM) { 
-    btnM.href = linkMensual + parametroMagico; 
-    btnM.target = "_blank"; // Vital para la Play Store
+    // Si el link tiene la palabra "LINK_", usa el global. Si no, usa el del país.
+    var finalLinkM = linksActuales.mensual.includes("LINK_") ? LINKS_LEMON['GLOBAL'].mensual : linksActuales.mensual;
+    btnM.href = finalLinkM + parametroMagico; 
+    btnM.target = "_blank"; 
   }
   if (btnT) { 
-    btnT.href = linkTrimestral + parametroMagico; 
+    var finalLinkT = linksActuales.trimestral.includes("LINK_") ? LINKS_LEMON['GLOBAL'].trimestral : linksActuales.trimestral;
+    btnT.href = finalLinkT + parametroMagico; 
     btnT.target = "_blank"; 
   }
   if (btnA) { 
-    btnA.href = linkAnual + parametroMagico; 
+    var finalLinkA = linksActuales.anual.includes("LINK_") ? LINKS_LEMON['GLOBAL'].anual : linksActuales.anual;
+    btnA.href = finalLinkA + parametroMagico; 
     btnA.target = "_blank"; 
   }
 
-  // 5. Lógica de UI: Si el usuario ya pagó, ocultamos los botones de comprar
+  // 8. Lógica de UI: Inteligencia de Fechas y Planes
   var upgradeBox = document.getElementById('upgrade-options');
   var planStatus = document.getElementById('pf-plan-status');
   var planBadge = document.getElementById('pf-plan-badge');
 
   if (CUR.plan === 'active') {
     if (upgradeBox) upgradeBox.style.display = 'none';
-    
-    // Mostramos el nombre del plan (SaaS Pro) y el rango de fechas exactas
     var inicio = CUR.join_date ? CUR.join_date : 'Inicio';
     var fin = CUR.expires_at ? CUR.expires_at : 'Renovación automática';
     if (planStatus) planStatus.innerHTML = '<span style="color:var(--text);font-weight:bold;">SaaS Pro</span> <span style="font-size:12px;color:var(--muted)">(' + inicio + ' al ' + fin + ')</span>';
-    
     if (planBadge) {
       planBadge.textContent = 'ACTIVO';
       planBadge.style.background = 'rgba(34,197,94,0.1)';
       planBadge.style.color = 'var(--green)';
     }
   } else if (CUR.plan === 'expired') {
-    if (upgradeBox) upgradeBox.style.display = 'block'; // Mostramos botones para que paguen
+    if (upgradeBox) upgradeBox.style.display = 'block'; 
     if (planStatus) planStatus.innerHTML = '<span style="color:var(--text);font-weight:bold;">SaaS Free</span> <span style="font-size:12px;color:var(--red)">(Suscripción Vencida. Por favor, renueva tu plan.)</span>';
     if (planBadge) {
       planBadge.textContent = 'VENCIDO';
@@ -1322,11 +1422,9 @@ function configurarBotonesDePago() {
       planBadge.style.color = 'var(--red)';
     }
   } else if (CUR.plan === 'trial') {
-    if (upgradeBox) upgradeBox.style.display = 'block'; // Mostramos botones para que se animen a comprar
-    
+    if (upgradeBox) upgradeBox.style.display = 'block'; 
     var finPrueba = CUR.expires_at ? CUR.expires_at : 'Pronto';
     if (planStatus) planStatus.innerHTML = '<span style="color:var(--text);font-weight:bold;">SaaS Free</span> <span style="font-size:12px;color:var(--gold)">(Prueba gratuita hasta el ' + finPrueba + ')</span>';
-    
     if (planBadge) {
       planBadge.textContent = 'TRIAL';
       planBadge.style.background = 'rgba(245,158,11,0.1)';

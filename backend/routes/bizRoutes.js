@@ -292,7 +292,7 @@ router.post('/delete-biz', async (req, res) => {
     await supabase.from('notifications').delete().eq('business_id', id);
     await supabase.from('workers').delete().eq('business_id', id);
 
-    // 2. 🔥 Finalmente, eliminar el negocio limpio
+    // 2. Finalmente, eliminar el negocio limpio
     const { error } = await supabase.from('businesses').delete().eq('id', id);
 
     if (error) {
