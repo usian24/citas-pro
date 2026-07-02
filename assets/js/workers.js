@@ -2224,13 +2224,14 @@ document.addEventListener('mouseup', handleApptTouchEnd);
 document.addEventListener('mousemove', handleApptTouchEnd);
 
 function handleApptTouchStart(e) {
+  if (window._isApptSelectMode) return; // No iniciar un nuevo timer si ya estamos en modo selección
   if (_pressTimer) clearTimeout(_pressTimer); // Limpiar cualquier timer anterior
   const card = e.target.closest('[onclick*="openWorkerApptDetail"]');
   if (!card) return;
   
   _pressTimer = setTimeout(() => {
     activateSelectMode(card);
-    _pressTimer = null; // El timer ya cumplió su función
+    _pressTimer = null; 
   }, 500); // Reducido a 500ms para una mejor experiencia
 }
 
@@ -2240,6 +2241,7 @@ function handleApptTouchEnd() {
 }
 
 function activateSelectMode(card) {
+  if (window._isApptSelectMode) return; // Prevenir doble activación
   window._isApptSelectMode = true;
   window._justActivatedSelectMode = true;
   if (navigator.vibrate) navigator.vibrate(50); // Vibración si el móvil lo soporta
