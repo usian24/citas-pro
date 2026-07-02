@@ -250,6 +250,14 @@ window.onload = async function () {
   initCSEL();
   initTheme();
 
+  // 🚀 CORRECCIÓN: Verificar el hash de reseteo ANTES de restaurar la sesión.
+  const initialHash = window.location.hash;
+  if (initialHash && initialHash.startsWith('#reset-password/')) {
+    const token = initialHash.split('/')[1];
+    if (token && typeof showResetPasswordScreen === 'function') showResetPasswordScreen(token);
+    return; // Detener la ejecución para que no redirija al portal
+  }
+
   // ¡MUY IMPORTANTE! Restaurar la sesión DESPUÉS de que bootComponents haya insertado el HTML de las vistas.
   if (typeof restaurarSesion === 'function') restaurarSesion();
 
