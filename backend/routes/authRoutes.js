@@ -127,7 +127,8 @@ router.post('/request-password-reset', async (req, res) => {
     { expiresIn: '1h' }
   );
 
-  const resetLink = `https://citasproonline.com/#reset-password/${resetToken}`;
+  const origin = req.get('origin') || 'https://citasproonline.com'; // Fallback a producción por seguridad
+  const resetLink = `${origin}/#reset-password/${resetToken}`;
 
   // Enviar email con el link (usando tu util/send-email)
   try {
