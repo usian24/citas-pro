@@ -246,13 +246,13 @@ function workerApptRowH(a) {
 }
 
 function openWorkerApptDetail(id) {
+  if (window._justActivatedSelectMode) {
+    window._justActivatedSelectMode = false;
+    return;
+  }
   // Interceptor: Si estamos en modo de borrar, seleccionamos en lugar de abrir
   if (window._isApptSelectMode) {
     window._toggleApptSelection(id);
-    return;
-  }
-  if (window._justActivatedSelectMode) {
-    window._justActivatedSelectMode = false;
     return;
   }
   if (!CUR_WORKER) return;
