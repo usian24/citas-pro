@@ -2224,12 +2224,14 @@ document.addEventListener('mouseup', handleApptTouchEnd);
 document.addEventListener('mousemove', handleApptTouchEnd);
 
 function handleApptTouchStart(e) {
+  if (_pressTimer) clearTimeout(_pressTimer); // Limpiar cualquier timer anterior
   const card = e.target.closest('[onclick*="openWorkerApptDetail"]');
   if (!card) return;
   
   _pressTimer = setTimeout(() => {
     activateSelectMode(card);
-  }, 600); // 600 milisegundos para activar
+    _pressTimer = null; // El timer ya cumplió su función
+  }, 500); // Reducido a 500ms para una mejor experiencia
 }
 
 function handleApptTouchEnd() {
