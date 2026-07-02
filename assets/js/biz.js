@@ -252,8 +252,9 @@ function setupPhotoUpload() {
     fresh.addEventListener('change', async function (e) {
       var f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
-      toast('Subiendo foto... ⏳', '#F59E0B');
-      var url = await uploadToImgBB(f);
+      toast('Optimizando y subiendo foto... ⏳', '#F59E0B');
+      var optimizedFile = await processImageForUpload(f);
+      var url = await uploadToImgBB(optimizedFile);
       if (url) onLoad(url);
     });
   }
@@ -262,10 +263,11 @@ function setupPhotoUpload() {
     var fresh = el.cloneNode(true); el.parentNode.replaceChild(fresh, el);
     fresh.addEventListener('change', async function (e) {
       var files = Array.from(e.target.files); if (!files.length) return;
-      toast('Subiendo ' + files.length + ' foto(s)... ⏳', '#F59E0B');
+      toast('Optimizando y subiendo ' + files.length + ' foto(s)... ⏳', '#F59E0B');
       for (var i = 0; i < files.length; i++) {
         if (!validImageType(files[i])) continue;
-        var url = await uploadToImgBB(files[i]);
+        var optimizedFile = await processImageForUpload(files[i]);
+        var url = await uploadToImgBB(optimizedFile);
         if (url) onLoad(url);
       }
     });
@@ -273,7 +275,11 @@ function setupPhotoUpload() {
   handleImg('biz-cover-input', function (d) {
     if (typeof REG !== 'undefined' && REG) REG.cover = d;
     var p = G('reg-cover-preview');
-    if (p) { p.style.backgroundImage = 'url(' + d + ')'; p.style.backgroundSize = 'cover'; p.style.backgroundPosition = 'center'; }
+    if (p) {
+      p.style.backgroundImage = 'url(' + d + ')';
+      p.style.backgroundSize = 'cover';
+      p.style.backgroundPosition = 'center';
+    }
     var hint = G('reg-cover-hint'); if (hint) hint.style.display = 'none';
     toast('Portada guardada', '#22C55E');
   });
@@ -283,11 +289,17 @@ function setupPhotoUpload() {
     if (p) { p.style.backgroundImage = 'url(' + d + ')'; p.style.backgroundSize = 'cover'; p.style.backgroundPosition = 'center'; p.innerHTML = ''; }
     toast('Logo guardado', '#22C55E');
   });
-  handleImg('biz-profile-cover-input', function (d) { if (!CUR) return; CUR.cover = d; var p = G('biz-profile-cover'); if (p) p.style.backgroundImage = 'url(' + d + ')'; saveDB(); toast('Portada guardada', '#22C55E'); });
-  handleImg('biz-profile-logo-input', function (d) { if (!CUR) return; CUR.logo = d; var p = G('biz-profile-logo'); if (p) p.innerHTML = '<img src="' + d + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">'; saveDB(); toast('Logo guardado', '#22C55E'); });
+  handleImg('biz-profile-cover-input', function (d) {
+    if (!CUR) return; CUR.cover = d; var p = G('biz-profile-cover'); if (p) p.style.backgroundImage = 'url(' + d + ')'; saveDB(); toast('Portada guardada', '#22C55E');
+  });
+  handleImg('biz-profile-logo-input', function (d) {
+    if (!CUR) return; CUR.logo = d; var p = G('biz-profile-logo'); if (p) p.innerHTML = '<img src="' + d + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">'; saveDB(); toast('Logo guardado', '#22C55E');
+  });
   handleImgs('svc-photo-input', function (d) { if (!REG || REG.photos.length >= 12) { toast('Máximo 12 fotos', '#EF4444'); return; } REG.photos.push(d); renderRegPhotos(); });
   handleImgs('gallery-input', function (d) { if (!CUR) return; if (!CUR.photos) CUR.photos = []; if (CUR.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; } CUR.photos.push(d); saveDB(); renderGallery(); toast('Foto añadida', '#22C55E'); });
-  handleImg('bar-photo-input', function (d) { window._barPhoto = d; var p = G('bar-photo-preview'); if (p) p.innerHTML = '<img src="' + d + '" class="photo-preview" alt="Foto"/>'; });
+  handleImg('bar-photo-input', function (d) {
+    window._barPhoto = d; var p = G('bar-photo-preview'); if (p) p.innerHTML = '<img src="' + d + '" class="photo-preview" alt="Foto"/>';
+  });
 }
 
 function renderRegPhotos() {
