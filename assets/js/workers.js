@@ -853,13 +853,7 @@ function initWorkerAgenda() {
   renderWorkerDailyTimeline(workerCalDay);
 }
 
-function renderWorkerDailyTimeline(dateStr) {// En assets/js/workers.js, dentro de exitSelectMode
-
-// ❌ CÓDIGO INCORRECTO:
-document.querySelectorAll(`[onclick*="openWorkerApptDetail('')"]`).forEach(el => {
-  // ...
-});
-
+function renderWorkerDailyTimeline(dateStr) {
   var container = G('wk-daily-timeline'); if (!container || !CUR_WORKER) return;
   var pxPerMin = 1.5;
   var startHour = 8, endHour = 20;
