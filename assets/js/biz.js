@@ -182,28 +182,44 @@ function showRegStep(n) {
   regStep = n; window.scrollTo(0, 0);
 }
 
-function bizRegStep(n) {
-  if (n > regStep) {
-    if (regStep === 1 && !REG.type) { toast('Selecciona el tipo de negocio', '#EF4444'); return; }
-    if (regStep === 2) {
-      var bn = sanitizeText(V('br-bizname')), em = V('br-email').trim(), ps = V('br-pass');
-      if (!bn) { toast('Escribe el nombre del negocio', '#EF4444'); return; }
-      if (!validEmail(em)) { toast('Email inválido', '#EF4444'); return; }
-      if (ps.length < 6) { toast('Contraseña mínimo 6 caracteres', '#EF4444'); return; }
-      if (DB.businesses.filter(function (b) { return (b.email || '').toLowerCase() === em.toLowerCase(); })[0]) { toast('Email ya registrado', '#EF4444'); return; }
-      var emEnWorker = false;
-      DB.businesses.forEach(function (b) {
-        (b.workers || []).forEach(function (w) {
-          if ((w.email || '').toLowerCase() === em.toLowerCase()) emEnWorker = true;
-        });
-      });
-      if (emEnWorker) { toast('Este correo ya está registrado como trabajador', '#EF4444'); return; }
-      REG.name = bn; REG.owner = sanitizeText(V('br-owner')); REG.email = em.toLowerCase(); REG.pass = ps; REG.phone = sanitizeText(V('br-phone'));
+function bizRegStep(targetStep) {
+  // --- Validaciones al avanzar ---
+  if (targetStep > regStep) {
+    if (regStep === 1 && !REG.type) {
+      toast('Selecciona el tipo de negocio', '#EF4444'); return;
     }
-    if (regStep === 3) { REG.addr = sanitizeText(V('br-addr')); REG.city = sanitizeText(V('br-city')); REG.country = sanitizeText(V('br-country')) || 'ES'; }
-    if (n === 6) finalizeBizReg();
+    if (regStep === 2) {
+      var bn = sanitizeText(V('br-bizname')), on = sanitizeText(V('br-owner')), em = V('br-email').trim(), ps = V('br-pass');
+      if (!bn) { toast('Escribe el nombre de tu negocio', '#EF4444'); return; }
+      if (!on) { toast('Escribe tu nombre', '#EF4444'); return; }
+      if (!validEmail(em)) { toast('Email inválido', '#EF4444'); return; }
+      if (ps.length < 6) { toast('La contraseña debe tener al menos 6 caracteres', '#EF4444'); return; }
+      
+      // Validar si el email ya existe
+      if (DB.businesses.some(b => (b.email || '').toLowerCase() === em.toLowerCase())) {
+        toast('Este correo ya tiene una cuenta registrada. Inicia sesión.', '#EF4444'); return;
+      }
+      if (DB.businesses.some(b => (b.workers || []).some(w => (w.email || '').toLowerCase() === em.toLowerCase()))) {
+        toast('Este correo ya está registrado como trabajador. Usa otro.', '#EF4444'); return;
+      }
+      
+      REG.name = bn; REG.owner = on; REG.email = em.toLowerCase(); REG.pass = ps;
+    }
+    if (regStep === 3) {
+      var country = V('br-country');
+      if (!country) { toast('Selecciona el país de tu negocio', '#EF4444'); return; }
+      REG.addr = sanitizeText(V('br-addr')); 
+      REG.city = sanitizeText(V('br-city')); 
+      REG.country = country;
+    }
+    // Al pasar del paso de fotos (4) al final (5), se finaliza el registro.
+    if (regStep === 4 && targetStep === 5) {
+      finalizeBizReg();
+    }
   }
-  showRegStep(n);
+
+  // --- Mostrar el paso correspondiente ---
+  showRegStep(targetStep);
 }
 
 function selType(id, type) { document.querySelectorAll('.typbtn').forEach(function (b) { b.classList.remove('sel'); }); var b = G(id); if (b) b.classList.add('sel'); REG.type = type; }
@@ -326,7 +342,7 @@ function delGalleryPhoto(idx) {
 function finalizeBizReg() {
   if (DB.businesses.filter(function (b) { return (b.email || '').toLowerCase() === REG.email.toLowerCase(); })[0]) { toast('Email ya registrado', '#EF4444'); showRegStep(2); return; }
   var slug = (REG.name || 'negocio').toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').slice(0, 20) + '-' + Date.now().toString(36);
-  var hoy = new Date(), trialEnd = new Date(hoy); trialEnd.setDate(trialEnd.getDate() + 30);
+  var hoy = new Date(), trialEnd = new Date(hoy); trialEnd.setDate(trialEnd.getDate() + 7); // Periodo de prueba de 7 días
   var biz = { id: slug, name: REG.name, owner: REG.owner, email: REG.email, pass: REG.pass, phone: REG.phone, addr: REG.addr, city: REG.city, country: REG.country, type: REG.type, teamSize: REG.teamSize, join_date: hoy.toISOString().split('T')[0], expires_at: trialEnd.toISOString().split('T')[0], plan: 'trial', desc: '', logo: REG.logo || '', photos: REG.photos || [], insta: '', facebook: '', x_url: '', cover: REG.cover || '', horario: DEFAULT_HORARIO.map(function (h) { return Object.assign({}, h); }), workers: [], services: [], appointments: [] };
   DB.businesses.push(biz); DB.currentBiz = slug; DB.currentWorker = null; CUR = biz; saveDB();
   T('biz-link-display', 'citasproonline.com/#b/' + slug); T('neg-badge', DB.businesses.length);

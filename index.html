@@ -161,11 +161,11 @@
   <div class="scr" id="s-biz"></div>
   <div class="scr" id="s-worker"></div>
   <div class="scr" id="s-client"></div>
-  <div id="modals-container"></div>
   <div id="bs-name" style="display:none;"></div>
   <button id="bp-btn-shop" style="display:none;"></button>
   <script>
     function actualizarPreviewDescuento() {
+      if (typeof money !== 'function') return;
       const precio = parseFloat(document.getElementById('prod-price').value) || 0;
       const desc = parseFloat(document.getElementById('prod-discount').value) || 0;
       const preview = document.getElementById('prod-discount-preview');
@@ -199,6 +199,7 @@
     }
   </script>
 
+  <div id="modals-container"></div>
   <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="assets/js/loader.js"></script>
