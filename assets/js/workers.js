@@ -853,7 +853,13 @@ function initWorkerAgenda() {
   renderWorkerDailyTimeline(workerCalDay);
 }
 
-function renderWorkerDailyTimeline(dateStr) {
+function renderWorkerDailyTimeline(dateStr) {// En assets/js/workers.js, dentro de exitSelectMode
+
+// ❌ CÓDIGO INCORRECTO:
+document.querySelectorAll(`[onclick*="openWorkerApptDetail('')"]`).forEach(el => {
+  // ...
+});
+
   var container = G('wk-daily-timeline'); if (!container || !CUR_WORKER) return;
   var pxPerMin = 1.5;
   var startHour = 8, endHour = 20;
@@ -1969,7 +1975,7 @@ function renderWorkerDailyTimeline(dateStr) {
     const ids = Array.from(window._selectedAppts);
     ids.forEach(id => {
       window._selectedAppts.delete(id);
-      document.querySelectorAll(`[onclick*="openWorkerApptDetail('')"]`).forEach(el => {
+    document.querySelectorAll(`[onclick*="openWorkerApptDetail('${id}')"]`).forEach(el => {
         el.style.outline = ''; el.style.transform = ''; el.style.opacity = '1'; el.style.boxShadow = '';
       });
     });
