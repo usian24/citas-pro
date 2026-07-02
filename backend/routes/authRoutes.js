@@ -90,4 +90,91 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════
+// RUTA 3: SOLICITAR RESETEO DE CONTRASEÑA
+// ═══════════════════════════════════════
+router.post('/request-password-reset', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email requerido' });
+
+  const inputEmail = email.toLowerCase();
+  let user = null;
+  let userType = null;
+
+  // Buscar en dueños
+  const { data: biz } = await supabase.from('businesses').select('id, email, name').ilike('email', inputEmail).single();
+  if (biz) {
+    user = { id: biz.id, email: biz.email, name: biz.name };
+    userType = 'business';
+  } else {
+    // Buscar en trabajadores
+    const { data: worker } = await supabase.from('workers').select('id, email, name, business_id').ilike('email', inputEmail).single();
+    if (worker) {
+      user = { id: worker.id, email: worker.email, name: worker.name, bizId: worker.business_id };
+      userType = 'worker';
+    }
+  }
+
+  if (!user) {
+    // Respondemos OK para no revelar si un email existe o no (medida de seguridad)
+    return res.status(200).json({ success: true });
+  }
+
+  // Generar token de reseteo (expira en 1 hora)
+  const resetToken = jwt.sign(
+    { userId: user.id, email: user.email, type: userType },
+    JWT_SECRET,
+    { expiresIn: '1h' }
+  );
+
+  const resetLink = `https://citasproonline.com/#reset-password/${resetToken}`;
+
+  // Enviar email con el link (usando tu util/send-email)
+  try {
+    const { Resend } = require('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    await resend.emails.send({
+      from: 'Citas Pro <soporte@citasproonline.com>',
+      to: [user.email],
+      subject: '🔑 Restablece tu contraseña de Citas Pro',
+      html: `<p>Hola ${user.name}, haz clic en el siguiente enlace para restablecer tu contraseña. Este enlace es válido por 1 hora:</p><a href="${resetLink}">Restablecer mi contraseña</a>`
+    });
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error enviando email de reseteo:", error);
+    res.status(500).json({ error: 'No se pudo enviar el correo.' });
+  }
+});
+
+// ═══════════════════════════════════════
+// RUTA 4: CONFIRMAR Y CAMBIAR LA CONTRASEÑA
+// ═══════════════════════════════════════
+router.post('/reset-password', async (req, res) => {
+  const { token, newPassword } = req.body;
+  if (!token || !newPassword) return res.status(400).json({ error: 'Faltan datos' });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const { userId, type } = decoded;
+
+    const tableName = type === 'business' ? 'businesses' : 'workers';
+
+    const { error } = await supabase
+      .from(tableName)
+      .update({ password: newPassword }) // En un futuro, aquí iría el hash de bcrypt
+      .eq('id', userId);
+
+    if (error) throw error;
+
+    res.status(200).json({ success: true });
+
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') return res.status(401).json({ error: 'El enlace ha expirado. Solicita uno nuevo.' });
+    if (error.name === 'JsonWebTokenError') return res.status(401).json({ error: 'Enlace inválido o corrupto.' });
+    res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+});
+
 module.exports = router;

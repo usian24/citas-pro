@@ -598,6 +598,13 @@ window.onload = async function () {
       if (handled) return;
     }
 
+    // NUEVO: Detectar enlace de reseteo de contraseña
+    if (hash && hash.startsWith('#reset-password/')) {
+      const token = hash.split('/')[1];
+      if (token && typeof showResetPasswordScreen === 'function') showResetPasswordScreen(token);
+      return;
+    }
+
     if (DB.admin && DB.admin.auth) {
       goTo('s-admin');
       showAdminPanel();
@@ -622,6 +629,12 @@ window.onload = async function () {
       let id = newHash.split('/')[1];
       const freshData = await fetchBizFromCloud(id);
       if (freshData) syncBizToLocal(freshData);
+    }
+    // NUEVO: Detectar enlace de reseteo de contraseña al cambiar el hash
+    if (newHash && newHash.startsWith('#reset-password/')) {
+      const token = newHash.split('/')[1];
+      if (token && typeof showResetPasswordScreen === 'function') showResetPasswordScreen(token);
+      return;
     }
     if (typeof checkLinkAccess === 'function') checkLinkAccess();
   });

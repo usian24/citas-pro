@@ -194,38 +194,106 @@ function openForgotModal() {
   setTimeout(function(){ var e=G('fp-email'); if(e) e.focus(); }, 250);
 }
 
-function doForgot() {
+async function doForgot() {
   var email = V('fp-email').trim().toLowerCase();
   hideErr('fp-err');
   if(!email || !validEmail(email)) { showErr('fp-err','Introduce un correo electrónico válido.'); return; }
 
-  /* Buscar en dueños y en trabajadores */
-  var found = DB.businesses.filter(function(b){ return (b.email||'').toLowerCase()===email; })[0];
-  if(!found) {
-    DB.businesses.forEach(function(b){
-      (b.workers||[]).forEach(function(w){ if((w.email||'').toLowerCase()===email) found=w; });
-    });
+  var btn = G('fp-btn-send');
+  if (btn) {
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
   }
-  if(!found) { showErr('fp-err','No encontramos ninguna cuenta con ese correo.'); return; }
 
-  /* ✅ CORREGIDO: busca la contraseña en "pass" O en "password" (evita "undefined") */
-  var actualPassword = found.pass || found.password || '(no disponible)';
+  try {
+    const res = await fetch('/api/request-password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    });
 
-  fetch('/api/send-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type: 'password_reset',
-      to: email,
-      data: { password: actualPassword }
-    })
-  }).catch(function(e) { console.error('Error enviando correo de recuperación:', e); });
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Error del servidor');
+    }
 
-  var suc = G('fp-success'); if(suc) suc.style.display='block';
-  var btn = G('fp-btn-send'); if(btn) btn.style.display='none';
-  toast('Instrucciones enviadas a ' + email, '#4A7FD4');
+    var suc = G('fp-success'); if(suc) suc.style.display='block';
+    if(btn) btn.style.display='none';
+    toast('Instrucciones enviadas a ' + email, '#4A7FD4');
+
+  } catch (error) {
+    showErr('fp-err', error.message);
+  } finally {
+    if (btn) {
+      btn.textContent = 'Enviar enlace';
+      btn.disabled = false;
+    }
+  }
 }
 
+/* ══════════════════════════
+   NUEVO: PANTALLA DE RESETEO
+══════════════════════════ */
+function showResetPasswordScreen(token) {
+  // Crear el modal si no existe
+  if (!G('ov-reset-password')) {
+    var modalHtml = `
+      <div class="ov" id="ov-reset-password">
+        <div class="modal" style="max-width: 380px;">
+          <div class="mhdr">
+            <span class="mttl">🔑 Nueva Contraseña</span>
+            <div class="xbtn" onclick="closeOv('ov-reset-password'); window.location.hash='';">×</div>
+          </div>
+          <p style="font-size:13px; color:var(--t2); margin-bottom:16px;">Crea una contraseña nueva y segura.</p>
+          <div class="field">
+            <label for="rp-pass1">Nueva Contraseña</label>
+            <input type="password" id="rp-pass1" class="inp" placeholder="Mínimo 6 caracteres">
+          </div>
+          <div class="field">
+            <label for="rp-pass2">Confirmar Contraseña</label>
+            <input type="password" id="rp-pass2" class="inp" placeholder="Repite la contraseña">
+          </div>
+          <div id="rp-err" class="err-box"></div>
+          <button id="rp-btn-save" class="btn btn-blue" style="width:100%; margin-top:10px;">Guardar Nueva Contraseña</button>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+
+  openOv('ov-reset-password');
+  hideErr('rp-err');
+  G('rp-pass1').value = '';
+  G('rp-pass2').value = '';
+
+  G('rp-btn-save').onclick = async function() {
+    var p1 = V('rp-pass1');
+    var p2 = V('rp-pass2');
+    if (!p1 || p1.length < 6) { showErr('rp-err', 'La contraseña debe tener al menos 6 caracteres.'); return; }
+    if (p1 !== p2) { showErr('rp-err', 'Las contraseñas no coinciden.'); return; }
+
+    this.textContent = 'Guardando...';
+    this.disabled = true;
+
+    try {
+      const res = await fetch('/api/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: token, newPassword: p1 })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      closeOv('ov-reset-password');
+      toast('¡Contraseña actualizada! Ya puedes iniciar sesión.', '#22C55E');
+      window.location.hash = '';
+    } catch (error) {
+      showErr('rp-err', error.message);
+    } finally {
+      this.textContent = 'Guardar Nueva Contraseña';
+      this.disabled = false;
+    }
+  };
+}
 /* ══════════════════════════
    PASSWORD EYE TOGGLE (SVG profesional)
 ══════════════════════════ */
