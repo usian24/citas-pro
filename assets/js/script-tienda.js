@@ -1,18 +1,11 @@
-// script-tienda.js — CitasPro Tienda v3
-// ─────────────────────────────────────────────────────
-// • Layout tren 3×3 en panel admin
-// • Stock real (el dueño lo define, no 100 por defecto)
-// • Descuento % por producto
-// • Descuento % por categoría (aplica a todos sus productos)
-// • Buscador interno en el panel admin
-// ─────────────────────────────────────────────────────
+'use strict';
 
-// DEV Supabase
-const SUPABASE_URL = window.AppEnv.SUPABASE_URL;
-const SUPABASE_KEY = window.AppEnv.SUPABASE_ANON_KEY;
-const tiendaSupa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+/* ══════════════════════════════════════════════════
+   SCRIPT-TIENDA.JS — Lógica del panel de gestión de la tienda
+══════════════════════════════════════════════════ */
 
-let tempProdPhotos = [];
+var editProdId = null;
+window._prodPhotos = []; // Array para gestionar las fotos del producto actual
 let editingProdId = null;
 let categoriasActuales = [];
 let todosLosProductos = []; // cache para el buscador admin
@@ -601,129 +594,111 @@ async function eliminarCategoria(catNombre) {
 // ══════════════════════════════════════════
 // CRUD PRODUCTOS
 // ══════════════════════════════════════════
-function openProdModal() {
-  if (!categoriasActuales.length) {
-    mostrarAlertaTienda('Primero crea una categoría con el botón "+ Categoría".', 'Sin categorías', '🏷️');
-    return;
-  }
-  editingProdId = null;
-  document.getElementById('prod-name').value = '';
-  document.getElementById('prod-price').value = '';
-  document.getElementById('prod-desc').value = '';
-  document.getElementById('prod-cat').value = '';
-  const stockEl = document.getElementById('prod-stock');
-  const descEl = document.getElementById('prod-discount');
-  if (stockEl) stockEl.value = '';
-  if (descEl) descEl.value = '0';
-  tempProdPhotos = [];
-  renderProdPhotoPreview();
+function openProductModal(id) {
+  editProdId = id || null;
+  window._prodPhotos = []; // Limpiar fotos anteriores
 
-  // Asignar el listener de forma segura aquí
-  const fileInput = document.getElementById('prod-photo-input');
-  if (fileInput && !fileInput.dataset.listener) {
-    fileInput.dataset.listener = 'true';
-    fileInput.addEventListener('change', async function (e) {
-      if (tempProdPhotos.length >= 3) return;
-      const f = e.target.files[0]; if (!f) return;
-      document.getElementById('prod-photo-preview').innerHTML =
-        '<span style="color:var(--blue);font-weight:700;">Subiendo... ⏳</span>';
-      if (typeof uploadToImgBB === 'function') {
-        const url = await uploadToImgBB(f);
-        if (url) {
-          tempProdPhotos.push(url);
-          renderProdPhotoPreview();
-        } else {
-          mostrarAlertaTienda('Error al subir la foto. Comprueba tu conexión o tipo de archivo.', 'Error', '❌');
-          renderProdPhotoPreview();
-        }
-      }
-      fileInput.value = ''; // Reset input
-    });
+  T('prod-ttl', id ? 'Editar Producto' : 'Nuevo Producto');
+
+  var nameEl = G('prod-name'), descEl = G('prod-desc'), priceEl = G('prod-price'), stockEl = G('prod-stock'), catEl = G('prod-category'), discEl = G('prod-discount');
+
+  if (id && CUR) {
+    var p = (CUR.products || []).find(function (x) { return x.id === id; });
+    if (p) {
+      if (nameEl) nameEl.value = p.name || '';
+      if (descEl) descEl.value = p.description || '';
+      if (priceEl) priceEl.value = p.price || 0;
+      if (stockEl) stockEl.value = p.stock || 0;
+      if (catEl) catEl.value = p.category || '';
+      if (discEl) discEl.value = p.discount || 0;
+      window._prodPhotos = p.images || (p.image ? [p.image] : []); // Compatible con el formato antiguo y nuevo
+    }
+  } else {
+    // Resetear campos para un producto nuevo
+    [nameEl, descEl, priceEl, stockEl, catEl, discEl].forEach(function(el) { if(el) el.value = ''; });
+    if (priceEl) priceEl.value = 0;
+    if (stockEl) stockEl.value = 0;
+    if (discEl) discEl.value = 0;
   }
 
-  openOv('ov-tienda-prod');
+  renderProductPhotoPreviews(); // Renderizar las vistas previas
+  actualizarPreviewDescuento();
+  openOv('ov-product');
 }
 
-async function editProduct(id) {
-  try {
-    const { data, error } = await tiendaSupa.from('products').select('*').eq('id', id).single();
-    if (error) throw error;
-    if (!data) return;
-    editingProdId = id;
-    document.getElementById('prod-name').value = data.name;
-    document.getElementById('prod-price').value = data.price;
-    document.getElementById('prod-desc').value = data.description || '';
-    document.getElementById('prod-cat').value = (data.category || '').trim();
-    const stockEl = document.getElementById('prod-stock');
-    const descEl = document.getElementById('prod-discount');
-    if (stockEl) stockEl.value = data.stock != null ? data.stock : '';
-    if (descEl) descEl.value = data.discount_percent || 0;
-    tempProdPhotos = window.parseFotos ? window.parseFotos(data.image) : (data.image ? [data.image] : []);
-    renderProdPhotoPreview();
-    openOv('ov-tienda-prod');
-  } catch (err) {
-    mostrarAlertaTienda('No pudimos cargar el producto.', 'Error', '❌');
-  }
-}
+function renderProductPhotoPreviews() {
+  var container = G('prod-photo-previews');
+  if (!container) return;
 
-// Función para renderizar el preview de fotos
-window.removeProdPhoto = function (index, event) {
-  event.stopPropagation();
-  tempProdPhotos.splice(index, 1);
-  renderProdPhotoPreview();
-};
+  container.innerHTML = ''; // Limpiar contenedor
 
-function renderProdPhotoPreview() {
-  const container = document.getElementById('prod-photo-preview');
-  if (!tempProdPhotos.length) {
-    container.innerHTML = '<div style="font-size:13px;color:var(--muted)">Añadir foto</div>';
-    container.onclick = () => document.getElementById('prod-photo-input').click();
-    container.classList.add('photo-upload');
-    container.style.padding = '';
-    container.style.border = '';
-    container.style.background = '';
-    container.style.cursor = '';
-    return;
-  }
-
-  container.onclick = null;
-  container.classList.remove('photo-upload');
-  container.style.cursor = 'default';
-  container.style.padding = '12px';
-  container.style.border = '1px solid var(--b)';
-  container.style.background = 'transparent';
-
-  let html = '<div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">';
-  tempProdPhotos.forEach((url, i) => {
-    html += `
-      <div style="position:relative; width:60px; height:60px; border-radius:8px; overflow:hidden; border:1px solid var(--b);">
-        <img src="${url}" style="width:100%; height:100%; object-fit:cover;">
-        <div onclick="removeProdPhoto(${i}, event)" style="position:absolute; top:2px; right:2px; background:rgba(239,68,68,0.9); color:#fff; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; font-weight:bold; z-index:10;">×</div>
-      </div>
+  // Renderizar las fotos existentes
+  window._prodPhotos.forEach(function(url, index) {
+    var thumb = document.createElement('div');
+    thumb.className = 'img-thumb';
+    thumb.innerHTML = `
+      <img src="${sanitizeImageDataURL(url)}" alt="Preview ${index + 1}">
+      <button onclick="removeProductPhoto(${index})" class="del-photo-btn">×</button>
     `;
+    container.appendChild(thumb);
   });
-  if (tempProdPhotos.length < 3) {
-    html += `
-      <div style="width:60px; height:60px; border-radius:8px; border:1px dashed var(--b); display:flex; align-items:center; justify-content:center; color:var(--muted); cursor:pointer; font-size:20px;" onclick="document.getElementById('prod-photo-input').click()">+</div>
-    `;
+
+  // Renderizar el botón para añadir más fotos (si hay espacio)
+  if (window._prodPhotos.length < 3) {
+    var addBtn = document.createElement('div');
+    addBtn.className = 'img-thumb add-btn';
+    addBtn.textContent = '＋';
+    addBtn.onclick = function() { G('prod-photo-input').click(); };
+    container.appendChild(addBtn);
   }
-  html += '</div>';
-  container.innerHTML = html;
 }
 
-// Asegurar parseFotos global
-window.parseFotos = function (imgData) {
-  if (!imgData) return [];
-  try {
-    const arr = JSON.parse(imgData);
-    if (Array.isArray(arr)) return arr;
-  } catch (e) { }
-  return [imgData];
-};
+function removeProductPhoto(index) {
+  window._prodPhotos.splice(index, 1);
+  renderProductPhotoPreviews(); // Volver a renderizar
+}
 
-// (El listener se movió a openProdModal para evitar errores si el HTML no está cargado)
+function setupProductPhotoUpload() {
+  var input = G('prod-photo-input');
+  if (!input) return;
+
+  // Clonar para limpiar listeners antiguos
+  var freshInput = input.cloneNode(true);
+  input.parentNode.replaceChild(freshInput, input);
+
+  freshInput.addEventListener('change', async function(e) {
+    var files = Array.from(e.target.files);
+    var canUploadCount = 3 - window._prodPhotos.length;
+
+    if (files.length === 0) return;
+    if (files.length > canUploadCount) {
+      toast(`Puedes subir ${canUploadCount} foto(s) más.`, '#F59E0B');
+      files = files.slice(0, canUploadCount); // Tomar solo las permitidas
+    }
+
+    toast(`Optimizando y subiendo ${files.length} foto(s)...`, '#F59E0B');
+
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+      if (!validImageType(file)) continue;
+
+      // Usamos el motor de optimización a WebP que ya creamos
+      var optimizedFile = await processImageForUpload(file);
+      var url = await uploadToImgBB(optimizedFile);
+
+      if (url && window._prodPhotos.length < 3) {
+        window._prodPhotos.push(url);
+      }
+    }
+    
+    renderProductPhotoPreviews(); // Actualizar la UI con las nuevas fotos
+    toast('Fotos listas para guardar.', '#22C55E');
+  });
+}
 
 async function saveProduct() {
+  if (!CUR) return;
+
   const name = document.getElementById('prod-name').value.trim();
   const price = parseFloat(document.getElementById('prod-price').value);
   const desc = document.getElementById('prod-desc').value.trim();
@@ -733,49 +708,35 @@ async function saveProduct() {
   const stock = stockEl ? (stockEl.value !== '' ? parseInt(stockEl.value) : 0) : 0;
   const discount = descEl ? (parseFloat(descEl.value) || 0) : 0;
 
-  if (!name || isNaN(price)) {
-    mostrarAlertaTienda('El nombre y el precio son obligatorios.', 'Faltan datos', '💰'); return;
-  }
+  if (!name) { toast('El nombre del producto es requerido', '#EF4444'); return; }
 
-  const finalImageStr = tempProdPhotos.length > 0 ? JSON.stringify(tempProdPhotos) : '';
-
-  const productoData = {
-    business_id: CUR.id, name, description: desc, price,
-    stock, discount_percent: discount,
-    image: finalImageStr, category: cat
+  var productData = {
+    id: editProdId || 'prod_' + Date.now(),
+    name: name,
+    description: sanitizeText(V('prod-desc')),
+    price: safeNum(V('prod-price'), 0),
+    stock: safeInt(V('prod-stock'), 0),
+    category: sanitizeText(V('prod-category')) || 'General',
+    discount: safeNum(V('prod-discount'), 0),
+    images: window._prodPhotos, // Guardamos el array de imágenes
+    image: window._prodPhotos[0] || '' // Mantenemos la primera como 'image' por compatibilidad
   };
 
-  try {
-    if (editingProdId) {
-      const { error } = await tiendaSupa.from('products').update(productoData).eq('id', editingProdId);
-      if (error) throw error;
-      mostrarAlertaTienda('Producto actualizado.', '¡Listo!', '✏️');
-    } else {
-      productoData.id = crypto.randomUUID ? crypto.randomUUID() : ('prod_' + Math.random().toString(36).slice(2));
-      productoData.rating = 0;
-      let { error } = await tiendaSupa.from('products').insert([productoData]);
+  if (!CUR.products) CUR.products = [];
 
-      // Sincronización automática de emergencia si la barbería no existe en Supabase
-      if (error && error.code === '23503') {
-        console.log('Sincronizando barbería a Supabase automáticamente...');
-        await fetch('/api/update-biz', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(CUR)
-        });
-        const retry = await tiendaSupa.from('products').insert([productoData]);
-        error = retry.error;
-      }
-
-      if (error) throw error;
-      mostrarAlertaTienda('Producto publicado.', '¡Éxito!', '✅');
-    }
-    renderTiendaAdmin();
-    closeOv('ov-tienda-prod');
-  } catch (err) {
-    console.error('Error guardando:', err);
-    mostrarAlertaTienda('Error al guardar. Revisa tu conexión.', 'Error', '❌');
+  if (editProdId) {
+    // Editando
+    var index = CUR.products.findIndex(function(p) { return p.id === editProdId; });
+    if (index > -1) CUR.products[index] = productData;
+  } else {
+    // Creando
+    CUR.products.push(productData);
   }
+
+  saveDB();
+  renderProducts();
+  closeOv('ov-product');
+  toast(editProdId ? 'Producto actualizado' : 'Producto creado', '#22C55E');
 }
 
 function deleteProduct(id, event) {
@@ -793,11 +754,70 @@ function deleteProduct(id, event) {
   );
 }
 
-// ══════════════════════════════════════════
-// ENGANCHE DE TABS
-// ══════════════════════════════════════════
-const fnOriginalBizTab = window.bizTab;
-window.bizTab = function (tab) {
-  if (fnOriginalBizTab) fnOriginalBizTab(tab);
-  if (tab === 'tienda') renderTiendaAdmin();
-};
+function renderProducts() {
+  if (!CUR) return;
+  var prods = CUR.products || [];
+  var container = G('biz-products-list');
+  if (!container) return;
+
+  if (prods.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">Aún no tienes productos en tu tienda.</div></div>';
+    return;
+  }
+
+  container.innerHTML = prods.map(function(p) {
+    var firstImage = (p.images && p.images[0]) ? p.images[0] : p.image;
+    var thumb = firstImage
+      ? `<img src="${sanitizeImageDataURL(firstImage)}" alt="${san(p.name)}" style="width:50px;height:50px;border-radius:12px;object-fit:cover;flex-shrink:0">`
+      : '<div style="width:50px;height:50px;border-radius:12px;background:var(--bblue);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📦</div>';
+
+    return `
+      <div class="prod-item-admin">
+        ${thumb}
+        <div style="flex:1; min-width:0;">
+          <div class="prod-name-admin">${san(p.name)}</div>
+          <div class="prod-meta-admin">
+            <span>Stock: ${p.stock}</span>
+            <span>Categoría: ${san(p.category) || 'General'}</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0;">
+          <div class="prod-price-admin">${money(p.price)}</div>
+          <div class="prod-actions-admin">
+            <button onclick="openProductModal('${p.id}')">Editar</button>
+            <button onclick="deleteProduct('${p.id}')" class="btn-delete">×</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function deleteProduct(id) {
+  if (!CUR) return;
+  openConfirmModal('Eliminar Producto', '¿Seguro que quieres eliminar este producto? Esta acción no se puede deshacer.', function() {
+    CUR.products = (CUR.products || []).filter(function(p) { return p.id !== id; });
+    saveDB();
+    renderProducts();
+    toast('Producto eliminado', '#475569');
+  });
+}
+
+function initShopManagement() {
+  var addBtn = G('add-product-btn');
+  if (addBtn) addBtn.onclick = function() { openProductModal(null); };
+  
+  var saveBtn = G('save-prod-btn');
+  if (saveBtn) saveBtn.onclick = saveProduct;
+
+  setupProductPhotoUpload();
+  renderProducts();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var bizTabOriginal = window.bizTab;
+  window.bizTab = function(tab) {
+    if (bizTabOriginal) bizTabOriginal(tab);
+    if (tab === 'tienda') initShopManagement();
+  }
+});

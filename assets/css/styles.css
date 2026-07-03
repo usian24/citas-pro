@@ -1000,6 +1000,29 @@ a {
   color: var(--blue)
 }
 
+/* Contenedor para la galería de fotos en el modal de producto */
+.img-gallery-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--b);
+  border-radius: 16px;
+  min-height: 86px; /* 60px de alto + 12*2 de padding */
+}
+
+.del-photo-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+  font-size: 12px; font-weight: bold;
+}
+
 /* ══════════════════════════
    MISC
 ══════════════════════════ */

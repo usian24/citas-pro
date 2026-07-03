@@ -344,10 +344,12 @@
 
     <div class="field">
       <label>Foto del producto</label>
-      <div id="prod-photo-preview" class="photo-upload">
-        <div style="font-size:13px;color:var(--muted)">Añadir foto</div>
+      <!-- Contenedor para las vistas previas de las imágenes -->
+      <div id="prod-photo-previews" class="img-gallery-container">
+        <!-- El botón de añadir se generará dinámicamente con JS -->
       </div>
-      <input type="file" id="prod-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+      <!-- Input de archivo ahora permite selección múltiple -->
+      <input type="file" id="prod-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none" multiple/>
     </div>
 
     <button class="btn btn-blue" onclick="saveProduct()">Guardar Producto</button>
