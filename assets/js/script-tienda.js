@@ -162,17 +162,23 @@ async function renderTiendaAdmin() {
   prodList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--blue);">Cargando... ⏳</div>';
 
   try {
-    const { data: productos, error } = await tiendaSupa
+    // 🚀 MEJORA: Cargar productos y categorías en paralelo
+    const [productosRes, categoriasRes] = await Promise.all([
+      tiendaSupa
       .from('products').select('*')
       .eq('business_id', CUR.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }),
+      tiendaSupa
+      .from('product_categories').select('name')
+      .eq('business_id', CUR.id)
+      .order('name', { ascending: true })
+    ]);
 
-    if (error) throw error;
+    if (productosRes.error) throw productosRes.error;
+    if (categoriasRes.error) throw categoriasRes.error;
 
-    todosLosProductos = productos || [];
-
-    const deBD = [...new Set(todosLosProductos.map(p => (p.category || '').trim()).filter(Boolean))];
-    categoriasActuales = [...new Set([...deBD, ...categoriasActuales])].sort();
+    todosLosProductos = productosRes.data || [];
+    categoriasActuales = (categoriasRes.data || []).map(c => c.name);
 
     if (datalist) datalist.innerHTML = categoriasActuales.map(c => `<option value="${c}">`).join('');
 
@@ -472,7 +478,7 @@ function abrirModalNuevaCategoria() {
   setTimeout(() => document.getElementById('nueva-cat-input').focus(), 150);
 }
 
-function guardarNuevaCategoria() {
+async function guardarNuevaCategoria() {
   const input = document.getElementById('nueva-cat-input');
   const errEl = document.getElementById('nueva-cat-err');
   const nombre = input.value.trim();
@@ -480,15 +486,20 @@ function guardarNuevaCategoria() {
   if (!nombre) {
     errEl.textContent = 'Escribe un nombre.'; errEl.style.display = 'block'; input.focus(); return;
   }
-  if (categoriasActuales.some(c => c.toLowerCase() === nombre.toLowerCase())) {
+  if (categoriasActuales.some(c => c.toLowerCase() === nombre.toLowerCase()) || nombre.toLowerCase() === 'general') {
     errEl.textContent = `"${nombre}" ya existe.`; errEl.style.display = 'block'; input.focus(); return;
   }
-  categoriasActuales.push(nombre); categoriasActuales.sort();
-  const datalist = document.getElementById('cat-list');
-  if (datalist) datalist.innerHTML = categoriasActuales.map(c => `<option value="${c}">`).join('');
-  renderPillsCategorias(document.getElementById('biz-categorias-list'), []);
-  closeOv('ov-nueva-cat');
-  mostrarAlertaTienda(`Categoría "${nombre}" creada.`, '¡Lista!', '🏷️');
+
+  // 🚀 MEJORA: Guardar la categoría en la base de datos
+  try {
+    const { error } = await tiendaSupa.from('product_categories').insert({ business_id: CUR.id, name: nombre });
+    if (error) throw error;
+    closeOv('ov-nueva-cat');
+    mostrarAlertaTienda(`Categoría "${nombre}" creada.`, '¡Lista!', '🏷️');
+    renderTiendaAdmin(); // Recargar todo para mostrar la nueva categoría
+  } catch (err) {
+    mostrarAlertaTienda('No se pudo crear la categoría.', 'Error', '❌');
+  }
 }
 
 // ══════════════════════════════════════════
@@ -555,11 +566,18 @@ async function renombrarCategoria() {
     mostrarAlertaTienda(`Ya existe "${catNueva}".`, 'Duplicado', '⚠️'); return;
   }
   try {
-    const { error } = await tiendaSupa.from('products')
+    // 🚀 MEJORA: Renombrar en la tabla de categorías y luego en los productos
+    const { error: catError } = await tiendaSupa.from('product_categories')
+      .update({ name: catNueva })
+      .eq('business_id', CUR.id)
+      .eq('name', catVieja);
+    if (catError) throw catError;
+
+    const { error: prodError } = await tiendaSupa.from('products')
       .update({ category: catNueva }).eq('business_id', CUR.id).eq('category', catVieja);
-    if (error) throw error;
-    const idx = categoriasActuales.indexOf(catVieja);
-    if (idx !== -1) { categoriasActuales[idx] = catNueva; categoriasActuales.sort(); }
+    // No lanzamos error si falla en productos, lo principal es la categoría
+    if (prodError) console.warn("Error actualizando productos, pero la categoría fue renombrada:", prodError);
+
     closeOv('ov-cat-manager');
     mostrarAlertaTienda(`"${catVieja}" → "${catNueva}".`, '¡Hecho!', '✅');
     renderTiendaAdmin();
@@ -582,11 +600,16 @@ function iniciarEliminarCategoria() {
 
 async function eliminarCategoria(catNombre) {
   try {
-    const { error } = await tiendaSupa.from('products')
+    // 🚀 MEJORA: Eliminar de la tabla de categorías y luego limpiar en productos
+    const { error: catError } = await tiendaSupa.from('product_categories')
+      .delete()
+      .eq('business_id', CUR.id)
+      .eq('name', catNombre);
+    if (catError) throw catError;
+
+    await tiendaSupa.from('products')
       .update({ category: null }).eq('business_id', CUR.id).eq('category', catNombre);
-    if (error) throw error;
-    categoriasActuales = categoriasActuales.filter(c => c !== catNombre);
-    mostrarAlertaTienda(`"${catNombre}" eliminada.`, 'Eliminada', '🗑️');
+
     renderTiendaAdmin();
   } catch (err) { mostrarAlertaTienda('No se pudo eliminar.', 'Error', '❌'); }
 }
