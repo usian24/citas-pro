@@ -647,4 +647,41 @@ window.onload = async function () {
     if (typeof checkLinkAccess === 'function') checkLinkAccess();
   });
 
+  // ══════════════════════════════════════════════════
+  // GESTOR DE HISTORIAL DE NAVEGACIÓN GLOBAL
+  // ══════════════════════════════════════════════════
+  window.addEventListener('popstate', function(event) {
+    if (!event.state) return;
+
+    const { view, tab, step } = event.state;
+
+    if (view === 'biz' && tab) {
+      if (G('s-biz').classList.contains('on')) {
+        navigateToBizState(tab, true);
+      }
+    } 
+    else if (view === 'worker' && tab) {
+      if (G('s-worker').classList.contains('on')) {
+        navigateToWorkerState(tab, true);
+      }
+    }
+    else if (view === 'admin' && tab) {
+      if (G('s-admin').classList.contains('on')) {
+        navigateToAdminState(tab, true);
+      }
+    }
+    else if (view === 'booking' && step) {
+       if (G('s-client').classList.contains('on')) {
+        navigateToClientStep(step, true);
+      }
+    }
+  });
+
+  // Establecer estado inicial al cargar la app
+  setTimeout(() => {
+    if (G('s-biz').classList.contains('on')) navigateToBizState('home', true);
+    else if (G('s-worker').classList.contains('on')) navigateToWorkerState('home', true);
+    else if (G('s-admin').classList.contains('on')) navigateToAdminState('dashboard', true);
+  }, 500);
+
 }; // <-- cierre del window.onload

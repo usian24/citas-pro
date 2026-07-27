@@ -455,20 +455,45 @@ function initBizPanel() {
 /* ══════════════════════════
    TABS DUEÑO
 ══════════════════════════ */
-function bizTab(tab) {
+function navigateToBizState(state, replace = false) {
+  // 1. Actualizar la URL sin recargar la página
+  const newUrl = `/app#${state}`;
+  if (replace) {
+    history.replaceState({ tab: state }, '', newUrl);
+  } else {
+    // Solo empuja un nuevo estado si es diferente al actual
+    if (window.location.hash !== `#${state}`) {
+      history.pushState({ tab: state }, '', newUrl);
+    }
+  }
+
+  // 2. Lógica para mostrar la vista correcta (tu código original)
   const tabs = ['home', 'agenda', 'equipo', 'tienda', 'finanzas', 'historial', 'perfil'];
   for (let i = 0; i < tabs.length; i++) {
     const t = tabs[i]; const pa = G('bp-' + t), bt = G('bn-' + t);
-    if (pa) pa.classList[t === tab ? 'add' : 'remove']('on');
-    if (bt) bt.classList[t === tab ? 'add' : 'remove']('on');
+    if (pa) pa.classList[t === state ? 'add' : 'remove']('on');
+    if (bt) bt.classList[t === state ? 'add' : 'remove']('on');
   }
-  if (tab === 'agenda') { DB = loadDB(); CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : CUR; initAgenda(); }
-  if (tab === 'finanzas' || tab === 'historial') renderBizFinances();
-  if (tab === 'home') {
+
+  // 3. Cargar datos específicos de la pestaña
+  if (state === 'agenda') { DB = loadDB(); CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : CUR; initAgenda(); }
+  if (state === 'finanzas' || state === 'historial') renderBizFinances();
+  if (state === 'home') {
     DB = loadDB(); CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : CUR;
     if (typeof renderBizHomeStats === 'function') renderBizHomeStats();
   }
 }
+
+function bizTab(tab) {
+  navigateToBizState(tab);
+}
+
+// Escuchador del botón "Atrás" del navegador/celular
+window.addEventListener('popstate', function(event) {
+  if (event.state && event.state.tab && G('s-biz').classList.contains('on')) {
+    navigateToBizState(event.state.tab, true); // El 'true' evita crear más historial
+  }
+});
 
 function openBizConfig() {
   openOv('ov-config-biz');

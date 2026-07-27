@@ -145,11 +145,23 @@ function loadBizDirect(bizId) {
   window.scrollTo(0, 0);
 }
 
-function clGoStep(n) {
+function navigateToClientStep(step, replace = false) {
+  const newUrl = `/app#booking/step${step}`;
+  if (replace) {
+    history.replaceState({ view: 'booking', step: step }, '', newUrl);
+  } else {
+    if (window.location.hash !== `#booking/step${step}`) {
+      history.pushState({ view: 'booking', step: step }, '', newUrl);
+    }
+  }
+
   document.querySelectorAll('.bstep').forEach(function (s) { s.classList.remove('on'); });
-  var s = G('cs-' + n); if (s) s.classList.add('on');
-  updateBookingProgress(n);
+  var s = G('cs-' + step); if (s) s.classList.add('on');
+  updateBookingProgress(step);
   window.scrollTo(0, 0);
+}
+function clGoStep(n) {
+  navigateToClientStep(n);
 }
 
 function updateBookingProgress(step) {

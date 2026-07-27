@@ -118,19 +118,33 @@ function showAdminPanel() {
 /* ══════════════════════════
    ADMIN TABS
 ══════════════════════════ */
-function admTab(tab) {
+function navigateToAdminState(state, replace = false) {
+  const newUrl = `/app#admin/${state}`;
+  if (replace) {
+    history.replaceState({ view: 'admin', tab: state }, '', newUrl);
+  } else {
+    if (window.location.hash !== `#admin/${state}`) {
+      history.pushState({ view: 'admin', tab: state }, '', newUrl);
+    }
+  }
+
   const tabs = ['dashboard', 'negocios', 'suscripciones', 'ingresos', 'notificaciones', 'config', 'paises'];
   for (let i = 0; i < tabs.length; i++) {
     const t = tabs[i];
     const pa = G('ap-' + t), bt = G('at-' + t);
-    if (pa) pa.classList[t === tab ? 'add' : 'remove']('on');
-    if (bt) bt.classList[t === tab ? 'add' : 'remove']('on');
+    if (pa) pa.classListt === state ? 'add' : 'remove';
+    if (bt) bt.classListt === state ? 'add' : 'remove';
   }
-  if (tab === 'negocios') renderBizListAdmin(filterBiz());
-  if (tab === 'suscripciones') renderSubs();
-  if (tab === 'ingresos') renderRevenue();
-  if (tab === 'notificaciones') renderNotifications();
-  if (tab === 'paises') renderAdminPaises();
+
+  if (state === 'negocios') renderBizListAdmin(filterBiz());
+  if (state === 'suscripciones') renderSubs();
+  if (state === 'ingresos') renderRevenue();
+  if (state === 'notificaciones') renderNotifications();
+  if (state === 'paises') renderAdminPaises();
+}
+
+function admTab(tab) {
+  navigateToAdminState(tab);
 }
 
 function filterBiz() {

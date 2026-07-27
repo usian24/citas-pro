@@ -177,19 +177,33 @@ function initWorkerPanel() {
 }
 
 
-function workerTab(tab) {
-  var tabs = ['home', 'agenda', 'semana', 'servicios', 'galeria', 'finanzas', 'historial', 'horario', 'perfil'];
-  for (var i = 0; i < tabs.length; i++) {
-    var t = tabs[i]; var pa = G('wp-' + t), bt = G('wn-' + t);
-    if (pa) pa.classList[t === tab ? 'add' : 'remove']('on');
-    if (bt) bt.classList[t === tab ? 'add' : 'remove']('on');
+function navigateToWorkerState(state, replace = false) {
+  const newUrl = `/app#worker/${state}`;
+  if (replace) {
+    history.replaceState({ view: 'worker', tab: state }, '', newUrl);
+  } else {
+    if (window.location.hash !== `#worker/${state}`) {
+      history.pushState({ view: 'worker', tab: state }, '', newUrl);
+    }
   }
-  if (tab === 'agenda') initWorkerAgenda();
-  if (tab === 'horario') {
+
+  const tabs = ['home', 'agenda', 'semana', 'servicios', 'galeria', 'finanzas', 'historial', 'horario', 'perfil'];
+  for (let i = 0; i < tabs.length; i++) {
+    const t = tabs[i]; const pa = G('wp-' + t), bt = G('wn-' + t);
+    if (pa) pa.classListt === state ? 'add' : 'remove';
+    if (bt) bt.classListt === state ? 'add' : 'remove';
+  }
+
+  if (state === 'agenda') initWorkerAgenda();
+  if (state === 'horario') {
     renderWorkerHorario();
   }
-  if (tab === 'finanzas' || tab === 'historial') renderWorkerFinances();
-  if (tab === 'home' && typeof renderWorkerHomeStats === 'function') renderWorkerHomeStats();
+  if (state === 'finanzas' || state === 'historial') renderWorkerFinances();
+  if (state === 'home' && typeof renderWorkerHomeStats === 'function') renderWorkerHomeStats();
+}
+
+function workerTab(tab) {
+  navigateToWorkerState(tab);
 }
 
 /* ══════════════════════════
