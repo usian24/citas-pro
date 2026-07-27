@@ -2,8 +2,8 @@
 // admin.js
 
 async function dotsLogin() {
-  var email = V('dots-email').trim().toLowerCase();
-  var pass = V('dots-pass');
+  const email = V('dots-email').trim().toLowerCase();
+  const pass = V('dots-pass');
   hideErr('dots-err');
 
   if (!email || !pass) {
@@ -11,7 +11,7 @@ async function dotsLogin() {
     return;
   }
 
-  var key = 'dots_' + email;
+  const key = 'dots_' + email;
   if (!checkRateLimit(key)) {
     showErr('dots-err', 'Demasiados intentos. Espera 5 minutos.');
     return;
@@ -25,7 +25,7 @@ async function dotsLogin() {
     });
 
     if (res.ok) {
-      let data = await res.json();
+      const data = await res.json();
       if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
       resetRateLimit(key);
       DB.admin.auth = true;
@@ -38,7 +38,7 @@ async function dotsLogin() {
       toast('Bienvenido/a, Admin', '#2855C8');
     } else {
       showErr('dots-err', 'Credenciales incorrectas.');
-      var p = G('dots-pass');
+      const p = G('dots-pass');
       if (p) { p.value = ''; p.focus(); }
     }
   } catch (error) {
@@ -47,8 +47,8 @@ async function dotsLogin() {
 }
 
 async function doAdminLogin() {
-  var email = V('adm-email').trim().toLowerCase();
-  var pass = V('adm-pass');
+  const email = V('adm-email').trim().toLowerCase();
+  const pass = V('adm-pass');
   hideErr('adm-err');
 
   if (!email || !pass) {
@@ -56,7 +56,7 @@ async function doAdminLogin() {
     return;
   }
 
-  var key = 'admin_' + email;
+  const key = 'admin_' + email;
   if (!checkRateLimit(key)) {
     showErr('adm-err', 'Demasiados intentos. Espera 5 minutos.');
     return;
@@ -70,7 +70,7 @@ async function doAdminLogin() {
     });
 
     if (res.ok) {
-      let data = await res.json();
+      const data = await res.json();
       if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
       resetRateLimit(key);
       DB.admin.auth = true;
@@ -80,7 +80,7 @@ async function doAdminLogin() {
       if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
     } else {
       showErr('adm-err', 'Credenciales incorrectas.');
-      var p = G('adm-pass');
+      const p = G('adm-pass');
       if (p) { p.value = ''; p.focus(); }
     }
   } catch (error) {
@@ -90,23 +90,23 @@ async function doAdminLogin() {
 
 function doAdminLogout() {
   DB.admin.auth = false; saveDB();
-  var l = G('adm-login'), p = G('adm-panel');
+  const l = G('adm-login'), p = G('adm-panel');
   if (l) l.style.display = 'flex';
   if (p) p.style.display = 'none';
 }
 
 function showAdminPanel() {
   goTo('s-admin');
-  var l = G('adm-login'), p = G('adm-panel');
+  const l = G('adm-login'), p = G('adm-panel');
   if (l) l.style.display = 'none';
   if (p) p.style.display = 'block';
 
   // Inyectar pestaña de Países si no existe
-  var bnav = document.querySelector('#s-admin .bnav');
+  const bnav = document.querySelector('#s-admin .bnav');
   if (bnav && !G('at-paises')) {
     bnav.insertAdjacentHTML('beforeend', '<div class="bn" id="at-paises" onclick="admTab(\'paises\')">Países</div>');
   }
-  var container = document.querySelector('#s-admin > div:last-child');
+  const container = document.querySelector('#s-admin > div:last-child');
   if (container && !G('ap-paises')) {
     container.insertAdjacentHTML('beforeend', '<div class="pane" id="ap-paises"></div>');
   }
@@ -119,10 +119,10 @@ function showAdminPanel() {
    ADMIN TABS
 ══════════════════════════ */
 function admTab(tab) {
-  var tabs = ['dashboard', 'negocios', 'suscripciones', 'ingresos', 'notificaciones', 'config', 'paises'];
-  for (var i = 0; i < tabs.length; i++) {
-    var t = tabs[i];
-    var pa = G('ap-' + t), bt = G('at-' + t);
+  const tabs = ['dashboard', 'negocios', 'suscripciones', 'ingresos', 'notificaciones', 'config', 'paises'];
+  for (let i = 0; i < tabs.length; i++) {
+    const t = tabs[i];
+    const pa = G('ap-' + t), bt = G('at-' + t);
     if (pa) pa.classList[t === tab ? 'add' : 'remove']('on');
     if (bt) bt.classList[t === tab ? 'add' : 'remove']('on');
   }
@@ -134,11 +134,11 @@ function admTab(tab) {
 }
 
 function filterBiz() {
-  var q = (V('biz-search') || '').toLowerCase();
-  var f = (V('biz-filter') || 'all');
+  const q = (V('biz-search') || '').toLowerCase();
+  const f = (V('biz-filter') || 'all');
   return DB.businesses.filter(function (b) {
-    var mq = !q || (b.name || '').toLowerCase().indexOf(q) >= 0 || (b.city || '').toLowerCase().indexOf(q) >= 0 || (b.owner || '').toLowerCase().indexOf(q) >= 0;
-    var mf = f === 'all' || (b.plan || '') == f;
+    const mq = !q || (b.name || '').toLowerCase().indexOf(q) >= 0 || (b.city || '').toLowerCase().indexOf(q) >= 0 || (b.owner || '').toLowerCase().indexOf(q) >= 0;
+    const mf = f === 'all' || (b.plan || '') == f;
     return mq && mf;
   });
 }
@@ -149,15 +149,16 @@ function filterClientBiz() { renderBizListAdmin(filterBiz()); }
    DASHBOARD
 ══════════════════════════ */
 function renderDash() {
-  var bizs = DB.businesses, active = 0, trial = 0, appts = 0, ctry = {};
-  for (var i = 0; i < bizs.length; i++) {
-    var b = bizs[i];
+  const bizs = DB.businesses;
+  let active = 0, trial = 0, appts = 0, ctry = {};
+  for (let i = 0; i < bizs.length; i++) {
+    const b = bizs[i];
     if (b.plan === 'active') active++;
     else if (b.plan === 'trial') trial++;
     appts += (b.appointments || []).length;
     if (b.country) ctry[b.country] = 1;
   }
-  var mrr = active * 10, now = new Date();
+  const mrr = active * 10, now = new Date();
   T('adm-date', MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear());
   T('ds-total', bizs.length);
   T('ds-sub', active + ' activos · ' + trial + ' en prueba');
@@ -165,34 +166,34 @@ function renderDash() {
   T('ds-trial', trial);
   T('ds-appts', appts);
   T('ds-arr', money(mrr * 12));
-  var cl = Object.keys(ctry);
+  const cl = Object.keys(ctry);
   T('ds-countries', cl.length);
   T('ds-flags', cl.map(function (c) { return FLAGS[c] || '🌍'; }).join(' '));
   T('neg-badge', bizs.length);
-  var vals = [0, 0, 0, 0, mrr > 0 ? Math.round(mrr * .4) : 0, mrr];
-  var max = Math.max.apply(null, vals.concat([10]));
-  var mns = ['Oct', 'Nov', 'Dic', 'Ene', 'Feb', MONTHS_SHORT[now.getMonth()]];
-  var ch = G('ds-chart');
+  const vals = [0, 0, 0, 0, mrr > 0 ? Math.round(mrr * .4) : 0, mrr];
+  const max = Math.max.apply(null, vals.concat([10]));
+  const mns = ['Oct', 'Nov', 'Dic', 'Ene', 'Feb', MONTHS_SHORT[now.getMonth()]];
+  const ch = G('ds-chart');
   if (ch) ch.innerHTML = vals.map(function (v, i) {
     return '<div class="bar' + (i === vals.length - 1 ? ' hi' : '') + '" style="height:' + Math.max(4, Math.round(v / max * 100)) + '%" title="' + money(v) + '"></div>';
   }).join('');
-  var ml = G('ds-months');
+  const ml = G('ds-months');
   if (ml) ml.innerHTML = mns.map(function (m, i) {
     return '<div style="flex:1;text-align:center;font-size:9px;color:' + (i === mns.length - 1 ? 'var(--blue)' : 'var(--muted)') + ';font-weight:700">' + m + '</div>';
   }).join('');
-  var recent = bizs.slice().sort(function (a, b) { return (b.joinDate || '').localeCompare(a.joinDate || ''); }).slice(0, 5);
+  const recent = bizs.slice().sort(function (a, b) { return (b.joinDate || '').localeCompare(a.joinDate || ''); }).slice(0, 5);
   H('ds-recent', recent.map(bizCardH).join(''));
 }
 
-function planTag(plan) {
-  var m = { active: { c: '#22C55E', l: ' Activo' }, trial: { c: '#F59E0B', l: ' Prueba' }, expired: { c: '#EF4444', l: ' Vencido' } };
-  var x = m[plan] || { c: '#475569', l: '—' };
+function planTag(plan) { 
+  const m = { active: { c: '#22C55E', l: ' Activo' }, trial: { c: '#F59E0B', l: ' Prueba' }, expired: { c: '#EF4444', l: ' Vencido' } };
+  const x = m[plan] || { c: '#475569', l: '—' };
   return '<span style="background:' + x.c + '22;color:' + x.c + ';border:1px solid ' + x.c + '44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + x.l + '</span>';
 }
 
 function bizCardH(b) {
-  var rev = (b.appointments || []).reduce(function (s, a) { return s + (a.price || 0); }, 0);
-  var av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : '<span>' + san((b.name || '?').charAt(0)) + '</span>';
+  const rev = (b.appointments || []).reduce(function (s, a) { return s + (a.price || 0); }, 0);
+  const av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : '<span>' + san((b.name || '?').charAt(0)) + '</span>';
   return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s" onclick="openBizProfile(\'' + sanitizeText(b.id) + '\')">'
     + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">'
     + '<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden">' + av + '</div>'
@@ -206,17 +207,17 @@ function bizCardH(b) {
 }
 
 function renderAdminPaises() {
-  var html = '<div class="sec-hdr"><span class="sec-ttl">Inteligencia Regional y Monedas</span></div>';
+  let html = '<div class="sec-hdr"><span class="sec-ttl">Inteligencia Regional y Monedas</span></div>';
   html += '<div class="tip-box">Lista de países soportados, sus monedas y el precio de suscripción local que cobras como plataforma.</div>';
   html += '<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;overflow:hidden;overflow-x:auto;">';
   html += '<table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left;min-width:650px;">';
   html += '<thead style="background:var(--bblue);color:var(--blue);font-size:11px;text-transform:uppercase;"><tr><th style="padding:14px 16px">País</th><th style="padding:14px 16px">Moneda</th><th style="padding:14px 16px">Suscripción</th><th style="padding:14px 16px">Tiendas Registradas</th><th style="padding:14px 16px">Tiendas Activas</th><th style="padding:14px 16px">MRR Estimado</th></tr></thead>';
   html += '<tbody>';
 
-  var bizCount = {};
-  var activeCount = {};
+  const bizCount = {};
+  const activeCount = {};
   (DB.businesses || []).forEach(function (b) {
-    var c = b.country || 'ES';
+    const c = b.country || 'ES';
     bizCount[c] = (bizCount[c] || 0) + 1;
     if (b.plan === 'active') {
       activeCount[c] = (activeCount[c] || 0) + 1;
@@ -224,7 +225,7 @@ function renderAdminPaises() {
   });
 
  // Diccionario nativo y robusto (Independiente de archivos externos)
-var countryData = {
+const countryData = {
   'ES': { name: 'España', currency: 'EUR', symbol: '€', price: 10 },
   'CO': { name: 'Colombia', currency: 'COP', symbol: '$', price: 25248.62 },
   'MX': { name: 'México', currency: 'MXN', symbol: '$', price: 227.58 },
@@ -241,22 +242,22 @@ var countryData = {
   'BR': { name: 'Brasil', currency: 'BRL', symbol: 'R$', price: 80 }
 };
 
-  var flags = {
+  const flags = {
     'ES': '🇪🇸', 'CO': '🇨🇴', 'MX': '🇲🇽', 'AR': '🇦🇷', 'DE': '🇩🇪',
     'NL': '🇳🇱', 'FR': '🇫🇷', 'CL': '🇨🇱', 'PE': '🇵🇪', 'US': '🇺🇸',
     'DO': '🇩🇴', 'VE': '🇻🇪', 'EC': '🇪🇨', 'BR': '🇧🇷'
   };
 
-  var paises = Object.keys(countryData);
+  const paises = Object.keys(countryData);
 
   paises.forEach(function (codigo) {
-      var cfg = countryData[codigo];
-      var flag = flags[codigo] || '🌍';
-      var count = bizCount[codigo] || 0;
-      var activos = activeCount[codigo] || 0;
+      const cfg = countryData[codigo];
+      const flag = flags[codigo] || '🌍';
+      const count = bizCount[codigo] || 0;
+      const activos = activeCount[codigo] || 0;
 
-      var mrrTotal = activos * cfg.price;
-      var mrrStr = cfg.symbol + ' ' + mrrTotal.toLocaleString('en-US');
+      const mrrTotal = activos * cfg.price;
+      const mrrStr = cfg.symbol + ' ' + mrrTotal.toLocaleString('en-US');
 
       html += '<tr style="border-bottom:1px solid var(--b)">';
       html += '<td style="padding:14px 16px;font-weight:800;font-size:14px">' + flag + ' ' + codigo + '</td>';
@@ -268,29 +269,29 @@ var countryData = {
       html += '</tr>';
   });
   html += '</tbody></table></div>';
-  var pane = G('ap-paises');
+  const pane = G('ap-paises');
   if (pane) pane.innerHTML = html;
 }
 
 function openBizProfile(bizId) {
-  var b = DB.businesses.filter(function (x) { return x.id === bizId; })[0]; if (!b) return;
+  const b = DB.businesses.filter(function (x) { return x.id === bizId; })[0]; if (!b) return;
 
-  var allAppts = [];
+  const allAppts = [];
   (b.workers || []).forEach(function (w) {
     (w.appointments || []).forEach(function (a) { allAppts.push(a); });
   });
   (b.appointments || []).forEach(function (a) { allAppts.push(a); });
 
-  var rev = allAppts.reduce(function (s, a) { return s + (a.price || 0); }, 0);
-  var todayA = allAppts.filter(function (a) { return a.date === new Date().toISOString().split('T')[0]; });
-  var av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : san((b.name || '?').charAt(0));
+  const rev = allAppts.reduce(function (s, a) { return s + (a.price || 0); }, 0);
+  const todayA = allAppts.filter(function (a) { return a.date === new Date().toISOString().split('T')[0]; });
+  const av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : san((b.name || '?').charAt(0));
 
-  var workersHtml = '';
+  let workersHtml = '';
   if (b.workers && b.workers.length > 0) {
     workersHtml = b.workers.map(function(w) {
-      var wAv = w.photo ? '<img src="'+sanitizeImageDataURL(w.photo)+'" style="width:36px;height:36px;border-radius:10px;object-fit:cover">' : '<div style="width:36px;height:36px;border-radius:10px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px">'+san((w.name||'?').charAt(0).toUpperCase())+'</div>';
-      var apptsCount = w.appointments ? w.appointments.length : 0;
-      var wRev = (w.appointments || []).reduce(function(s, a) { return s + (parseFloat(a.price) || 0); }, 0);
+      const wAv = w.photo ? '<img src="'+sanitizeImageDataURL(w.photo)+'" style="width:36px;height:36px;border-radius:10px;object-fit:cover">' : '<div style="width:36px;height:36px;border-radius:10px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px">'+san((w.name||'?').charAt(0).toUpperCase())+'</div>';
+      const apptsCount = w.appointments ? w.appointments.length : 0;
+      const wRev = (w.appointments || []).reduce(function(s, a) { return s + (parseFloat(a.price) || 0); }, 0);
       return '<div onclick="openAdminWorkerProfile(\'' + bizId + '\', \'' + w.id + '\')" style="display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--b);border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer;transition:border-color 0.2s" onmouseover="this.style.borderColor=\'var(--blue)\'" onmouseout="this.style.borderColor=\'var(--b)\'">' +
              wAv +
              '<div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--text)">'+san(w.name)+'</div><div style="font-size:11px;color:var(--muted)">'+san(w.spec || w.role || 'Profesional')+'</div></div>' +
@@ -303,7 +304,7 @@ function openBizProfile(bizId) {
   }
 
   // Acordeón desplegable
-  var accordionHtml = '<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;overflow:hidden;margin-bottom:14px">' +
+  const accordionHtml = '<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;overflow:hidden;margin-bottom:14px">' +
     '<div onclick="var el=document.getElementById(\'wk-list-' + b.id + '\'); var icon=document.getElementById(\'wk-icon-' + b.id + '\'); if(el.style.display===\'none\'){el.style.display=\'block\';icon.style.transform=\'rotate(180deg)\'}else{el.style.display=\'none\';icon.style.transform=\'rotate(0deg)\'}" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:800;background:var(--bblue);color:var(--blue);font-size:13px;transition:background 0.2s" onmouseover="this.style.background=\'rgba(74,127,212,0.2)\'" onmouseout="this.style.background=\'var(--bblue)\'">' +
     '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">💈</span> Ver Equipo de Trabajo (' + (b.workers ? b.workers.length : 0) + ')</div>' +
     '<span id="wk-icon-' + b.id + '" style="transition:transform 0.3s;font-size:10px">▼</span>' +
@@ -338,16 +339,16 @@ function openBizProfile(bizId) {
 }
 
 function openAdminWorkerProfile(bizId, workerId) {
-  var b = DB.businesses.filter(function (x) { return x.id === bizId; })[0]; if (!b) return;
-  var w = (b.workers || []).filter(function (x) { return x.id === workerId; })[0]; if (!w) return;
+  const b = DB.businesses.filter(function (x) { return x.id === bizId; })[0]; if (!b) return;
+  const w = (b.workers || []).filter(function (x) { return x.id === workerId; })[0]; if (!w) return;
 
-  var appts = w.appointments || [];
-  var rev = appts.reduce(function (s, a) { return s + (parseFloat(a.price) || 0); }, 0);
-  var servicesCount = w.services ? w.services.length : 0;
+  const appts = w.appointments || [];
+  const rev = appts.reduce(function (s, a) { return s + (parseFloat(a.price) || 0); }, 0);
+  const servicesCount = w.services ? w.services.length : 0;
 
-  var av = w.photo ? '<img src="' + sanitizeImageDataURL(w.photo) + '" style="width:100%;height:100%;object-fit:cover" alt="Foto">' : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;font-weight:900">'+san((w.name||'?').charAt(0).toUpperCase())+'</div>';
+  const av = w.photo ? '<img src="' + sanitizeImageDataURL(w.photo) + '" style="width:100%;height:100%;object-fit:cover" alt="Foto">' : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;font-weight:900">'+san((w.name||'?').charAt(0).toUpperCase())+'</div>';
 
-  var servicesHtml = '';
+  let servicesHtml = '';
   if (w.services && w.services.length > 0) {
      servicesHtml = w.services.map(function(s) {
        return '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--b);font-size:13px"><span style="color:var(--text);font-weight:600">'+san(s.name)+'</span><span style="color:var(--green);font-weight:800">'+money(parseFloat(s.price)||0)+'</span></div>';
@@ -356,7 +357,7 @@ function openAdminWorkerProfile(bizId, workerId) {
      servicesHtml = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No tiene servicios registrados.</div>';
   }
 
-  var html = '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:20px">'
+  const html = '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:20px">'
     + '<div style="width:84px;height:84px;border-radius:24px;background:linear-gradient(135deg,#4A7FD4,#2855C8);margin-bottom:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.25);border:3px solid var(--b)">' + av + '</div>'
     + '<div style="font-size:22px;font-weight:900;color:var(--text);letter-spacing:-0.5px">' + san(w.name) + '</div>'
     + '<div style="font-size:13px;color:var(--blue);font-weight:800;margin-top:6px;text-transform:uppercase;letter-spacing:0.5px;background:var(--bblue);padding:4px 10px;border-radius:10px;display:inline-block">' + san(w.spec || w.role || 'Profesional') + '</div>'
@@ -389,8 +390,8 @@ function renderSubs() {
 }
 
 function renderRevenue() {
-  var active = DB.businesses.filter(function (b) { return b.plan === 'active'; }).length;
-  var m = active * 10;
+  const active = DB.businesses.filter(function (b) { return b.plan === 'active'; }).length;
+  const m = active * 10;
   T('rev-m', money(m)); T('rev-y', money(m * 12)); T('rev-p6', money(m * 1.8)); T('rev-p12', money(m * 2.5));
   H('adm-proj', [
     { l: 'Mes actual (' + active + ' activos)', v: m, c: 'var(--green)' },
@@ -403,22 +404,22 @@ function renderRevenue() {
 }
 
 function checkNotifications() {
-  var notifs = [];
+  const notifs = [];
   DB.businesses.forEach(function (b) {
     if (b.plan === 'trial') notifs.push({ type: 'trial', msg: b.name + ' está en período de prueba', biz: b.id, color: '#F59E0B' });
     if (b.plan === 'expired') notifs.push({ type: 'expired', msg: b.name + ' tiene la suscripción vencida', biz: b.id, color: '#EF4444' });
   });
-  var week = new Date(); week.setDate(week.getDate() - 7);
+  const week = new Date(); week.setDate(week.getDate() - 7);
   DB.businesses.forEach(function (b) {
     if (b.joinDate && new Date(b.joinDate) >= week) notifs.push({ type: 'new', msg: 'Nuevo: ' + b.name + ' de ' + (b.city || b.country || '—'), biz: b.id, color: '#22C55E' });
   });
-  var dot = G('notif-dot');
+  const dot = G('notif-dot');
   if (dot) dot.classList[notifs.length > 0 ? 'add' : 'remove']('on');
   window._notifs = notifs;
 }
 
 function renderNotifications() {
-  var notifs = window._notifs || [];
+  const notifs = window._notifs || [];
   H('notif-content', notifs.length
     ? notifs.map(function (n) {
       return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openBizProfile(\'' + sanitizeText(n.biz) + '\')">'
@@ -434,13 +435,13 @@ function renderNotifications() {
 ══════════════════════════════════════════════════════════════ */
 async function updateBizOnCloud(biz) {
   try {
-    let res = await fetch('/api/update-biz?t=' + Date.now(), {
+    const res = await fetch('/api/update-biz?t=' + Date.now(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(biz)
     });
 
-    let data = await res.json();
+    const data = await res.json();
 
     if (!data.success) {
       console.error('Error exacto de Supabase:', data);
@@ -457,13 +458,13 @@ async function updateBizOnCloud(biz) {
 
 async function updateBizStatusOnly(id, plan, expires_at) {
   try {
-    let res = await fetch('/api/update-biz?t=' + Date.now(), {
+    const res = await fetch('/api/update-biz?t=' + Date.now(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: id, plan: plan, expires_at: expires_at })
     });
 
-    let data = await res.json();
+    const data = await res.json();
     if (!data.success) {
       alert("❌ Supabase rechazó el guardado: " + data.error);
     }
@@ -473,9 +474,9 @@ async function updateBizStatusOnly(id, plan, expires_at) {
 }
 
 async function extendTrial(id) {
-  var b = DB.businesses.filter(function (x) { return x.id === id; })[0];
+  const b = DB.businesses.filter(function (x) { return x.id === id; })[0];
   if (b) {
-    var d = new Date(); d.setDate(d.getDate() + 15);
+    const d = new Date(); d.setDate(d.getDate() + 15);
     b.expires_at = d.toISOString().split('T')[0];
     b.plan = 'trial';
     saveDB();
@@ -489,34 +490,34 @@ async function extendTrial(id) {
 }
 
 // LÓGICA DE ACTIVACIÓN (Ventana Elegante)
-window._activateBizId = null;
+let _activateBizId = null;
 
 function activateBiz(id) {
   window._activateBizId = id;
   closeOv('ov-biz-profile');
 
   setTimeout(function () {
-    var inp = G('act-months');
+    const inp = G('act-months');
     if (inp) inp.value = '1';
     openOv('ov-activate');
   }, 150);
 }
 
 async function confirmActivateBiz() {
-  var id = window._activateBizId;
+  const id = window._activateBizId;
   if (!id) return;
 
-  var b = DB.businesses.filter(function (x) { return x.id === id; })[0];
+  const b = DB.businesses.filter(function (x) { return x.id === id; })[0];
   if (!b) return;
 
-  var mesesStr = G('act-months').value;
-  var meses = parseInt(mesesStr);
+  const mesesStr = G('act-months').value;
+  const meses = parseInt(mesesStr);
   if (isNaN(meses) || meses <= 0) { toast('Número de meses inválido', '#EF4444'); return; }
 
   closeOv('ov-activate');
   closeOv('ov-biz-profile');
-
-  var baseDate = (b.plan === 'active' && b.expires_at && new Date(b.expires_at) > new Date()) ? new Date(b.expires_at) : new Date();
+  
+  const baseDate = (b.plan === 'active' && b.expires_at && new Date(b.expires_at) > new Date()) ? new Date(b.expires_at) : new Date();
   baseDate.setMonth(baseDate.getMonth() + meses);
   b.expires_at = baseDate.toISOString().split('T')[0];
   b.plan = 'active';
@@ -539,7 +540,7 @@ async function confirmActivateBiz() {
 }
 
 async function suspendBiz(id) {
-  var b = DB.businesses.filter(function (x) { return x.id === id; })[0];
+  const b = DB.businesses.filter(function (x) { return x.id === id; })[0];
   if (b) {
     b.plan = 'expired';
     saveDB();

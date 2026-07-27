@@ -1,26 +1,13 @@
-const TIENDA_PAIS_CONFIG = {
-  ES: { simbolo: '€', posicion: 'derecha', sepDec: ',', sepMiles: '.', decimales: 2 },
-  CO: { simbolo: '$', posicion: 'izquierda', sepDec: ',', sepMiles: '.', decimales: 0 },
-  MX: { simbolo: '$', posicion: 'izquierda', sepDec: '.', sepMiles: ',', decimales: 2 },
-  AR: { simbolo: '$', posicion: 'izquierda', sepDec: ',', sepMiles: '.', decimales: 2 },
-  PE: { simbolo: 'S/', posicion: 'izquierda', sepDec: '.', sepMiles: ',', decimales: 2 },
-  CL: { simbolo: '$', posicion: 'izquierda', sepDec: ',', sepMiles: '.', decimales: 0 },
-  US: { simbolo: '$', posicion: 'izquierda', sepDec: '.', sepMiles: ',', decimales: 2 },
-  BR: { simbolo: 'R$', posicion: 'izquierda', sepDec: ',', sepMiles: '.', decimales: 2 },
-  DO: { simbolo: 'RD$', posicion: 'izquierda', sepDec: '.', sepMiles: ',', decimales: 2 },
-  VE: { simbolo: 'Bs.', posicion: 'izquierda', sepDec: ',', sepMiles: '.', decimales: 2 },
-  EC: { simbolo: '$', posicion: 'izquierda', sepDec: '.', sepMiles: ',', decimales: 2 },
-};
 let paisNegocio = 'ES';
+
+// ✅ MEJORA: Usar la función global `formatMoney` de config-pais.js
+//    Esto centraliza toda la lógica de moneda en un solo lugar.
 function moneda(n) {
-  const cfg = TIENDA_PAIS_CONFIG[paisNegocio] || TIENDA_PAIS_CONFIG['ES'];
-  const num = parseFloat(n) || 0;
-  const factor = Math.pow(10, cfg.decimales);
-  const rounded = Math.round(num * factor) / factor;
-  const parts = rounded.toFixed(cfg.decimales).split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, cfg.sepMiles);
-  const numStr = cfg.decimales > 0 ? parts.join(cfg.sepDec) : parts[0];
-  return cfg.posicion === 'izquierda' ? cfg.simbolo + numStr : numStr + ' ' + cfg.simbolo;
+  if (typeof window.formatMoney === 'function') {
+    return window.formatMoney(n, paisNegocio);
+  }
+  // Fallback por si `config-pais.js` no se ha cargado
+  return (parseFloat(n) || 0).toFixed(2) + ' €';
 }
 const SUPABASE_URL = window.AppEnv.SUPABASE_URL;
 const SUPABASE_KEY = window.AppEnv.SUPABASE_ANON_KEY;
@@ -83,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (bizData) {
       document.getElementById('shop-title').textContent = bizData.name || 'Nuestra Tienda';
       if (bizData.phone) bizWAPhone = bizData.phone.replace(/\D/g, '');
-      if (bizData.country && TIENDA_PAIS_CONFIG[bizData.country]) {
+      if (bizData.country && window.PAIS_CONFIG && window.PAIS_CONFIG[bizData.country]) {
         paisNegocio = bizData.country;
         localStorage.setItem('cp_pais', bizData.country);
       }
@@ -93,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (biz) {
       document.getElementById('shop-title').textContent = biz.name || 'Nuestra Tienda';
       if (biz.phone) bizWAPhone = biz.phone.replace(/\D/g, '');
-      if (biz.country && TIENDA_PAIS_CONFIG[biz.country]) paisNegocio = biz.country;
+      if (biz.country && window.PAIS_CONFIG && window.PAIS_CONFIG[biz.country]) paisNegocio = biz.country;
     }
   }
 

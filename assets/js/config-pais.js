@@ -11,7 +11,7 @@
 // ─────────────────────────────────────────
 // 1. DICCIONARIO CENTRAL
 // ─────────────────────────────────────────
-var PAIS_CONFIG = {
+const PAIS_CONFIG = {
   ES: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Madrid',                     decimales:2 },
   CO: { simbolo:'$',   nombre:'Peso colombiano',   posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Bogota',                    decimales:0 },
   MX: { simbolo:'$',   nombre:'Peso mexicano',     posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Mexico_City',               decimales:2 },
@@ -27,7 +27,7 @@ var PAIS_CONFIG = {
   NL: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Amsterdam',                  decimales:2 },
   FR: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Paris',                      decimales:2 }
 };
-var PAIS_DEFAULT = PAIS_CONFIG['ES'];
+const PAIS_DEFAULT = PAIS_CONFIG['ES'];
 
 // ─────────────────────────────────────────
 // 2. DETECTAR PAÍS — con múltiples fuentes
@@ -40,15 +40,15 @@ function getPaisActivo() {
   // Fuente 2: trabajador logueado → busca su negocio
   if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER &&
       typeof DB !== 'undefined' && DB && DB.businesses) {
-    var bizId = DB.currentWorker && DB.currentWorker.bizId;
+    const bizId = DB.currentWorker && DB.currentWorker.bizId;
     if (bizId) {
-      var biz = DB.businesses.find(function(b) { return b.id === bizId; });
+      const biz = DB.businesses.find(b => b.id === bizId);
       if (biz && biz.country && biz.country !== 'null') return biz.country;
     }
   }
   // Fuente 3: localStorage — país guardado de la última sesión
   try {
-    var cached = localStorage.getItem('cp_pais');
+    const cached = localStorage.getItem('cp_pais');
     if (cached && PAIS_CONFIG[cached]) return cached;
   } catch(e) {}
   // Fuente 4: fallback España
@@ -63,13 +63,13 @@ function getConfigPais(cod) {
 // 3. FORMATEAR DINERO
 // ─────────────────────────────────────────
 function formatMoney(n, codigoPais) {
-  var cfg = getConfigPais(codigoPais || getPaisActivo());
-  var num = parseFloat(n) || 0;
-  var factor  = Math.pow(10, cfg.decimales);
-  var rounded = Math.round(num * factor) / factor;
-  var parts   = rounded.toFixed(cfg.decimales).split('.');
+  const cfg = getConfigPais(codigoPais || getPaisActivo());
+  const num = parseFloat(n) || 0;
+  const factor  = Math.pow(10, cfg.decimales);
+  const rounded = Math.round(num * factor) / factor;
+  const parts   = rounded.toFixed(cfg.decimales).split('.');
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, cfg.separadorMiles);
-  var numStr = cfg.decimales > 0 ? parts.join(cfg.separadorDecimal) : parts[0];
+  const numStr = cfg.decimales > 0 ? parts.join(cfg.separadorDecimal) : parts[0];
   return cfg.posicion === 'izquierda' ? cfg.simbolo + numStr : numStr + ' ' + cfg.simbolo;
 }
 
@@ -105,7 +105,7 @@ function refreshMoneyUI() {
 // ─────────────────────────────────────────
 // 7. PRECIO DE SUSCRIPCIÓN (Visuales + USD)
 // ─────────────────────────────────────────
-var PRECIO_SUSCRIPCION = {
+const PRECIO_SUSCRIPCION = {
   PE: 'S/ 25 / $6.60 USD',
   EC: '$10 USD',
   CO: '$ 25,248.62 / $6.50 USD',
@@ -124,7 +124,7 @@ var PRECIO_SUSCRIPCION = {
 };
 
 function adaptarPrecioLocal(pais) {
-  var precio = PRECIO_SUSCRIPCION[pais] || '$15 USD'; // Nuevo fallback global en 15 USD
+  const precio = PRECIO_SUSCRIPCION[pais] || '$15 USD'; // Nuevo fallback global en 15 USD
   document.querySelectorAll('.precio-local-mes').forEach(function(el) {
     el.textContent = precio + '/mes';
   });
@@ -135,16 +135,16 @@ function adaptarPrecioLocal(pais) {
 
 async function adaptarPrecioLocalPorIP() {
   // Si ya tenemos el país del negocio, usarlo
-  var pais = getPaisActivo();
+  const pais = getPaisActivo();
   if (pais && pais !== 'ES') {
     adaptarPrecioLocal(pais);
     return;
   }
   // Fallback por IP (solo para landing sin sesión)
   try {
-    var res   = await fetch('https://api.country.is/');
-    var datos = await res.json();
-    var paisIP = datos.country || 'ES';
+    const res   = await fetch('https://api.country.is/');
+    const datos = await res.json();
+    const paisIP = datos.country || 'ES';
     adaptarPrecioLocal(paisIP);
     guardarPaisEnCache(paisIP);
   } catch(e) {
@@ -160,15 +160,15 @@ function getTimezone(cod) {
 }
 
 function ahoraEnNegocio(codigoPais) {
-  var tz  = getTimezone(codigoPais || getPaisActivo());
-  var now = new Date();
+  const tz  = getTimezone(codigoPais || getPaisActivo());
+  const now = new Date();
   try {
-    var fmt = new Intl.DateTimeFormat('en-CA', {
+    const fmt = new Intl.DateTimeFormat('en-CA', {
       timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit',
       hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
     });
-    var p = {};
-    fmt.formatToParts(now).forEach(function(x) { p[x.type] = x.value; });
+    const p = {};
+    fmt.formatToParts(now).forEach(x => { p[x.type] = x.value; });
     return new Date(p.year+'-'+p.month+'-'+p.day+'T'+p.hour+':'+p.minute+':'+p.second);
   } catch(e) { return now; }
 }
@@ -180,8 +180,8 @@ function hoyEnNegocio(codigoPais) {
 
 function formatHora(horaStr, codigoPais) {
   if ((codigoPais || getPaisActivo()) === 'US') {
-    var parts = (horaStr||'').split(':');
-    var h = parseInt(parts[0]||0), m = parts[1]||'00';
+    const parts = (horaStr||'').split(':');
+    const h = parseInt(parts[0]||0), m = parts[1]||'00';
     return (h%12||12)+':'+m+(h>=12?' PM':' AM');
   }
   return horaStr;
@@ -191,16 +191,16 @@ function formatHora(horaStr, codigoPais) {
 // 9. HELPERS
 // ─────────────────────────────────────────
 function getSimboloMoneda(cod) { return getConfigPais(cod||getPaisActivo()).simbolo; }
-function getLabelPrecio(cod)   { var c = getConfigPais(cod||getPaisActivo()); return 'Precio ('+c.simbolo+')'; }
+function getLabelPrecio(cod)   { const c = getConfigPais(cod||getPaisActivo()); return 'Precio ('+c.simbolo+')'; }
 function getNombreMoneda(cod)  { return getConfigPais(cod||getPaisActivo()).nombre; }
 
 function actualizarLabelsPrecio() {
-  var cfg = getConfigPais(getPaisActivo());
-  var label = 'Precio (' + cfg.simbolo + ')';
+  const cfg = getConfigPais(getPaisActivo());
+  const label = 'Precio (' + cfg.simbolo + ')';
   ['prod-price','wk-sv-price'].forEach(function(id) {
-    var el = document.getElementById(id);
+    const el = document.getElementById(id);
     if (!el) return;
-    var lbl = el.previousElementSibling;
+    const lbl = el.previousElementSibling;
     if (lbl && lbl.tagName === 'LABEL') lbl.textContent = label;
   });
 }
