@@ -28,18 +28,39 @@
     <meta property="twitter:description" content="Transforma tu negocio con el sistema inteligente para automatizar reservas, organizar tu equipo y maximizar tus ingresos.">
     <meta property="twitter:image" content="https://citasproonline.com/assets/img/og-image.png">
 
-    <!-- Fonts & Icons -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Styles -->
     <link rel="stylesheet" href="assets/css/landing.css">
-    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     
+    <!-- Fix para alinear los nuevos SVGs del carrusel y las listas de comparación -->
+    <style>
+        .logos-track span {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .logos-track svg {
+            color: var(--brand-primary);
+        }
+        .comparison-card li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .comparison-card li svg {
+            flex-shrink: 0;
+        }
+    </style>
 </head>
 
 <body class="dark-mode">
+
+    <!-- Fondo Interactivo -->
+    <div class="mouse-glow"></div>
 
     <!-- NAVBAR -->
     <header class="navbar">
@@ -48,31 +69,40 @@
                 <img src="assets/img/procitas-logo.svg" alt="Pro Citas Logo">
                 <span>Pro Citas</span>
             </a>
-            <nav class="navbar-menu">
+            
+            <!-- Menú Central (Solo PC) -->
+            <nav class="navbar-menu desktop-only">
                 <a href="#features">Características</a>
                 <a href="#how-it-works">Cómo Funciona</a>
                 <a href="#pricing">Precios</a>
                 <a href="#faq">FAQ</a>
             </nav>
-            <div class="navbar-actions">
+            
+            <!-- Botones Derechos (Solo PC) -->
+            <div class="navbar-actions desktop-only">
                 <a href="/app.html" class="btn btn-secondary">Iniciar Sesión</a>
-                <a href="/app.html" class="btn btn-primary">Empieza Gratis</a>
+                <a href="/app.html" class="btn btn-primary">Empieza tu mes gratis</a>
             </div>
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+            
+            <!-- Controles específicos para Móvil (Ocultos en PC) -->
+            <div class="mobile-nav-controls">
+                <a href="/app.html" class="btn btn-secondary btn-sm mobile-login">Iniciar Sesión</a>
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menú Móvil Rediseñado (Desplegable elegante alineado a la izquierda) -->
+        <div class="mobile-menu" id="mobile-menu">
+            <a href="#features">Características</a>
+            <a href="#how-it-works">Cómo Funciona</a>
+            <a href="#pricing">Precios</a>
+            <a href="#faq">FAQ</a>
         </div>
     </header>
-    <div class="mobile-menu" id="mobile-menu">
-        <a href="#features">Características</a>
-        <a href="#how-it-works">Cómo Funciona</a>
-        <a href="#pricing">Precios</a>
-        <a href="#faq">FAQ</a>
-        <a href="/app.html" class="btn btn-secondary">Iniciar Sesión</a>
-        <a href="/app.html" class="btn btn-primary">Empieza Gratis</a>
-    </div>
 
     <!-- MAIN CONTENT -->
     <main>
@@ -82,20 +112,20 @@
             <div class="hero-glow"></div>
             <div class="container">
                 <div class="hero-content">
-                    <h1 data-aos="fade-up">Tu negocio, <br>perfectamente agendado.</h1>
-                    <p data-aos="fade-up" data-aos-delay="100">La plataforma inteligente que automatiza tus citas, organiza tu equipo y libera tu tiempo para que te concentres en crecer.</p>
-                    <div class="hero-actions" data-aos="fade-up" data-aos-delay="200">
-                        <a href="/app.html" class="btn btn-primary btn-lg">Comenzar Prueba Gratuita</a>
+                    <h1>Tu negocio, <br>perfectamente agendado.</h1>
+                    <p>La plataforma inteligente que automatiza tus citas, organiza tu equipo y libera tu tiempo para que te concentres en crecer.</p>
+                    <div class="hero-actions">
+                        <a href="/app.html" class="btn btn-primary btn-lg">Comenzar un mes gratis</a>
                         <a href="#how-it-works" class="btn btn-secondary btn-lg">
                             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.49991 0.875C3.84222 0.875 0.874911 3.84231 0.874911 7.5C0.874911 11.1577 3.84222 14.125 7.49991 14.125C11.1576 14.125 14.1249 11.1577 14.1249 7.5C14.1249 3.84231 11.1576 0.875 7.49991 0.875ZM10.2436 7.84318L6.11861 10.5307C5.93336 10.6491 5.68741 10.5212 5.68741 10.2981V4.70191C5.68741 4.47884 5.93336 4.35091 6.11861 4.46934L10.2436 7.15684C10.4218 7.27012 10.4218 7.52989 10.2436 7.84318Z" fill="currentColor"></path></svg>
                             Ver Demo
                         </a>
                     </div>
-                    <div class="hero-footer" data-aos="fade-up" data-aos-delay="300">
-                        <p>Prueba gratuita de 7 días. No se requiere tarjeta de crédito.</p>
+                    <div class="hero-footer">
+                        <p>1 mes totalmente gratis. No se requiere tarjeta de crédito.</p>
                     </div>
                 </div>
-                <div class="hero-dashboard" data-aos="fade-left" data-aos-delay="100">
+                <div class="hero-dashboard">
                     <img src="assets/img/dashboard.png" alt="Dashboard de Pro Citas mostrando un calendario de citas">
                 </div>
             </div>
@@ -107,20 +137,65 @@
                 <p>Utilizado por los mejores profesionales en múltiples industrias</p>
                 <div class="logos-slider">
                     <div class="logos-track">
-                        <span>💈 Barberías</span>
-                        <span>✂️ Peluquerías</span>
-                        <span>💅 Salones de Belleza</span>
-                        <span>🦷 Clínicas Dentales</span>
-                        <span>🐾 Veterinarias</span>
-                        <span>💪 Entrenadores</span>
-                        <span>📸 Fotógrafos</span>
-                        <span>💈 Barberías</span>
-                        <span>✂️ Peluquerías</span>
-                        <span>💅 Salones de Belleza</span>
-                        <span>🦷 Clínicas Dentales</span>
-                        <span>🐾 Veterinarias</span>
-                        <span>💪 Entrenadores</span>
-                        <span>📸 Fotógrafos</span>
+                        <!-- Set 1 -->
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+                            Barberías
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                            Peluquerías
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+                            Salones de Belleza
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            Clínicas Dentales
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                            Veterinarias
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/><path d="m6.5 6.5 11 11"/></svg>
+                            Entrenadores
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                            Fotógrafos
+                        </span>
+                        
+                        <!-- Set 2 (Duplicado para el bucle infinito del marquee) -->
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+                            Barberías
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                            Peluquerías
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+                            Salones de Belleza
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            Clínicas Dentales
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                            Veterinarias
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/><path d="m6.5 6.5 11 11"/></svg>
+                            Entrenadores
+                        </span>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                            Fotógrafos
+                        </span>
                     </div>
                 </div>
             </div>
@@ -129,34 +204,34 @@
         <!-- FEATURES -->
         <section id="features" class="features">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header gsap-fade-up">
                     <span class="section-tag">Características</span>
                     <h2>Una plataforma, todo el control.</h2>
                     <p>Hemos diseñado cada herramienta pensando en la velocidad y la simplicidad, para que gestionar tu negocio sea un placer, no una tarea.</p>
                 </div>
                 <div class="features-grid">
-                    <div class="feature-card" data-aos="fade-up">
+                    <div class="feature-card">
                         <div class="feature-icon icon-blue">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         </div>
                         <h3>Agenda Inteligente</h3>
                         <p>Visualiza el día completo de todo tu equipo. El sistema previene citas duplicadas y optimiza los huecos automáticamente.</p>
                     </div>
-                    <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card">
                         <div class="feature-icon icon-green">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                         </div>
                         <h3>Finanzas en Autopiloto</h3>
                         <p>Conoce tus ingresos diarios, semanales y mensuales con reportes claros. Identifica tus servicios más rentables al instante.</p>
                     </div>
-                    <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-card">
                         <div class="feature-icon icon-purple">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         </div>
                         <h3>Gestión de Equipo</h3>
                         <p>Cada profesional tiene su propio panel, horarios personalizables y control total sobre sus servicios y citas asignadas.</p>
                     </div>
-                    <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-card">
                         <div class="feature-icon icon-orange">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                         </div>
@@ -167,29 +242,84 @@
             </div>
         </section>
 
+        <!-- COMPARISON SECTION -->
+        <section class="comparison">
+            <div class="container">
+                <div class="section-header gsap-fade-up">
+                    <span class="section-tag">La Diferencia</span>
+                    <h2>Por qué los líderes eligen Pro Citas</h2>
+                </div>
+                <div class="comparison-grid gsap-fade-up">
+                    <div class="comparison-card old-way">
+                        <h3>El método tradicional</h3>
+                        <ul>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                <span>Citas duplicadas o perdidas</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                <span>Clientes que olvidan asistir</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                <span>Cálculos manuales a fin de mes</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                <span>Dependencia del papel y lápiz</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card pro-way" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
+                        <div class="glow-border"></div>
+                        <h3>Con Pro Citas</h3>
+                        <ul>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Sincronización automática 24/7</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Recordatorios automáticos por WhatsApp</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Métricas financieras en tiempo real</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                <span>Control total desde cualquier dispositivo</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- HOW IT WORKS -->
         <section id="how-it-works" class="how-it-works">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header gsap-fade-up">
                     <span class="section-tag">Cómo Funciona</span>
                     <h2>Empieza en 3 simples pasos.</h2>
                 </div>
                 <div class="steps-container">
-                    <div class="step" data-aos="fade-right">
+                    <div class="step">
                         <div class="step-number">1</div>
                         <div class="step-content">
                             <h3>Crea tu Negocio</h3>
                             <p>Regístrate en menos de 60 segundos. Configura el nombre de tu negocio, tu horario y los servicios que ofreces.</p>
                         </div>
                     </div>
-                    <div class="step" data-aos="fade-right" data-aos-delay="150">
+                    <div class="step">
                         <div class="step-number">2</div>
                         <div class="step-content">
                             <h3>Comparte tu Enlace</h3>
                             <p>Obtén tu enlace de reserva único (ej: procitas.com/tu-negocio) y compártelo en tus redes sociales, WhatsApp o página web.</p>
                         </div>
                     </div>
-                    <div class="step" data-aos="fade-right" data-aos-delay="300">
+                    <div class="step">
                         <div class="step-number">3</div>
                         <div class="step-content">
                             <h3>Recibe Citas</h3>
@@ -203,12 +333,12 @@
         <!-- PRICING -->
         <section id="pricing" class="pricing">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header gsap-fade-up">
                     <span class="section-tag">Precios</span>
                     <h2>Simple, transparente y sin sorpresas.</h2>
                     <p>Un solo plan con todo incluido. Sin comisiones por cita, sin límites de personal ni de clientes.</p>
                 </div>
-                <div class="pricing-card-wrapper" data-aos="zoom-in-up">
+                <div class="pricing-card-wrapper gsap-fade-up">
                     <div class="pricing-card">
                         <div class="pricing-header">
                             <h3>Plan Pro</h3>
@@ -240,7 +370,7 @@
                                 <span>Tienda online integrada</span>
                             </li>
                         </ul>
-                        <a href="/app.html" class="btn btn-primary btn-block">Empezar prueba de 7 días</a>
+                        <a href="/app.html" class="btn btn-primary btn-block">Empieza tu mes gratis</a>
                     </div>
                 </div>
             </div>
@@ -249,18 +379,18 @@
         <!-- FAQ -->
         <section id="faq" class="faq">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header gsap-fade-up">
                     <span class="section-tag">FAQ</span>
                     <h2>Preguntas Frecuentes</h2>
                 </div>
-                <div class="faq-accordion">
+                <div class="faq-accordion gsap-fade-up">
                     <div class="faq-item">
                         <button class="faq-question">
-                            <span>¿Necesito tarjeta de crédito para la prueba gratuita?</span>
+                            <span>¿Necesito tarjeta de crédito para el mes gratis?</span>
                             <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </button>
                         <div class="faq-answer">
-                            <p>No. La prueba gratuita de 7 días es completamente libre y sin compromiso. No te pediremos ningún dato de pago hasta que decidas suscribirte.</p>
+                            <p>No. Tu primer mes es completamente libre y sin compromiso. No te pediremos ningún dato de pago hasta que finalice ese periodo y decidas suscribirte.</p>
                         </div>
                     </div>
                     <div class="faq-item">
@@ -297,10 +427,10 @@
         <!-- FINAL CTA -->
         <section class="cta">
             <div class="container">
-                <div class="cta-content">
+                <div class="cta-content gsap-fade-up">
                     <h2>Listo para dejar atrás el caos de la agenda de papel?</h2>
                     <p>Únete a cientos de profesionales que ya están ahorrando tiempo y ganando más dinero con Pro Citas.</p>
-                    <a href="/app.html" class="btn btn-primary btn-lg">Empieza tu prueba gratis ahora</a>
+                    <a href="/app.html" class="btn btn-primary btn-lg">Empieza tu mes gratis ahora</a>
                 </div>
             </div>
         </section>
@@ -322,7 +452,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Pro Citas. Todos los derechos reservados.</p>
+                <p>&copy; 2026 Pro Citas. Todos los derechos reservados.</p>
                 <div class="footer-legal">
                     <a href="/privacidad.html" target="_blank">Política de Privacidad</a>
                     <a href="/terminos.html" target="_blank">Términos de Servicio</a>
@@ -331,8 +461,11 @@
         </div>
     </footer>
 
-    <!-- SCRIPTS -->
-    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <!-- SCRIPTS PREMIUM -->
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.39/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
     <script src="assets/js/landing.js"></script>
 
 </body>

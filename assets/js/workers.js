@@ -777,7 +777,7 @@ async function saveWorkerHorario() {
     toast('Horario guardado', '#22C55E');
   } catch (e) {
     toast('No se pudo guardar. Intenta de nuevo', '#EF4444');
-  } finally {
+  } finally {  
     if (btn) {
       btn.disabled = false;
       btn.textContent = prevTxt || 'Guardar horario';
