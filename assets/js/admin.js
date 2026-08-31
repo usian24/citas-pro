@@ -132,8 +132,8 @@ function navigateToAdminState(state, replace = false) {
   for (let i = 0; i < tabs.length; i++) {
     const t = tabs[i];
     const pa = G('ap-' + t), bt = G('at-' + t);
-    if (pa) pa.classListt === state ? 'add' : 'remove';
-    if (bt) bt.classListt === state ? 'add' : 'remove';
+    if (pa) pa.classList[t === state ? 'add' : 'remove']('on');
+    if (bt) bt.classList[t === state ? 'add' : 'remove']('on');
   }
 
   if (state === 'negocios') renderBizListAdmin(filterBiz());

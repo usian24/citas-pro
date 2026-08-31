@@ -190,8 +190,8 @@ function navigateToWorkerState(state, replace = false) {
   const tabs = ['home', 'agenda', 'semana', 'servicios', 'galeria', 'finanzas', 'historial', 'horario', 'perfil'];
   for (let i = 0; i < tabs.length; i++) {
     const t = tabs[i]; const pa = G('wp-' + t), bt = G('wn-' + t);
-    if (pa) pa.classListt === state ? 'add' : 'remove';
-    if (bt) bt.classListt === state ? 'add' : 'remove';
+    if (pa) pa.classList[t === state ? 'add' : 'remove']('on');
+    if (bt) bt.classList[t === state ? 'add' : 'remove']('on');
   }
 
   if (state === 'agenda') initWorkerAgenda();
