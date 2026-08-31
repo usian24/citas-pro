@@ -452,3 +452,15 @@ body.light-mode .cta-content {
     .footer-top, .footer-bottom { flex-direction: column; gap: 2rem; }
     .footer-socials { justify-content: center; margin-top: 1rem; }
 }
+/* =========================================================
+   BLOQUEO DE VERCEL TOOLBAR
+========================================================= */
+vercel-live-feedback,
+vercel-toolbar,
+#vercel-live-feedback {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+}
