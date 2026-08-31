@@ -56,13 +56,16 @@ router.post('/login', async (req, res) => {
     // 1. Buscar en dueños de negocio (businesses)
     const { data: bizData, error: bizError } = await supabase
       .from('businesses')
-      .select('id, name, email, password')
+      .select('id, name, email, password, owner')
       .ilike('email', inputEmail)
-      .eq('password', password) // En un futuro cambiar a bcrypt
       .single();
 
     if (bizData && !bizError) {
-      return res.status(200).json({ success: true, type: 'business', biz: bizData });
+      // Soporte transicional: compara bcrypt o texto plano
+      const isMatch = bcrypt.compareSync(password, bizData.password) || password === bizData.password;
+      if (isMatch) {
+        return res.status(200).json({ success: true, type: 'business', biz: bizData });
+      }
     }
 
     // 2. Si no es dueño, buscar en trabajadores (workers)
@@ -70,15 +73,18 @@ router.post('/login', async (req, res) => {
       .from('workers')
       .select('id, business_id, name, email, password')
       .ilike('email', inputEmail)
-      .eq('password', password)
       .single();
 
     if (workerData && !workerError) {
-      return res.status(200).json({ 
-        success: true, 
-        type: 'worker', 
-        worker: workerData 
-      });
+      // Soporte transicional: compara bcrypt o texto plano
+      const isMatch = bcrypt.compareSync(password, workerData.password) || password === workerData.password;
+      if (isMatch) {
+        return res.status(200).json({ 
+          success: true, 
+          type: 'worker', 
+          worker: workerData 
+        });
+      }
     }
 
     // 3. Si no se encontró en ningún lado
@@ -164,7 +170,7 @@ router.post('/reset-password', async (req, res) => {
 
     const { error } = await supabase
       .from(tableName)
-      .update({ password: newPassword }) // En un futuro, aquí iría el hash de bcrypt
+      .update({ password: bcrypt.hashSync(newPassword, 10) })
       .eq('id', userId);
 
     if (error) throw error;

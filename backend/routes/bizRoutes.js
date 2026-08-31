@@ -346,7 +346,9 @@ router.post('/update-biz', async (req, res) => {
     if (data.loyalty !== undefined) payload.loyalty = data.loyalty;
 
     if (data.pass || data.password) {
-      payload.password = data.pass || data.password;
+      const bcrypt = require('bcryptjs');
+      const plainPassword = data.pass || data.password;
+      payload.password = bcrypt.hashSync(plainPassword, 10);
     }
 
     let error;

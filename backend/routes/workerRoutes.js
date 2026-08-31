@@ -42,7 +42,7 @@ router.post('/save-worker', async (req, res) => {
     const payload = {
       id: worker.id, business_id: worker.business_id || '',
       name: worker.name || '', email: worker.email || '',
-      password: worker.password ? worker.password : existingPass,
+      password: worker.password ? require('bcryptjs').hashSync(worker.password, 10) : existingPass,
       phone: worker.phone || '',
       avatar: worker.avatar || '', cover: worker.cover || '',
       role: worker.role || 'barber',
