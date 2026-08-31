@@ -587,7 +587,7 @@ window.onload = async function () {
             loadBizDirect(targetBizId);
             return;
           } else {
-            toast('La barbería no existe en la nube.', '#EF4444');
+            toast('el negocio no existe.', '#EF4444');
           }
         } catch (e) {
           if (getBizById(targetBizId)) {

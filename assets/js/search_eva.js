@@ -45,7 +45,7 @@
     searchResults.innerHTML = '';
 
     if (!results.length) {
-      searchResults.innerHTML = '<div class="portal-search-empty">Barbería no encontrada</div>';
+      searchResults.innerHTML = '<div class="portal-search-empty">negocio no encontrado</div>';
       return;
     }
 
