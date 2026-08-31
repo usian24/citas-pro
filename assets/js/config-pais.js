@@ -1,5 +1,5 @@
 'use strict';
-// config-pais.js — CitasPro v2
+// config-pais.js — CitasPro v2 (Adaptado a 3 Planes)
 // ══════════════════════════════════════════════════════════════
 // Solución definitiva al problema de moneda:
 // 1. money() se sobreescribe ANTES de que db.js defina la suya
@@ -12,8 +12,8 @@
 // 1. DICCIONARIO CENTRAL
 // ─────────────────────────────────────────
 const PAIS_CONFIG = {
-  ES: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Madrid',                     decimales:2 },
-  CO: { simbolo:'$',   nombre:'Peso colombiano',   posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Bogota',                    decimales:0 },
+  ES: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Madrid',                    decimales:2 },
+  CO: { simbolo:'$',   nombre:'Peso colombiano',   posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Bogota',                   decimales:0 },
   MX: { simbolo:'$',   nombre:'Peso mexicano',     posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Mexico_City',               decimales:2 },
   AR: { simbolo:'$',   nombre:'Peso argentino',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Argentina/Buenos_Aires',    decimales:2 },
   PE: { simbolo:'S/',  nombre:'Sol peruano',       posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Lima',                      decimales:2 },
@@ -33,11 +33,9 @@ const PAIS_DEFAULT = PAIS_CONFIG['ES'];
 // 2. DETECTAR PAÍS — con múltiples fuentes
 // ─────────────────────────────────────────
 function getPaisActivo() {
-  // Fuente 1: CUR activo (dueño logueado)
   if (typeof CUR !== 'undefined' && CUR && CUR.country && CUR.country !== 'null') {
     return CUR.country;
   }
-  // Fuente 2: trabajador logueado → busca su negocio
   if (typeof CUR_WORKER !== 'undefined' && CUR_WORKER &&
       typeof DB !== 'undefined' && DB && DB.businesses) {
     const bizId = DB.currentWorker && DB.currentWorker.bizId;
@@ -46,12 +44,10 @@ function getPaisActivo() {
       if (biz && biz.country && biz.country !== 'null') return biz.country;
     }
   }
-  // Fuente 3: localStorage — país guardado de la última sesión
   try {
     const cached = localStorage.getItem('cp_pais');
     if (cached && PAIS_CONFIG[cached]) return cached;
   } catch(e) {}
-  // Fuente 4: fallback España
   return 'ES';
 }
 
@@ -74,8 +70,7 @@ function formatMoney(n, codigoPais) {
 }
 
 // ─────────────────────────────────────────
-// 4. SOBRESCRIBIR money() — se ejecuta AHORA
-//    antes de que db.js defina la suya
+// 4. SOBRESCRIBIR money()
 // ─────────────────────────────────────────
 window.money = function(n) {
   return formatMoney(n, getPaisActivo());
@@ -83,8 +78,6 @@ window.money = function(n) {
 
 // ─────────────────────────────────────────
 // 5. GUARDAR PAÍS EN LOCALSTORAGE
-//    Se llama cuando CUR se carga para que
-//    la próxima vez esté disponible de inmediato
 // ─────────────────────────────────────────
 function guardarPaisEnCache(pais) {
   if (!pais || pais === 'null') return;
@@ -93,54 +86,57 @@ function guardarPaisEnCache(pais) {
 
 // ─────────────────────────────────────────
 // 6. REFRESCAR TODOS LOS PRECIOS EN PANTALLA
-//    Se llama después de que CUR carga
-//    para repintar cualquier € que ya se mostró
 // ─────────────────────────────────────────
 function refreshMoneyUI() {
-  // Repintar elementos que usan money() directamente como texto
-  // Precio de suscripción
   adaptarPrecioLocal(getPaisActivo());
 }
 
 // ─────────────────────────────────────────
-// 7. PRECIO DE SUSCRIPCIÓN (Visuales + USD)
+// 7. PRECIO DE SUSCRIPCIÓN (Visuales + USD) -> ADAPTADO A 3 PLANES
+//    La estructura ahora guarda el mes, trimestre y año.
 // ─────────────────────────────────────────
 const PRECIO_SUSCRIPCION = {
-  PE: 'S/ 25 / $6.60 USD',
-  EC: '$10 USD',
-  CO: '$ 25,248.62 / $6.50 USD',
-  US: '$15 USD',
-  MX: '$ 227.58 / $13 USD',
-  ES: '10€ / $11 USD',
-  CL: '$10 USD',
-  AR: '$ 10,830.13 / $12 USD',
-  // Los demás pasan al estándar global equivalente a $15 USD
-  BR: 'R$ 80 / $15 USD',
-  VE: 'Bs. 540 / $15 USD',
-  DO: 'RD$ 890 / $15 USD',
-  DE: '14€ / $15 USD',
-  NL: '14€ / $15 USD',
-  FR: '14€ / $15 USD'
+  PE: { mes: 'S/ 25',      tri: 'S/ 75',      anu: 'S/ 300' },
+  EC: { mes: '$10',        tri: '$30',        anu: '$120' },
+  CO: { mes: '$25,248',    tri: '$75,744',    anu: '$302,976' },
+  US: { mes: '$15',        tri: '$45',        anu: '$180' },
+  MX: { mes: '$227.58',    tri: '$682.74',    anu: '$2,730.96' },
+  ES: { mes: '10€',        tri: '30€',        anu: '120€' },
+  CL: { mes: '$10',        tri: '$30',        anu: '$120' },
+  AR: { mes: '$10,830',    tri: '$32,490',    anu: '$129,960' },
+  BR: { mes: 'R$ 80',      tri: 'R$ 240',     anu: 'R$ 960' },
+  VE: { mes: 'Bs. 540',    tri: 'Bs. 1620',   anu: 'Bs. 6480' },
+  DO: { mes: 'RD$ 890',    tri: 'RD$ 2670',   anu: 'RD$ 10680' },
+  DE: { mes: '14€',        tri: '42€',        anu: '168€' },
+  NL: { mes: '14€',        tri: '42€',        anu: '168€' },
+  FR: { mes: '14€',        tri: '42€',        anu: '168€' },
+  DEFAULT: { mes: '$15',   tri: '$45',        anu: '$180' } // Precios base de Lemon Squeezy
 };
 
 function adaptarPrecioLocal(pais) {
-  const precio = PRECIO_SUSCRIPCION[pais] || '$15 USD'; // Nuevo fallback global en 15 USD
-  document.querySelectorAll('.precio-local-mes').forEach(function(el) {
-    el.textContent = precio + '/mes';
-  });
-  document.querySelectorAll('.precio-local-solo').forEach(function(el) {
-    el.textContent = precio;
-  });
+  // Buscamos el país o asignamos el default de Lemon Squeezy
+  const precios = PRECIO_SUSCRIPCION[pais] || PRECIO_SUSCRIPCION['DEFAULT'];
+  
+  // Inyectamos en las tarjetas de la Landing Page
+  const elMes = document.getElementById('precio-mensual-val');
+  const elTri = document.getElementById('precio-trimestral-val');
+  const elAnu = document.getElementById('precio-anual-val');
+  
+  if (elMes) elMes.textContent = precios.mes;
+  if (elTri) elTri.textContent = precios.tri;
+  if (elAnu) elAnu.textContent = precios.anu;
+
+  // Mantenemos compatibilidad con tu código app.js anterior por si acaso
+  document.querySelectorAll('.precio-local-mes').forEach(el => el.textContent = precios.mes + '/mes');
+  document.querySelectorAll('.precio-local-solo').forEach(el => el.textContent = precios.mes);
 }
 
 async function adaptarPrecioLocalPorIP() {
-  // Si ya tenemos el país del negocio, usarlo
   const pais = getPaisActivo();
   if (pais && pais !== 'ES') {
     adaptarPrecioLocal(pais);
     return;
   }
-  // Fallback por IP (solo para landing sin sesión)
   try {
     const res   = await fetch('https://api.country.is/');
     const datos = await res.json();
@@ -153,7 +149,7 @@ async function adaptarPrecioLocalPorIP() {
 }
 
 // ─────────────────────────────────────────
-// 8. ZONA HORARIA
+// 8. ZONA HORARIA Y UTILIDADES (Conservadas intactas)
 // ─────────────────────────────────────────
 function getTimezone(cod) {
   return getConfigPais(cod || getPaisActivo()).timezone;
@@ -187,9 +183,6 @@ function formatHora(horaStr, codigoPais) {
   return horaStr;
 }
 
-// ─────────────────────────────────────────
-// 9. HELPERS
-// ─────────────────────────────────────────
 function getSimboloMoneda(cod) { return getConfigPais(cod||getPaisActivo()).simbolo; }
 function getLabelPrecio(cod)   { const c = getConfigPais(cod||getPaisActivo()); return 'Precio ('+c.simbolo+')'; }
 function getNombreMoneda(cod)  { return getConfigPais(cod||getPaisActivo()).nombre; }
@@ -227,7 +220,7 @@ window.guardarPaisEnCache      = guardarPaisEnCache;
 window.refreshMoneyUI          = refreshMoneyUI;
 
 // ─────────────────────────────────────────
-// 11. ARRANQUE — sin delay, inmediato
+// 11. ARRANQUE
 // ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   adaptarPrecioLocalPorIP();
