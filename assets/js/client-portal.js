@@ -42,9 +42,9 @@ function loadBizDirect(bizId) {
 
   // 🛡️ ESCUDO: Si la barbería está suspendida o expirada, bloquear la entrada a los clientes
   if (biz.plan === 'expired' || biz.plan === 'suspended') {
-    var bp = G('s-barber-portal');
-    if (bp) bp.innerHTML = '<div style="padding:60px 20px;text-align:center;margin-top:10vh;animation:popIn .4s ease"><div style="font-size:50px;margin-bottom:16px">🔒</div><h2 style="color:var(--text);font-size:22px;margin-bottom:10px;font-weight:900">Negocio Inactivo</h2><p style="color:var(--t2);font-size:14px;line-height:1.6">Este negocio no puede recibir reservas en este momento.</p><button onclick="goTo(\'s-portal\')" class="btn btn-dark" style="margin-top:24px;display:inline-flex;width:auto">Volver al inicio</button></div>';
-    goTo('s-barber-portal');
+    var bp = G('s-booking-portal');
+    if (bp) bp.innerHTML = '<div style="padding:40px 20px;text-align:center;margin-top:50px;"><div style="font-size:48px;margin-bottom:16px;">🛑</div><h2 style="font-size:22px;color:var(--text);margin-bottom:12px;">Página no disponible</h2><p style="color:var(--t2);font-size:15px;line-height:1.6;">Este negocio se encuentra suspendido temporalmente.<br>Por favor, comunícate directamente con ellos.</p></div>';
+    goTo('s-booking-portal');
     return;
   }
 
@@ -135,13 +135,13 @@ function loadBizDirect(bizId) {
   if (btnShop) {
     btnShop.onclick = function () {
       T('bs-name', biz.name);
-      goTo('s-barber-shop');
+      goTo('s-booking-portal');
     };
   }
 
   if (typeof subscribeClientRealtime === 'function') subscribeClientRealtime(bizId);
 
-  goTo('s-barber-portal');
+  goTo('s-booking-portal');
   window.scrollTo(0, 0);
 }
 
@@ -456,7 +456,7 @@ function confirmBooking() {
 
   var appt = {
     id: apptId, client: name, phone: phone, email: email,
-    date: CSEL.date, time: CSEL.time, svc: CSEL.svc, barber: worker.name,
+    date: CSEL.date, time: CSEL.time, svc: CSEL.svc, workerName: worker.name,
     price: CSEL.svcPrice || 0, status: apptStatus, notes: '', token: token
   };
 
@@ -562,7 +562,7 @@ async function checkManageAccess() {
           biz = await fetchBizFromCloud(a.business_id);
           if (biz && typeof syncBizToLocal === 'function') syncBizToLocal(biz);
         }
-        if (!biz) biz = { id: a.business_id, name: 'Tu barbería', workers: [] };
+        if (!biz) biz = { id: a.business_id, name: 'Tu negocio', workers: [] };
 
         var worker = (biz.workers || []).find(function (w) { return w.id === a.worker_id; }) || null;
         var normalizedAppt = {
@@ -724,7 +724,7 @@ async function checkLinkAccess() {
   var hash = window.location.hash;
   if (hash && hash.indexOf('#manage/') === 0) return await checkManageAccess();
   if (hash && hash.indexOf('#b/') === 0) {
-    goTo('s-barber-portal');
+    goTo('s-booking-portal');
     var bizId = hash.slice(3);
     if (bizId) {
       DB = loadDB();

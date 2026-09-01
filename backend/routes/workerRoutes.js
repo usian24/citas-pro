@@ -45,7 +45,7 @@ router.post('/save-worker', async (req, res) => {
       password: worker.password ? require('bcryptjs').hashSync(worker.password, 10) : existingPass,
       phone: worker.phone || '',
       avatar: worker.avatar || '', cover: worker.cover || '',
-      role: worker.role || 'barber',
+      role: worker.role || 'worker',
       horario: worker.horario !== undefined ? (Array.isArray(worker.horario) ? worker.horario : []) : (existingHorario.length ? existingHorario : [])
     };
     const { error } = await supabase.from('workers').upsert(payload);

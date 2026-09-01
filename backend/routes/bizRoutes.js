@@ -106,7 +106,7 @@ router.get('/get-biz', async (req, res) => {
             date: a.date || '',
             time: a.time || '',
             svc: a.service_name || '',
-            barber: w.name || '',
+            workerName: w.name || '',
             price: parseFloat(a.service_price) || 0,
             status: a.status || 'confirmed',
             notes: '',
@@ -131,7 +131,7 @@ router.get('/get-biz', async (req, res) => {
         date: a.date || '',
         time: a.time || '',
         svc: a.service_name || '',
-        barber: '',
+        workerName: '',
         price: parseFloat(a.service_price) || 0,
         status: a.status || 'confirmed',
         notes: ''
@@ -233,7 +233,7 @@ router.get('/get-db', verifyToken, async (req, res) => {
               date: a.date || '',
               time: a.time || '',
               svc: a.service_name || '',
-              barber: w.name || '',
+              workerName: w.name || '',
               price: parseFloat(a.service_price) || 0,
               status: a.status || 'confirmed',
               notes: a.notes || '',
@@ -248,7 +248,7 @@ router.get('/get-db', verifyToken, async (req, res) => {
       biz.appointments = unassignedAppts.map(function (a) {
         return {
           id: a.id, client: a.client_name || '', phone: a.client_phone || '', email: '',
-          date: a.date || '', time: a.time || '', svc: a.service_name || '', barber: '',
+          date: a.date || '', time: a.time || '', svc: a.service_name || '', workerName: '',
           price: parseFloat(a.service_price) || 0, status: a.status || 'confirmed', notes: '', token: a.token || ''
         };
       });
@@ -315,7 +315,7 @@ router.post('/update-biz', async (req, res) => {
     const data = req.body;
 
     if (!data || !data.id) {
-      return res.status(400).json({ success: false, error: 'Falta el ID de la barbería' });
+      return res.status(400).json({ success: false, error: 'Falta el ID del negocio' });
     }
 
     // Construir el payload de forma dinámica (solo con las propiedades que vienen en la petición)

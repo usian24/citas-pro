@@ -410,7 +410,7 @@ window.onload = async function () {
     if (typeof openApptModal === 'function') openApptModal();
   });
 
-  on('add-barber-btn', 'click', function () { openWorkerModal(null); });
+  on('add-worker-btn', 'click', function () { openWorkerModal(null); });
 
   on('save-profile-btn', 'click', function () {
     if (typeof saveBizProfile === 'function') saveBizProfile();
@@ -421,9 +421,9 @@ window.onload = async function () {
   });
 
   /* Modales negocio */
-  on('close-bar', 'click', function () { closeOv('ov-barber'); });
-  on('save-bar-btn', 'click', function () {
-    if (typeof saveBarber === 'function') saveBarber();
+  on('close-bar', 'click', function () { closeOv('ov-worker'); });
+  on('save-bar', 'click', function () {
+    if (typeof saveWorkerProfile === 'function') saveWorkerProfile();
   });
   on('close-appt', 'click', function () { closeOv('ov-appt'); });
   on('save-appt-btn', 'click', function () {
@@ -574,7 +574,7 @@ window.onload = async function () {
     const hash = window.location.hash;
 
     if (hash && hash.startsWith('#b/')) {
-      goTo('s-barber-portal');
+      goTo('s-booking-portal');
       const targetBizId = hash.split('/')[1];
 
       if (targetBizId) {

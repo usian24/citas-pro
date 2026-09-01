@@ -80,7 +80,7 @@
         }
         searchSpinner.style.display = 'none';
         // Búsqueda estricta por ID
-        loadBarberPortal(String(biz.id));
+        loadBookingPortal(String(biz.id));
       });
 
       searchResults.appendChild(item);
@@ -93,7 +93,7 @@
     }
   });
 
-  window.loadBarberPortal = function (bizId) {
+  window.loadBookingPortal = function (bizId) {
     if (typeof loadBizDirect === 'function') {
       loadBizDirect(bizId);
     } else {
@@ -108,7 +108,7 @@
 
   if (bubble) {
     var mensajes = [
-      "¡Hola! Bienvenido a Citas Pro Barber",
+      "¡Hola! Bienvenido a Citas Pro",
       "¿En qué podemos ayudarte? ",
       "Busca tu negocio favorito arriba 👆",
       "Contáctate con nosotros por WhatsApp 💬"

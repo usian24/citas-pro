@@ -254,7 +254,7 @@ function confirmBooking() {
     date: CSEL.date,
     time: CSEL.time,
     svc: CSEL.svc,
-    barber: CSEL.workerId || 'Cualquiera',
+    workerName: CSEL.workerId || 'Cualquiera',
     price: CSEL.svcPrice || 0,
     status: 'confirmed',
     notes: ''

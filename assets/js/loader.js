@@ -35,7 +35,7 @@ async function loadComponent(url, targetId, append = false) {
 async function bootComponents() {
   const componentsToLoad = [
     { url: 'frontend/views/admin.html', id: 's-admin', class: 'scr' },
-    { url: 'frontend/views/barber-portal.html', id: 's-barber-portal', class: 'scr' },
+    { url: 'frontend/views/booking-portal.html', id: 's-booking-portal', class: 'scr' },
     { url: 'frontend/views/biz.html', id: 's-biz', class: 'scr' },
     { url: 'frontend/views/worker.html', id: 's-worker', class: 'scr' },
     { url: 'frontend/views/client.html', id: 's-client', class: 'scr' },

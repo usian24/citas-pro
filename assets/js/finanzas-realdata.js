@@ -80,7 +80,7 @@ function getAllBizAppointments(biz) {
         svc: a.svc || '',
         price: parseFloat(a.price) || 0,
         status: a.status || 'confirmed',
-        barber: a.barber || w.name || '',
+        workerName: a.workerName || a.barber || w.name || '',
         workerId: w.id
       });
     });
@@ -97,7 +97,7 @@ function getAllBizAppointments(biz) {
       svc: a.svc || '',
       price: parseFloat(a.price) || 0,
       status: a.status || 'confirmed',
-      barber: a.barber || '',
+      workerName: a.workerName || a.barber || '',
       workerId: ''
     });
   });
@@ -233,7 +233,7 @@ function renderFinanceHistory(containerId, appointments, limit) {
       + '<span style="background:' + st.bg + ';color:' + st.color + ';padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700">' + st.label + '</span>'
       + '</div>'
       + '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2)">'
-      + '<span>' + san(a.svc) + (a.barber ? ' · ' + san(a.barber) : '') + '</span>'
+      + '<span>' + san(a.svc) + ((a.workerName || a.barber) ? ' · ' + san(a.workerName || a.barber) : '') + '</span>'
       + '<span style="font-weight:800;color:' + (isCancelled ? 'var(--muted)' : 'var(--green)') + '">' + money(a.price) + '</span>'
       + '</div>'
       + '<div style="font-size:11px;color:var(--muted);margin-top:6px">'
@@ -281,7 +281,7 @@ function renderWorkerFinanzas() {
       svc: a.svc || '',
       price: parseFloat(a.price) || 0,
       status: a.status || 'confirmed',
-      barber: CUR_WORKER.name || ''
+      workerName: CUR_WORKER.name || ''
     };
   });
 

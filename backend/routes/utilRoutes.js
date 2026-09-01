@@ -23,7 +23,7 @@ router.post('/send-email', async (req, res) => {
         <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;background:#07090F;color:#F1F5F9;padding:40px 32px;border-radius:20px">
           <div style="text-align:center;margin-bottom:32px">
             <div style="font-size:28px;font-weight:900;letter-spacing:3px;color:#4A7FD4">CITAS PRO</div>
-            <div style="font-size:12px;color:#475569;margin-top:4px;letter-spacing:2px">APP PARA BARBERÍAS Y PELUQUERÍAS</div>
+            <div style="font-size:12px;color:#475569;margin-top:4px;letter-spacing:2px">APP PARA RESERVA DE CITAS</div>
           </div>
           <h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Verifica tu correo electrónico ✉️</h2>
           <p style="color:#94A3B8;margin-bottom:28px;line-height:1.6">Usa este código de 6 dígitos para completar tu registro en Citas Pro:</p>

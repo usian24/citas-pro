@@ -519,7 +519,7 @@ function openBizConfig() {
 function apptRowH(a) {
   const sc = { confirmed: { c: 'var(--blue)', bg: 'rgba(74,127,212,.1)', l: 'Conf.' }, pending: { c: 'var(--gold)', bg: 'rgba(245,158,11,.1)', l: 'Pend.' }, completed: { c: 'var(--green)', bg: 'rgba(34,197,94,.1)', l: 'Hecho' }, cancelled: { c: 'var(--red)', bg: 'rgba(239,68,68,.1)', l: 'Canc.' }, in_progress: { c: '#A855F7', bg: 'rgba(168,85,247,.1)', l: 'En curso' }, rescheduled: { c: 'var(--gold)', bg: 'rgba(245,158,11,.1)', l: 'Reagend.' } }[a.status] || { c: 'var(--blue)', bg: 'rgba(74,127,212,.1)', l: 'Conf.' };
   const initials = san((a.client || '?').split(' ').map(function (n) { return n[0] || ''; }).slice(0, 2).join('').toUpperCase());
-  return '<div class="appt-row" onclick="openApptDetail(\'' + sanitizeText(a.id) + '\')"><div class="appt-avatar">' + initials + '</div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + san(a.client) + '</div><div style="font-size:12px;color:var(--t2);margin-top:2px">' + san(a.svc) + (a.barber ? ' · ' + san(a.barber) : '') + '</div>' + (a.notes ? '<div style="font-size:11px;color:var(--muted);margin-top:2px;font-style:italic">' + san(a.notes) + '</div>' : '') + '</div><div style="text-align:right;flex-shrink:0"><div style="font-weight:800;font-size:15px;color:var(--blue)">' + money(a.price) + '</div><div style="font-size:12px;color:var(--t2);margin-top:2px">' + san(a.time) + '</div><div style="margin-top:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:' + sc.bg + ';color:' + sc.c + '">' + sc.l + '</div></div></div>';
+  return '<div class="appt-row" onclick="openApptDetail(\'' + sanitizeText(a.id) + '\')"><div class="appt-avatar">' + initials + '</div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + san(a.client) + '</div><div style="font-size:12px;color:var(--t2);margin-top:2px">' + san(a.svc) + ((a.workerName || a.barber) ? ' · ' + san(a.workerName || a.barber) : '') + '</div>' + (a.notes ? '<div style="font-size:11px;color:var(--muted);margin-top:2px;font-style:italic">' + san(a.notes) + '</div>' : '') + '</div><div style="text-align:right;flex-shrink:0"><div style="font-weight:800;font-size:15px;color:var(--blue)">' + money(a.price) + '</div><div style="font-size:12px;color:var(--t2);margin-top:2px">' + san(a.time) + '</div><div style="margin-top:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:' + sc.bg + ';color:' + sc.c + '">' + sc.l + '</div></div></div>';
 }
 
 function openApptDetail(id) {
@@ -857,7 +857,7 @@ function renderBizWorkers() {
   const today = new Date().toISOString().split('T')[0];
   const thisMonth = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
 
-  H('biz-barbers-list', workers.length
+  H('biz-workers-list', workers.length
     ? workers.map(function (w) {
       const av = w.photo
         ? '<img src="' + safeImg(w.photo) + '" style="width:100%;height:100%;object-fit:cover" alt="Foto">'
@@ -946,21 +946,21 @@ function openWorkerModal(id) {
       if (pv && w.photo) pv.innerHTML = '<img src="' + safeImg(w.photo) + '" class="photo-preview" alt="Foto"/>';
     }
   } else { ['bar-name', 'bar-spec', 'bar-phone', 'bar-email', 'bar-pass'].forEach(function (fid) { const e = G(fid); if (e) e.value = ''; }); }
-  openOv('ov-barber');
+  openOv('ov-worker');
 }
 
-function saveBarber() {
+function saveWorkerProfile() {
   const name = sanitizeText(V('bar-name')), spec = sanitizeText(V('bar-spec')), phone = sanitizeText(V('bar-phone')), email = V('bar-email').trim().toLowerCase(), pass = V('bar-pass'), photo = window._barPhoto || null;
   if (!name) { toast('Nombre requerido', '#EF4444'); return; } if (!CUR) return; if (!CUR.workers) CUR.workers = [];
   const workerId = editWorkerId || 'w_' + Date.now();
   let existingPhoto = '', existingCover = '', existingHorario = [];
   if (editWorkerId) { const existing = (CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0]; if (existing) { existingPhoto = existing.photo || ''; existingCover = existing.cover || ''; existingHorario = existing.horario || []; } }
   const finalPhoto = photo || existingPhoto;
-  const workerDbObj = { id: workerId, business_id: CUR.id, name: name, email: email, password: pass || (editWorkerId && (CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0] ? ((CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0].pass || '') : ''), phone: phone, avatar: finalPhoto, cover: existingCover, role: spec || 'barber', horario: existingHorario };
+  const workerDbObj = { id: workerId, business_id: CUR.id, name: name, email: email, password: pass || (editWorkerId && (CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0] ? ((CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0].pass || '') : ''), phone: phone, avatar: finalPhoto, cover: existingCover, role: spec || 'worker', horario: existingHorario };
   if (editWorkerId) { const w = (CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0]; if (w) { w.name = name; w.spec = spec; w.phone = phone; w.photo = finalPhoto; } toast('Trabajador editado', '#4A7FD4'); }
   else { if (!validEmail(email)) { toast('Email inválido', '#EF4444'); return; } if (!pass || pass.length < 6) { toast('Contraseña mínimo 6 caracteres', '#EF4444'); return; } CUR.workers.push({ id: workerId, name: name, email: email, pass: pass, phone: phone, spec: spec, photo: photo || '', active: true, services: [], horario: DEFAULT_HORARIO.map(function (h) { return Object.assign({}, h); }), appointments: [], photos: [], notifications: [], cover: '' }); toast('Trabajador creado', '#22C55E'); }
   fetch('/api/save-worker', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upsert', worker: workerDbObj }) }).catch(function (err) { });
-  editWorkerId = null; window._barPhoto = null; saveDB(); renderBizWorkers(); closeOv('ov-barber');
+  editWorkerId = null; window._barPhoto = null; saveDB(); renderBizWorkers(); closeOv('ov-worker');
 }
 
 function confirmDeleteWorker(id) {
@@ -1294,7 +1294,7 @@ function saveAppt() {
   if (!svcRaw) { toast('Selecciona un servicio', '#EF4444'); return; }
   if (!CUR) return;
   const parts = svcRaw.split(',');
-  const appt = { id: Date.now(), client: name, phone: phone, email: '', svc: parts[0], barber: workerId || '', date: date, time: time, price: safeNum(parts[1], 0), status: status, notes: notes };
+  const appt = { id: Date.now(), client: name, phone: phone, email: '', svc: parts[0], workerName: workerId || '', date: date, time: time, price: safeNum(parts[1], 0), status: status, notes: notes };
   if (workerId) { const w = (CUR.workers || []).filter(function (x) { return x.id === workerId; })[0]; if (w) { if (!w.appointments) w.appointments = []; w.appointments.push(appt); } }
   else { if (!CUR.appointments) CUR.appointments = []; CUR.appointments.push(appt); }
   saveDB(); closeOv('ov-appt'); initAgenda(); renderBizFinances(); initBizPanel();
