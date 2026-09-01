@@ -185,6 +185,10 @@ function showRegStep(n) {
 function bizRegStep(targetStep) {
   // --- Validaciones al avanzar ---
   if (targetStep > regStep) {
+    if (window.isUploadingPhoto) {
+      toast('Espera a que termine de subir la foto ⏳', '#F59E0B');
+      return;
+    }
     if (regStep === 1 && !REG.type) {
       toast('Selecciona el tipo de negocio', '#EF4444'); return;
     }
@@ -268,10 +272,12 @@ function setupPhotoUpload() {
     fresh.addEventListener('change', async function (e) {
       const f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
+      window.isUploadingPhoto = true;
       toast('Optimizando y subiendo foto... ⏳', '#F59E0B');
       const optimizedFile = await processImageForUpload(f);
       const url = await uploadToImgBB(optimizedFile);
       if (url) onLoad(url);
+      window.isUploadingPhoto = false;
     });
   }
   function handleImgs(inputId, onLoad) {
@@ -279,6 +285,7 @@ function setupPhotoUpload() {
     const fresh = el.cloneNode(true); el.parentNode.replaceChild(fresh, el);
     fresh.addEventListener('change', async function (e) {
       const files = Array.from(e.target.files); if (!files.length) return;
+      window.isUploadingPhoto = true;
       toast('Optimizando y subiendo ' + files.length + ' foto(s)... ⏳', '#F59E0B');
       for (let i = 0; i < files.length; i++) {
         if (!validImageType(files[i])) continue;
@@ -286,6 +293,7 @@ function setupPhotoUpload() {
         const url = await uploadToImgBB(optimizedFile);
         if (url) onLoad(url);
       }
+      window.isUploadingPhoto = false;
     });
   }
   handleImg('biz-cover-input', function (d) {
