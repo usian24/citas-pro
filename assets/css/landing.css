@@ -277,10 +277,10 @@ body.light-mode .comparison-card.old-way li svg { stroke: #DC2626; } /* Rojo fue
 
 .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 columnas rígidas */
+    grid-template-columns: repeat(4, 1fr); /* 4 columnas para que quepan todos los planes */
     gap: 2rem;
     align-items: stretch; /* TODAS miden exactamente la misma altura */
-    max-width: 1100px;
+    max-width: 1200px; /* Aumentamos un poco para acomodar las 4 */
     margin: 0 auto;
 }
 
