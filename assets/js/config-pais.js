@@ -201,10 +201,36 @@ function actualizarLabelsPrecio() {
 }
 
 // ─────────────────────────────────────────
+// 9. ENLACES DE LEMON SQUEEZY POR PAÍS
+// ─────────────────────────────────────────
+const LINKS_LEMON = {
+  PE: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/6e795285-575c-482e-8f56-1e4659b214f4", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/d996da67-1f42-4df4-8606-3c81523d6897", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d0269cd4-9675-4c62-864f-f9e31f863b8a" },
+  CO: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/6e795285-575c-482e-8f56-1e4659b214f4", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/d996da67-1f42-4df4-8606-3c81523d6897", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d0269cd4-9675-4c62-864f-f9e31f863b8a" },
+  MX: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5afaef8a-752b-474d-8dc9-14f9efe58773", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/272cc6b5-fb57-4829-a722-73d388afc33b", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/0cdc9d31-1e37-4329-8061-040a3ae07656" },
+  AR: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d961633c-5788-47a3-b8d1-ac818be8f6d6", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/40ab4189-4790-4316-82ea-c358553cef12", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/571ca211-0d43-4827-b008-a678a736cbb9" },
+  CL: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/c0fc8bb8-3d18-44e1-97ee-759e43b5f510", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/8e9cf35f-7a93-4e9d-b096-f07cf4e54dc0", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5d77b654-121e-42d6-871d-5fb1593f2e11" },
+  EC: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/c0fc8bb8-3d18-44e1-97ee-759e43b5f510", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/8e9cf35f-7a93-4e9d-b096-f07cf4e54dc0", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5d77b654-121e-42d6-871d-5fb1593f2e11" },
+  US: { mensual: "LINK_US_MENSUAL", trimestral: "LINK_US_TRIMESTRAL", anual: "LINK_US_ANUAL" },
+  ES: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/4598f28d-6b5a-4b78-96d8-5b297b7b3d89", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/ce2e651b-7847-404a-9203-12ea45adbc68", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/2fe49ca1-185e-47ce-919f-98fdf39534fa" },
+  DE: { mensual: "LINK_DE_MENSUAL", trimestral: "LINK_DE_TRIMESTRAL", anual: "LINK_DE_ANUAL" },
+  NL: { mensual: "LINK_NL_MENSUAL", trimestral: "LINK_NL_TRIMESTRAL", anual: "LINK_NL_ANUAL" },
+  FR: { mensual: "LINK_FR_MENSUAL", trimestral: "LINK_FR_TRIMESTRAL", anual: "LINK_FR_ANUAL" },
+  DO: { mensual: "LINK_DO_MENSUAL", trimestral: "LINK_DO_TRIMESTRAL", anual: "LINK_DO_ANUAL" },
+  VE: { mensual: "LINK_VE_MENSUAL", trimestral: "LINK_VE_TRIMESTRAL", anual: "LINK_VE_ANUAL" },
+  BR: { mensual: "LINK_BR_MENSUAL", trimestral: "LINK_BR_TRIMESTRAL", anual: "LINK_BR_ANUAL" },
+  GLOBAL: { 
+    mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/3119a496-8da6-43d6-95a1-62e9f87c7cc7",
+    trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/98f45e0a-463e-46bc-b2e7-5d5507d9c44e",
+    anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/35d225c4-16c1-493d-8e6e-683c6bb07929"
+  }
+};
+
+// ─────────────────────────────────────────
 // 10. EXPORTAR TODO
 // ─────────────────────────────────────────
 window.PAIS_CONFIG             = PAIS_CONFIG;
 window.PRECIO_SUSCRIPCION      = PRECIO_SUSCRIPCION;
+window.LINKS_LEMON             = LINKS_LEMON;
 window.getPaisActivo           = getPaisActivo;
 window.getConfigPais           = getConfigPais;
 window.formatMoney             = formatMoney;

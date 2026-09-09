@@ -353,6 +353,24 @@ function finalizeBizReg() {
   const hoy = new Date(), trialEnd = new Date(hoy); trialEnd.setDate(trialEnd.getDate() + 7); // Periodo de prueba de 7 días
   const biz = { id: slug, name: REG.name, owner: REG.owner, email: REG.email, pass: REG.pass, phone: REG.phone, addr: REG.addr, city: REG.city, country: REG.country, type: REG.type, teamSize: REG.teamSize, join_date: hoy.toISOString().split('T')[0], expires_at: trialEnd.toISOString().split('T')[0], plan: 'trial', desc: '', logo: REG.logo || '', photos: REG.photos || [], insta: '', facebook: '', x_url: '', cover: REG.cover || '', horario: DEFAULT_HORARIO.map(function (h) { return Object.assign({}, h); }), workers: [], services: [], appointments: [] };
   DB.businesses.push(biz); DB.currentBiz = slug; DB.currentWorker = null; CUR = biz; saveDB();
+
+  // Interceptar flujo si el usuario viene directo a comprar (Landing Page -> Checkout)
+  const urlParams = new URLSearchParams(window.location.search);
+  const planToBuy = urlParams.get('plan');
+  if (planToBuy && (planToBuy === 'mensual' || planToBuy === 'trimestral' || planToBuy === 'anual')) {
+    const pais = window.getPaisActivo ? window.getPaisActivo() : 'DEFAULT';
+    const linksLemon = window.LINKS_LEMON || {};
+    const links = linksLemon[pais] || linksLemon['GLOBAL'];
+    if (links) {
+      let finalLink = links[planToBuy];
+      if (finalLink && finalLink.includes("LINK_")) finalLink = linksLemon['GLOBAL'][planToBuy];
+      if (finalLink) {
+        window.location.href = finalLink + "?checkout[custom][bizId]=" + biz.id;
+        return; // Detener flujo para ir directo al pago
+      }
+    }
+  }
+
   T('biz-link-display', 'citasproonline.com/#b/' + slug); T('neg-badge', DB.businesses.length);
   const waLink = G('wa-share-link'); if (waLink) waLink.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita en ' + REG.name + ' → https://citasproonline.com/b/' + slug);
   checkNotifications();
@@ -1343,88 +1361,10 @@ function configurarBotonesDePago() {
     GLOBAL: { m: "$15.00 USD / mes", t: "$45.00 USD / 3 meses", a: "$180.00 USD / año" }
   };
 
-  // 3. Biblioteca de Enlaces Lemon Squeezy por País
-  const LINKS_LEMON = {
-    PE: { 
-      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/6e795285-575c-482e-8f56-1e4659b214f4", 
-      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/d996da67-1f42-4df4-8606-3c81523d6897", 
-      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d0269cd4-9675-4c62-864f-f9e31f863b8a" 
-    },
-    CO: { 
-      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/6e795285-575c-482e-8f56-1e4659b214f4", 
-      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/d996da67-1f42-4df4-8606-3c81523d6897", 
-      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d0269cd4-9675-4c62-864f-f9e31f863b8a" 
-    },
-    MX: { 
-      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5afaef8a-752b-474d-8dc9-14f9efe58773", 
-      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/272cc6b5-fb57-4829-a722-73d388afc33b", 
-      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/0cdc9d31-1e37-4329-8061-040a3ae07656" 
-    },
-    AR: { 
-      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d961633c-5788-47a3-b8d1-ac818be8f6d6", 
-      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/40ab4189-4790-4316-82ea-c358553cef12", 
-      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/571ca211-0d43-4827-b008-a678a736cbb9" 
-    },
-    CL: { 
-      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/c0fc8bb8-3d18-44e1-97ee-759e43b5f510", 
-      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/8e9cf35f-7a93-4e9d-b096-f07cf4e54dc0", 
-      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5d77b654-121e-42d6-871d-5fb1593f2e11" 
-    },
-    EC: { 
-      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/c0fc8bb8-3d18-44e1-97ee-759e43b5f510", 
-      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/8e9cf35f-7a93-4e9d-b096-f07cf4e54dc0", 
-      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5d77b654-121e-42d6-871d-5fb1593f2e11" 
-    },
-    US: { 
-      mensual: "LINK_US_MENSUAL", 
-      trimestral: "LINK_US_TRIMESTRAL", 
-      anual: "LINK_US_ANUAL" 
-    },
-    ES: { 
-      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/4598f28d-6b5a-4b78-96d8-5b297b7b3d89", 
-      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/ce2e651b-7847-404a-9203-12ea45adbc68", 
-      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/2fe49ca1-185e-47ce-919f-98fdf39534fa" 
-    },
-    DE: { 
-      mensual: "LINK_DE_MENSUAL", 
-      trimestral: "LINK_DE_TRIMESTRAL", 
-      anual: "LINK_DE_ANUAL" 
-    },
-    NL: { 
-      mensual: "LINK_NL_MENSUAL", 
-      trimestral: "LINK_NL_TRIMESTRAL", 
-      anual: "LINK_NL_ANUAL" 
-    },
-    FR: { 
-      mensual: "LINK_FR_MENSUAL", 
-      trimestral: "LINK_FR_TRIMESTRAL", 
-      anual: "LINK_FR_ANUAL" 
-    },
-    DO: { 
-      mensual: "LINK_DO_MENSUAL", 
-      trimestral: "LINK_DO_TRIMESTRAL", 
-      anual: "LINK_DO_ANUAL" 
-    },
-    VE: { 
-      mensual: "LINK_VE_MENSUAL", 
-      trimestral: "LINK_VE_TRIMESTRAL", 
-      anual: "LINK_VE_ANUAL" 
-    },
-    BR: { 
-      mensual: "LINK_BR_MENSUAL", 
-      trimestral: "LINK_BR_TRIMESTRAL", 
-      anual: "LINK_BR_ANUAL" 
-    },
-    GLOBAL: { // Resto del mundo ($15 USD - TUS ENLACES ORIGINALES)
-      mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/3119a496-8da6-43d6-95a1-62e9f87c7cc7",
-      trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/98f45e0a-463e-46bc-b2e7-5d5507d9c44e",
-      anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/35d225c4-16c1-493d-8e6e-683c6bb07929"
-    }
-  };
-
   // 4. Elegimos el set de links y textos correctos
   var textosActuales = TEXTOS_PLANES[pais] || TEXTOS_PLANES['GLOBAL'];
-  var linksActuales = LINKS_LEMON[pais] || LINKS_LEMON['GLOBAL'];
+  const linksLemon = window.LINKS_LEMON || {};
+  var linksActuales = linksLemon[pais] || linksLemon['GLOBAL'];
 
   // 5. Actualizamos los textos visuales en el HTML
   var txtM = document.getElementById('txt-precio-mensual');
@@ -1445,17 +1385,17 @@ function configurarBotonesDePago() {
 
   if (btnM) { 
     // Si el link tiene la palabra "LINK_", usa el global. Si no, usa el del país.
-    var finalLinkM = linksActuales.mensual.includes("LINK_") ? LINKS_LEMON['GLOBAL'].mensual : linksActuales.mensual;
+    var finalLinkM = linksActuales.mensual.includes("LINK_") ? linksLemon['GLOBAL'].mensual : linksActuales.mensual;
     btnM.href = finalLinkM + parametroMagico; 
     btnM.target = "_blank"; 
   }
   if (btnT) { 
-    var finalLinkT = linksActuales.trimestral.includes("LINK_") ? LINKS_LEMON['GLOBAL'].trimestral : linksActuales.trimestral;
+    var finalLinkT = linksActuales.trimestral.includes("LINK_") ? linksLemon['GLOBAL'].trimestral : linksActuales.trimestral;
     btnT.href = finalLinkT + parametroMagico; 
     btnT.target = "_blank"; 
   }
   if (btnA) { 
-    var finalLinkA = linksActuales.anual.includes("LINK_") ? LINKS_LEMON['GLOBAL'].anual : linksActuales.anual;
+    var finalLinkA = linksActuales.anual.includes("LINK_") ? linksLemon['GLOBAL'].anual : linksActuales.anual;
     btnA.href = finalLinkA + parametroMagico; 
     btnA.target = "_blank"; 
   }
