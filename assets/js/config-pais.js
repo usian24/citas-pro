@@ -135,19 +135,39 @@ function adaptarPrecioLocal(pais) {
 
 async function adaptarPrecioLocalPorIP() {
   const pais = getPaisActivo();
-  if (pais && pais !== 'ES') {
+  // Si tenemos un país en caché y NO es el fallback de error (ES o DEFAULT), lo usamos directamente
+  if (pais && pais !== 'ES' && pais !== 'DEFAULT') {
     adaptarPrecioLocal(pais);
     return;
   }
+  
+  let paisIP = null;
   try {
-    const res   = await fetch('https://api.country.is/');
+    // Intento 1: GeoJS (Menos bloqueado por adblockers)
+    const res = await fetch('https://get.geojs.io/v1/ip/country.json');
     const datos = await res.json();
-    const paisIP = datos.country || 'ES';
-    adaptarPrecioLocal(paisIP);
-    guardarPaisEnCache(paisIP);
-  } catch(e) {
-    adaptarPrecioLocal('ES'); 
+    paisIP = datos.country;
+  } catch (e1) {
+    try {
+      // Intento 2: Country.is
+      const res = await fetch('https://api.country.is/');
+      const datos = await res.json();
+      paisIP = datos.country;
+    } catch (e2) {
+      try {
+        // Intento 3: IPAPI
+        const res = await fetch('https://ipapi.co/json/');
+        const datos = await res.json();
+        paisIP = datos.country_code;
+      } catch (e3) {
+        paisIP = 'DEFAULT'; // Si todos fallan (ej. Adblocker estricto), usar USD
+      }
+    }
   }
+
+  paisIP = paisIP || 'DEFAULT';
+  adaptarPrecioLocal(paisIP);
+  guardarPaisEnCache(paisIP);
 }
 
 // ─────────────────────────────────────────
