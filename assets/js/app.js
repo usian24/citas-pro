@@ -261,6 +261,19 @@ window.onload = async function () {
   // ¡MUY IMPORTANTE! Restaurar la sesión DESPUÉS de que bootComponents haya insertado el HTML de las vistas.
   if (typeof restaurarSesion === 'function') restaurarSesion();
 
+  // INTERCEPTAR ?plan=... para mostrar mensaje
+  const urlParams = new URLSearchParams(window.location.search);
+  const planIntent = urlParams.get('plan');
+  if (planIntent && (planIntent === 'mensual' || planIntent === 'trimestral' || planIntent === 'anual')) {
+    // Si la pantalla de portal está activa (no hay sesión)
+    if (document.getElementById('s-portal') && document.getElementById('s-portal').style.display !== 'none') {
+      setTimeout(function() {
+        if (typeof toast === 'function') toast('Primero regístrate y crea tu negocio para proceder al pago.', '#4A7FD4');
+        if (typeof openRegModal === 'function') openRegModal();
+      }, 500);
+    }
+  }
+
   // Sincronizar visualmente los interruptores de idioma ahora que los componentes ya existen
   if (typeof window.syncLanguageToggles === 'function') window.syncLanguageToggles();
 
