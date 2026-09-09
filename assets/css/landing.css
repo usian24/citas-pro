@@ -330,8 +330,8 @@ body.light-mode .pricing-card.popular {
 .pricing-header p { font-size: 1.1rem; margin-top: 0.5rem; text-align: center; }
 
 .price { display: flex; align-items: baseline; justify-content: center; margin: 2rem 0; }
-.price-amount { font-size: 3.5rem; font-weight: 900; color: var(--text-primary); }
-.pricing-card.popular .price-amount { font-size: 4rem; color: var(--brand-primary); }
+.price-amount { font-size: 2.5rem; font-weight: 900; color: var(--text-primary); }
+.pricing-card.popular .price-amount { font-size: 2.8rem; color: var(--brand-primary); }
 .price-period { font-size: 1rem; color: var(--text-secondary); margin-left: 0.5rem; }
 
 .savings {
