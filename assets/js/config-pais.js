@@ -96,21 +96,14 @@ function refreshMoneyUI() {
 //    La estructura ahora guarda el mes, trimestre y año.
 // ─────────────────────────────────────────
 const PRECIO_SUSCRIPCION = {
-  PE: { mes: 'S/ 25',      tri: 'S/ 75',      anu: 'S/ 300' },
-  EC: { mes: '$10',        tri: '$30',        anu: '$120' },
-  CO: { mes: '$25,248',    tri: '$75,744',    anu: '$302,976' },
-  US: { mes: '$15',        tri: '$45',        anu: '$180' },
-  MX: { mes: '$227.58',    tri: '$682.74',    anu: '$2,730.96' },
-  ES: { mes: '10€',        tri: '30€',        anu: '120€' },
-  CL: { mes: '$10',        tri: '$30',        anu: '$120' },
-  AR: { mes: '$10,830',    tri: '$32,490',    anu: '$129,960' },
-  BR: { mes: 'R$ 80',      tri: 'R$ 240',     anu: 'R$ 960' },
-  VE: { mes: 'Bs. 540',    tri: 'Bs. 1620',   anu: 'Bs. 6480' },
-  DO: { mes: 'RD$ 890',    tri: 'RD$ 2670',   anu: 'RD$ 10680' },
-  DE: { mes: '14€',        tri: '42€',        anu: '168€' },
-  NL: { mes: '14€',        tri: '42€',        anu: '168€' },
-  FR: { mes: '14€',        tri: '42€',        anu: '168€' },
-  DEFAULT: { mes: '$15',   tri: '$45',        anu: '$180' } // Precios base de Lemon Squeezy
+  PE: { mes: 'S/ 22.10',       tri: 'S/ 66.30',       anu: 'S/ 265.30' },
+  CO: { mes: '$25,350 COP',    tri: '$76,050 COP',    anu: '$304,200 COP' },
+  MX: { mes: '$234.00 MXN',    tri: '$702.00 MXN',    anu: '$2,808.00 MXN' },
+  AR: { mes: '$12,000 ARS',    tri: '$36,000 ARS',    anu: '$144,000 ARS' },
+  ES: { mes: '10€',            tri: '30€',            anu: '120€' },
+  EC: { mes: '$10.00 USD',     tri: '$30.00 USD',     anu: '$120.00 USD' },
+  CL: { mes: '$9,500 CLP',     tri: '$28,500 CLP',    anu: '$114,000 CLP' },
+  DEFAULT: { mes: '$15.00 USD',tri: '$45.00 USD',     anu: '$180.00 USD' }
 };
 
 function adaptarPrecioLocal(pais) {
@@ -126,8 +119,17 @@ function adaptarPrecioLocal(pais) {
   if (elTri) elTri.textContent = precios.tri;
   if (elAnu) elAnu.textContent = precios.anu;
 
+  // Actualizamos el modal de Suscripción en el portal del negocio (biz.html)
+  const txtMes = document.getElementById('txt-precio-mensual');
+  const txtTri = document.getElementById('txt-precio-trimestral');
+  const txtAnu = document.getElementById('txt-precio-anual');
+
+  if (txtMes) txtMes.textContent = precios.mes + ' / mes';
+  if (txtTri) txtTri.textContent = precios.tri + ' / 3 meses';
+  if (txtAnu) txtAnu.textContent = precios.anu + ' / año';
+
   // Mantenemos compatibilidad con tu código app.js anterior por si acaso
-  document.querySelectorAll('.precio-local-mes').forEach(el => el.textContent = precios.mes + '/mes');
+  document.querySelectorAll('.precio-local-mes').forEach(el => el.textContent = precios.mes + ' / mes');
   document.querySelectorAll('.precio-local-solo').forEach(el => el.textContent = precios.mes);
 }
 
