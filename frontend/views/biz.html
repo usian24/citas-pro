@@ -547,6 +547,19 @@
           <div class="toggle lang-toggle" id="toggle-lang-biz" onclick="toggleLanguage(this)"></div>
         </div>
       </div>
+      
+      <!-- NUEVO: Apartado de Seguridad (Cambio de contraseña de la tienda) -->
+      <div class="card" style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">
+          Seguridad</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <input type="password" id="biz-pass-new" class="inp" placeholder="Nueva contraseña (mín. 6 chars)">
+          <input type="password" id="biz-pass-confirm" class="inp" placeholder="Confirmar contraseña">
+          <div id="biz-pass-err" class="err-box" style="display:none;margin-top:0;"></div>
+          <button class="btn btn-blue" id="biz-pass-btn">Actualizar Contraseña</button>
+        </div>
+      </div>
+      
       <button class="btn btn-red" onclick="G('biz-out-btn').click()" style="margin-top:20px">Cerrar Sesión</button>
     </div>
   </div>

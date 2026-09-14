@@ -368,6 +368,35 @@ window.onload = async function () {
     hideErr('cfg-pass-err'); toast('Contraseña actualizada', '#4A7FD4');
   });
 
+  // NUEVO: Cambio de contraseña para el dueño de la tienda (negocio)
+  on('biz-pass-btn', 'click', async function () {
+    var p1 = V('biz-pass-new'), p2 = V('biz-pass-confirm');
+    hideErr('biz-pass-err');
+    
+    if (!p1 || p1.length < 6) { showErr('biz-pass-err', 'La contraseña debe tener al menos 6 caracteres.'); return; }
+    if (p1 !== p2) { showErr('biz-pass-err', 'Las contraseñas no coinciden.'); return; }
+    
+    const btn = G('biz-pass-btn');
+    const ogTxt = btn.textContent;
+    btn.textContent = 'Actualizando...';
+    btn.disabled = true;
+
+    try {
+      const { data, error } = await supabase.auth.updateUser({ password: p1 });
+      if (error) throw error;
+      
+      toast('¡Contraseña actualizada exitosamente!', '#22C55E');
+      G('biz-pass-new').value = '';
+      G('biz-pass-confirm').value = '';
+      closeOv('ov-config-biz');
+    } catch (e) {
+      showErr('biz-pass-err', 'Error: ' + (e.message || 'Error al actualizar contraseña.'));
+    } finally {
+      btn.textContent = ogTxt;
+      btn.disabled = false;
+    }
+  });
+
   on('close-notif', 'click', function () { closeOv('ov-notif'); });
   on('close-biz-profile', 'click', function () { closeOv('ov-biz-profile'); });
 
