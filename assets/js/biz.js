@@ -282,15 +282,17 @@ async function uploadToImgBB(file) {
 }
 
 function setupPhotoUpload() {
-  function handleImg(inputId, onLoad) {
+  function handleImg(inputId, onLoad, uploadImmediately = true) {
     const el = G(inputId); if (!el) return;
     const fresh = el.cloneNode(true); el.parentNode.replaceChild(fresh, el);
     fresh.addEventListener('change', async function (e) {
       const f = e.target.files[0];
       if (!f || !validImageType(f)) { toast('Solo JPG/PNG/WebP (máx 5MB)', '#EF4444'); return; }
       const localUrl = URL.createObjectURL(f);
-      onLoad(localUrl, true);
+      onLoad(localUrl, true, f);
       
+      if (!uploadImmediately) return; // Si no subimos de inmediato, terminamos aquí.
+
       // Permitir al navegador renderizar la imagen local antes de bloquear el hilo principal con la compresión
       await new Promise(resolve => setTimeout(resolve, 50));
       
@@ -344,18 +346,20 @@ function setupPhotoUpload() {
       toast('Logo guardado', '#22C55E');
     }
   });
-  handleImg('biz-profile-cover-input', function (d, isPreview) {
+  handleImg('biz-profile-cover-input', function (d, isPreview, file) {
     var p = G('biz-profile-cover'); if (p) p.style.backgroundImage = 'url(' + d + ')'; 
-    if (!isPreview) {
-      if (!CUR) return; CUR.cover = d; saveDB(); toast('Portada guardada', '#22C55E');
+    if (isPreview) {
+      window._pendingBizCover = file;
+      toast('Portada cargada. Pulsa Guardar cambios.', '#F59E0B');
     }
-  });
-  handleImg('biz-profile-logo-input', function (d, isPreview) {
+  }, false);
+  handleImg('biz-profile-logo-input', function (d, isPreview, file) {
     var p = G('biz-profile-logo'); if (p) p.innerHTML = '<img src="' + d + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">'; 
-    if (!isPreview) {
-      if (!CUR) return; CUR.logo = d; saveDB(); toast('Logo guardado', '#22C55E');
+    if (isPreview) {
+      window._pendingBizLogo = file;
+      toast('Logo cargado. Pulsa Guardar cambios.', '#F59E0B');
     }
-  });
+  }, false);
   handleImgs('svc-photo-input', function (d, isPreview) { if (isPreview) return; if (!REG || REG.photos.length >= 12) { toast('Máximo 12 fotos', '#EF4444'); return; } REG.photos.push(d); renderRegPhotos(); });
   handleImgs('gallery-input', function (d, isPreview) { if (isPreview) return; if (!CUR) return; if (!CUR.photos) CUR.photos = []; if (CUR.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; } CUR.photos.push(d); saveDB(); renderGallery(); toast('Foto añadida', '#22C55E'); });
   handleImg('bar-photo-input', function (d, isPreview) {
@@ -1361,10 +1365,32 @@ function saveAppt() {
    PERFIL BARBERÍA
 ══════════════════════════ */
 function saveBizProfile() {
+  saveBizProfileAsync();
+}
+async function saveBizProfileAsync() {
   if (!CUR) return;
   const nm = sanitizeText(V('pf-nm')), addr = sanitizeText(V('pf-addr')), phone = sanitizeText(V('pf-phone')), desc = sanitizeText(V('pf-desc'));
   const insta = sanitizeText(V('pf-insta')), facebook = sanitizeText(V('pf-facebook')), x_url = sanitizeText(V('pf-xurl')), tiktok = sanitizeText(V('pf-tiktok'));
   if (!nm) { toast('El nombre no puede estar vacío', '#EF4444'); return; }
+
+  // Subir logo o portada si hay pendientes
+  if (window._pendingBizLogo || window._pendingBizCover) {
+    showGlobalLoader();
+    if (window._pendingBizLogo) {
+      const opt = await processImageForUpload(window._pendingBizLogo);
+      const url = await uploadToImgBB(opt);
+      if (url) CUR.logo = url;
+      window._pendingBizLogo = null;
+    }
+    if (window._pendingBizCover) {
+      const opt = await processImageForUpload(window._pendingBizCover);
+      const url = await uploadToImgBB(opt);
+      if (url) CUR.cover = url;
+      window._pendingBizCover = null;
+    }
+    hideGlobalLoader();
+  }
+
   CUR.name = nm; CUR.addr = addr; CUR.phone = phone; CUR.desc = desc.slice(0, 300);
   CUR.insta = insta; CUR.facebook = facebook; CUR.x_url = x_url; CUR.tiktok = tiktok;
 
