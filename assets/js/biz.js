@@ -1394,7 +1394,10 @@ async function saveBizProfileAsync() {
 
     if (window._pendingBizLogo) {
       const p = G('biz-profile-logo');
-      if (p) p.innerHTML += '<div class="local-spinner" style="' + spinCss + '"></div>';
+      if (p) {
+        p.style.position = 'relative'; // CRITICAL: prevent spinner from escaping to the cover
+        p.innerHTML += '<div class="local-spinner" style="' + spinCss + '"></div>';
+      }
       
       const av = G('biz-hdr-av');
       if (av) {
@@ -1414,10 +1417,13 @@ async function saveBizProfileAsync() {
             saveDB(); 
             // Actualizar el avatar del navbar INMEDIATAMENTE
             if (av) av.innerHTML = '<img src="' + safeImg(url) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
-          }
-          if (p) {
-             const spin = p.querySelector('.local-spinner');
-             if(spin) spin.remove();
+            // Actualizar el avatar central
+            if (p) p.innerHTML = '<img src="' + safeImg(url) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
+          } else {
+            if (p) {
+               const spin = p.querySelector('.local-spinner');
+               if(spin) spin.remove();
+            }
           }
           toast('Logo subido a la nube', '#10B981');
         });
@@ -1426,6 +1432,7 @@ async function saveBizProfileAsync() {
     if (window._pendingBizCover) {
       const p = G('biz-profile-cover');
       if (p) {
+        p.style.position = 'relative'; // Asegurar que el spinner absoluto se quede dentro
         // Envolver el contenido existente para no perder el botón "Editar portada"
         const existingBtn = p.innerHTML;
         p.innerHTML = existingBtn + '<div class="local-spinner" style="' + spinCss + '"></div>';
