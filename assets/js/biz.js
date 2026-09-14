@@ -1396,13 +1396,25 @@ async function saveBizProfileAsync() {
       const p = G('biz-profile-logo');
       if (p) p.innerHTML += '<div class="local-spinner" style="' + spinCss + '"></div>';
       
+      const av = G('biz-hdr-av');
+      if (av) {
+          // Agregar spinner al mini avatar del navbar también
+          av.style.position = 'relative'; // Asegurar que el spinner absoluto se quede dentro
+          av.innerHTML += '<div class="local-spinner" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top:2px solid #fff;border-radius:50%;animation:spin 1s linear infinite;z-index:10;pointer-events:none;"></div>';
+      }
+
       const fileToUpload = window._pendingBizLogo;
       window._pendingBizLogo = null; // Limpiar para que no se re-suba
       
       processImageForUpload(fileToUpload)
         .then(opt => uploadToImgBB(opt))
         .then(url => { 
-          if (url) { CUR.logo = url; saveDB(); }
+          if (url) { 
+            CUR.logo = url; 
+            saveDB(); 
+            // Actualizar el avatar del navbar INMEDIATAMENTE
+            if (av) av.innerHTML = '<img src="' + safeImg(url) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
+          }
           if (p) {
              const spin = p.querySelector('.local-spinner');
              if(spin) spin.remove();
