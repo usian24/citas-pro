@@ -1373,30 +1373,7 @@ async function saveBizProfileAsync() {
   const insta = sanitizeText(V('pf-insta')), facebook = sanitizeText(V('pf-facebook')), x_url = sanitizeText(V('pf-xurl')), tiktok = sanitizeText(V('pf-tiktok'));
   if (!nm) { toast('El nombre no puede estar vacío', '#EF4444'); return; }
 
-  // Subir logo o portada si hay pendientes (en paralelo para mayor velocidad)
-  if (window._pendingBizLogo || window._pendingBizCover) {
-    showGlobalLoader();
-    const uploadTasks = [];
-
-    if (window._pendingBizLogo) {
-      uploadTasks.push(
-        processImageForUpload(window._pendingBizLogo)
-          .then(opt => uploadToImgBB(opt))
-          .then(url => { if (url) CUR.logo = url; window._pendingBizLogo = null; })
-      );
-    }
-    if (window._pendingBizCover) {
-      uploadTasks.push(
-        processImageForUpload(window._pendingBizCover)
-          .then(opt => uploadToImgBB(opt))
-          .then(url => { if (url) CUR.cover = url; window._pendingBizCover = null; })
-      );
-    }
-
-    await Promise.all(uploadTasks);
-    hideGlobalLoader();
-  }
-
+  // 1. Guardado Inmediato de Textos (Cero esperas)
   CUR.name = nm; CUR.addr = addr; CUR.phone = phone; CUR.desc = desc.slice(0, 300);
   CUR.insta = insta; CUR.facebook = facebook; CUR.x_url = x_url; CUR.tiktok = tiktok;
 
@@ -1406,8 +1383,57 @@ async function saveBizProfileAsync() {
   const stmps = safeInt(V('pf-loyalty-stamps'), 10);
   CUR.loyalty.stamps = stmps > 1 ? stmps : 10;
 
-  saveDB(); initBizPanel(); toast('Perfil guardado', '#4A7FD4');
+  saveDB(); 
+  toast('Perfil guardado', '#4A7FD4');
 
+  // 2. Subida en Segundo Plano (Sin bloquear la pantalla)
+  if (window._pendingBizLogo || window._pendingBizCover) {
+    
+    // CSS dinámico para el spinner local (estilo premium)
+    const spinCss = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30px;height:30px;border:3px solid rgba(255,255,255,0.3);border-top:3px solid #fff;border-radius:50%;animation:spin 1s linear infinite;z-index:10;pointer-events:none;box-shadow:0 0 10px rgba(0,0,0,0.5);';
+
+    if (window._pendingBizLogo) {
+      const p = G('biz-profile-logo');
+      if (p) p.innerHTML += '<div class="local-spinner" style="' + spinCss + '"></div>';
+      
+      const fileToUpload = window._pendingBizLogo;
+      window._pendingBizLogo = null; // Limpiar para que no se re-suba
+      
+      processImageForUpload(fileToUpload)
+        .then(opt => uploadToImgBB(opt))
+        .then(url => { 
+          if (url) { CUR.logo = url; saveDB(); }
+          if (p) {
+             const spin = p.querySelector('.local-spinner');
+             if(spin) spin.remove();
+          }
+          toast('Logo subido a la nube', '#10B981');
+        });
+    }
+    
+    if (window._pendingBizCover) {
+      const p = G('biz-profile-cover');
+      if (p) {
+        // Envolver el contenido existente para no perder el botón "Editar portada"
+        const existingBtn = p.innerHTML;
+        p.innerHTML = existingBtn + '<div class="local-spinner" style="' + spinCss + '"></div>';
+      }
+
+      const fileToUpload = window._pendingBizCover;
+      window._pendingBizCover = null;
+      
+      processImageForUpload(fileToUpload)
+        .then(opt => uploadToImgBB(opt))
+        .then(url => { 
+          if (url) { CUR.cover = url; saveDB(); }
+          if (p) {
+             const spin = p.querySelector('.local-spinner');
+             if(spin) spin.remove();
+          }
+          toast('Portada subida a la nube', '#10B981');
+        });
+    }
+  }
 }
 // ══════════════════════════════════════════════════════════════
   //  INTEGRACIÓN DE PAGOS - LEMON SQUEEZY (PLAY STORE FRIENDLY)
