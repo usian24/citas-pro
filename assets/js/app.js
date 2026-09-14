@@ -391,6 +391,15 @@ window.onload = async function () {
       if (!data.success) throw new Error(data.error || 'Error al actualizar contraseña.');
       
       toast('¡Contraseña actualizada exitosamente!', '#22C55E');
+      
+      // CRÍTICO: Actualizar el estado en memoria para que `saveDB()` u otros procesos
+      // (como cerrar sesión) no envíen por accidente la contraseña antigua.
+      if (typeof CUR !== 'undefined' && CUR) {
+        CUR.password = p1;
+        CUR.pass = p1; 
+      }
+      if (typeof saveDB === 'function') saveDB();
+
       G('biz-pass-new').value = '';
       G('biz-pass-confirm').value = '';
       closeOv('ov-config-biz');
