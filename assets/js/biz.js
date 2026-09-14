@@ -1386,28 +1386,14 @@ async function saveBizProfileAsync() {
   saveDB(); 
   toast('Perfil guardado', '#4A7FD4');
 
-  // 2. Subida en Segundo Plano (Sin bloquear la pantalla)
+  // 2. Subida en Segundo Plano (Upload silencioso)
   if (window._pendingBizLogo || window._pendingBizCover) {
-    
-    // CSS dinámico para el spinner local (estilo premium)
-    const spinCss = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30px;height:30px;border:3px solid rgba(255,255,255,0.3);border-top:3px solid #fff;border-radius:50%;animation:spin 1s linear infinite;z-index:10;pointer-events:none;box-shadow:0 0 10px rgba(0,0,0,0.5);';
 
     if (window._pendingBizLogo) {
-      const p = G('biz-profile-logo');
-      if (p) {
-        p.style.position = 'relative'; // CRITICAL: prevent spinner from escaping to the cover
-        p.innerHTML += '<div class="local-spinner" style="' + spinCss + '"></div>';
-      }
-      
       const av = G('biz-hdr-av');
-      if (av) {
-          // Agregar spinner al mini avatar del navbar también
-          av.style.position = 'relative'; // Asegurar que el spinner absoluto se quede dentro
-          av.innerHTML += '<div class="local-spinner" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top:2px solid #fff;border-radius:50%;animation:spin 1s linear infinite;z-index:10;pointer-events:none;"></div>';
-      }
-
+      const p = G('biz-profile-logo');
       const fileToUpload = window._pendingBizLogo;
-      window._pendingBizLogo = null; // Limpiar para que no se re-suba
+      window._pendingBizLogo = null; 
       
       processImageForUpload(fileToUpload)
         .then(opt => uploadToImgBB(opt))
@@ -1415,41 +1401,26 @@ async function saveBizProfileAsync() {
           if (url) { 
             CUR.logo = url; 
             saveDB(); 
-            // Actualizar el avatar del navbar INMEDIATAMENTE
+            // Actualizar visualmente por si acaso
             if (av) av.innerHTML = '<img src="' + safeImg(url) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
-            // Actualizar el avatar central
             if (p) p.innerHTML = '<img src="' + safeImg(url) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
-          } else {
-            if (p) {
-               const spin = p.querySelector('.local-spinner');
-               if(spin) spin.remove();
-            }
+            toast('Logo guardado en la nube', '#10B981');
           }
-          toast('Logo subido a la nube', '#10B981');
         });
     }
     
     if (window._pendingBizCover) {
-      const p = G('biz-profile-cover');
-      if (p) {
-        p.style.position = 'relative'; // Asegurar que el spinner absoluto se quede dentro
-        // Envolver el contenido existente para no perder el botón "Editar portada"
-        const existingBtn = p.innerHTML;
-        p.innerHTML = existingBtn + '<div class="local-spinner" style="' + spinCss + '"></div>';
-      }
-
       const fileToUpload = window._pendingBizCover;
       window._pendingBizCover = null;
       
       processImageForUpload(fileToUpload)
         .then(opt => uploadToImgBB(opt))
         .then(url => { 
-          if (url) { CUR.cover = url; saveDB(); }
-          if (p) {
-             const spin = p.querySelector('.local-spinner');
-             if(spin) spin.remove();
+          if (url) { 
+            CUR.cover = url; 
+            saveDB(); 
+            toast('Portada guardada en la nube', '#10B981');
           }
-          toast('Portada subida a la nube', '#10B981');
         });
     }
   }
