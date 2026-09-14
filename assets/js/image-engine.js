@@ -26,7 +26,7 @@ async function processImageForUpload(file) {
   };
 
   try {
-    const compressedFile = await browserImageCompression(file, options);
+    const compressedFile = await imageCompression(file, options);
     return compressedFile;
   } catch (error) {
     console.error('Error al optimizar la imagen, se usará la original:', error);

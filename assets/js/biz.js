@@ -1373,21 +1373,27 @@ async function saveBizProfileAsync() {
   const insta = sanitizeText(V('pf-insta')), facebook = sanitizeText(V('pf-facebook')), x_url = sanitizeText(V('pf-xurl')), tiktok = sanitizeText(V('pf-tiktok'));
   if (!nm) { toast('El nombre no puede estar vacío', '#EF4444'); return; }
 
-  // Subir logo o portada si hay pendientes
+  // Subir logo o portada si hay pendientes (en paralelo para mayor velocidad)
   if (window._pendingBizLogo || window._pendingBizCover) {
     showGlobalLoader();
+    const uploadTasks = [];
+
     if (window._pendingBizLogo) {
-      const opt = await processImageForUpload(window._pendingBizLogo);
-      const url = await uploadToImgBB(opt);
-      if (url) CUR.logo = url;
-      window._pendingBizLogo = null;
+      uploadTasks.push(
+        processImageForUpload(window._pendingBizLogo)
+          .then(opt => uploadToImgBB(opt))
+          .then(url => { if (url) CUR.logo = url; window._pendingBizLogo = null; })
+      );
     }
     if (window._pendingBizCover) {
-      const opt = await processImageForUpload(window._pendingBizCover);
-      const url = await uploadToImgBB(opt);
-      if (url) CUR.cover = url;
-      window._pendingBizCover = null;
+      uploadTasks.push(
+        processImageForUpload(window._pendingBizCover)
+          .then(opt => uploadToImgBB(opt))
+          .then(url => { if (url) CUR.cover = url; window._pendingBizCover = null; })
+      );
     }
+
+    await Promise.all(uploadTasks);
     hideGlobalLoader();
   }
 
