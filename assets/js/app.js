@@ -382,8 +382,13 @@ window.onload = async function () {
     btn.disabled = true;
 
     try {
-      const { data, error } = await supabase.auth.updateUser({ password: p1 });
-      if (error) throw error;
+      const res = await fetch('/api/update-biz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: CUR.id, pass: p1 })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Error al actualizar contraseña.');
       
       toast('¡Contraseña actualizada exitosamente!', '#22C55E');
       G('biz-pass-new').value = '';
