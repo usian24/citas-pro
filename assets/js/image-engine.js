@@ -20,7 +20,7 @@ async function processImageForUpload(file) {
   const options = {
     maxSizeMB: 1,           // Límite de tamaño de 1MB
     maxWidthOrHeight: 1280,   // Redimensiona si es más grande de 1280px, manteniendo el aspect ratio
-    useWebWorker: true,     // Usa un Web Worker para no bloquear la interfaz
+    useWebWorker: false,    // Usa un Web Worker para no bloquear la interfaz
     fileType: 'image/webp', // ¡La magia! Convierte a WebP
     initialQuality: 0.8     // Calidad del 80%, un excelente balance
   };
