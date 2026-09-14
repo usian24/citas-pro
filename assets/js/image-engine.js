@@ -11,25 +11,42 @@
  * @param {File} file El archivo de imagen original (JPG, PNG, etc.).
  * @returns {Promise<File>} Una promesa que resuelve al nuevo archivo optimizado en formato WebP.
  */
-async function processImageForUpload(file) {
-  if (!file || !file.type.startsWith('image/')) {
-    console.error('Archivo no válido para procesar:', file);
-    return file; // Devuelve el archivo original si no es una imagen
-  }
+function processImageForUpload(file) {
+  return new Promise((resolve) => {
+    if (!file || !file.type.startsWith('image/')) return resolve(file);
 
-  const options = {
-    maxSizeMB: 1,           // Límite de tamaño de 1MB
-    maxWidthOrHeight: 1280,   // Redimensiona si es más grande de 1280px, manteniendo el aspect ratio
-    useWebWorker: false,    // Usa un Web Worker para no bloquear la interfaz
-    fileType: 'image/webp', // ¡La magia! Convierte a WebP
-    initialQuality: 0.8     // Calidad del 80%, un excelente balance
-  };
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = new Image();
+      img.onload = function () {
+        const MAX_SIZE = 1280;
+        let width = img.width;
+        let height = img.height;
 
-  try {
-    const compressedFile = await imageCompression(file, options);
-    return compressedFile;
-  } catch (error) {
-    console.error('Error al optimizar la imagen, se usará la original:', error);
-    return file; // Si algo falla, subimos el archivo original para no interrumpir al usuario.
-  }
+        if (width > MAX_SIZE || height > MAX_SIZE) {
+          if (width > height) { height *= MAX_SIZE / width; width = MAX_SIZE; } 
+          else { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(function (blob) {
+          if (!blob) return resolve(file);
+          const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+            type: 'image/webp',
+            lastModified: Date.now()
+          });
+          resolve(newFile);
+        }, 'image/webp', 0.8);
+      };
+      img.onerror = () => resolve(file);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
 }
