@@ -250,19 +250,37 @@ function updateRmPassStrength(pass) {
 /* ══════════════════════════
    IMGBB
 ══════════════════════════ */
+function showGlobalLoader() {
+  let loader = document.getElementById('global-loader');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'global-loader';
+    loader.innerHTML = '<div class="loader-spinner"></div><div id="global-loader-text">Procesando imagen...</div>';
+    document.body.appendChild(loader);
+  }
+  loader.classList.add('on');
+}
+
+function hideGlobalLoader() {
+  const loader = document.getElementById('global-loader');
+  if (loader) loader.classList.remove('on');
+}
+
 async function uploadToImgBB(file) {
   if (!file) return null;
+  showGlobalLoader();
   const formData = new FormData();
   formData.append('image', file);
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(function () { controller.abort(); }, 8000);
+    const timeoutId = setTimeout(function () { controller.abort(); }, 12000);
     const res = await fetch('https://api.imgbb.com/1/upload?key=6d7ef48cb26db3e0279b772ff3efeed5', { method: 'POST', body: formData, signal: controller.signal });
     clearTimeout(timeoutId);
     const data = await res.json();
+    hideGlobalLoader();
     if (data.success) return data.data.url;
     throw new Error('Error ImgBB');
-  } catch (e) { toast('Error al subir la imagen', '#EF4444'); return null; }
+  } catch (e) { hideGlobalLoader(); toast('Error al subir la imagen', '#EF4444'); return null; }
 }
 
 function setupPhotoUpload() {
