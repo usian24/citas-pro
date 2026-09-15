@@ -153,8 +153,21 @@
         </div>
       </a>
     </div>
-
   </div>
+
+  <!-- LOADER GLOBAL TEMPORAL PARA RUTAS DIRECTAS -->
+  <div class="scr" id="s-global-loader" style="min-height:100vh;background:#07090F;flex-direction:column;align-items:center;justify-content:center;">
+    <div style="width:40px;height:40px;border:3px solid rgba(74,127,212,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;"></div>
+  </div>
+  <script>
+    if (window.location.hash && (window.location.hash.startsWith('#b/') || window.location.hash.startsWith('#reset-password/') || window.location.hash.startsWith('#manage/') || window.location.hash.startsWith('#booking/'))) {
+      var _sPortal = document.getElementById('s-portal');
+      if (_sPortal) _sPortal.classList.remove('on');
+      var _sLoader = document.getElementById('s-global-loader');
+      if (_sLoader) _sLoader.classList.add('on');
+    }
+  </script>
+
   <!-- COMPONENTES DINÁMICOS (Se inyectan desde loader.js) -->
   <div class="scr" id="s-booking-portal"></div>
   <div class="scr" id="s-admin"></div>
