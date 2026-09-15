@@ -352,17 +352,13 @@ router.post('/update-biz', async (req, res) => {
     }
 
     let error;
-    // Si el payload no tiene 'name', es una actualización parcial (ej. activar o suspender, o cambiar contraseña).
-    // Para evitar el "fallo silencioso" del .update() por reglas RLS, obtenemos el registro actual,
-    // fusionamos los cambios y usamos .upsert() que sí nos permite guardar los cambios.
+    // Si el payload no tiene 'name', es una actualización parcial (ej. activar o suspender).
+    // Usamos .update() para evitar el error "not-null constraint" de Supabase en inserts.
     if (payload.name === undefined) {
-      const { data: existing, error: fetchErr } = await supabase.from('businesses').select('*').eq('id', payload.id).single();
-      if (fetchErr || !existing) {
-        return res.status(400).json({ success: false, error: 'Negocio no encontrado' });
-      }
-      const mergedPayload = { ...existing, ...payload };
-      const resUpsert = await supabase.from('businesses').upsert(mergedPayload);
-      error = resUpsert.error;
+      const updatePayload = { ...payload };
+      delete updatePayload.id;
+      const resUpdate = await supabase.from('businesses').update(updatePayload).eq('id', payload.id);
+      error = resUpdate.error;
     } else {
       const resUpsert = await supabase.from('businesses').upsert(payload);
       error = resUpsert.error;

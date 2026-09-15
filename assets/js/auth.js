@@ -209,7 +209,10 @@ async function doForgot() {
     const res = await fetch('/api/request-password-reset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email })
+      body: JSON.stringify({ 
+        email: email,
+        resetBaseUrl: window.location.origin + window.location.pathname 
+      })
     });
 
     if (!res.ok) {
