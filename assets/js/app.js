@@ -45,7 +45,7 @@ function generateQR(text, containerId) {
 
 function openQRModal() {
   if (!CUR) return;
-  var link = 'https://citasproonline.com/#b/' + CUR.id;
+  var link = window.location.origin + '/#b/' + CUR.id;
   var el = G('qr-link-text');
   if (el) el.textContent = link;
   generateQR(link, 'qr-code');
@@ -506,7 +506,7 @@ window.onload = async function () {
     if (typeof copyWorkerLink === 'function') {
       copyWorkerLink();
     } else if (CUR) {
-      try { navigator.clipboard.writeText('https://citasproonline.com/#b/' + CUR.id); } catch (e) { }
+      try { navigator.clipboard.writeText(window.location.origin + '/#b/' + CUR.id); } catch (e) { }
       toast('Enlace copiado', '#4A7FD4');
     }
   });
@@ -574,7 +574,7 @@ window.onload = async function () {
   on('qr-btn', 'click', openQRModal);
   on('qr-copy-btn', 'click', function () {
     if (!CUR) return;
-    try { navigator.clipboard.writeText('https://citasproonline.com/#b/' + CUR.id); } catch (e) { }
+    try { navigator.clipboard.writeText(window.location.origin + '/#b/' + CUR.id); } catch (e) { }
     toast('Enlace copiado', '#4A7FD4');
   });
   on('qr-download-btn', 'click', function () {

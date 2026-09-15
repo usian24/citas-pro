@@ -413,15 +413,15 @@ function finalizeBizReg() {
     }
   }
 
-  T('biz-link-display', 'citasproonline.com/#b/' + slug); T('neg-badge', DB.businesses.length);
-  const waLink = G('wa-share-link'); if (waLink) waLink.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita en ' + REG.name + ' → https://citasproonline.com/b/' + slug);
+  T('biz-link-display', window.location.host + '/#b/' + slug); T('neg-badge', DB.businesses.length);
+  const waLink = G('wa-share-link'); if (waLink) waLink.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita en ' + REG.name + ' → ' + window.location.origin + '/#b/' + slug);
   checkNotifications();
 }
 
 function completeBizReg() { CUR = DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0]; if (CUR) showBizPanel(); else showRegStep(0); }
 
 function copyLink() {
-  const link = 'https://citasproonline.com/#b/' + (CUR ? CUR.id : DB.currentBiz || 'mi-negocio');
+  const link = window.location.origin + '/#b/' + (CUR ? CUR.id : DB.currentBiz || 'mi-negocio');
   try { navigator.clipboard.writeText(link); } catch (e) { }
   toast('Enlace copiado', '#4A7FD4');
 }
@@ -471,7 +471,7 @@ function initBizPanel() {
   T('bh-week', weekA.length);
   T('bh-month', money(monthA.reduce(function (s, a) { return s + (a.price || 0); }, 0)));
 
-  const link = 'citasproonline.com/#b/' + CUR.id;
+  const link = window.location.host + '/#b/' + CUR.id;
   T('biz-link-show', link);
   const wah = G('wa-share-home'); if (wah) wah.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita en ' + CUR.name + ' → https://' + link);
 

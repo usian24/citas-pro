@@ -68,7 +68,7 @@ function initWorkerPanel() {
   T('wk-week', weekA.length);
   T('wk-month', money(monthA.reduce(function (s, a) { return s + (a.price || 0); }, 0)));
 
-  var link = 'citasproonline.com/#b/' + CUR.id;
+  var link = window.location.host + '/#b/' + CUR.id;
   T('wk-link-show', link);
   var waShare = G('wk-wa-share');
   if (waShare) waShare.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita con ' + CUR_WORKER.name + ' en ' + CUR.name + ' → https://' + link);
@@ -841,7 +841,7 @@ function setupWorkerPhotoUpload() {
 ══════════════════════════ */
 function copyWorkerLink() {
   if (!CUR) return;
-  var link = 'https://citasproonline.com/#b/' + CUR.id;
+  var link = window.location.origin + '/#b/' + CUR.id;
   var t = document.createElement('input'); t.value = link; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t);
   toast('Link copiado', '#4A7FD4');
 }
@@ -1054,7 +1054,7 @@ function renderWorkerDailyTimeline(dateStr) {
     T('wk-week', weekA.length);
     T('wk-month', money(monthA.reduce(function (s, a) { return s + (a.price || 0); }, 0)));
   
-    const link = 'citasproonline.com/#b/' + CUR.id;
+    const link = window.location.host + '/#b/' + CUR.id;
     T('wk-link-show', link);
     const waShare = G('wk-wa-share');
     if (waShare) waShare.href = 'https://wa.me/?text=' + encodeURIComponent('Reserva tu cita con ' + CUR_WORKER.name + ' en ' + CUR.name + ' → https://' + link);
@@ -1782,7 +1782,7 @@ function renderWorkerDailyTimeline(dateStr) {
   ══════════════════════════ */
   function copyWorkerLink() {
     if (!CUR) return;
-    const link = 'https://citasproonline.com/#b/' + CUR.id;
+    const link = window.location.origin + '/#b/' + CUR.id;
     const t = document.createElement('input'); t.value = link; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t);
     toast('Link copiado', '#4A7FD4');
   }
