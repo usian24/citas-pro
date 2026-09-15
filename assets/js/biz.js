@@ -567,7 +567,7 @@ function openBizConfig() {
   openOv('ov-config-biz');
   const tgl = G('toggle-dark-mode-biz');
   if (tgl) {
-    if (document.documentElement.classList.contains('dark')) tgl.classList.add('on');
+    if (!document.documentElement.classList.contains('dark')) tgl.classList.add('on');
     else tgl.classList.remove('on');
   }
 }

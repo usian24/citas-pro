@@ -216,6 +216,11 @@ function openWorkerConfig() {
     if (Notification.permission === 'granted') tgl.classList.add('on');
     else tgl.classList.remove('on');
   }
+  var themeTgl = G('toggle-dark-mode');
+  if (themeTgl) {
+    if (!document.documentElement.classList.contains('dark')) themeTgl.classList.add('on');
+    else themeTgl.classList.remove('on');
+  }
 }
 
 function openWorkerNotifs() {
@@ -1182,6 +1187,11 @@ function renderWorkerDailyTimeline(dateStr) {
     if (tgl) {
       if (Notification.permission === 'granted') tgl.classList.add('on');
       else tgl.classList.remove('on');
+    }
+    const themeTgl = G('toggle-dark-mode');
+    if (themeTgl) {
+      if (!document.documentElement.classList.contains('dark')) themeTgl.classList.add('on');
+      else themeTgl.classList.remove('on');
     }
   }
   

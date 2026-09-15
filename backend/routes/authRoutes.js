@@ -130,7 +130,7 @@ router.post('/request-password-reset', async (req, res) => {
   const resetToken = jwt.sign(
     { userId: user.id, email: user.email, type: userType },
     JWT_SECRET,
-    { expiresIn: '1h' }
+    { expiresIn: '10m' }
   );
 
   const resetBaseUrl = req.body.resetBaseUrl || (`${req.get('origin') || 'https://citasproonline.com'}/app`);
