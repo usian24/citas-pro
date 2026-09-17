@@ -478,7 +478,7 @@ window.onload = async function () {
 
   /* Modales negocio */
   on('close-bar', 'click', function () { closeOv('ov-worker'); });
-  on('save-bar', 'click', function () {
+  on('save-bar-btn', 'click', function () {
     if (typeof saveWorkerProfile === 'function') saveWorkerProfile();
   });
   on('close-appt', 'click', function () { closeOv('ov-appt'); });
