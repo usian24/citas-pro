@@ -57,7 +57,15 @@
     <div class="bstep" id="cs-4" style="padding:20px">
       <div style="font-size:20px;font-weight:900;margin-bottom:4px">Elige fecha y hora</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:18px">Selecciona el día y la hora disponible</div>
-      <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Fecha</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;">Fecha</div>
+        <div style="position:relative; width:36px; height:36px;">
+          <input type="date" id="cl-calendar-picker" style="position:absolute; opacity:0; width:100%; height:100%; cursor:pointer; left:0; top:0; z-index:2;">
+          <button class="btn btn-ghost" style="position:absolute; width:100%; height:100%; padding:0; display:flex; align-items:center; justify-content:center; border:1px solid var(--b); left:0; top:0; z-index:1;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </button>
+        </div>
+      </div>
       <div class="drow" id="cl-dates"></div>
       <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Hora disponible</div>
       <div id="cl-time-available" style="font-size:12px;color:var(--green);margin-bottom:10px;font-weight:600"></div>

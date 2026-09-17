@@ -263,13 +263,19 @@ function clStep4() {
   buildDates(CSEL.bizId, CSEL.workerId); clGoStep(4);
 }
 
-function buildDates(bizId, workerId) {
+function buildDates(bizId, workerId, startDateStr) {
   var biz = getBizById(bizId); if (!biz) return;
   var worker = (biz.workers || []).filter(function (w) { return w.id === workerId; })[0];
   var horario = (worker && worker.horario) ? worker.horario : (biz.horario || DEFAULT_HORARIO);
-  var now = getNowInBizTimezone(biz.country || 'ES');
+  
+  var today = getNowInBizTimezone(biz.country || 'ES');
+  var now = startDateStr ? new Date(startDateStr + 'T00:00:00') : new Date(today);
+  // Ensure "now" is not strictly before today (ignoring time)
+  if (now.setHours(0,0,0,0) < today.setHours(0,0,0,0)) now = new Date(today);
+
   var dates = [], dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  for (var i = 0; i < 14; i++) {
+  // Look ahead up to 30 days to find 7 open days
+  for (var i = 0; i < 30; i++) {
     var d = new Date(now); d.setDate(now.getDate() + i);
     var hn = dayNames[d.getDay()], hd = horario.filter(function (h) { return h.day === hn; })[0];
     if (!hd || hd.open) dates.push(d);
@@ -284,9 +290,11 @@ function buildDates(bizId, workerId) {
       + '<div style="font-size:9px;color:var(--muted)">' + MONTHS_SHORT[d.getMonth()] + '</div>'
       + '</div>';
   }).join(''));
+  
   var firstDs = dates.length
     ? dates[0].getFullYear() + '-' + String(dates[0].getMonth() + 1).padStart(2, '0') + '-' + String(dates[0].getDate()).padStart(2, '0')
-    : now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    : today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  
   CSEL.date = firstDs; CSEL.bizCountry = biz.country || 'ES';
   document.querySelectorAll('.dateopt').forEach(function (o) {
     o.addEventListener('click', function () {
@@ -294,6 +302,31 @@ function buildDates(bizId, workerId) {
       o.classList.add('sel'); CSEL.date = o.getAttribute('data-dt'); buildTimes(bizId, workerId);
     });
   });
+
+  // Configurar Date Picker del Calendario
+  var datePicker = document.getElementById('cl-calendar-picker');
+  if (datePicker) {
+    var maxDate = new Date(today);
+    maxDate.setDate(today.getDate() + 30); // Maximo 30 dias en el futuro
+    var minDateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    var maxDateStr = maxDate.getFullYear() + '-' + String(maxDate.getMonth() + 1).padStart(2, '0') + '-' + String(maxDate.getDate()).padStart(2, '0');
+    
+    datePicker.min = minDateStr;
+    datePicker.max = maxDateStr;
+    
+    // Solo agregar el listener si no tiene uno para evitar duplicados,
+    // o remover el viejo clonando (aunque al cambiar la vista no importa mucho porque el elemento no se destruye)
+    datePicker.onchange = function(e) {
+        var selected = e.target.value;
+        if (selected && selected >= minDateStr && selected <= maxDateStr) {
+            buildDates(bizId, workerId, selected);
+        } else {
+            toast('Por favor selecciona una fecha válida (hasta 30 días).', '#EF4444');
+            e.target.value = '';
+        }
+    };
+  }
+
   buildTimes(bizId, workerId);
 }
 
