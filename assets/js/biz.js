@@ -1009,7 +1009,7 @@ function openWorkerModal(id) {
   openOv('ov-worker');
 }
 
-function saveWorkerProfile() {
+function saveBizWorkerProfile() {
   const name = sanitizeText(V('bar-name')), spec = sanitizeText(V('bar-spec')), phone = sanitizeText(V('bar-phone')), email = V('bar-email').trim().toLowerCase(), pass = V('bar-pass'), photo = window._barPhoto || null;
   if (!name) { toast('Nombre requerido', '#EF4444'); return; } if (!CUR) return; if (!CUR.workers) CUR.workers = [];
   const workerId = editWorkerId || 'w_' + Date.now();
