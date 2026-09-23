@@ -211,47 +211,17 @@ router.post('/sync', async (req, res) => {
         const esNueva = !enSupabase && appt.status === 'confirmed';
         const esReagendada = appt.status === 'rescheduled' && !!enSupabase;
 
-        // 🛡️ ESCUDO ANTI-SPAM (SOLO 1 CITA ACTIVA POR EMAIL)
-        if (appt.status !== 'cancelled' && appt.status !== 'completed' && !esReagendada && (appt.client_email || appt.email)) {
-          const emailToCheck = appt.client_email || appt.email;
-          const { data: userConflicts } = await supabase
-            .from('appointments')
-            .select('id, date, time')
-            .eq('business_id', business_id)
-            .ilike('client_email', emailToCheck)
-            .neq('status', 'cancelled')
-            .neq('status', 'completed')
-            .neq('id', String(appt.id))
-            .limit(1);
-
-          if (userConflicts && userConflicts.length > 0) {
-            apptErrors.push({ 
-              id: appt.id, 
-              msg: 'Ya tienes una cita activa el ' + userConflicts[0].date + ' a las ' + userConflicts[0].time + '. Por favor complétala o cancélala antes de agendar otra.' 
-            });
-            continue; 
-          }
-        }
-
-        // 🛡️ PREVENCIÓN DE DOBLE RESERVA (RACE CONDITION - CAPA DE APLICACIÓN)
-        // NOTA: Para una seguridad absoluta contra condiciones de carrera milimétricas,
-        // debes agregar este índice único en tu base de datos Supabase mediante SQL:
-        // CREATE UNIQUE INDEX unique_active_appointment ON appointments (business_id, worker_id, date, time) WHERE status != 'cancelled';
+        // 🛡️ PREVENCIÓN DE DOBLE RESERVA (RACE CONDITION)
         if (appt.status !== 'cancelled') {
-          const { data: conflict, error: conflictError } = await supabase
+          const { data: conflict } = await supabase
             .from('appointments')
             .select('id')
             .eq('business_id', business_id)
-            .eq('worker_id', appt.worker_id || '')
             .eq('date', appt.date)
             .eq('time', appt.time)
             .neq('status', 'cancelled')
             .neq('id', String(appt.id))
             .limit(1);
-
-          if (conflictError) {
-            console.error('Error verificando conflicto de cita:', conflictError.message);
-          }
 
           if (conflict && conflict.length > 0) {
             apptErrors.push({ id: appt.id, msg: 'El horario de las ' + appt.time + ' acaba de ser ocupado por otra persona. Por favor elige otro.' });
@@ -277,11 +247,7 @@ router.post('/sync', async (req, res) => {
         }).select();
 
         if (error) {
-          if (error.code === '23505') {
-            apptErrors.push({ id: appt.id, msg: 'Ups, el horario de las ' + appt.time + ' acaba de ser reservado por alguien más. Por favor, elige otro.' });
-          } else {
-            apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
-          }
+          apptErrors.push({ id: appt.id, msg: error.message, hint: error.hint || '', code: error.code || '' });
           continue;
         }
 

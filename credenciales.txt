@@ -1,5 +1,5 @@
-SUPABASE_URL=https://fcbbquvuffpmudvwqgbg.supabase.co
-SUPABASE_ANON_KEY=sb_publishable_T-vz8QfJf_BB6XiHDavtLg_KyQvhjOF
+SUPABASE_URL=https://krbtoepzoorpdedtykug.supabase.co
+SUPABASE_ANON_KEY=sb_publishable_IXquO0XEbEkFBmZgblzjVg_adtTWCW-
 LEMON_WEBHOOK_SECRET=7caa91576d4cb61a354b46257d7d8675d62614b8
 IMGBB_API_KEY=6d7ef48cb26db3e0279b772ff3efeed5
 RESEND_API_KEY=re_aLErNGk3_Sf1hj7DVybHsNXPPgmbpQ47L
