@@ -23,7 +23,7 @@
             -moz-osx-font-smoothing: grayscale;
         }
         
-        /* Imágenes de fondo dinámicas (creadas con IA) */
+        /* Imágenes de fondo dinámicas */
         .hero-img { 
             background-image: url('assets/img/hero-bg.jpg'); 
             background-size: cover; 
@@ -33,10 +33,25 @@
             background-image: url('assets/img/salon-bg.jpg'); 
             background-size: cover; 
             background-position: center; 
-            background-attachment: fixed; /* Efecto Parallax sutil */
         }
         .hands-img { 
             background-image: url('assets/img/barber-hands.jpg'); 
+            background-size: cover; 
+            background-position: center; 
+        }
+        .worker-img {
+            background-image: url('assets/img/worker-app.jpg'); 
+            background-size: cover; 
+            background-position: center; 
+        }
+        .financials-img {
+            background-image: url('assets/img/financials.jpg'); 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed; /* Parallax sutil */
+        }
+        .products-img {
+            background-image: url('assets/img/products.jpg'); 
             background-size: cover; 
             background-position: center; 
         }
@@ -55,16 +70,18 @@
 </head>
 <body class="bg-white text-zinc-900 selection:bg-zinc-900 selection:text-white">
 
-    <!-- NAVBAR TIPO APPLE -->
+    <!-- NAVBAR -->
     <nav class="fixed top-0 w-full z-50 bg-white/70 blur-nav border-b border-zinc-200/40 transition-all">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <a href="#" class="font-black tracking-tighter text-xl flex items-center gap-2 hover:opacity-70 transition">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <img src="assets/img/procitas-logo.svg" alt="Citas Pro" class="w-8 h-8">
                 CITAS PRO
             </a>
             
-            <div class="hidden md:flex items-center gap-10 font-medium text-sm text-zinc-500">
-                <a href="#negocios" class="hover:text-black transition">Para el Local</a>
+            <div class="hidden md:flex items-center gap-8 font-medium text-sm text-zinc-500">
+                <a href="#negocios" class="hover:text-black transition">El Local</a>
+                <a href="#equipo" class="hover:text-black transition">El Equipo</a>
+                <a href="#ventas" class="hover:text-black transition">Ventas</a>
                 <a href="#explorar" class="hover:text-black transition">Para Clientes</a>
                 <a href="#precios" class="hover:text-black transition">Precios</a>
             </div>
@@ -78,10 +95,10 @@
         </div>
     </nav>
 
-    <!-- HERO SECTION (IMPACTO VISUAL GRANDE) -->
+    <!-- HERO SECTION -->
     <section class="relative h-screen w-full flex items-center justify-center pt-16">
         <div class="absolute inset-0 hero-img z-0"></div>
-        <div class="absolute inset-0 bg-black/40 z-0"></div>
+        <div class="absolute inset-0 bg-black/50 z-0"></div>
         
         <div class="relative z-10 text-center px-6 max-w-5xl mx-auto flex flex-col items-center mt-10">
             <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[1.05] mb-6 drop-shadow-2xl">
@@ -101,13 +118,37 @@
         </div>
     </section>
 
-    <!-- PARA CLIENTES: EL BUSCADOR LIMPIO -->
+    <!-- SOCIAL PROOF / STATS -->
+    <section class="py-20 bg-black text-white">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h3 class="text-3xl font-bold tracking-tight mb-12 text-zinc-400">No somos uno más. Somos el estándar.</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="text-5xl font-black mb-2">24/7</div>
+                    <div class="text-zinc-400 font-medium text-sm uppercase tracking-wider">Reservas activas</div>
+                </div>
+                <div>
+                    <div class="text-5xl font-black mb-2">100%</div>
+                    <div class="text-zinc-400 font-medium text-sm uppercase tracking-wider">Control de tu local</div>
+                </div>
+                <div>
+                    <div class="text-5xl font-black mb-2">0</div>
+                    <div class="text-zinc-400 font-medium text-sm uppercase tracking-wider">Llamadas perdidas</div>
+                </div>
+                <div>
+                    <div class="text-5xl font-black mb-2">10x</div>
+                    <div class="text-zinc-400 font-medium text-sm uppercase tracking-wider">Más profesional</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PARA CLIENTES: EL BUSCADOR -->
     <section id="explorar" class="py-32 bg-zinc-50 border-b border-zinc-200/50">
         <div class="max-w-4xl mx-auto px-6 text-center">
             <h2 class="text-5xl md:text-6xl font-black tracking-tighter mb-6 text-black">Encuentra a los mejores.</h2>
             <p class="text-xl text-zinc-500 mb-14 font-medium">Nada de llamar para ver si hay espacio. Entras, eliges a tu profesional, marcas la hora y listo. Así de simple.</p>
             
-            <!-- Buscador estilo Spotlight / Apple -->
             <div class="bg-white p-2 rounded-2xl shadow-2xl shadow-zinc-200 flex flex-col md:flex-row gap-2 max-w-3xl mx-auto border border-zinc-100 transform transition hover:-translate-y-1">
                 <div class="flex-1 flex items-center px-5 rounded-xl">
                     <svg class="w-6 h-6 text-zinc-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -127,7 +168,7 @@
         </div>
     </section>
 
-    <!-- PARA DUEÑOS: TEXTO GRANDE Y FOTO DE CALIDAD -->
+    <!-- DUEÑOS (AGENDA) -->
     <section id="negocios" class="py-32 bg-white">
         <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 md:gap-24 items-center">
             <div class="rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[4/5] hands-img transform -rotate-1 hover:rotate-0 transition duration-500"></div>
@@ -159,13 +200,91 @@
                             <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Recordatorios automáticos. Si no vienen, por lo menos te avisan con tiempo.</p>
                         </div>
                     </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- EL EQUIPO -->
+    <section id="equipo" class="py-32 bg-zinc-50">
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 md:gap-24 items-center">
+            <div class="space-y-10 order-2 lg:order-1">
+                <h2 class="text-5xl md:text-7xl font-black tracking-tighter leading-[1.05]">Tu equipo también gana.</h2>
+                <p class="text-2xl text-zinc-500 leading-snug font-medium">
+                    El barbero no es un simple empleado, es un artista. Dale el control que se merece. Cada miembro de tu equipo tiene su propio panel privado en el celular.
+                </p>
+                
+                <ul class="space-y-8 pt-4">
+                    <li class="flex items-start gap-5">
+                        <div class="bg-black text-white p-3.5 rounded-full mt-1 shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-2xl font-black tracking-tight">Independencia total</h4>
+                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Saben sus turnos, con quién les toca y qué servicio van a hacer. Ya no tienen que interrumpirte para preguntar.</p>
+                        </div>
+                    </li>
                     <li class="flex items-start gap-5">
                         <div class="bg-black text-white p-3.5 rounded-full mt-1 shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <div>
-                            <h4 class="text-2xl font-black tracking-tight">Cuentas claras al fin del día</h4>
-                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Lleva el control exacto de lo que entra, lo que sale y las comisiones de tu equipo. Sin matemáticas complicadas.</p>
+                            <h4 class="text-2xl font-black tracking-tight">Transparencia en el dinero</h4>
+                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Ellos ven cuánto han generado en el día según sus cortes. Cuentas claras, amistades largas.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[4/5] worker-img transform rotate-1 hover:rotate-0 transition duration-500 order-1 lg:order-2"></div>
+        </div>
+    </section>
+
+    <!-- PARALLAX FINANZAS -->
+    <section id="finanzas" class="relative h-[80vh] w-full flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 financials-img z-0"></div>
+        <div class="absolute inset-0 bg-black/60 z-0 backdrop-blur-[2px]"></div>
+        <div class="relative z-10 text-center px-6 max-w-5xl mx-auto">
+            <h2 class="text-5xl md:text-7xl font-black text-white tracking-tighter leading-[1.05] mb-8 drop-shadow-2xl">
+                Los números no mienten.<br>Toma el control.
+            </h2>
+            <p class="text-2xl text-zinc-200 font-medium mb-12 max-w-3xl mx-auto drop-shadow-md">
+                Deja de sumar tickets arrugados a fin de mes. Entras a tu panel y ves cuánta plata entró hoy, qué servicio es tu mina de oro y quién se lleva el premio al más productivo del mes.
+            </p>
+            <a href="/app.html" class="bg-white text-black px-12 py-5 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition-transform shadow-2xl inline-block">
+                Ver reportes financieros
+            </a>
+        </div>
+    </section>
+
+    <!-- VENTAS Y PRODUCTOS -->
+    <section id="ventas" class="py-32 bg-white">
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 md:gap-24 items-center">
+            <div class="rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[4/5] products-img transform -rotate-1 hover:rotate-0 transition duration-500"></div>
+            
+            <div class="space-y-10">
+                <h2 class="text-5xl md:text-7xl font-black tracking-tighter leading-[1.05]">Vende hasta cuando estás cerrado.</h2>
+                <p class="text-2xl text-zinc-500 leading-snug font-medium">
+                    Tu local no solo vende cortes, vende estilo. Sube tus pomadas, ceras, aceites y lociones a tu propia tienda digital dentro de Citas Pro.
+                </p>
+                
+                <ul class="space-y-8 pt-4">
+                    <li class="flex items-start gap-5">
+                        <div class="bg-black text-white p-3.5 rounded-full mt-1 shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-2xl font-black tracking-tight">Catálogo a un clic</h4>
+                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Tus clientes ven los productos que usas, te los piden directo al WhatsApp y tú solo los entregas cuando vengan a cortarse.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-5">
+                        <div class="bg-black text-white p-3.5 rounded-full mt-1 shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-2xl font-black tracking-tight">Ingresos extra</h4>
+                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Convierte a tus clientes de siempre en compradores habituales de tus productos premium.</p>
                         </div>
                     </li>
                 </ul>
@@ -173,67 +292,13 @@
         </div>
     </section>
 
-    <!-- SECCIÓN DE PARALLAX IMPACTANTE -->
-    <section class="relative h-[80vh] w-full flex items-center justify-center overflow-hidden">
-        <div class="absolute inset-0 salon-img z-0"></div>
-        <div class="absolute inset-0 bg-black/50 z-0 backdrop-blur-[2px]"></div>
-        <div class="relative z-10 text-center px-6 max-w-5xl mx-auto">
-            <h2 class="text-5xl md:text-8xl font-black text-white tracking-tighter leading-[1.05] mb-8 drop-shadow-2xl">
-                El control de tu local,<br>en tu bolsillo.
-            </h2>
-            <p class="text-2xl text-zinc-200 font-medium mb-12 max-w-3xl mx-auto drop-shadow-md">
-                No necesitas ser un genio de las computadoras. Diseñamos esto para que sea tan fácil y rápido que hasta el más novato lo domina en 5 minutos. Entras, miras, trabajas.
-            </p>
-            <a href="/app.html" class="bg-white text-black px-12 py-5 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition-transform shadow-2xl inline-block">
-                Quiero ver cómo funciona
-            </a>
-        </div>
-    </section>
-
-    <!-- FEATURES EXTRAS (TIENDA, EQUIPO, RAPIDEZ) -->
-    <section class="py-32 bg-zinc-50">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <h2 class="text-5xl md:text-6xl font-black tracking-tighter mb-6 text-black">Mucho más que una agenda.</h2>
-            <p class="text-2xl text-zinc-500 mb-20 max-w-3xl mx-auto font-medium">Vende tus productos desde tu propio enlace. Gel, cera, mascarillas... todo directo y al grano.</p>
-            
-            <div class="grid md:grid-cols-3 gap-10 text-left">
-                <!-- Card 1 -->
-                <div class="bg-white p-12 rounded-[2.5rem] shadow-xl shadow-zinc-200/50 hover:-translate-y-2 transition-transform duration-300">
-                    <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mb-8 shadow-md">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                    </div>
-                    <h3 class="text-3xl font-black tracking-tight mb-4">Tu propia tienda</h3>
-                    <p class="text-xl text-zinc-500 leading-relaxed font-medium">Muestra tu catálogo, ponle precio y deja que los clientes te hagan pedidos por WhatsApp. Venta directa y sin comisiones.</p>
-                </div>
-                
-                <!-- Card 2 -->
-                <div class="bg-white p-12 rounded-[2.5rem] shadow-xl shadow-zinc-200/50 hover:-translate-y-2 transition-transform duration-300">
-                    <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mb-8 shadow-md">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    </div>
-                    <h3 class="text-3xl font-black tracking-tight mb-4">Equipo conectado</h3>
-                    <p class="text-xl text-zinc-500 leading-relaxed font-medium">Cada trabajador tiene su propio acceso. Saben a qué hora entran, con quién van y cuánto ganan. Cero confusiones en el local.</p>
-                </div>
-
-                <!-- Card 3 -->
-                <div class="bg-white p-12 rounded-[2.5rem] shadow-xl shadow-zinc-200/50 hover:-translate-y-2 transition-transform duration-300">
-                    <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mb-8 shadow-md">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </div>
-                    <h3 class="text-3xl font-black tracking-tight mb-4">Rápido como bala</h3>
-                    <p class="text-xl text-zinc-500 leading-relaxed font-medium">Hecho con tecnología pura. Olvídate de pantallas de carga que demoran una eternidad. Abre al instante en cualquier teléfono viejo o nuevo.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- PRECIOS -->
-    <section id="precios" class="py-32 bg-white">
+    <section id="precios" class="py-32 bg-zinc-50 border-t border-zinc-200/50">
         <div class="max-w-5xl mx-auto px-6 text-center">
             <h2 class="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-black">Un precio.<br>Todo incluido.</h2>
             <p class="text-2xl text-zinc-500 mb-16 max-w-3xl mx-auto font-medium">Ni letras pequeñas ni pagos sorpresa por agregar un trabajador más. Transparencia total, como la gente de verdad hace negocios.</p>
             
-            <div class="bg-zinc-50 p-12 md:p-20 rounded-[3rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-12 text-left border border-zinc-100">
+            <div class="bg-white p-12 md:p-20 rounded-[3rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-12 text-left border border-zinc-100">
                 <div class="flex-1">
                     <span class="bg-black text-white px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider mb-6 inline-block">Plan Pro</span>
                     <h3 class="text-4xl font-black tracking-tight mb-4">Para locales que van en serio.</h3>
@@ -269,12 +334,12 @@
         </div>
     </section>
 
-    <!-- FOOTER LIMPIO -->
+    <!-- FOOTER -->
     <footer class="bg-white border-t border-zinc-200 pt-24 pb-12">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col md:flex-row justify-between items-center gap-10 border-b border-zinc-100 pb-12 mb-8">
                 <div class="flex items-center gap-2 font-black text-2xl tracking-tighter">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <img src="assets/img/procitas-logo.svg" alt="Citas Pro" class="w-8 h-8 opacity-80 grayscale">
                     CITAS PRO
                 </div>
                 <div class="flex gap-8 text-base font-semibold text-zinc-500">
