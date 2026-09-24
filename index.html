@@ -24,151 +24,173 @@
         }
         
         /* Imágenes de fondo dinámicas */
-        .hero-img { 
-            background-image: url('assets/img/hero-bg.jpg'); 
-            background-size: cover; 
-            background-position: center; 
-        }
-        .salon-img { 
-            background-image: url('assets/img/salon-bg.jpg'); 
-            background-size: cover; 
-            background-position: center; 
-        }
-        .hands-img { 
-            background-image: url('assets/img/barber-hands.jpg'); 
-            background-size: cover; 
-            background-position: center; 
-        }
-        .worker-img {
-            background-image: url('assets/img/worker-app.jpg'); 
-            background-size: cover; 
-            background-position: center; 
-        }
-        .financials-img {
-            background-image: url('assets/img/financials.jpg'); 
-            background-size: cover; 
-            background-position: center; 
-            background-attachment: fixed; /* Parallax sutil */
-        }
-        .products-img {
-            background-image: url('assets/img/products.jpg'); 
-            background-size: cover; 
-            background-position: center; 
-        }
+        .hero-img { background-image: url('assets/img/hero-bg.jpg'); background-size: cover; background-position: center; }
+        .salon-img { background-image: url('assets/img/salon-bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; }
+        .hands-img { background-image: url('assets/img/barber-hands.jpg'); background-size: cover; background-position: center; }
+        .worker-img { background-image: url('assets/img/worker-app.jpg'); background-size: cover; background-position: center; }
+        .financials-img { background-image: url('assets/img/financials.jpg'); background-size: cover; background-position: center; background-attachment: fixed; }
+        .products-img { background-image: url('assets/img/products.jpg'); background-size: cover; background-position: center; }
+
+        /* Imágenes para tipos de negocio */
+        .bg-nails { background-image: url('assets/img/nail-salon.jpg'); background-size: cover; background-position: center; }
+        .bg-spa { background-image: url('assets/img/massage-spa.jpg'); background-size: cover; background-position: center; }
+        .bg-clinic { background-image: url('assets/img/clinic.jpg'); background-size: cover; background-position: center; }
+        .bg-tattoo { background-image: url('assets/img/tattoo.jpg'); background-size: cover; background-position: center; }
         
         .blur-nav { 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); 
+            backdrop-filter: blur(24px); 
+            -webkit-backdrop-filter: blur(24px); 
+            background-color: rgba(255, 255, 255, 0.75);
         }
 
-        /* Scrollbar limpio tipo Mac */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #fafafa; }
-        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+        /* Ocultar barra de scroll para limpiar diseño */
+        ::-webkit-scrollbar { width: 0px; }
+
+        /* Animaciones sutiles */
+        .hover-lift { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .hover-lift:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
     </style>
 </head>
-<body class="bg-white text-zinc-900 selection:bg-zinc-900 selection:text-white">
+<body class="bg-white text-zinc-900 selection:bg-black selection:text-white">
 
-    <!-- NAVBAR -->
-    <nav class="fixed top-0 w-full z-50 bg-white/70 blur-nav border-b border-zinc-200/40 transition-all">
+    <!-- TOP BANNER (Mejora: CTA persistente y directo) -->
+    <div class="w-full bg-black text-white text-center py-2.5 text-sm font-semibold tracking-wide flex justify-center items-center gap-4">
+        Prueba 1 mes gratis. Sin compromiso.
+        <a href="/app.html" class="underline decoration-zinc-500 hover:decoration-white transition underline-offset-4">Regístrate ahora</a>
+    </div>
+
+    <!-- NAVBAR TIPO APPLE -->
+    <nav class="sticky top-0 w-full z-50 blur-nav border-b border-zinc-200/50 transition-all">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <a href="#" class="font-black tracking-tighter text-xl flex items-center gap-2 hover:opacity-70 transition">
                 <img src="assets/img/procitas-logo.svg" alt="Citas Pro" class="w-8 h-8">
                 CITAS PRO
             </a>
             
-            <div class="hidden md:flex items-center gap-8 font-medium text-sm text-zinc-500">
-                <a href="#negocios" class="hover:text-black transition">El Local</a>
-                <a href="#equipo" class="hover:text-black transition">El Equipo</a>
-                <a href="#ventas" class="hover:text-black transition">Ventas</a>
-                <a href="#explorar" class="hover:text-black transition">Para Clientes</a>
+            <div class="hidden lg:flex items-center gap-10 font-medium text-sm text-zinc-500">
+                <a href="#audiencia" class="hover:text-black transition">Para quién es</a>
+                <a href="#negocios" class="hover:text-black transition">Gestión</a>
+                <a href="#equipo" class="hover:text-black transition">Equipo</a>
+                <a href="#finanzas" class="hover:text-black transition">Finanzas</a>
                 <a href="#precios" class="hover:text-black transition">Precios</a>
             </div>
             
             <div class="flex items-center gap-5">
-                <a href="/app.html" class="text-sm font-semibold hover:text-zinc-500 transition hidden sm:block">Entrar</a>
-                <a href="/app.html" class="bg-black text-white px-5 py-2 rounded-full text-sm font-semibold hover:scale-105 active:scale-95 transition-transform shadow-lg shadow-black/20">
-                    Empezar gratis
+                <a href="/app.html" class="text-sm font-semibold text-black hover:opacity-70 transition hidden sm:block">Entrar</a>
+                <a href="/app.html" class="bg-black text-white px-5 py-2 rounded-full text-sm font-semibold hover:scale-105 active:scale-95 transition-transform shadow-md">
+                    Obtener Citas Pro
                 </a>
             </div>
         </div>
     </nav>
 
-    <!-- HERO SECTION -->
-    <section class="relative h-screen w-full flex items-center justify-center pt-16">
+    <!-- HERO SECTION IMPACTANTE -->
+    <section class="relative h-[90vh] min-h-[600px] w-full flex items-center justify-center">
         <div class="absolute inset-0 hero-img z-0"></div>
-        <div class="absolute inset-0 bg-black/50 z-0"></div>
+        <div class="absolute inset-0 bg-black/40 z-0"></div>
         
-        <div class="relative z-10 text-center px-6 max-w-5xl mx-auto flex flex-col items-center mt-10">
-            <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[1.05] mb-6 drop-shadow-2xl">
+        <div class="relative z-10 text-center px-6 max-w-5xl mx-auto flex flex-col items-center mt-8">
+            <h1 class="text-6xl md:text-[5.5rem] lg:text-[7rem] font-black text-white tracking-tighter leading-[0.95] mb-8 drop-shadow-2xl">
                 Tu negocio.<br>Tus reglas.<br>Cero estrés.
             </h1>
-            <p class="text-xl md:text-2xl text-zinc-200 font-medium max-w-3xl mb-12 drop-shadow-md">
-                Sabemos que estás a tope. Por eso hicimos el sistema que hace el trabajo pesado por ti. Agenda llena, cuentas claras y clientes fijos. Sin tanta vuelta.
+            <p class="text-xl md:text-2xl text-zinc-100 font-medium max-w-3xl mb-12 drop-shadow-md">
+                Sabemos que estás a tope. Por eso hicimos un sistema que hace el trabajo pesado. Agenda llena, cuentas claras y clientes fijos. Sin tanta vuelta.
             </p>
-            <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                <a href="/app.html" class="bg-white text-black px-10 py-5 rounded-full font-bold text-lg hover:scale-105 active:scale-95 transition-transform shadow-2xl">
-                    Abrir mi cuenta ahora
+            <div class="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
+                <a href="/app.html" class="bg-white text-black px-12 py-5 rounded-full font-bold text-lg hover:scale-105 active:scale-95 transition-transform shadow-2xl">
+                    Comenzar gratis
                 </a>
-                <a href="#explorar" class="bg-black/30 backdrop-blur-md text-white border border-white/20 px-10 py-5 rounded-full font-bold text-lg hover:bg-black/50 transition">
+                <a href="#explorar" class="bg-black/30 backdrop-blur-md text-white border border-white/20 px-12 py-5 rounded-full font-bold text-lg hover:bg-black/50 transition">
                     Soy cliente, busco lugar
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- SOCIAL PROOF / STATS -->
-    <section class="py-20 bg-black text-white">
+    <!-- SOCIAL PROOF / STATS (MINIMAL) -->
+    <section class="py-20 bg-white border-b border-zinc-100">
         <div class="max-w-7xl mx-auto px-6 text-center">
-            <h3 class="text-3xl font-bold tracking-tight mb-12 text-zinc-400">No somos uno más. Somos el estándar.</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div>
-                    <div class="text-5xl font-black mb-2">24/7</div>
-                    <div class="text-zinc-400 font-medium text-sm uppercase tracking-wider">Reservas activas</div>
+            <h3 class="text-3xl md:text-4xl font-black tracking-tight mb-16 text-black">No somos uno más. Somos el estándar.</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-12">
+                <div class="flex flex-col items-center">
+                    <div class="text-5xl md:text-6xl font-black tracking-tighter mb-2">24/7</div>
+                    <div class="text-zinc-500 font-semibold text-xs md:text-sm uppercase tracking-widest">Reservas Activas</div>
                 </div>
-                <div>
-                    <div class="text-5xl font-black mb-2">100%</div>
-                    <div class="text-zinc-400 font-medium text-sm uppercase tracking-wider">Control de tu local</div>
+                <div class="flex flex-col items-center">
+                    <div class="text-5xl md:text-6xl font-black tracking-tighter mb-2">100%</div>
+                    <div class="text-zinc-500 font-semibold text-xs md:text-sm uppercase tracking-widest">Control del local</div>
                 </div>
-                <div>
-                    <div class="text-5xl font-black mb-2">0</div>
-                    <div class="text-zinc-400 font-medium text-sm uppercase tracking-wider">Llamadas perdidas</div>
+                <div class="flex flex-col items-center">
+                    <div class="text-5xl md:text-6xl font-black tracking-tighter mb-2">0</div>
+                    <div class="text-zinc-500 font-semibold text-xs md:text-sm uppercase tracking-widest">Llamadas perdidas</div>
                 </div>
-                <div>
-                    <div class="text-5xl font-black mb-2">10x</div>
-                    <div class="text-zinc-400 font-medium text-sm uppercase tracking-wider">Más profesional</div>
+                <div class="flex flex-col items-center">
+                    <div class="text-5xl md:text-6xl font-black tracking-tighter mb-2">10x</div>
+                    <div class="text-zinc-500 font-semibold text-xs md:text-sm uppercase tracking-widest">Más Profesional</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- PARA CLIENTES: EL BUSCADOR -->
-    <section id="explorar" class="py-32 bg-zinc-50 border-b border-zinc-200/50">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <h2 class="text-5xl md:text-6xl font-black tracking-tighter mb-6 text-black">Encuentra a los mejores.</h2>
-            <p class="text-xl text-zinc-500 mb-14 font-medium">Nada de llamar para ver si hay espacio. Entras, eliges a tu profesional, marcas la hora y listo. Así de simple.</p>
-            
-            <div class="bg-white p-2 rounded-2xl shadow-2xl shadow-zinc-200 flex flex-col md:flex-row gap-2 max-w-3xl mx-auto border border-zinc-100 transform transition hover:-translate-y-1">
-                <div class="flex-1 flex items-center px-5 rounded-xl">
-                    <svg class="w-6 h-6 text-zinc-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" placeholder="Busca tu barbería, salón o spa..." class="w-full bg-transparent py-4 outline-none text-xl font-medium text-black placeholder-zinc-400">
-                </div>
-                <button class="bg-black text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-zinc-800 transition whitespace-nowrap">
-                    Buscar
-                </button>
+    <!-- NUEVA SECCIÓN: TIPOS DE NEGOCIO (AUDIENCIA) -->
+    <section id="audiencia" class="py-32 bg-zinc-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20">
+                <h2 class="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-black">Para los que mueven<br>la industria.</h2>
+                <p class="text-2xl text-zinc-500 font-medium max-w-3xl mx-auto">No importa cuál sea tu arte. Si trabajas con citas, Citas Pro es tu mano derecha.</p>
             </div>
-            
-            <div class="mt-10 flex flex-wrap justify-center gap-3">
-                <span class="px-6 py-2.5 bg-white border border-zinc-200 rounded-full text-sm font-semibold text-zinc-700 cursor-pointer hover:border-black hover:bg-zinc-50 transition shadow-sm">Barberías</span>
-                <span class="px-6 py-2.5 bg-white border border-zinc-200 rounded-full text-sm font-semibold text-zinc-700 cursor-pointer hover:border-black hover:bg-zinc-50 transition shadow-sm">Peluquerías</span>
-                <span class="px-6 py-2.5 bg-white border border-zinc-200 rounded-full text-sm font-semibold text-zinc-700 cursor-pointer hover:border-black hover:bg-zinc-50 transition shadow-sm">Uñas</span>
-                <span class="px-6 py-2.5 bg-white border border-zinc-200 rounded-full text-sm font-semibold text-zinc-700 cursor-pointer hover:border-black hover:bg-zinc-50 transition shadow-sm">Spas</span>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+                <!-- Barberías y Salones -->
+                <div class="bg-white rounded-[2.5rem] overflow-hidden hover-lift border border-zinc-100 flex flex-col group">
+                    <div class="h-72 salon-img transform group-hover:scale-105 transition-transform duration-700"></div>
+                    <div class="p-10 flex-1">
+                        <h3 class="text-3xl font-black mb-3">Barberías y Salones</h3>
+                        <p class="text-xl text-zinc-500 font-medium leading-relaxed">Se acabó el lápiz y papel. Organiza los sillones, calcula comisiones al instante y deja que tus clientes reserven su corte sin interrumpirte.</p>
+                    </div>
+                </div>
+
+                <!-- Uñas y Pestañas -->
+                <div class="bg-white rounded-[2.5rem] overflow-hidden hover-lift border border-zinc-100 flex flex-col group">
+                    <div class="h-72 bg-nails transform group-hover:scale-105 transition-transform duration-700"></div>
+                    <div class="p-10 flex-1">
+                        <h3 class="text-3xl font-black mb-3">Uñas y Pestañas</h3>
+                        <p class="text-xl text-zinc-500 font-medium leading-relaxed">Adiós a responder DMs de Instagram a las 2 AM. Pon tu enlace en tu biografía y levántate con la agenda llena.</p>
+                    </div>
+                </div>
+
+                <!-- Spas y Masajes -->
+                <div class="bg-white rounded-[2.5rem] overflow-hidden hover-lift border border-zinc-100 flex flex-col group">
+                    <div class="h-72 bg-spa transform group-hover:scale-105 transition-transform duration-700"></div>
+                    <div class="p-10 flex-1">
+                        <h3 class="text-3xl font-black mb-3">Spas y Masajes</h3>
+                        <p class="text-xl text-zinc-500 font-medium leading-relaxed">Ambiente zen, cero estrés. Deja que el sistema controle los tiempos, los espacios y las reservas mientras tú ofreces relajación.</p>
+                    </div>
+                </div>
+
+                <!-- Clínicas y Tatuajes (Combinados en split para variar) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-[2.5rem] overflow-hidden hover-lift border border-zinc-100 flex flex-col group">
+                        <div class="h-40 bg-clinic transform group-hover:scale-105 transition-transform duration-700"></div>
+                        <div class="p-8 flex-1">
+                            <h3 class="text-2xl font-black mb-2">Clínicas Estéticas</h3>
+                            <p class="text-lg text-zinc-500 font-medium leading-tight">Profesionalismo puro. Historial preciso y privacidad.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-[2.5rem] overflow-hidden hover-lift border border-zinc-100 flex flex-col group">
+                        <div class="h-40 bg-tattoo transform group-hover:scale-105 transition-transform duration-700"></div>
+                        <div class="p-8 flex-1">
+                            <h3 class="text-2xl font-black mb-2">Tatuadores</h3>
+                            <p class="text-lg text-zinc-500 font-medium leading-tight">Horas bien cuadradas para que la tinta fluya sin prisas.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- DUEÑOS (AGENDA) -->
+    <!-- DUEÑOS (GESTIÓN) -->
     <section id="negocios" class="py-32 bg-white">
         <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 md:gap-24 items-center">
             <div class="rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[4/5] hands-img transform -rotate-1 hover:rotate-0 transition duration-500"></div>
@@ -188,7 +210,7 @@
                         </div>
                         <div>
                             <h4 class="text-2xl font-black tracking-tight">Agenda automática 24/7</h4>
-                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Mientras duermes, tu agenda se sigue llenando sola. Sin intermediarios.</p>
+                            <p class="text-lg text-zinc-500 mt-2 font-medium">Mientras duermes, tu agenda se sigue llenando sola. Sin intermediarios.</p>
                         </div>
                     </li>
                     <li class="flex items-start gap-5">
@@ -196,8 +218,8 @@
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <div>
-                            <h4 class="text-2xl font-black tracking-tight">Cero olvidos de clientes</h4>
-                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Recordatorios automáticos. Si no vienen, por lo menos te avisan con tiempo.</p>
+                            <h4 class="text-2xl font-black tracking-tight">Cero olvidos</h4>
+                            <p class="text-lg text-zinc-500 mt-2 font-medium">Recordatorios automáticos. Si el cliente no viene, por lo menos te avisa con tiempo.</p>
                         </div>
                     </li>
                 </ul>
@@ -209,9 +231,9 @@
     <section id="equipo" class="py-32 bg-zinc-50">
         <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 md:gap-24 items-center">
             <div class="space-y-10 order-2 lg:order-1">
-                <h2 class="text-5xl md:text-7xl font-black tracking-tighter leading-[1.05]">Tu equipo también gana.</h2>
+                <h2 class="text-5xl md:text-7xl font-black tracking-tighter leading-[1.05]">Tu equipo<br>también gana.</h2>
                 <p class="text-2xl text-zinc-500 leading-snug font-medium">
-                    El barbero no es un simple empleado, es un artista. Dale el control que se merece. Cada miembro de tu equipo tiene su propio panel privado en el celular.
+                    El barbero o estilista no es un simple empleado, es un artista. Dale el control que se merece. Cada miembro de tu equipo tiene su propio panel privado en el celular.
                 </p>
                 
                 <ul class="space-y-8 pt-4">
@@ -221,7 +243,7 @@
                         </div>
                         <div>
                             <h4 class="text-2xl font-black tracking-tight">Independencia total</h4>
-                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Saben sus turnos, con quién les toca y qué servicio van a hacer. Ya no tienen que interrumpirte para preguntar.</p>
+                            <p class="text-lg text-zinc-500 mt-2 font-medium">Saben sus turnos, con quién les toca y qué servicio van a hacer. Ya no tienen que interrumpirte.</p>
                         </div>
                     </li>
                     <li class="flex items-start gap-5">
@@ -229,8 +251,8 @@
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <div>
-                            <h4 class="text-2xl font-black tracking-tight">Transparencia en el dinero</h4>
-                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Ellos ven cuánto han generado en el día según sus cortes. Cuentas claras, amistades largas.</p>
+                            <h4 class="text-2xl font-black tracking-tight">Transparencia</h4>
+                            <p class="text-lg text-zinc-500 mt-2 font-medium">Ellos ven cuánto han generado en el día. Cuentas claras, amistades largas.</p>
                         </div>
                     </li>
                 </ul>
@@ -241,15 +263,15 @@
     </section>
 
     <!-- PARALLAX FINANZAS -->
-    <section id="finanzas" class="relative h-[80vh] w-full flex items-center justify-center overflow-hidden">
+    <section id="finanzas" class="relative h-[90vh] w-full flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 financials-img z-0"></div>
-        <div class="absolute inset-0 bg-black/60 z-0 backdrop-blur-[2px]"></div>
+        <div class="absolute inset-0 bg-black/50 z-0 backdrop-blur-[2px]"></div>
         <div class="relative z-10 text-center px-6 max-w-5xl mx-auto">
-            <h2 class="text-5xl md:text-7xl font-black text-white tracking-tighter leading-[1.05] mb-8 drop-shadow-2xl">
+            <h2 class="text-5xl md:text-8xl font-black text-white tracking-tighter leading-[1.05] mb-8 drop-shadow-2xl">
                 Los números no mienten.<br>Toma el control.
             </h2>
             <p class="text-2xl text-zinc-200 font-medium mb-12 max-w-3xl mx-auto drop-shadow-md">
-                Deja de sumar tickets arrugados a fin de mes. Entras a tu panel y ves cuánta plata entró hoy, qué servicio es tu mina de oro y quién se lleva el premio al más productivo del mes.
+                Deja de sumar tickets arrugados a fin de mes. Entras a tu panel y ves cuánta plata entró hoy, qué servicio es tu mina de oro y quién de tu equipo se lleva el premio al mejor del mes.
             </p>
             <a href="/app.html" class="bg-white text-black px-12 py-5 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition-transform shadow-2xl inline-block">
                 Ver reportes financieros
@@ -257,84 +279,133 @@
         </div>
     </section>
 
-    <!-- VENTAS Y PRODUCTOS -->
-    <section id="ventas" class="py-32 bg-white">
-        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 md:gap-24 items-center">
-            <div class="rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[4/5] products-img transform -rotate-1 hover:rotate-0 transition duration-500"></div>
+    <!-- PARA CLIENTES: EL BUSCADOR LIMPIO -->
+    <section id="explorar" class="py-32 bg-white">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="text-5xl md:text-6xl font-black tracking-tighter mb-6 text-black">Tus clientes te lo agradecerán.</h2>
+            <p class="text-xl text-zinc-500 mb-14 font-medium">Facilítales la vida. Citas Pro incluye un portal de reservas ultra rápido. Entran, eligen a su profesional favorito, marcan la hora y listo.</p>
             
-            <div class="space-y-10">
-                <h2 class="text-5xl md:text-7xl font-black tracking-tighter leading-[1.05]">Vende hasta cuando estás cerrado.</h2>
-                <p class="text-2xl text-zinc-500 leading-snug font-medium">
-                    Tu local no solo vende cortes, vende estilo. Sube tus pomadas, ceras, aceites y lociones a tu propia tienda digital dentro de Citas Pro.
-                </p>
-                
-                <ul class="space-y-8 pt-4">
-                    <li class="flex items-start gap-5">
-                        <div class="bg-black text-white p-3.5 rounded-full mt-1 shrink-0">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                        </div>
-                        <div>
-                            <h4 class="text-2xl font-black tracking-tight">Catálogo a un clic</h4>
-                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Tus clientes ven los productos que usas, te los piden directo al WhatsApp y tú solo los entregas cuando vengan a cortarse.</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start gap-5">
-                        <div class="bg-black text-white p-3.5 rounded-full mt-1 shrink-0">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path></svg>
-                        </div>
-                        <div>
-                            <h4 class="text-2xl font-black tracking-tight">Ingresos extra</h4>
-                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Convierte a tus clientes de siempre en compradores habituales de tus productos premium.</p>
-                        </div>
-                    </li>
-                </ul>
+            <div class="bg-zinc-50 p-2 rounded-2xl shadow-xl shadow-zinc-200/50 flex flex-col md:flex-row gap-2 max-w-3xl mx-auto border border-zinc-200 transform transition hover:-translate-y-1">
+                <div class="flex-1 flex items-center px-5 rounded-xl bg-white">
+                    <svg class="w-6 h-6 text-zinc-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" placeholder="Prueba buscar un negocio aquí..." class="w-full bg-transparent py-4 outline-none text-xl font-medium text-black placeholder-zinc-400">
+                </div>
+                <button class="bg-black text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-zinc-800 transition whitespace-nowrap">
+                    Buscar
+                </button>
             </div>
         </div>
     </section>
 
-    <!-- PRECIOS -->
+    <!-- PRECIOS RE-ESTRUCTURADOS (3 PLANES TIPO APPLE) -->
     <section id="precios" class="py-32 bg-zinc-50 border-t border-zinc-200/50">
-        <div class="max-w-5xl mx-auto px-6 text-center">
-            <h2 class="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-black">Un precio.<br>Todo incluido.</h2>
-            <p class="text-2xl text-zinc-500 mb-16 max-w-3xl mx-auto font-medium">Ni letras pequeñas ni pagos sorpresa por agregar un trabajador más. Transparencia total, como la gente de verdad hace negocios.</p>
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h2 class="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-black">Simple.<br>Transparente.</h2>
+            <p class="text-2xl text-zinc-500 mb-20 max-w-3xl mx-auto font-medium">Un solo plan con acceso a todas las funciones. Elige cómo quieres pagar. Sin letras pequeñas ni límites de trabajadores.</p>
             
-            <div class="bg-white p-12 md:p-20 rounded-[3rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-12 text-left border border-zinc-100">
-                <div class="flex-1">
-                    <span class="bg-black text-white px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider mb-6 inline-block">Plan Pro</span>
-                    <h3 class="text-4xl font-black tracking-tight mb-4">Para locales que van en serio.</h3>
-                    
-                    <div class="flex items-baseline gap-2 mb-10">
-                        <span class="text-7xl font-black tracking-tighter">$15</span>
-                        <span class="text-2xl font-semibold text-zinc-400">/ mes</span>
-                    </div>
-                    
-                    <ul class="space-y-5">
-                        <li class="flex items-center gap-4">
-                            <svg class="w-7 h-7 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span class="font-medium text-xl text-zinc-700">Citas sin límite</span>
-                        </li>
-                        <li class="flex items-center gap-4">
-                            <svg class="w-7 h-7 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span class="font-medium text-xl text-zinc-700">Trabajadores sin límite</span>
-                        </li>
-                        <li class="flex items-center gap-4">
-                            <svg class="w-7 h-7 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            <span class="font-medium text-xl text-zinc-700">Tienda y reportes financieros</span>
-                        </li>
-                    </ul>
-                </div>
+            <div class="grid md:grid-cols-3 gap-8 text-left">
                 
-                <div class="w-full md:w-auto flex flex-col gap-5 md:min-w-[300px]">
-                    <a href="/app.html" class="w-full bg-black text-white px-10 py-6 rounded-2xl font-bold text-xl hover:scale-105 transition-transform text-center shadow-2xl">
-                        Empezar mes gratis
+                <!-- Plan Mensual -->
+                <div class="bg-white p-10 rounded-[2.5rem] border border-zinc-200 shadow-xl flex flex-col justify-between hover-lift">
+                    <div>
+                        <h3 class="text-3xl font-black tracking-tight mb-2">Mensual</h3>
+                        <p class="text-zinc-500 font-medium mb-8">Libertad total. Paga mes a mes sin ataduras.</p>
+                        
+                        <div class="flex items-baseline gap-1 mb-10">
+                            <span class="text-6xl font-black tracking-tighter" id="precio-mensual-val">$15</span>
+                            <span class="text-xl font-semibold text-zinc-400">/mes</span>
+                        </div>
+                        
+                        <ul class="space-y-4 mb-10">
+                            <li class="flex items-center gap-3">
+                                <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-medium text-zinc-700">Citas Ilimitadas</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-medium text-zinc-700">Equipo Ilimitado</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-medium text-zinc-700">Reportes Financieros</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="/app.html?plan=mensual" class="w-full bg-zinc-100 text-black px-6 py-4 rounded-xl font-bold text-center hover:bg-zinc-200 transition">
+                        Empezar Mensual
                     </a>
-                    <p class="text-base text-zinc-500 font-medium text-center">Pruébalo sin compromisos. No pedimos tarjeta para el mes de prueba.</p>
                 </div>
+
+                <!-- Plan Trimestral (DESTACADO) -->
+                <div class="bg-black text-white p-10 rounded-[2.5rem] shadow-2xl flex flex-col justify-between transform md:-translate-y-4 relative hover-lift">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
+                        El Favorito
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-black tracking-tight mb-2">Trimestral</h3>
+                        <p class="text-zinc-400 font-medium mb-8">El equilibrio perfecto. Olvídate de pagar cada mes.</p>
+                        
+                        <div class="flex items-baseline gap-1 mb-10">
+                            <span class="text-6xl font-black tracking-tighter" id="precio-trimestral-val">$45</span>
+                            <span class="text-xl font-semibold text-zinc-500">/3 meses</span>
+                        </div>
+                        
+                        <ul class="space-y-4 mb-10">
+                            <li class="flex items-center gap-3">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-medium text-zinc-200">Todo en Mensual</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-medium text-zinc-200">Tienda Online (Productos)</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-medium text-zinc-200">Soporte Prioritario</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="/app.html?plan=trimestral" class="w-full bg-white text-black px-6 py-4 rounded-xl font-bold text-center hover:scale-105 transition-transform">
+                        Elegir Trimestral
+                    </a>
+                </div>
+
+                <!-- Plan Anual -->
+                <div class="bg-white p-10 rounded-[2.5rem] border border-zinc-200 shadow-xl flex flex-col justify-between hover-lift">
+                    <div>
+                        <h3 class="text-3xl font-black tracking-tight mb-2">Anual</h3>
+                        <p class="text-zinc-500 font-medium mb-8">Para locales establecidos que van con todo.</p>
+                        
+                        <div class="flex items-baseline gap-1 mb-10">
+                            <span class="text-6xl font-black tracking-tighter" id="precio-anual-val">$180</span>
+                            <span class="text-xl font-semibold text-zinc-400">/año</span>
+                        </div>
+                        
+                        <ul class="space-y-4 mb-10">
+                            <li class="flex items-center gap-3">
+                                <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-medium text-zinc-700">Acceso Full</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-medium text-zinc-700">Un solo pago al año</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-medium text-zinc-700">Tranquilidad absoluta</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <a href="/app.html?plan=anual" class="w-full bg-zinc-100 text-black px-6 py-4 rounded-xl font-bold text-center hover:bg-zinc-200 transition">
+                        Elegir Anual
+                    </a>
+                </div>
+
             </div>
         </div>
     </section>
 
-    <!-- FOOTER -->
+    <!-- FOOTER LIMPIO -->
     <footer class="bg-white border-t border-zinc-200 pt-24 pb-12">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col md:flex-row justify-between items-center gap-10 border-b border-zinc-100 pb-12 mb-8">
