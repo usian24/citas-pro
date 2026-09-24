@@ -1,480 +1,300 @@
 <!DOCTYPE html>
-<html lang="es">
-
+<html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citas Pro | Gestión al siguiente nivel</title>
+    
     <script>
+        // Redirección si viene con hash (SPA)
         if (window.location.hash && (window.location.hash.startsWith('#b/') || window.location.hash.startsWith('#reset-password/') || window.location.hash.startsWith('#manage/') || window.location.hash.startsWith('#booking/'))) {
             window.location.href = '/app' + window.location.hash;
         }
     </script>
 
-    <!-- SEO & Meta Tags -->
-    <title>Citas Pro | El Futuro de la Gestión de Citas</title>
-    <meta name="description" content="Transforma tu negocio con Citas Pro. El sistema inteligente para automatizar reservas, organizar tu equipo y maximizar tus ingresos.">
-    <meta name="keywords" content="Citas Pro, software de citas, gestión de reservas, agenda online, SaaS para negocios, clínicas, salones de belleza, profesionales independientes">
-    <meta name="author" content="Citas Pro">
-    <link rel="canonical" href="https://citasproonline.com/">
-    <link rel="icon" href="assets/img/procitas-logo.svg" type="image/svg+xml">
+    <!-- Tailwind CSS (CDN para Landing) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-font-smoothing: antialiased; 
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Imágenes de fondo dinámicas (creadas con IA) */
+        .hero-img { 
+            background-image: url('assets/img/hero-bg.jpg'); 
+            background-size: cover; 
+            background-position: center; 
+        }
+        .salon-img { 
+            background-image: url('assets/img/salon-bg.jpg'); 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed; /* Efecto Parallax sutil */
+        }
+        .hands-img { 
+            background-image: url('assets/img/barber-hands.jpg'); 
+            background-size: cover; 
+            background-position: center; 
+        }
+        
+        .blur-nav { 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+        }
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://citasproonline.com/">
-    <meta property="og:title" content="Citas Pro | El Futuro de la Gestión de Citas">
-    <meta property="og:description" content="Automatiza reservas, organiza tu equipo y maximiza tus ingresos.">
-    <meta property="og:image" content="https://citasproonline.com/assets/img/og-image.png">
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="assets/css/landing.css">
+        /* Scrollbar limpio tipo Mac */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #fafafa; }
+        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+    </style>
 </head>
+<body class="bg-white text-zinc-900 selection:bg-zinc-900 selection:text-white">
 
-<body class="dark-mode">
-
-    <!-- Botón Flotante WhatsApp -->
-    <a href="https://wa.me/51953767924?text=Hola,%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20Citas%20Pro" class="floating-wa" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    </a>
-
-    <!-- Efecto Cursor -->
-    <div class="mouse-glow"></div>
-
-    <!-- HEADER PREMIUM "ISLAND" -->
-    <div class="navbar-wrapper">
-        <header class="navbar">
-            <div class="navbar-container">
-                <a href="#" class="navbar-logo">
-                    <img src="assets/img/procitas-logo.svg" alt="Citas Pro Logo">
-                    <span>Citas Pro</span>
+    <!-- NAVBAR TIPO APPLE -->
+    <nav class="fixed top-0 w-full z-50 bg-white/70 blur-nav border-b border-zinc-200/40 transition-all">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="#" class="font-black tracking-tighter text-xl flex items-center gap-2 hover:opacity-70 transition">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                CITAS PRO
+            </a>
+            
+            <div class="hidden md:flex items-center gap-10 font-medium text-sm text-zinc-500">
+                <a href="#negocios" class="hover:text-black transition">Para el Local</a>
+                <a href="#explorar" class="hover:text-black transition">Para Clientes</a>
+                <a href="#precios" class="hover:text-black transition">Precios</a>
+            </div>
+            
+            <div class="flex items-center gap-5">
+                <a href="/app.html" class="text-sm font-semibold hover:text-zinc-500 transition hidden sm:block">Entrar</a>
+                <a href="/app.html" class="bg-black text-white px-5 py-2 rounded-full text-sm font-semibold hover:scale-105 active:scale-95 transition-transform shadow-lg shadow-black/20">
+                    Empezar gratis
                 </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION (IMPACTO VISUAL GRANDE) -->
+    <section class="relative h-screen w-full flex items-center justify-center pt-16">
+        <div class="absolute inset-0 hero-img z-0"></div>
+        <div class="absolute inset-0 bg-black/40 z-0"></div>
+        
+        <div class="relative z-10 text-center px-6 max-w-5xl mx-auto flex flex-col items-center mt-10">
+            <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[1.05] mb-6 drop-shadow-2xl">
+                Tu negocio.<br>Tus reglas.<br>Cero estrés.
+            </h1>
+            <p class="text-xl md:text-2xl text-zinc-200 font-medium max-w-3xl mb-12 drop-shadow-md">
+                Sabemos que estás a tope. Por eso hicimos el sistema que hace el trabajo pesado por ti. Agenda llena, cuentas claras y clientes fijos. Sin tanta vuelta.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                <a href="/app.html" class="bg-white text-black px-10 py-5 rounded-full font-bold text-lg hover:scale-105 active:scale-95 transition-transform shadow-2xl">
+                    Abrir mi cuenta ahora
+                </a>
+                <a href="#explorar" class="bg-black/30 backdrop-blur-md text-white border border-white/20 px-10 py-5 rounded-full font-bold text-lg hover:bg-black/50 transition">
+                    Soy cliente, busco lugar
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- PARA CLIENTES: EL BUSCADOR LIMPIO -->
+    <section id="explorar" class="py-32 bg-zinc-50 border-b border-zinc-200/50">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="text-5xl md:text-6xl font-black tracking-tighter mb-6 text-black">Encuentra a los mejores.</h2>
+            <p class="text-xl text-zinc-500 mb-14 font-medium">Nada de llamar para ver si hay espacio. Entras, eliges a tu profesional, marcas la hora y listo. Así de simple.</p>
+            
+            <!-- Buscador estilo Spotlight / Apple -->
+            <div class="bg-white p-2 rounded-2xl shadow-2xl shadow-zinc-200 flex flex-col md:flex-row gap-2 max-w-3xl mx-auto border border-zinc-100 transform transition hover:-translate-y-1">
+                <div class="flex-1 flex items-center px-5 rounded-xl">
+                    <svg class="w-6 h-6 text-zinc-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" placeholder="Busca tu barbería, salón o spa..." class="w-full bg-transparent py-4 outline-none text-xl font-medium text-black placeholder-zinc-400">
+                </div>
+                <button class="bg-black text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-zinc-800 transition whitespace-nowrap">
+                    Buscar
+                </button>
+            </div>
+            
+            <div class="mt-10 flex flex-wrap justify-center gap-3">
+                <span class="px-6 py-2.5 bg-white border border-zinc-200 rounded-full text-sm font-semibold text-zinc-700 cursor-pointer hover:border-black hover:bg-zinc-50 transition shadow-sm">Barberías</span>
+                <span class="px-6 py-2.5 bg-white border border-zinc-200 rounded-full text-sm font-semibold text-zinc-700 cursor-pointer hover:border-black hover:bg-zinc-50 transition shadow-sm">Peluquerías</span>
+                <span class="px-6 py-2.5 bg-white border border-zinc-200 rounded-full text-sm font-semibold text-zinc-700 cursor-pointer hover:border-black hover:bg-zinc-50 transition shadow-sm">Uñas</span>
+                <span class="px-6 py-2.5 bg-white border border-zinc-200 rounded-full text-sm font-semibold text-zinc-700 cursor-pointer hover:border-black hover:bg-zinc-50 transition shadow-sm">Spas</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- PARA DUEÑOS: TEXTO GRANDE Y FOTO DE CALIDAD -->
+    <section id="negocios" class="py-32 bg-white">
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 md:gap-24 items-center">
+            <div class="rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[4/5] hands-img transform -rotate-1 hover:rotate-0 transition duration-500"></div>
+            
+            <div class="space-y-10">
+                <h2 class="text-5xl md:text-7xl font-black tracking-tighter leading-[1.05]">Menos papel.<br>Más cortes.</h2>
+                <p class="text-2xl text-zinc-500 leading-snug font-medium">
+                    Sabemos cómo es el día a día. Estás a mitad de un corte y el teléfono no para de sonar. Con Citas Pro, tus clientes reservan solos a cualquier hora. 
+                    <br><br>
+                    Tú solo te preocupas de hacer tu arte, nosotros nos encargamos de que la silla nunca esté vacía.
+                </p>
                 
-                <nav class="navbar-menu desktop-only">
-                    <a href="#features">Características</a>
-                    <a href="#how-it-works">Solución</a>
-                    <a href="#pricing">Planes</a>
-                    <a href="#faq">FAQ</a>
-                </nav>
-                
-                <div class="navbar-actions desktop-only">
-                    <button class="theme-toggle" id="theme-toggle-desktop" aria-label="Cambiar tema">
-                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                    </button>
-                    <a href="/app.html" class="btn btn-secondary">Iniciar Sesión</a>
-                    <a href="/app.html" class="btn btn-primary">Empieza Gratis</a>
-                </div>
-                
-                <div class="mobile-nav-controls">
-                    <button class="theme-toggle" id="theme-toggle-mobile" aria-label="Cambiar tema">
-                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                    </button>
-                    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-                        <span></span><span></span><span></span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Menú Móvil -->
-            <div class="mobile-menu" id="mobile-menu">
-                <a href="#features">Características</a>
-                <a href="#how-it-works">Solución</a>
-                <a href="#pricing">Planes</a>
-                <a href="#faq">FAQ</a>
-                <a href="/app.html" class="mobile-login-link">Iniciar Sesión</a>
-            </div>
-        </header>
-    </div>
-
-    <main>
-        <!-- HERO SECTION -->
-        <section class="hero">
-            <div class="hero-glow"></div>
-            <div class="container">
-                <div class="hero-content">
-                    <h1 class="gsap-fade-up">Tu negocio, <br>perfectamente agendado.</h1>
-                    <p class="gsap-fade-up">La plataforma inteligente que automatiza tus citas, organiza tu equipo y libera tu tiempo para que te concentres en crecer.</p>
-                    <div class="hero-actions gsap-fade-up">
-                        <a href="/app.html" class="btn btn-primary btn-lg">Comenzar un mes gratis</a>
-                        <a href="#how-it-works" class="btn btn-secondary btn-lg">
-                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.49991 0.875C3.84222 0.875 0.874911 3.84231 0.874911 7.5C0.874911 11.1577 3.84222 14.125 7.49991 14.125C11.1576 14.125 14.1249 11.1577 14.1249 7.5C14.1249 3.84231 11.1576 0.875 7.49991 0.875ZM10.2436 7.84318L6.11861 10.5307C5.93336 10.6491 5.68741 10.5212 5.68741 10.2981V4.70191C5.68741 4.47884 5.93336 4.35091 6.11861 4.46934L10.2436 7.15684C10.4218 7.27012 10.4218 7.52989 10.2436 7.84318Z" fill="currentColor"></path></svg>
-                            Ver Demo
-                        </a>
-                    </div>
-                    <div class="hero-footer gsap-fade-up">
-                        <p>1 mes totalmente gratis. No se requiere tarjeta de crédito.</p>
-                    </div>
-                </div>
-                <div class="hero-dashboard">
-                    <img src="assets/img/ChatGPT Image 30 ago 2026, 17_19_16.png" alt="Dashboard de Citas Pro mostrando un calendario de citas">
-                </div>
-            </div>
-        </section>
-
-        <!-- SOCIAL PROOF -->
-        <section class="social-proof">
-            <div class="container">
-                <p>Utilizado por los mejores profesionales en múltiples industrias</p>
-                <div class="logos-slider">
-                    <div class="logos-track">
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg> Negocios y Profesionales</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Gestión de Personal</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Peluquerías</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg> Salones de Belleza</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Clínicas Dentales</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> Veterinarias</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/><path d="m6.5 6.5 11 11"/></svg> Entrenadores</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg> Fotógrafos</span>
-                        
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg> Negocios y Profesionales</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Peluquerías</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg> Salones de Belleza</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Clínicas Dentales</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> Veterinarias</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/><path d="m6.5 6.5 11 11"/></svg> Entrenadores</span>
-                        <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg> Fotógrafos</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- FEATURES -->
-        <section id="features" class="features">
-            <div class="container">
-                <div class="section-header gsap-fade-up">
-                    <span class="section-tag">Características</span>
-                    <h2>Una plataforma, todo el control.</h2>
-                    <p>Hemos diseñado cada herramienta pensando en la velocidad y la simplicidad, para que gestionar tu negocio sea un placer, no una tarea.</p>
-                </div>
-                <div class="features-grid">
-                    <div class="feature-card gsap-fade-up">
-                        <div class="feature-icon icon-blue">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <ul class="space-y-8 pt-4">
+                    <li class="flex items-start gap-5">
+                        <div class="bg-black text-white p-3.5 rounded-full mt-1 shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
-                        <h3>Agenda Inteligente</h3>
-                        <p>Visualiza el día completo de todo tu equipo. El sistema previene citas duplicadas y optimiza los huecos automáticamente.</p>
-                    </div>
-                    <div class="feature-card gsap-fade-up">
-                        <div class="feature-icon icon-green">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        <div>
+                            <h4 class="text-2xl font-black tracking-tight">Agenda automática 24/7</h4>
+                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Mientras duermes, tu agenda se sigue llenando sola. Sin intermediarios.</p>
                         </div>
-                        <h3>Finanzas en Autopiloto</h3>
-                        <p>Conoce tus ingresos diarios, semanales y mensuales con reportes claros. Identifica tus servicios más rentables al instante.</p>
-                    </div>
-                    <div class="feature-card gsap-fade-up">
-                        <div class="feature-icon icon-purple">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </li>
+                    <li class="flex items-start gap-5">
+                        <div class="bg-black text-white p-3.5 rounded-full mt-1 shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
-                        <h3>Gestión de Equipo</h3>
-                        <p>Cada profesional tiene su propio panel, horarios personalizables y control total sobre sus servicios y citas asignadas.</p>
-                    </div>
-                    <div class="feature-card gsap-fade-up">
-                        <div class="feature-icon icon-orange">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        <div>
+                            <h4 class="text-2xl font-black tracking-tight">Cero olvidos de clientes</h4>
+                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Recordatorios automáticos. Si no vienen, por lo menos te avisan con tiempo.</p>
                         </div>
-                        <h3>Tienda Online Integrada</h3>
-                        <p>Vende tus productos y servicios directamente desde tu página de reservas. Gestiona el stock y recibe pedidos por WhatsApp.</p>
-                    </div>
-                </div>
+                    </li>
+                    <li class="flex items-start gap-5">
+                        <div class="bg-black text-white p-3.5 rounded-full mt-1 shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-2xl font-black tracking-tight">Cuentas claras al fin del día</h4>
+                            <p class="text-lg text-zinc-500 mt-2 leading-relaxed">Lleva el control exacto de lo que entra, lo que sale y las comisiones de tu equipo. Sin matemáticas complicadas.</p>
+                        </div>
+                    </li>
+                </ul>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- COMPARISON SECTION -->
-        <section class="comparison">
-            <div class="container">
-                <div class="section-header gsap-fade-up">
-                    <span class="section-tag">La Diferencia</span>
-                    <h2>Por qué los líderes eligen Citas Pro</h2>
-                </div>
-                <div class="comparison-grid gsap-fade-up">
-                    <div class="comparison-card old-way">
-                        <h3>El método tradicional</h3>
-                        <ul>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                <span>Citas duplicadas o perdidas</span>
-                            </li>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                <span>Clientes que olvidan asistir</span>
-                            </li>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                <span>Cálculos manuales a fin de mes</span>
-                            </li>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                <span>Dependencia del papel y lápiz</span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="comparison-card pro-way" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2">
-                        <div class="glow-border"></div>
-                        <h3>Con Citas Pro</h3>
-                        <ul>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                <span>Sincronización automática 24/7</span>
-                            </li>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                <span>Recordatorios automáticos por WhatsApp</span>
-                            </li>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                <span>Métricas financieras en tiempo real</span>
-                            </li>
-                            <li>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                <span>Control total desde cualquier dispositivo</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <!-- SECCIÓN DE PARALLAX IMPACTANTE -->
+    <section class="relative h-[80vh] w-full flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 salon-img z-0"></div>
+        <div class="absolute inset-0 bg-black/50 z-0 backdrop-blur-[2px]"></div>
+        <div class="relative z-10 text-center px-6 max-w-5xl mx-auto">
+            <h2 class="text-5xl md:text-8xl font-black text-white tracking-tighter leading-[1.05] mb-8 drop-shadow-2xl">
+                El control de tu local,<br>en tu bolsillo.
+            </h2>
+            <p class="text-2xl text-zinc-200 font-medium mb-12 max-w-3xl mx-auto drop-shadow-md">
+                No necesitas ser un genio de las computadoras. Diseñamos esto para que sea tan fácil y rápido que hasta el más novato lo domina en 5 minutos. Entras, miras, trabajas.
+            </p>
+            <a href="/app.html" class="bg-white text-black px-12 py-5 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition-transform shadow-2xl inline-block">
+                Quiero ver cómo funciona
+            </a>
+        </div>
+    </section>
 
-        <!-- HOW IT WORKS -->
-        <section id="how-it-works" class="how-it-works">
-            <div class="container">
-                <div class="section-header gsap-fade-up">
-                    <span class="section-tag">Cómo Funciona</span>
-                    <h2>Empieza en 3 simples pasos.</h2>
-                </div>
-                <div class="steps-container">
-                    <div class="step gsap-fade-up">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h3>Crea tu Negocio</h3>
-                            <p>Regístrate en menos de 60 segundos. Configura el nombre de tu negocio, tu horario y los servicios que ofreces.</p>
-                        </div>
+    <!-- FEATURES EXTRAS (TIENDA, EQUIPO, RAPIDEZ) -->
+    <section class="py-32 bg-zinc-50">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h2 class="text-5xl md:text-6xl font-black tracking-tighter mb-6 text-black">Mucho más que una agenda.</h2>
+            <p class="text-2xl text-zinc-500 mb-20 max-w-3xl mx-auto font-medium">Vende tus productos desde tu propio enlace. Gel, cera, mascarillas... todo directo y al grano.</p>
+            
+            <div class="grid md:grid-cols-3 gap-10 text-left">
+                <!-- Card 1 -->
+                <div class="bg-white p-12 rounded-[2.5rem] shadow-xl shadow-zinc-200/50 hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mb-8 shadow-md">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                     </div>
-                    <div class="step gsap-fade-up">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h3>Comparte tu Enlace</h3>
-                            <p>Obtén tu enlace de reserva único (ej: citasproonline.com/tu-negocio) y compártelo en tus redes sociales, WhatsApp o página web.</p>
-                        </div>
-                    </div>
-                    <div class="step gsap-fade-up">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h3>Recibe Citas</h3>
-                            <p>Tus clientes reservan directamente desde tu enlace. Recibirás notificaciones en tiempo real por cada nueva cita.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PRICING CON IDs DINÁMICOS -->
-        <section id="pricing" class="pricing">
-            <div class="container">
-                <div class="section-header gsap-fade-up">
-                    <span class="section-tag">Precios</span>
-                    <h2>Simple, transparente y sin sorpresas.</h2>
-                    <p>Un solo plan con todo incluido. Sin comisiones por cita, sin límites de personal ni de clientes. Elige la frecuencia que mejor se adapte a ti.</p>
+                    <h3 class="text-3xl font-black tracking-tight mb-4">Tu propia tienda</h3>
+                    <p class="text-xl text-zinc-500 leading-relaxed font-medium">Muestra tu catálogo, ponle precio y deja que los clientes te hagan pedidos por WhatsApp. Venta directa y sin comisiones.</p>
                 </div>
                 
-                <div class="pricing-grid gsap-fade-up">
+                <!-- Card 2 -->
+                <div class="bg-white p-12 rounded-[2.5rem] shadow-xl shadow-zinc-200/50 hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mb-8 shadow-md">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    </div>
+                    <h3 class="text-3xl font-black tracking-tight mb-4">Equipo conectado</h3>
+                    <p class="text-xl text-zinc-500 leading-relaxed font-medium">Cada trabajador tiene su propio acceso. Saben a qué hora entran, con quién van y cuánto ganan. Cero confusiones en el local.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white p-12 rounded-[2.5rem] shadow-xl shadow-zinc-200/50 hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mb-8 shadow-md">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="text-3xl font-black tracking-tight mb-4">Rápido como bala</h3>
+                    <p class="text-xl text-zinc-500 leading-relaxed font-medium">Hecho con tecnología pura. Olvídate de pantallas de carga que demoran una eternidad. Abre al instante en cualquier teléfono viejo o nuevo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRECIOS -->
+    <section id="precios" class="py-32 bg-white">
+        <div class="max-w-5xl mx-auto px-6 text-center">
+            <h2 class="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-black">Un precio.<br>Todo incluido.</h2>
+            <p class="text-2xl text-zinc-500 mb-16 max-w-3xl mx-auto font-medium">Ni letras pequeñas ni pagos sorpresa por agregar un trabajador más. Transparencia total, como la gente de verdad hace negocios.</p>
+            
+            <div class="bg-zinc-50 p-12 md:p-20 rounded-[3rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-12 text-left border border-zinc-100">
+                <div class="flex-1">
+                    <span class="bg-black text-white px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider mb-6 inline-block">Plan Pro</span>
+                    <h3 class="text-4xl font-black tracking-tight mb-4">Para locales que van en serio.</h3>
                     
-                    <!-- PLAN FREE -->
-                    <div class="pricing-card">
-                        <div class="pricing-header">
-                            <h3>Prueba Gratis</h3>
-                            <p>Explora Citas Pro sin riesgos.</p>
-                        </div>
-                        <div class="price">
-                            <span class="price-amount">Gratis</span>
-                            <span class="price-period">/ 30 días</span>
-                        </div>
-                        <ul class="pricing-features">
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Acceso Total a la App</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Citas Ilimitadas</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Personal Ilimitado</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Reportes Financieros</span></li>
-                        </ul>
-                        <a href="/app.html" class="btn btn-secondary btn-block">Comenzar gratis</a>
+                    <div class="flex items-baseline gap-2 mb-10">
+                        <span class="text-7xl font-black tracking-tighter">$15</span>
+                        <span class="text-2xl font-semibold text-zinc-400">/ mes</span>
                     </div>
-
-                    <!-- PLAN MENSUAL -->
-                    <div class="pricing-card">
-                        <div class="pricing-header">
-                            <h3>Mensual</h3>
-                            <p>Flexibilidad mes a mes.</p>
-                        </div>
-                        <div class="price">
-                            <!-- AÑADIDO: ID dinámico para config-pais.js -->
-                            <span class="price-amount" id="precio-mensual-val">$15</span>
-                            <span class="price-period">/ mes</span>
-                        </div>
-                        <ul class="pricing-features">
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Acceso Total a la App</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Citas Ilimitadas</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Personal Ilimitado</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Reportes Financieros</span></li>
-                        </ul>
-                        <a href="/app.html?plan=mensual" class="btn btn-secondary btn-block">Pagar ahora</a>
-                    </div>
-
-                    <!-- PLAN TRIMESTRAL -->
-                    <div class="pricing-card popular" data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
-                        <div class="glow-border"></div>
-                        <div class="popular-badge">Más Recurrido</div>
-                        <div class="pricing-header">
-                            <h3>Trimestral</h3>
-                            <p>El equilibrio perfecto.</p>
-                        </div>
-                        <div class="price">
-                            <!-- AÑADIDO: ID dinámico para config-pais.js -->
-                            <span class="price-amount" id="precio-trimestral-val">$45</span>
-                            <span class="price-period">/ trimestre</span>
-                        </div>
-                        <div class="savings">Pago cómodo y sin interrupciones</div>
-                        <ul class="pricing-features">
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Acceso Total a la App</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Citas Ilimitadas</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Personal Ilimitado</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Reportes Financieros</span></li>
-                        </ul>
-                        <a href="/app.html?plan=trimestral" class="btn btn-primary btn-block">Pagar ahora</a>
-                    </div>
-
-                    <!-- PLAN ANUAL -->
-                    <div class="pricing-card">
-                        <div class="pricing-header">
-                            <h3>Anual</h3>
-                            <p>Para negocios sólidos.</p>
-                        </div>
-                        <div class="price">
-                            <!-- AÑADIDO: ID dinámico para config-pais.js -->
-                            <span class="price-amount" id="precio-anual-val">$180</span>
-                            <span class="price-period">/ año</span>
-                        </div>
-                        <div class="savings">Un solo pago, 12 meses de tranquilidad</div>
-                        <ul class="pricing-features">
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Acceso Total a la App</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Citas Ilimitadas</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Personal Ilimitado</span></li>
-                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>Reportes Financieros</span></li>
-                        </ul>
-                        <a href="/app.html?plan=anual" class="btn btn-secondary btn-block">Pagar ahora</a>
-                    </div>
+                    
+                    <ul class="space-y-5">
+                        <li class="flex items-center gap-4">
+                            <svg class="w-7 h-7 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span class="font-medium text-xl text-zinc-700">Citas sin límite</span>
+                        </li>
+                        <li class="flex items-center gap-4">
+                            <svg class="w-7 h-7 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span class="font-medium text-xl text-zinc-700">Trabajadores sin límite</span>
+                        </li>
+                        <li class="flex items-center gap-4">
+                            <svg class="w-7 h-7 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span class="font-medium text-xl text-zinc-700">Tienda y reportes financieros</span>
+                        </li>
+                    </ul>
                 </div>
-            </div>
-        </section>
-
-        <!-- FAQ -->
-        <section id="faq" class="faq">
-            <div class="container">
-                <div class="section-header gsap-fade-up">
-                    <span class="section-tag">FAQ</span>
-                    <h2>Preguntas Frecuentes</h2>
-                </div>
-                <div class="faq-accordion gsap-fade-up">
-                    <div class="faq-item">
-                        <button class="faq-question">
-                            <span>¿Necesito tarjeta de crédito para el mes gratis?</span>
-                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        </button>
-                        <div class="faq-answer">
-                            <p>No. Tu primer mes es completamente libre y sin compromiso. No te pediremos ningún dato de pago hasta que finalice ese periodo y decidas suscribirte.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item">
-                        <button class="faq-question">
-                            <span>¿Puedo usar Citas Pro en mi celular?</span>
-                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        </button>
-                        <div class="faq-answer">
-                            <p>¡Sí! Citas Pro es una Aplicación Web Progresiva (PWA). Funciona perfectamente en cualquier navegador de celular, tablet o computadora. Incluso puedes "instalarla" en tu pantalla de inicio para un acceso más rápido.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item">
-                        <button class="faq-question">
-                            <span>¿Mis datos están seguros?</span>
-                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        </button>
-                        <div class="faq-answer">
-                            <p>La seguridad es nuestra máxima prioridad. Utilizamos bases de datos de nivel empresarial (Supabase) y todas las conexiones están encriptadas. Tus datos y los de tus clientes están protegidos.</p>
-                        </div>
-                    </div>
-                    <div class="faq-item">
-                        <button class="faq-question">
-                            <span>¿Hay algún costo oculto o comisión por cita?</span>
-                            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        </button>
-                        <div class="faq-answer">
-                            <p>No. Nuestro precio es una tarifa plana mensual. No cobramos comisiones por las citas que recibas ni por los productos que vendas. El precio que ves es el precio que pagas.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA FINAL -->
-        <section class="cta">
-            <div class="container">
-                <div class="cta-content gsap-fade-up">
-                    <h2>Listo para dejar atrás el caos de la agenda de papel?</h2>
-                    <p>Únete a cientos de profesionales que ya están ahorrando tiempo y ganando más dinero con Citas Pro.</p>
-                    <a href="/app.html" class="btn btn-primary btn-lg">Empieza tu mes gratis ahora</a>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-top">
-                <div class="footer-logo">
-                    <img src="assets/img/procitas-logo.svg" alt="Citas Pro Logo">
-                    <span>Citas Pro</span>
-                </div>
-                <div class="footer-links">
-                    <a href="#features">Características</a>
-                    <a href="#pricing">Precios</a>
-                    <a href="/app.html">Iniciar Sesión</a>
-                </div>
-                <div class="footer-socials">
-                    <a href="https://instagram.com/" target="_blank" aria-label="Instagram">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                
+                <div class="w-full md:w-auto flex flex-col gap-5 md:min-w-[300px]">
+                    <a href="/app.html" class="w-full bg-black text-white px-10 py-6 rounded-2xl font-bold text-xl hover:scale-105 transition-transform text-center shadow-2xl">
+                        Empezar mes gratis
                     </a>
-                    <a href="https://x.com/" target="_blank" aria-label="X (Twitter)">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
-                    </a>
-                    <a href="https://facebook.com/" target="_blank" aria-label="Facebook">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                    </a>
+                    <p class="text-base text-zinc-500 font-medium text-center">Pruébalo sin compromisos. No pedimos tarjeta para el mes de prueba.</p>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Citas Pro. Todos los derechos reservados.</p>
-                <p style="margin-left:20px; font-weight:600; color:var(--text);">Soporte: <a href="mailto:soporte@citasproonline.com" style="color:var(--blue); text-decoration:none;">soporte@citasproonline.com</a></p>
-                <div class="footer-legal">
-                    <a href="privacidad.html" target="_blank">Política de Privacidad</a>
-                    <a href="terminos.html" target="_blank">Términos de Servicio</a>
+        </div>
+    </section>
+
+    <!-- FOOTER LIMPIO -->
+    <footer class="bg-white border-t border-zinc-200 pt-24 pb-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-10 border-b border-zinc-100 pb-12 mb-8">
+                <div class="flex items-center gap-2 font-black text-2xl tracking-tighter">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    CITAS PRO
+                </div>
+                <div class="flex gap-8 text-base font-semibold text-zinc-500">
+                    <a href="privacidad.html" class="hover:text-black transition">Privacidad</a>
+                    <a href="terminos.html" class="hover:text-black transition">Términos</a>
+                    <a href="mailto:soporte@citasproonline.com" class="hover:text-black transition">Contacto Soporte</a>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-medium text-zinc-400">
+                <p>© 2026 Citas Pro. Hacemos que funcione.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="hover:text-black transition"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
+                    <a href="#" class="hover:text-black transition"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- AÑADIDO: Tu Script de Monedas primero -->
+    <!-- AÑADIDO: Script de Monedas original -->
     <script src="assets/js/config-pais.js"></script>
-
-    <!-- SCRIPTS PREMIUM -->
-    <script src="https://unpkg.com/@studio-freight/lenis@1.0.39/dist/lenis.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
-    <script src="assets/js/landing.js"></script>
 
 </body>
 </html>
