@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citas Pro | Política de Privacidad</title>
+    <title>Citas Pro | Sobre Nosotros</title>
     
     <script>
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -22,7 +22,7 @@
         body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         ::-webkit-scrollbar { width: 0px; }
         .blur-nav { backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
-        .header-bg { background-image: url('assets/img/security.jpg'); background-size: cover; background-position: center; }
+        .about-img { background-image: url('assets/img/about-us.jpg'); background-size: cover; background-position: center; background-attachment: fixed; }
     </style>
 </head>
 <body class="bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50 transition-colors duration-300 selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
@@ -36,7 +36,7 @@
             </a>
             <div class="hidden lg:flex items-center gap-8 font-medium text-sm text-zinc-500 dark:text-zinc-400">
                 <a href="index.html#audiencia" class="hover:text-black dark:hover:text-white transition">Inicio</a>
-                <a href="nosotros.html" class="hover:text-black dark:hover:text-white transition">Nosotros</a>
+                <a href="nosotros.html" class="text-black dark:text-white transition">Nosotros</a>
                 <a href="index.html#precios" class="hover:text-black dark:hover:text-white transition">Precios</a>
             </div>
             <div class="flex items-center gap-4">
@@ -49,56 +49,58 @@
         </div>
     </nav>
 
-    <header class="relative py-32 border-b border-zinc-200 dark:border-zinc-800">
-        <div class="absolute inset-0 header-bg z-0 opacity-20 dark:opacity-40"></div>
-        <div class="absolute inset-0 bg-white/80 dark:bg-zinc-950/80 z-0"></div>
-        <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
-            <h1 class="text-5xl md:text-7xl font-black tracking-tighter mb-6">Política de Privacidad</h1>
-            <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium">Tus datos, y los de tus clientes, bajo siete llaves.</p>
+    <!-- HEADER / HERO -->
+    <section class="relative h-[70vh] min-h-[500px] w-full flex items-center justify-center">
+        <div class="absolute inset-0 about-img z-0"></div>
+        <div class="absolute inset-0 bg-black/60 z-0"></div>
+        
+        <div class="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center">
+            <h1 class="text-5xl md:text-7xl font-black text-white tracking-tighter leading-tight mb-6 drop-shadow-2xl">
+                Venimos de lo rústico.<br>Pensamos en grande.
+            </h1>
+            <p class="text-xl md:text-2xl text-zinc-200 font-medium drop-shadow-md">
+                No somos ejecutivos de traje que nunca han pisado un local. Somos gente de trabajo haciendo herramientas para gente de trabajo.
+            </p>
         </div>
-    </header>
+    </section>
 
-    <main class="max-w-3xl mx-auto px-6 py-20 space-y-12">
-        <div class="prose prose-lg dark:prose-invert prose-zinc max-w-none">
-            <p class="text-xl font-medium leading-relaxed">
-                Nadie quiere que sus datos terminen en manos raras. En Citas Pro nos tomamos la privacidad extremadamente en serio. Construimos este software para ser una caja fuerte, donde tú controlas la información de tu negocio y la de tus clientes. Así de simple.
-            </p>
-
-            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">1. ¿Qué información guardamos?</h2>
-            <p>
-                Solo lo estrictamente necesario para que tu negocio ruede. <br><br>
-                <strong>De ti (el dueño):</strong> Tu nombre, correo electrónico, nombre de tu negocio y dirección. Necesitamos esto para crearte la cuenta y que el sistema sepa quién eres. <br>
-                <strong>De tus clientes:</strong> Los datos que ellos ingresan al hacer una reserva (su nombre, teléfono y qué servicio pidieron). Esta información es <strong>tuya</strong>, nosotros solo te brindamos el cajón digital para guardarla.
-            </p>
-
-            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">2. Los pagos y tarjetas</h2>
-            <p>
-                Citas Pro no ve, ni guarda, ni toca los números de tu tarjeta de crédito, ni los de tus clientes. Todos los pagos son procesados de forma externa por pasarelas gigantes y ultra seguras (como Stripe). Ellos son los expertos en seguridad bancaria, nosotros somos los expertos en agendas.
-            </p>
-
-            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">3. No vendemos tus datos. Nunca.</h2>
-            <p>
-                Algunas empresas te dan un servicio "gratis" y luego venden tu lista de contactos para bombardearlos con publicidad. Nosotros te cobramos una suscripción justa precisamente para no tener que hacer eso. Tus datos y la lista de tus clientes están encriptados. No se venden, no se alquilan, no se tocan.
-            </p>
-
-            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">4. ¿Cómo protegemos la información?</h2>
-            <p>
-                Usamos servidores de primer nivel, conexiones seguras (HTTPS en todo momento) y contraseñas fuertemente encriptadas (tecnología bcrypt). Si alguien intentara robar nuestra base de datos, solo vería códigos indescifrables en lugar de las contraseñas.
-            </p>
-
-            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">5. Tus derechos sobre tus datos</h2>
-            <p>
-                Si mañana decides que ya no quieres usar Citas Pro (esperamos que no pase), puedes borrar tu cuenta por completo. Cuando lo haces, toda la información de tu negocio, agenda y clientes se elimina de nuestros sistemas principales para siempre. Sin rencores.
-            </p>
-
-            <div class="mt-16 p-8 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 text-center">
-                <h3 class="text-2xl font-black mb-2">Tranquilidad absoluta</h3>
-                <p class="text-zinc-500 dark:text-zinc-400 mb-6">Si necesitas un reporte de datos o borrar todo, escríbenos directamente.</p>
-                <a href="mailto:soporte@citasproonline.com" class="inline-block bg-black text-white dark:bg-white dark:text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform">soporte@citasproonline.com</a>
+    <!-- HISTORIA -->
+    <main class="py-32 bg-white dark:bg-zinc-950 transition-colors duration-300">
+        <div class="max-w-4xl mx-auto px-6 space-y-16">
+            
+            <div class="space-y-6">
+                <h2 class="text-4xl font-black tracking-tight">El problema de siempre</h2>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">
+                    Todo empezó viendo cómo se pierde el tiempo y la plata en los locales. Estás cortando el pelo, haciendo unas uñas o en medio de un tatuaje y suena el teléfono. Lo agarras, pierdes el ritmo, tu cliente se enfría y al final resulta que la persona que llamó quería una cita para la otra semana. O peor, la libreta de papel se llena de tachones, nadie entiende la letra y terminas con dos clientes a la misma hora. Un desastre total.
+                </p>
             </div>
+
+            <div class="space-y-6">
+                <h2 class="text-4xl font-black tracking-tight">Menos software corporativo, más calle</h2>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">
+                    Buscamos soluciones y todo lo que había en el mercado era feo, lento o te cobraba comisiones altísimas por cada reserva. Queríamos algo que funcionara como un reloj suizo pero que se sintiera como en casa. Algo fino, rápido y, sobre todo, fácil de usar. Así nació Citas Pro. No quisimos hacer una nave espacial que nadie sabe pilotar; hicimos una herramienta que hasta el trabajador más nuevo domina en 5 minutos.
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <h2 class="text-4xl font-black tracking-tight">La filosofía</h2>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">
+                    Creemos firmemente que la tecnología no debe robarte el tiempo, debe dártelo. Queremos que llegues a tu local, mires tu pantalla y sepas exactamente cómo va a ser tu día y cuánta plata vas a hacer. Queremos darles independencia a tus trabajadores para que no tengan que preguntarte todo. Y sobre todo, queremos que cuando cierres la puerta de tu local por la noche, realmente descanses, sabiendo que tu agenda se sigue llenando sola de madrugada.
+                </p>
+            </div>
+
+            <div class="bg-zinc-50 dark:bg-zinc-900 p-10 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 mt-20 text-center">
+                <h3 class="text-3xl font-black mb-4">Estamos aquí para quedarnos</h3>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 mb-8 font-medium">Únete a la nueva era. Olvida el papel y haz que tu negocio luzca profesional ante tus clientes.</p>
+                <a href="/app.html" class="inline-block bg-black text-white dark:bg-white dark:text-black font-bold py-4 px-10 rounded-full hover:scale-105 transition-transform text-lg shadow-xl">
+                    Prueba Citas Pro Gratis
+                </a>
+            </div>
+
         </div>
     </main>
 
+    <!-- FOOTER LIMPIO -->
     <footer class="bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-900 pt-16 pb-12 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col md:flex-row justify-between items-center gap-10 border-b border-zinc-100 dark:border-zinc-900 pb-12 mb-8">
@@ -107,10 +109,10 @@
                     CITAS PRO
                 </div>
                 <div class="flex flex-wrap justify-center gap-8 text-base font-semibold text-zinc-500 dark:text-zinc-400">
-                    <a href="privacidad.html" class="text-black dark:text-white transition">Privacidad</a>
+                    <a href="privacidad.html" class="hover:text-black dark:hover:text-white transition">Privacidad</a>
                     <a href="terminos.html" class="hover:text-black dark:hover:text-white transition">Términos</a>
                     <a href="reembolsos.html" class="hover:text-black dark:hover:text-white transition">Reembolsos</a>
-                    <a href="nosotros.html" class="hover:text-black dark:hover:text-white transition">Nosotros</a>
+                    <a href="nosotros.html" class="text-black dark:text-white transition">Nosotros</a>
                 </div>
             </div>
             <div class="text-center text-sm font-medium text-zinc-400 dark:text-zinc-500">

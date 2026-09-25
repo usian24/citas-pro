@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citas Pro | Para quién es</title>
+    
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        ::-webkit-scrollbar { width: 0px; }
+        .blur-nav { backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+        
+        .img-salon { background-image: url('assets/img/salon-bg.jpg'); background-size: cover; background-position: center; }
+        .img-nails { background-image: url('assets/img/nail-salon.jpg'); background-size: cover; background-position: center; }
+        .img-spa { background-image: url('assets/img/massage-spa.jpg'); background-size: cover; background-position: center; }
+        .img-clinic { background-image: url('assets/img/clinic.jpg'); background-size: cover; background-position: center; }
+        .img-tattoo { background-image: url('assets/img/tattoo.jpg'); background-size: cover; background-position: center; }
+    </style>
+</head>
+<body class="bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50 transition-colors duration-300 selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 w-full z-50 bg-white/70 dark:bg-zinc-950/70 blur-nav border-b border-zinc-200/50 dark:border-zinc-800/50 transition-all">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="index.html" class="font-black tracking-tighter text-xl flex items-center gap-2 hover:opacity-70 transition">
+                <img src="assets/img/procitas-logo.svg" alt="Citas Pro" class="w-8 h-8 dark:invert">
+                CITAS PRO
+            </a>
+            <div class="hidden lg:flex items-center gap-8 font-medium text-sm text-zinc-500 dark:text-zinc-400">
+                <a href="para-quien.html" class="text-black dark:text-white transition">Para quién es</a>
+                <a href="index.html#negocios" class="hover:text-black dark:hover:text-white transition">Gestión</a>
+                <a href="index.html#finanzas" class="hover:text-black dark:hover:text-white transition">Finanzas</a>
+                <a href="nosotros.html" class="hover:text-black dark:hover:text-white transition">Nosotros</a>
+                <a href="index.html#precios" class="hover:text-black dark:hover:text-white transition">Precios</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="theme-toggle" class="p-2 text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+                <a href="/app.html" class="bg-black text-white dark:bg-white dark:text-black px-5 py-2 rounded-full text-sm font-semibold hover:scale-105 transition-transform shadow-md">Entrar</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="pt-32 pb-20 text-center px-6">
+        <h1 class="text-6xl md:text-8xl font-black tracking-tighter mb-8">
+            Para los que mueven<br>la industria.
+        </h1>
+        <p class="text-2xl text-zinc-500 dark:text-zinc-400 font-medium max-w-3xl mx-auto">
+            No importa cuál sea tu arte. Si trabajas con citas, clientes exigentes y poco tiempo, Citas Pro es la herramienta que te devuelve el control.
+        </p>
+    </header>
+
+    <!-- SECCIONES ZIG-ZAG -->
+    <main class="space-y-32 pb-32">
+        
+        <!-- 1. Barberías y Salones -->
+        <section class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+            <div class="h-[500px] rounded-[2.5rem] img-salon shadow-2xl border border-zinc-200 dark:border-zinc-800"></div>
+            <div class="space-y-8">
+                <h2 class="text-5xl font-black tracking-tighter">Barberías y Salones</h2>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    Se acabó el lápiz y el papel. Sabes perfectamente que el fin de semana el local explota y no puedes estar contestando mensajes para ver quién tiene un espacio libre.
+                </p>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    Con Citas Pro, organizas los sillones, separas a tu equipo, calculas las comisiones al instante y dejas que tus clientes reserven su corte sin interrumpirte. Tú dedícate a hacer tu magia.
+                </p>
+            </div>
+        </section>
+
+        <!-- 2. Uñas y Pestañas -->
+        <section class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+            <div class="space-y-8 order-2 lg:order-1">
+                <h2 class="text-5xl font-black tracking-tighter">Estudios de Uñas</h2>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    Adiós a responder mensajes de Instagram a las 2 de la mañana. Tus clientas quieren agendar rápido y ver qué diseños o servicios tienes disponibles.
+                </p>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    Pon tu enlace de Citas Pro en tu biografía. Ellas entran, ven tus servicios (acrílicas, gel, retoques), eligen la hora y listo. Te levantas al día siguiente con la agenda llena y cero estrés.
+                </p>
+            </div>
+            <div class="h-[500px] rounded-[2.5rem] img-nails shadow-2xl border border-zinc-200 dark:border-zinc-800 order-1 lg:order-2"></div>
+        </section>
+
+        <!-- 3. Spas y Masajes -->
+        <section class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+            <div class="h-[500px] rounded-[2.5rem] img-spa shadow-2xl border border-zinc-200 dark:border-zinc-800"></div>
+            <div class="space-y-8">
+                <h2 class="text-5xl font-black tracking-tighter">Spas y Masajes</h2>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    Tus clientes buscan paz, no un dolor de cabeza para conseguir un turno. Un Spa necesita silencio, organización impecable y control total sobre las cabinas de masaje.
+                </p>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    Deja que el sistema controle los tiempos, asigne los cuartos y envíe recordatorios automáticos para que nadie falte a su sesión de relajación.
+                </p>
+            </div>
+        </section>
+
+        <!-- 4. Clínicas y Estética -->
+        <section class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+            <div class="space-y-8 order-2 lg:order-1">
+                <h2 class="text-5xl font-black tracking-tighter">Clínicas Estéticas</h2>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    Aquí no hay margen para errores. Necesitas profesionalismo puro, historiales precisos y total privacidad para tus pacientes de medicina estética.
+                </p>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    Citas Pro te da una plataforma segura donde puedes gestionar tratamientos largos, citas de seguimiento y mantener toda la información bajo siete llaves.
+                </p>
+            </div>
+            <div class="h-[500px] rounded-[2.5rem] img-clinic shadow-2xl border border-zinc-200 dark:border-zinc-800 order-1 lg:order-2"></div>
+        </section>
+
+        <!-- 5. Tatuadores -->
+        <section class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+            <div class="h-[500px] rounded-[2.5rem] img-tattoo shadow-2xl border border-zinc-200 dark:border-zinc-800"></div>
+            <div class="space-y-8">
+                <h2 class="text-5xl font-black tracking-tighter">Estudios de Tatuajes</h2>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    La tinta toma su tiempo. No puedes tener a un cliente esperando en el sofá porque se te cruzó una cita. Necesitas horas bien cuadradas.
+                </p>
+                <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    Configura servicios por sesiones largas, cobra adelantos para asegurar el turno y haz que la tinta fluya sin prisas ni interrupciones.
+                </p>
+            </div>
+        </section>
+
+        <!-- CTA Final -->
+        <section class="max-w-4xl mx-auto px-6 mt-20">
+            <div class="bg-black text-white dark:bg-zinc-900 p-16 rounded-[3rem] text-center shadow-2xl">
+                <h2 class="text-4xl font-black mb-6">Tu industria ya está aquí.</h2>
+                <p class="text-xl text-zinc-400 mb-10 font-medium">Da el salto. Organiza tu negocio hoy mismo y prueba el sistema completo gratis por un mes.</p>
+                <a href="/app.html" class="inline-block bg-white text-black font-bold py-4 px-12 rounded-full hover:scale-105 transition-transform text-xl">
+                    Empezar gratis
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-900 pt-16 pb-12 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-10 border-b border-zinc-100 dark:border-zinc-900 pb-12 mb-8">
+                <div class="flex items-center gap-2 font-black text-2xl tracking-tighter text-black dark:text-white">
+                    <img src="assets/img/procitas-logo.svg" alt="Citas Pro" class="w-8 h-8 opacity-80 grayscale dark:invert">
+                    CITAS PRO
+                </div>
+                <div class="flex flex-wrap justify-center gap-8 text-base font-semibold text-zinc-500 dark:text-zinc-400">
+                    <a href="privacidad.html" class="hover:text-black dark:hover:text-white transition">Privacidad</a>
+                    <a href="terminos.html" class="hover:text-black dark:hover:text-white transition">Términos</a>
+                    <a href="reembolsos.html" class="hover:text-black dark:hover:text-white transition">Reembolsos</a>
+                    <a href="nosotros.html" class="hover:text-black dark:hover:text-white transition">Nosotros</a>
+                </div>
+            </div>
+            <div class="text-center text-sm font-medium text-zinc-400 dark:text-zinc-500">
+                <p>© 2026 Citas Pro. Hacemos que funcione.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+        function updateIcon() {
+            if (document.documentElement.classList.contains('dark')) {
+                darkIcon.classList.add('hidden'); lightIcon.classList.remove('hidden');
+            } else {
+                lightIcon.classList.add('hidden'); darkIcon.classList.remove('hidden');
+            }
+        }
+        updateIcon();
+        themeToggleBtn.addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            updateIcon();
+        });
+    </script>
+</body>
+</html>

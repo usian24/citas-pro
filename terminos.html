@@ -1,67 +1,156 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Términos de Servicio - Pro Citas</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            line-height: 1.7; 
-            color: #e6edf3; 
-            background-color: #0D1117;
-            max-width: 800px; 
-            margin: 40px auto; 
-            padding: 20px; 
+    <title>Citas Pro | Términos y Condiciones</title>
+    
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
         }
-        h1, h2 { color: #fff; font-weight: 800; letter-spacing: -0.03em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 40px;}
-        a { color: #58A6FF; text-decoration: none; }
-        a:hover { text-decoration: underline; }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        ::-webkit-scrollbar { width: 0px; }
+        .blur-nav { backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+        .header-bg { background-image: url('assets/img/security.jpg'); background-size: cover; background-position: center; }
     </style>
 </head>
-<body>
-    <div style="margin-bottom: 20px;">
-        <a href="/" style="display: inline-block; padding: 10px 20px; background-color: #21262d; color: #c9d1d9; text-decoration: none; border-radius: 6px; border: 1px solid rgba(240,246,252,0.1); font-weight: 600;">&larr; Volver al Inicio</a>
-    </div>
+<body class="bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50 transition-colors duration-300 selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
 
-    <h1>Términos y Condiciones de Servicio de Pro Citas</h1>
-    <p><strong>Última actualización:</strong> [FECHA DE HOY, ej: 24 de Mayo de 2024]</p>
+    <!-- NAVBAR TIPO APPLE -->
+    <nav class="sticky top-0 w-full z-50 bg-white/70 dark:bg-zinc-950/70 blur-nav border-b border-zinc-200/50 dark:border-zinc-800/50 transition-all">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="index.html" class="font-black tracking-tighter text-xl flex items-center gap-2 hover:opacity-70 transition">
+                <img src="assets/img/procitas-logo.svg" alt="Citas Pro" class="w-8 h-8 dark:invert">
+                CITAS PRO
+            </a>
+            
+            <div class="hidden lg:flex items-center gap-8 font-medium text-sm text-zinc-500 dark:text-zinc-400">
+                <a href="index.html#audiencia" class="hover:text-black dark:hover:text-white transition">Inicio</a>
+                <a href="nosotros.html" class="hover:text-black dark:hover:text-white transition">Nosotros</a>
+                <a href="index.html#precios" class="hover:text-black dark:hover:text-white transition">Precios</a>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button id="theme-toggle" class="p-2 text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+                <a href="/app.html" class="bg-black text-white dark:bg-white dark:text-black px-5 py-2 rounded-full text-sm font-semibold hover:scale-105 transition-transform shadow-md">Entrar</a>
+            </div>
+        </div>
+    </nav>
 
-    <h2>1. Aceptación de los Términos</h2>
-    <p>Al registrarse y utilizar la plataforma Pro Citas (en adelante, "el Servicio"), usted (en adelante, "el Usuario" o "el Negocio") acepta y se compromete a cumplir estos Términos y Condiciones. Si no está de acuerdo, no debe utilizar el Servicio.</p>
+    <!-- HEADER -->
+    <header class="relative py-32 border-b border-zinc-200 dark:border-zinc-800">
+        <div class="absolute inset-0 header-bg z-0 opacity-20 dark:opacity-40"></div>
+        <div class="absolute inset-0 bg-white/80 dark:bg-zinc-950/80 z-0"></div>
+        <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
+            <h1 class="text-5xl md:text-7xl font-black tracking-tighter mb-6">Términos y Condiciones</h1>
+            <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium">Hablemos claro, de frente y sin trucos ocultos.</p>
+        </div>
+    </header>
 
-    <h2>2. Descripción del Servicio</h2>
-    <p>Pro Citas es un software como servicio (SaaS) que proporciona a negocios herramientas para la gestión de citas, clientes, personal y finanzas.</p>
+    <!-- CONTENIDO -->
+    <main class="max-w-3xl mx-auto px-6 py-20 space-y-12">
+        
+        <div class="prose prose-lg dark:prose-invert prose-zinc max-w-none">
+            <p class="text-xl font-medium leading-relaxed">
+                Venimos del trabajo duro, del ruido de las máquinas y de estar de pie todo el día. Por eso, no nos gustan las letras pequeñas ni los contratos trampa. Queremos que uses Citas Pro con total tranquilidad. Aquí te explicamos las reglas del juego de forma legal para que los bancos y pasarelas de pago nos den luz verde, pero te lo decimos como amigos.
+            </p>
 
-    <h2>3. Cuentas y Registro</h2>
-    <p>El Usuario es responsable de mantener la confidencialidad de su contraseña y de todas las actividades que ocurran en su cuenta. Pro Citas no se hace responsable de pérdidas o daños derivados del incumplimiento de esta obligación de seguridad.</p>
+            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">1. Lo que hacemos por ti (El Servicio)</h2>
+            <p>
+                Nosotros ponemos la tecnología. Citas Pro te da una plataforma web y móvil para que gestiones las reservas de tu local, administres a tu equipo y vendas tus productos. El sistema está alojado en servidores seguros en la nube. Te prometemos mantenerlo funcionando rápido y sin problemas la inmensa mayoría del tiempo.
+            </p>
 
-    <h2>4. Pagos y Suscripciones</h2>
-    <p>El Servicio se ofrece bajo un modelo de suscripción. Los precios y planes están detallados en nuestro sitio web. Los pagos se procesan a través de nuestra pasarela de pagos externa (Lemon Squeezy). <strong>Importante: Para realizar cualquier pago y activar una suscripción, el cliente debe registrar obligatoriamente una cuenta en nuestra plataforma primero.</strong> Ofrecemos un período de prueba gratuito, tras el cual (o si el usuario decide omitir la prueba pagando directamente tras el registro) se requerirá una suscripción activa para continuar utilizando el servicio.</p>
+            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">2. Tu responsabilidad (Tu Local)</h2>
+            <p>
+                Tú pones el talento. Tú eres el único responsable del servicio que le brindas a los clientes que reservan a través de Citas Pro. Si un cliente llega y el local está cerrado, o si ocurre algún percance durante un corte o servicio, la responsabilidad es totalmente tuya. Nosotros somos la agenda inteligente, no el dueño del local.
+            </p>
 
-    <h2>5. Política de Reembolsos</h2>
-    <p>Debido a la naturaleza digital del servicio, no se ofrecen reembolsos una vez procesado un pago de suscripción. Si cree que ha habido un error en la facturación, por favor contacte a nuestro soporte en soporte@citasproonline.com.</p>
+            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">3. Pagos y Suscripciones</h2>
+            <p>
+                Citas Pro funciona por suscripción (mensual, trimestral o anual). Te damos un mes de prueba gratis para que veas si somos el uno para el otro. Pasado ese tiempo, si decides quedarte, te cobraremos según el plan que elijas. Puedes cancelar cuando quieras desde tu panel de control, sin tener que llamar a nadie ni dar explicaciones. Si cancelas, tu cuenta seguirá activa hasta el último día que pagaste.
+            </p>
 
-    <h2>6. Uso Aceptable</h2>
-    <p>El Usuario se compromete a no utilizar el Servicio para ninguna actividad ilegal o no autorizada. El abuso o uso indebido del sistema puede resultar en la suspensión o terminación inmediata de la cuenta.</p>
+            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">4. Privacidad y Datos (Lo tuyo es tuyo)</h2>
+            <p>
+                Los datos de tus clientes (sus nombres, teléfonos, correos y cuántas veces se han cortado contigo) son tu mina de oro. Nosotros los guardamos bajo llave con tecnología de cifrado avanzado (encriptación). Nunca venderemos tu lista de clientes a terceros. Esa información es sagrada.
+            </p>
 
-    <h2>7. Propiedad Intelectual</h2>
-    <p>El software, diseño, gráficos y todo el contenido de Pro Citas son propiedad exclusiva de [TU NOMBRE O NOMBRE DE TU EMPRESA]. No se permite su copia, modificación o distribución sin permiso explícito.</p>
+            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">5. Pasarelas de Pago de Terceros</h2>
+            <p>
+                Si decides cobrar adelantos a tus clientes usando nuestra plataforma, debes saber que utilizamos procesadores de pago de clase mundial (como Stripe o MercadoPago). Al usar esta función, aceptas también los términos y condiciones de estas empresas. Nosotros no almacenamos los números de tarjeta de crédito de tus clientes, eso lo manejan los bancos directamente.
+            </p>
 
-    <h2>8. Limitación de Responsabilidad</h2>
-    <p>Pro Citas se proporciona "tal cual". No garantizamos que el servicio sea ininterrumpido o libre de errores. En ningún caso seremos responsables por daños directos o indirectos derivados del uso o la incapacidad de usar el servicio.</p>
+            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">6. Propiedad Intelectual</h2>
+            <p>
+                El código, el diseño limpio, los textos y la marca de Citas Pro nos pertenecen. Te damos permiso total para usarlo para llevar tu negocio al éxito, pero no puedes copiar nuestro código ni vender el sistema como si fuera tuyo. Respeto ante todo.
+            </p>
 
-    <h2>9. Modificaciones de los Términos</h2>
-    <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Se notificará a los usuarios de cambios importantes. El uso continuado del Servicio después de dichas modificaciones constituirá su aceptación de los nuevos términos.</p>
+            <h2 class="text-3xl font-black tracking-tight mt-12 mb-4">7. Modificaciones a las reglas</h2>
+            <p>
+                Si algún día necesitamos cambiar estas reglas (generalmente porque agregamos funciones nuevas o por leyes del país), te avisaremos por correo con anticipación. Seguir usando el sistema significa que estás de acuerdo con los cambios.
+            </p>
 
-    <div style="margin-bottom: 20px;">
-        <a href="/" style="display: inline-block; padding: 10px 20px; background-color: #21262d; color: #c9d1d9; text-decoration: none; border-radius: 6px; border: 1px solid rgba(240,246,252,0.1); font-weight: 600;">&larr; Volver al Inicio</a>
-    </div>
+            <div class="mt-16 p-8 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 text-center">
+                <h3 class="text-2xl font-black mb-2">¿Tienes alguna duda legal?</h3>
+                <p class="text-zinc-500 dark:text-zinc-400 mb-6">Mándanos un correo, te respondemos nosotros mismos, sin robots.</p>
+                <a href="mailto:legal@citasproonline.com" class="inline-block bg-black text-white dark:bg-white dark:text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform">legal@citasproonline.com</a>
+            </div>
+        </div>
+    </main>
 
-    <h2>10. Contacto</h2>
-    <p>Si tiene alguna pregunta sobre estos Términos, por favor contáctenos en <a href="mailto:soporte@citasproonline.com">soporte@citasproonline.com</a>.</p>
+    <!-- FOOTER LIMPIO -->
+    <footer class="bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-900 pt-16 pb-12 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-10 border-b border-zinc-100 dark:border-zinc-900 pb-12 mb-8">
+                <div class="flex items-center gap-2 font-black text-2xl tracking-tighter text-black dark:text-white">
+                    <img src="assets/img/procitas-logo.svg" alt="Citas Pro" class="w-8 h-8 opacity-80 grayscale dark:invert">
+                    CITAS PRO
+                </div>
+                <div class="flex flex-wrap justify-center gap-8 text-base font-semibold text-zinc-500 dark:text-zinc-400">
+                    <a href="privacidad.html" class="hover:text-black dark:hover:text-white transition">Privacidad</a>
+                    <a href="terminos.html" class="text-black dark:text-white transition">Términos</a>
+                    <a href="reembolsos.html" class="hover:text-black dark:hover:text-white transition">Reembolsos</a>
+                    <a href="nosotros.html" class="hover:text-black dark:hover:text-white transition">Nosotros</a>
+                </div>
+            </div>
+            <div class="text-center text-sm font-medium text-zinc-400 dark:text-zinc-500">
+                <p>© 2026 Citas Pro. Hacemos que funcione.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- LÓGICA MODO OSCURO TIPO APPLE -->
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+        function updateIcon() {
+            if (document.documentElement.classList.contains('dark')) {
+                darkIcon.classList.add('hidden'); lightIcon.classList.remove('hidden');
+            } else {
+                lightIcon.classList.add('hidden'); darkIcon.classList.remove('hidden');
+            }
+        }
+        updateIcon();
+        themeToggleBtn.addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            updateIcon();
+        });
+    </script>
 </body>
 </html>

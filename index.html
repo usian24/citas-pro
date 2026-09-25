@@ -51,7 +51,7 @@
         .bg-spa { background-image: url('assets/img/massage-spa.jpg'); background-size: cover; background-position: center; }
         .bg-clinic { background-image: url('assets/img/clinic.jpg'); background-size: cover; background-position: center; }
         .bg-tattoo { background-image: url('assets/img/tattoo.jpg'); background-size: cover; background-position: center; }
-        .bg-mockup { background-image: url('assets/img/app-mockup.jpg'); background-size: contain; background-repeat: no-repeat; background-position: center bottom; }
+        .bg-mockup { background-image: url('assets/img/app-mockup.jpg'); background-size: cover; background-position: center; }
         
         .blur-nav { 
             backdrop-filter: blur(24px); 
@@ -84,7 +84,7 @@
             </a>
             
             <div class="hidden lg:flex items-center gap-8 font-medium text-sm text-zinc-500 dark:text-zinc-400">
-                <a href="#audiencia" class="hover:text-black dark:hover:text-white transition">Para quién es</a>
+                <a href="para-quien.html" class="hover:text-black dark:hover:text-white transition">Para quién es</a>
                 <a href="#negocios" class="hover:text-black dark:hover:text-white transition">Gestión</a>
                 <a href="#equipo" class="hover:text-black dark:hover:text-white transition">Equipo</a>
                 <a href="#finanzas" class="hover:text-black dark:hover:text-white transition">Finanzas</a>
@@ -174,65 +174,7 @@
                 </div>
             </div>
             <!-- Mockup Image -->
-            <div class="flex-1 w-full h-[500px] md:h-[700px] bg-mockup transform md:scale-125 md:translate-x-12 origin-right"></div>
-        </div>
-    </section>
-
-    <!-- TIPOS DE NEGOCIO (AUDIENCIA) -->
-    <section id="audiencia" class="py-32 bg-white dark:bg-zinc-950 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-20">
-                <h2 class="text-5xl md:text-7xl font-black tracking-tighter mb-6 text-black dark:text-white">Para los que mueven<br>la industria.</h2>
-                <p class="text-2xl text-zinc-500 dark:text-zinc-400 font-medium max-w-3xl mx-auto">No importa cuál sea tu arte. Si trabajas con citas, Citas Pro es tu mano derecha.</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
-                <!-- Barberías y Salones -->
-                <div class="bg-zinc-50 dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden hover-lift border border-zinc-100 dark:border-zinc-800 flex flex-col group transition-colors duration-300">
-                    <div class="h-72 salon-img transform group-hover:scale-105 transition-transform duration-700"></div>
-                    <div class="p-10 flex-1">
-                        <h3 class="text-3xl font-black mb-3">Barberías y Salones</h3>
-                        <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">Se acabó el lápiz y papel. Organiza los sillones, calcula comisiones al instante y deja que tus clientes reserven su corte sin interrumpirte.</p>
-                    </div>
-                </div>
-
-                <!-- Uñas y Pestañas -->
-                <div class="bg-zinc-50 dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden hover-lift border border-zinc-100 dark:border-zinc-800 flex flex-col group transition-colors duration-300">
-                    <div class="h-72 bg-nails transform group-hover:scale-105 transition-transform duration-700"></div>
-                    <div class="p-10 flex-1">
-                        <h3 class="text-3xl font-black mb-3">Uñas y Pestañas</h3>
-                        <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">Adiós a responder mensajes a las 2 AM. Pon tu enlace en tu biografía y levántate con la agenda llena.</p>
-                    </div>
-                </div>
-
-                <!-- Spas y Masajes -->
-                <div class="bg-zinc-50 dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden hover-lift border border-zinc-100 dark:border-zinc-800 flex flex-col group transition-colors duration-300">
-                    <div class="h-72 bg-spa transform group-hover:scale-105 transition-transform duration-700"></div>
-                    <div class="p-10 flex-1">
-                        <h3 class="text-3xl font-black mb-3">Spas y Masajes</h3>
-                        <p class="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">Ambiente zen, cero estrés. Deja que el sistema controle los tiempos, los espacios y las reservas mientras tú ofreces relajación.</p>
-                    </div>
-                </div>
-
-                <!-- Clínicas y Tatuajes -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                    <div class="bg-zinc-50 dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden hover-lift border border-zinc-100 dark:border-zinc-800 flex flex-col group transition-colors duration-300">
-                        <div class="h-40 bg-clinic transform group-hover:scale-105 transition-transform duration-700"></div>
-                        <div class="p-8 flex-1">
-                            <h3 class="text-2xl font-black mb-2">Clínicas Estéticas</h3>
-                            <p class="text-lg text-zinc-500 dark:text-zinc-400 font-medium leading-tight">Profesionalismo puro. Historial preciso y total privacidad.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-zinc-50 dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden hover-lift border border-zinc-100 dark:border-zinc-800 flex flex-col group transition-colors duration-300">
-                        <div class="h-40 bg-tattoo transform group-hover:scale-105 transition-transform duration-700"></div>
-                        <div class="p-8 flex-1">
-                            <h3 class="text-2xl font-black mb-2">Tatuadores</h3>
-                            <p class="text-lg text-zinc-500 dark:text-zinc-400 font-medium leading-tight">Horas bien cuadradas para que la tinta fluya sin prisas.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="flex-1 w-full h-[450px] md:h-[650px] bg-mockup rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.4)] border border-zinc-200 dark:border-zinc-800"></div>
         </div>
     </section>
 
