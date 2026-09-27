@@ -209,15 +209,15 @@ function planTag(plan) {
 function bizCardH(b) {
   const rev = (b.appointments || []).reduce(function (s, a) { return s + (a.price || 0); }, 0);
   const av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : '<span>' + san((b.name || '?').charAt(0)) + '</span>';
-  return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s" onclick="openBizProfile(\'' + sanitizeText(b.id) + '\')">'
-    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">'
-    + '<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden">' + av + '</div>'
-    + '<div style="flex:1"><div style="font-size:14px;font-weight:800">' + san(b.name) + '</div><div style="font-size:12px;color:var(--t2);margin-top:2px">' + san(b.owner) + ' · ' + (FLAGS[b.country] || '🌍') + ' ' + san(b.city || '') + '</div></div>'
+  return '<div style="border-bottom:1px solid var(--border);padding:14px 10px;margin-bottom:0;cursor:pointer;transition:opacity .15s" onclick="openBizProfile(\'' + sanitizeText(b.id) + '\')" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">'
+    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
+    + '<div style="width:40px;height:40px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--text);flex-shrink:0;overflow:hidden">' + av + '</div>'
+    + '<div style="flex:1"><div style="font-size:15px;font-weight:700">' + san(b.name) + '</div><div style="font-size:12px;color:var(--muted);margin-top:2px">' + san(b.owner) + ' · ' + (FLAGS[b.country] || '🌍') + ' ' + san(b.city || '') + '</div></div>'
     + planTag(b.plan) + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
-    + '<div style="background:var(--bg3);border-radius:9px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--blue)">' + (b.barbers ? b.barbers.length : 0) + '</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Profesionales</div></div>'
-    + '<div style="background:var(--bg3);border-radius:9px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800">' + (b.appointments ? b.appointments.length : 0) + '</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Citas</div></div>'
-    + '<div style="background:var(--bg3);border-radius:9px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--green)">' + money(rev) + '</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Ganancia Tienda</div></div>'
+    + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + (b.barbers ? b.barbers.length : 0) + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Profesionales</div></div>'
+    + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + (b.appointments ? b.appointments.length : 0) + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Citas</div></div>'
+    + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + money(rev) + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Ganancia</div></div>'
     + '</div></div>';
 }
 
@@ -319,19 +319,19 @@ function openBizProfile(bizId) {
   }
 
   // Acordeón desplegable
-  const accordionHtml = '<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;overflow:hidden;margin-bottom:14px">' +
-    '<div onclick="var el=document.getElementById(\'wk-list-' + b.id + '\'); var icon=document.getElementById(\'wk-icon-' + b.id + '\'); if(el.style.display===\'none\'){el.style.display=\'block\';icon.style.transform=\'rotate(180deg)\'}else{el.style.display=\'none\';icon.style.transform=\'rotate(0deg)\'}" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:800;background:var(--bblue);color:var(--blue);font-size:13px;transition:background 0.2s" onmouseover="this.style.background=\'rgba(74,127,212,0.2)\'" onmouseout="this.style.background=\'var(--bblue)\'">' +
+  const accordionHtml = '<div style="border-bottom:1px solid var(--border);margin-bottom:14px;padding-bottom:14px;">' +
+    '<div onclick="var el=document.getElementById(\'wk-list-' + b.id + '\'); var icon=document.getElementById(\'wk-icon-' + b.id + '\'); if(el.style.display===\'none\'){el.style.display=\'block\';icon.style.transform=\'rotate(180deg)\'}else{el.style.display=\'none\';icon.style.transform=\'rotate(0deg)\'}" style="padding:10px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:600;color:var(--text);font-size:14px;">' +
     '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">💈</span> Ver Equipo de Trabajo (' + (b.workers ? b.workers.length : 0) + ')</div>' +
     '<span id="wk-icon-' + b.id + '" style="transition:transform 0.3s;font-size:10px">▼</span>' +
     '</div>' +
-    '<div id="wk-list-' + b.id + '" style="display:none;padding:14px;border-top:1px solid var(--b);background:var(--bg3)">' +
+    '<div id="wk-list-' + b.id + '" style="display:none;padding-top:14px;">' +
     workersHtml +
     '</div>' +
     '</div>';
 
   H('adm-biz-profile',
-    '<div style="display:flex;align-items:center;gap:14px;background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px;margin-bottom:16px">'
-    + '<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0">' + av + '</div>'
+    '<div style="display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px">'
+    + '<div style="width:56px;height:56px;border-radius:12px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--text);overflow:hidden;flex-shrink:0">' + av + '</div>'
     + '<div style="flex:1"><div style="font-size:18px;font-weight:800">' + san(b.name) + '</div>'
     + '<div style="font-size:12px;color:var(--t2);margin-top:4px;line-height:2"> ' + san(b.owner) + '<br> ' + san(b.phone || '—') + '<br> ' + san(b.email || '—') + '<br> ' + san((b.addr || '') + ' ' + (b.city || '')) + '<br> ' + san(b.type || '—') + '</div>'
     + '<div style="margin-top:8px">' + planTag(b.plan) + '</div></div></div>'
@@ -340,13 +340,13 @@ function openBizProfile(bizId) {
     + '<div class="sbox"><div class="slbl">Citas totales</div><div class="snum">' + allAppts.length + '</div></div>'
     + '<div class="sbox"><div class="slbl">Ingresos Generados</div><div class="snum" style="color:var(--green)">' + money(rev) + '</div></div>'
     + '<div class="sbox"><div class="slbl">Citas hoy</div><div class="snum" style="color:var(--blue)">' + todayA.length + '</div></div></div>'
-    + (b.desc ? '<div class="card" style="margin-bottom:12px;font-size:13px;color:var(--t2);line-height:1.6">' + san(b.desc) + '</div>' : '')
+    + (b.desc ? '<div style="margin-bottom:14px;font-size:13px;color:var(--muted);line-height:1.6">' + san(b.desc) + '</div>' : '')
     + '<div style="background:var(--bg3);border-radius:11px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
-    + '<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">🔗 ' + window.location.host + '/#b/' + sanitizeText(b.id) + '</span>'
+    + '<span style="font-size:13px;color:var(--blue);font-weight:600;word-break:break-all;flex:1;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> ' + window.location.host + '/#b/' + sanitizeText(b.id) + '</span>'
     + '<button onclick="copyText(\'' + window.location.origin + '/#b/' + sanitizeText(b.id) + '\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
     + accordionHtml
-    + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
-    + '<button onclick="extendTrial(\'' + sanitizeText(b.id) + '\')" class="btn btn-dark btn-sm" style="flex:1"> Extender prueba</button>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">'
+    + '<button onclick="extendTrial(\'' + sanitizeText(b.id) + '\')" class="btn btn-ghost btn-sm" style="flex:1">Extender prueba</button>'
     + '<button onclick="activateBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-green btn-sm" style="flex:1"> Activar</button>'
     + '<button onclick="suspendBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-red btn-sm" style="flex:1"> Suspender</button></div>'
   );
@@ -372,11 +372,11 @@ function openAdminWorkerProfile(bizId, workerId) {
      servicesHtml = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No tiene servicios registrados.</div>';
   }
 
-  const html = '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:20px">'
-    + '<div style="width:84px;height:84px;border-radius:24px;background:linear-gradient(135deg,#4A7FD4,#2855C8);margin-bottom:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.25);border:3px solid var(--b)">' + av + '</div>'
-    + '<div style="font-size:22px;font-weight:900;color:var(--text);letter-spacing:-0.5px">' + san(w.name) + '</div>'
-    + '<div style="font-size:13px;color:var(--blue);font-weight:800;margin-top:6px;text-transform:uppercase;letter-spacing:0.5px;background:var(--bblue);padding:4px 10px;border-radius:10px;display:inline-block">' + san(w.spec || w.role || 'Profesional') + '</div>'
-    + '<div style="font-size:13px;color:var(--t2);margin-top:12px;line-height:1.6">' + (w.email ? '✉️ ' + san(w.email) + '<br>' : '') + (w.phone ? '📱 ' + san(w.phone) : '') + '</div>'
+  const html = '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:20px;">'
+    + '<div style="width:70px;height:70px;border-radius:16px;background:var(--bg2);border:1px solid var(--border);color:var(--text);margin-bottom:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">' + av + '</div>'
+    + '<div style="font-size:18px;font-weight:700;color:var(--text);">' + san(w.name) + '</div>'
+    + '<div style="font-size:13px;color:var(--muted);margin-top:4px;">' + san(w.spec || w.role || 'Profesional') + '</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6;display:flex;flex-direction:column;gap:4px;">' + (w.email ? '<div style="display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> ' + san(w.email) + '</div>' : '') + (w.phone ? '<div style="display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> ' + san(w.phone) + '</div>' : '') + '</div>'
     + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">'
     + '<div class="sbox" style="padding:16px;text-align:center"><div class="slbl">Citas Completadas</div><div class="snum" style="font-size:24px">' + appts.length + '</div></div>'
@@ -393,7 +393,7 @@ function openAdminWorkerProfile(bizId, workerId) {
 }
 
 function renderBizListAdmin(bizs) {
-  H('adm-biz-list', bizs.length ? bizs.map(bizCardH).join('') : '<div style="text-align:center;color:var(--muted);padding:40px"><div style="font-size:36px;margin-bottom:12px">🔍</div><div>No se encontraron negocios</div></div>');
+  H('adm-biz-list', bizs.length ? bizs.map(bizCardH).join('') : '<div style="text-align:center;color:var(--muted);padding:40px"><svg style="opacity:0.3;margin-bottom:12px" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><div>No se encontraron negocios</div></div>');
 }
 
 function renderSubs() {
@@ -438,11 +438,11 @@ function renderNotifications() {
   H('notif-content', notifs.length
     ? notifs.map(function (n) {
       return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openBizProfile(\'' + sanitizeText(n.biz) + '\')">'
-        + '<div style="width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:' + n.color + '22">' + ({ trial: '', expired: '', new: '🆕' }[n.type] || '🔔') + '</div>'
+        + '<div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--border);color:var(--text);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>'
         + '<div style="flex:1"><div style="font-size:13px;font-weight:600">' + san(n.msg) + '</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Toca para ver detalles</div></div>'
         + '<span style="color:var(--muted);font-size:16px">›</span></div>';
     }).join('')
-    : '<div style="text-align:center;color:var(--muted);padding:36px"><div style="font-size:32px;margin-bottom:10px">🎉</div><div>Sin notificaciones</div></div>');
+    : '<div style="text-align:center;color:var(--muted);padding:36px"><svg style="opacity:0.3;margin-bottom:12px;" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><div>Sin notificaciones</div></div>');
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -539,7 +539,7 @@ async function confirmActivateBiz() {
 
   if (!b.notifications) b.notifications = [];
   b.notifications.unshift({
-    id: Date.now(), type: 'system', title: '¡Suscripción Activada! 🎉',
+    id: Date.now(), type: 'system', title: 'Suscripción Activada',
     msg: 'Suscripción Activada', body: 'Tu cuenta ha sido activada hasta el ' + b.expires_at + '. ¡Gracias por confiar en Citas Pro!',
     read: false, date: new Date().toISOString()
   });
@@ -666,7 +666,7 @@ window.crearAfiliado = function() {
       <div class="ov" id="ov-afiliado">
         <div class="modal" style="max-width: 400px;">
           <div class="mhdr">
-            <span class="mttl">👤 Nuevo Vendedor</span>
+            <span class="mttl">Nuevo Vendedor</span>
             <div class="xbtn" onclick="closeOv('ov-afiliado')">×</div>
           </div>
           <div class="field">
