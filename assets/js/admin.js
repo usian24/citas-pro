@@ -638,17 +638,17 @@ async function renderAfiliadosAdmin() {
       const mrr = activos * 10; // Suponemos 10€/mes por activo
 
       h += `
-        <div style="background:var(--bg2); border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; align-items:center; gap:14px;">
-          <div style="width:40px; height:40px; border-radius:12px; background:rgba(74,127,212,.1); color:var(--blue); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px;">
+        <div style="padding:14px 10px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--border); cursor:pointer;" onclick="window.openAffiliateDetails('${san(af.code)}', '${san(af.name)}')">
+          <div style="width:38px; height:38px; border-radius:10px; background:var(--bg2); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">
             ${(af.name || '?').charAt(0).toUpperCase()}
           </div>
           <div style="flex:1;">
-            <div style="font-weight:700; font-size:15px;">${san(af.name)}</div>
-            <div style="font-size:12px; color:var(--t2); margin-top:2px;">Código: <strong style="color:var(--text)">${san(af.code)}</strong> · ${san(af.email || 'Sin email')}</div>
+            <div style="font-weight:600; font-size:15px; color:var(--text);">${san(af.name)}</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:3px;">Código: <span style="font-family:monospace; background:var(--bg2); padding:2px 6px; border-radius:4px; font-size:11px; color:var(--text);">${san(af.code)}</span></div>
           </div>
           <div style="text-align:right;">
-            <div style="font-weight:800; font-size:16px; color:var(--green);">${money(mrr)}/mes</div>
-            <div style="font-size:11px; color:var(--t2); margin-top:2px;">${bizs.length} negocios (${activos} activos)</div>
+            <div style="font-weight:700; font-size:14px; color:var(--text);">${money(mrr)}/mes</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:3px;">${bizs.length} negocios</div>
           </div>
         </div>
       `;
@@ -731,3 +731,52 @@ window.guardarAfiliado = async function() {
     btn.disabled = false;
   }
 };
+
+window.openAffiliateDetails = function(code, name) {
+  const bizs = DB.businesses.filter(b => (b.referred_by_code || '').toUpperCase() === code.toUpperCase());
+  
+  if (!G('ov-affiliate-details')) {
+    const html = `
+      <div class="ov" id="ov-affiliate-details">
+        <div class="modal" style="max-width: 450px; padding: 24px;">
+          <div class="mhdr" style="border-bottom:1px solid var(--border); padding-bottom:14px; margin-bottom:14px;">
+            <span class="mttl" id="ad-ttl" style="font-size:16px;"></span>
+            <div class="xbtn" onclick="closeOv('ov-affiliate-details')">×</div>
+          </div>
+          <div id="ad-list" style="max-height:60vh; overflow-y:auto;"></div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+  }
+
+  G('ad-ttl').textContent = 'Referidos por ' + name;
+  const listEl = G('ad-list');
+  
+  if (bizs.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center; padding:30px; color:var(--muted); font-size:13px;">Este vendedor aún no ha referido ningún negocio.</div>';
+  } else {
+    let lh = '';
+    bizs.forEach(b => {
+      const planStr = b.plan === 'active' 
+        ? '<span style="color:#22C55E; font-weight:600">Activo</span>' 
+        : (b.plan === 'trial' ? '<span style="color:#F59E0B">Prueba</span>' : '<span style="color:var(--muted)">Vencido</span>');
+      
+      const dateStr = b.join_date ? b.join_date : 'Sin fecha';
+      lh += `
+        <div style="padding:14px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:600; font-size:15px; color:var(--text);">${san(b.name)}</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Se registró el ${dateStr}</div>
+          </div>
+          <div style="font-size:12px; background:var(--bg2); padding:4px 10px; border-radius:12px; border:1px solid var(--border);">
+            ${planStr}
+          </div>
+        </div>
+      `;
+    });
+    listEl.innerHTML = lh;
+  }
+  
+  openOv('ov-affiliate-details');
+};
