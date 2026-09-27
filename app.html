@@ -51,10 +51,12 @@
 <body>
 
   <style>
-    #s-global-loader {
+    #s-global-loader,
+    #s-portal {
       display: none !important;
     }
-    #s-global-loader.on {
+    #s-global-loader.on,
+    #s-portal.on {
       display: flex !important;
     }
     .portal-bg {
@@ -126,7 +128,7 @@
     .divider::after { margin-left: 12px; }
   </style>
 
-  <div class="scr portal-bg" id="s-portal" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:20px;">
+  <div class="scr portal-bg" id="s-portal" style="min-height:100vh;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:20px;">
     
     <!-- Theme and Lang Toggles -->
     <div style="position:absolute;top:24px;right:24px;z-index:20;display:flex;gap:8px;align-items:center">
