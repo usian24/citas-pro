@@ -64,6 +64,8 @@
       background-size: cover !important;
       background-attachment: fixed !important;
     }
+    
+    /* GLASS PANEL CORE */
     .glass-panel {
       background: rgba(74, 127, 212, 0.06);
       backdrop-filter: blur(28px);
@@ -79,6 +81,114 @@
       align-items: center;
       position: relative;
       z-index: 10;
+      transition: all 0.3s ease;
+    }
+    .glass-panel h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #ffffff;
+      margin-bottom: 6px;
+      transition: color 0.3s ease;
+    }
+    .glass-panel p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 32px;
+      text-align: center;
+      transition: color 0.3s ease;
+    }
+    
+    /* SEARCH BOX */
+    .portal-search-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #8AB4F8;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      margin-left: 6px;
+      transition: color 0.3s ease;
+    }
+    .portal-search-box svg {
+      stroke: rgba(255, 255, 255, 0.6);
+      transition: stroke 0.3s ease;
+    }
+    .portal-search-box input {
+      color: #ffffff;
+    }
+
+    /* THEME TOGGLES */
+    .portal-top-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 800;
+      font-size: 13px;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+    .portal-top-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* === LIGHT MODE OVERRIDES === */
+    [data-theme="light"] .portal-bg {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(240, 244, 250, 0.9)), url('assets/img/salon-bg.jpg') no-repeat center center !important;
+      background-size: cover !important;
+      background-attachment: fixed !important;
+    }
+    [data-theme="light"] .glass-panel {
+      background: rgba(255, 255, 255, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    }
+    [data-theme="light"] .glass-panel h1 {
+      color: #1E293B;
+    }
+    [data-theme="light"] .glass-panel p,
+    [data-theme="light"] .divider {
+      color: rgba(30, 41, 59, 0.6);
+    }
+    [data-theme="light"] .divider::before, 
+    [data-theme="light"] .divider::after {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    [data-theme="light"] .portal-search-label {
+      color: #3b82f6;
+    }
+    [data-theme="light"] .portal-search-box {
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.5);
+    }
+    [data-theme="light"] .portal-search-box svg {
+      stroke: #64748B;
+    }
+    [data-theme="light"] .portal-search-box input {
+      color: #1E293B;
+    }
+    [data-theme="light"] .btn-login-new {
+      background: rgba(255, 255, 255, 0.7);
+      color: #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    [data-theme="light"] .btn-login-new:hover {
+      background: rgba(255, 255, 255, 0.9);
+    }
+    [data-theme="light"] .portal-top-btn {
+      background: rgba(0, 0, 0, 0.04) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      color: #334155 !important;
+    }
+    [data-theme="light"] .portal-top-btn:hover {
+      background: rgba(0, 0, 0, 0.08) !important;
     }
     .portal-btn {
       width: 100%;
@@ -132,8 +242,8 @@
     
     <!-- Theme and Lang Toggles -->
     <div style="position:absolute;top:24px;right:24px;z-index:20;display:flex;gap:8px;align-items:center">
-      <button id="theme-toggle" style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.7)"></button>
-      <button class="lang-toggle" onclick="toggleLanguage(this)" style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:800;color:var(--text);font-size:13px;flex-shrink:0;">EN</button>
+      <button id="theme-toggle" class="portal-top-btn"></button>
+      <button class="portal-top-btn lang-toggle" onclick="toggleLanguage(this)">EN</button>
     </div>
 
     <div class="glass-panel fu">
@@ -149,14 +259,14 @@
         </svg>
       </div>
       
-      <h1 class="notranslate" style="font-size:26px;font-weight:800;letter-spacing:1px;color:#fff !important;margin-bottom:6px;">CITAS PRO</h1>
-      <p style="font-size:14px;color:rgba(255,255,255,0.7) !important;margin-bottom:32px;text-align:center;">Gestión inteligente para tu negocio</p>
+      <h1 class="notranslate">CITAS PRO</h1>
+      <p>Gestión inteligente para tu negocio</p>
 
       <!-- Buscador -->
       <div class="portal-search-wrap" style="width:100%; margin-bottom: 12px;">
-        <div class="portal-search-label" style="font-size:11px; font-weight:700; color:#8AB4F8 !important; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; margin-left:6px;">Encuentra un negocio</div>
+        <div class="portal-search-label">Encuentra un negocio</div>
         <div class="portal-search-box">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
@@ -166,7 +276,7 @@
         <div class="portal-search-results" id="portal-search-results" style="display:none; background:rgba(20,24,36,0.95); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; margin-top:8px; padding:8px; max-height:200px; overflow-y:auto;"></div>
       </div>
 
-      <div class="divider" style="color:rgba(255,255,255,0.5) !important;">o gestiona tu cuenta</div>
+      <div class="divider">o gestiona tu cuenta</div>
 
       <!-- Botones -->
       <div style="width:100%; display:flex; flex-direction:column; gap:12px;">
@@ -179,21 +289,7 @@
       </div>
     </div>
     
-    <div id="robot-container" class="eve-wrapper" style="position:fixed; bottom:20px; right:20px; z-index:30;">
-      <div id="robot-bubble" class="eve-bubble" style="opacity: 1; transform: translateY(0);">
-        ¡Hola! Bienvenido a Citas Pro Barber
-      </div>
-      <a href="https://wa.me/34611200984" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
-        <div id="robot-icon" class="eve-bot">
-          <div class="eve-head">
-            <div class="eve-face">
-              <div class="eve-eye"></div>
-              <div class="eve-eye"></div>
-            </div>
-          </div>
-        </div>
-      </a>
-    </div>
+
   </div>
 
   <!-- LOADER GLOBAL TEMPORAL PARA RUTAS DIRECTAS -->

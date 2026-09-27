@@ -101,37 +101,6 @@
     }
   };
 
-  // -----------------------------------------
-  // LÓGICA DEL AGENTE FELIZ EVA (WHATSAPP Y TEXTOS)
-  // -----------------------------------------
-  var bubble = document.getElementById('robot-bubble');
 
-  if (bubble) {
-    var mensajes = [
-      "¡Hola! Bienvenido a Citas Pro",
-      "¿En qué podemos ayudarte? ",
-      "Busca tu negocio favorito arriba 👆",
-      "Contáctate con nosotros por WhatsApp 💬"
-    ];
-
-    var msgIndex = 0;
-
-    bubble.style.opacity = '1';
-    bubble.style.transform = 'translateY(0)';
-
-    setInterval(function () {
-      bubble.style.opacity = '0';
-      bubble.style.transform = 'translateY(10px)';
-
-      setTimeout(function () {
-        msgIndex = (msgIndex + 1) % mensajes.length;
-        bubble.textContent = mensajes[msgIndex];
-
-        bubble.style.opacity = '1';
-        bubble.style.transform = 'translateY(0)';
-      }, 7000);
-
-    }, 5000);
-  }
 
 })();
