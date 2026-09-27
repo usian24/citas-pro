@@ -217,8 +217,8 @@
       <div style="font-size:13px;color:var(--t2);line-height:1.6" id="confirm-msg"></div>
     </div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" style="flex:1" id="confirm-cancel-btn">Cancelar</button>
-      <button class="btn btn-red"   style="flex:1" id="confirm-ok-btn">Confirmar</button>
+      <button class="btn btn-ghost" style="flex:1" id="confirm-cancel-btn" onclick="if(typeof confirmCancel==='function') confirmCancel();">Cancelar</button>
+      <button class="btn btn-red"   style="flex:1" id="confirm-ok-btn" onclick="if(typeof confirmOk==='function') confirmOk();">Confirmar</button>
     </div>
   </div>
 </div>
