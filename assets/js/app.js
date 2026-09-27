@@ -258,6 +258,8 @@ window.onload = async function () {
       goTo('s-portal');
       showResetPasswordScreen(token);
     }
+    const globalLoader = document.getElementById('s-global-loader');
+    if(globalLoader) globalLoader.classList.remove('on');
     return; // Detener la ejecución para que no redirija al portal
   }
 
@@ -279,6 +281,12 @@ window.onload = async function () {
 
   // Sincronizar visualmente los interruptores de idioma ahora que los componentes ya existen
   if (typeof window.syncLanguageToggles === 'function') window.syncLanguageToggles();
+
+  // APAGAR EL LOADER GLOBAL
+  setTimeout(() => {
+    const globalLoader = document.getElementById('s-global-loader');
+    if(globalLoader) globalLoader.classList.remove('on');
+  }, 200); // Pequeño retraso para asegurar que todo se haya pintado suavemente
 
   /* Cerrar overlays al click en fondo */
   document.querySelectorAll('.ov').forEach(function (o) {
