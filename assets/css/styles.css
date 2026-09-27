@@ -1808,8 +1808,7 @@ select.inp option {
    CORRECCIONES MODO CLARO (BOTONES SUPERIORES Y WHATSAPP)
 ════════════════════════════════════════ */
 
-/* 1. Botón de Tema (Luna/Sol) y Botón Admin (3 puntos) */
-[data-theme="light"] #theme-toggle,
+/* 1. Botón Admin (3 puntos) */
 [data-theme="light"] #dots-btn {
   background: #FFFFFF !important;
   border-color: rgba(15, 23, 42, 0.15) !important;
