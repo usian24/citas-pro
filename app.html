@@ -56,10 +56,10 @@
       background-size: cover;
     }
     .glass-panel {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(74, 127, 212, 0.06);
       backdrop-filter: blur(28px);
       -webkit-backdrop-filter: blur(28px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(74, 127, 212, 0.15);
       border-radius: 28px;
       padding: 40px 32px;
       box-shadow: 0 30px 60px rgba(0,0,0,0.5);
@@ -140,14 +140,14 @@
         </svg>
       </div>
       
-      <h1 class="notranslate" style="font-size:26px;font-weight:800;letter-spacing:1px;color:#fff;margin-bottom:6px;">CITAS PRO</h1>
-      <p style="font-size:14px;color:var(--t2);margin-bottom:32px;text-align:center;">Gestión inteligente para tu negocio</p>
+      <h1 class="notranslate" style="font-size:26px;font-weight:800;letter-spacing:1px;color:#fff !important;margin-bottom:6px;">CITAS PRO</h1>
+      <p style="font-size:14px;color:rgba(255,255,255,0.7) !important;margin-bottom:32px;text-align:center;">Gestión inteligente para tu negocio</p>
 
       <!-- Buscador -->
       <div class="portal-search-wrap" style="width:100%; margin-bottom: 12px;">
-        <div class="portal-search-label" style="font-size:11px; font-weight:700; color:#5B8FE8; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; margin-left:6px;">Encuentra un negocio</div>
+        <div class="portal-search-label" style="font-size:11px; font-weight:700; color:#8AB4F8 !important; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; margin-left:6px;">Encuentra un negocio</div>
         <div class="portal-search-box">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
@@ -157,7 +157,7 @@
         <div class="portal-search-results" id="portal-search-results" style="display:none; background:rgba(20,24,36,0.95); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; margin-top:8px; padding:8px; max-height:200px; overflow-y:auto;"></div>
       </div>
 
-      <div class="divider">o gestiona tu cuenta</div>
+      <div class="divider" style="color:rgba(255,255,255,0.5) !important;">o gestiona tu cuenta</div>
 
       <!-- Botones -->
       <div style="width:100%; display:flex; flex-direction:column; gap:12px;">
@@ -188,7 +188,7 @@
   </div>
 
   <!-- LOADER GLOBAL TEMPORAL PARA RUTAS DIRECTAS -->
-  <div class="scr on" id="s-global-loader" style="min-height:100vh;background:var(--bg);display:flex !important;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:9999;">
+  <div class="scr on portal-bg" id="s-global-loader" style="position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex !important;flex-direction:column;align-items:center;justify-content:center;z-index:99999;">
     <div style="width:80px;height:80px;border-radius:22px;background:linear-gradient(145deg,#5B8FE8,#3060D4);display:flex;align-items:center;justify-content:center;margin-bottom:24px;animation:glow 2s ease-in-out infinite, pulse 2s infinite ease-in-out;">
       <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
         <rect x="7" y="12" width="32" height="26" rx="5" fill="rgba(255,255,255,.15)" />
