@@ -156,8 +156,18 @@
   </div>
 
   <!-- LOADER GLOBAL TEMPORAL PARA RUTAS DIRECTAS -->
-  <div class="scr on" id="s-global-loader" style="min-height:100vh;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;">
-    <div style="width:40px;height:40px;border:3px solid rgba(74,127,212,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;"></div>
+  <div class="scr on" id="s-global-loader" style="min-height:100vh;background:var(--bg);display:flex !important;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:9999;">
+    <div style="width:80px;height:80px;border-radius:22px;background:linear-gradient(145deg,#5B8FE8,#3060D4);display:flex;align-items:center;justify-content:center;margin-bottom:24px;animation:glow 2s ease-in-out infinite, pulse 2s infinite ease-in-out;">
+      <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+        <rect x="7" y="12" width="32" height="26" rx="5" fill="rgba(255,255,255,.15)" />
+        <rect x="7" y="12" width="32" height="26" rx="5" stroke="rgba(255,255,255,.5)" stroke-width="1.8" />
+        <rect x="7" y="12" width="32" height="10" rx="5" fill="rgba(255,255,255,.22)" />
+        <line x1="16" y1="7" x2="16" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+        <line x1="30" y1="7" x2="30" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+        <path d="M15.5 28 L21 33.5 L30.5 22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+      </svg>
+    </div>
+    <div style="width:28px;height:28px;border:3px solid rgba(74,127,212,.15);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;"></div>
   </div>
 
   <!-- COMPONENTES DINÁMICOS (Se inyectan desde loader.js) -->
