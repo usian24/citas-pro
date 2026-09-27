@@ -241,14 +241,24 @@ function syncBizToLocal(cloudData) {
    WINDOW.ONLOAD
 ══════════════════════════ */
 window.onload = async function () {
-  if (typeof bootComponents === 'function') {
-    await bootComponents();
+  // Asegurar que el loader se apague pase lo que pase en 1.5s (Fallback)
+  setTimeout(() => {
+    const gl = document.getElementById('s-global-loader');
+    if (gl) gl.classList.remove('on');
+  }, 1500);
+
+  try {
+    if (typeof bootComponents === 'function') {
+      await bootComponents();
+    }
+  } catch (err) {
+    console.error("Error booting components:", err);
   }
 
-  DB = loadDB();
-  initREG();
-  initCSEL();
-  initTheme();
+  try { DB = loadDB(); } catch(e){}
+  try { initREG(); } catch(e){}
+  try { initCSEL(); } catch(e){}
+  try { initTheme(); } catch(e){}
 
   // 🚀 CORRECCIÓN: Verificar el hash de reseteo ANTES de restaurar la sesión.
   const initialHash = window.location.hash;
