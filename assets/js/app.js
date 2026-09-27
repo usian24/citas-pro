@@ -254,7 +254,10 @@ window.onload = async function () {
   const initialHash = window.location.hash;
   if (initialHash && initialHash.startsWith('#reset-password/')) {
     const token = initialHash.split('/')[1];
-    if (token && typeof showResetPasswordScreen === 'function') showResetPasswordScreen(token);
+    if (token && typeof showResetPasswordScreen === 'function') {
+      goTo('s-portal');
+      showResetPasswordScreen(token);
+    }
     return; // Detener la ejecución para que no redirija al portal
   }
 
