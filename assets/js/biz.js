@@ -338,7 +338,7 @@ function setupPhotoUpload() {
     const hint = G('reg-cover-hint'); if (hint) hint.style.display = 'none';
     if (!isPreview) {
       if (typeof REG !== 'undefined' && REG) REG.cover = d;
-      if (typeof CUR !== 'undefined' && CUR) { CUR.cover = d; saveDB(); renderBizGallery(); }
+      if (typeof CUR !== 'undefined' && CUR) { CUR.cover = d; saveDB(); }
       toast('Portada guardada', '#22C55E');
     }
   });

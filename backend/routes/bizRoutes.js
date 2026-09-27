@@ -45,7 +45,7 @@ router.get('/get-biz', async (req, res) => {
     // Traer el negocio
     const { data: biz, error } = await supabase
       .from('businesses')
-      .select('*')
+      .select('id, name, owner, email, phone, addr, city, country, type, plan, desc_text, logo, cover, insta, facebook, x_url, tiktok, join_date, expires_at, horario, photos, loyalty, referred_by_code, created_at')
       .eq('id', bizId)
       .single();
 
@@ -346,10 +346,10 @@ router.post('/update-biz', async (req, res) => {
     if (data.loyalty !== undefined) payload.loyalty = data.loyalty;
     if (data.referred_by_code !== undefined) payload.referred_by_code = data.referred_by_code;
 
-    if (data.pass || data.password) {
+    if (data.pass) {
       const bcrypt = require('bcryptjs');
-      const plainPassword = data.pass || data.password;
-      payload.password = bcrypt.hashSync(plainPassword, 10);
+      // removed plainPassword
+      payload.password = bcrypt.hashSync(data.pass, 10);
     }
 
     let error;
