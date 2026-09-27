@@ -140,11 +140,6 @@
     }
     
     /* === LIGHT MODE OVERRIDES === */
-    [data-theme="light"] .portal-bg {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(240, 244, 250, 0.9)), url('assets/img/salon-bg.jpg') no-repeat center center !important;
-      background-size: cover !important;
-      background-attachment: fixed !important;
-    }
     [data-theme="light"] .glass-panel {
       background: rgba(255, 255, 255, 0.45);
       border: 1px solid rgba(255, 255, 255, 0.6);
@@ -238,7 +233,7 @@
     .divider::after { margin-left: 12px; }
   </style>
 
-  <div class="scr portal-bg" id="s-portal" style="min-height:100vh;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:20px;">
+  <div class="scr portal-bg" id="s-portal" style="min-height:100vh;box-sizing:border-box;overflow:hidden;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:20px;">
     
     <!-- Theme and Lang Toggles -->
     <div style="position:absolute;top:24px;right:24px;z-index:20;display:flex;gap:8px;align-items:center">
