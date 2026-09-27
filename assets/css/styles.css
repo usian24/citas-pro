@@ -1447,17 +1447,7 @@ select.inp option {
   color: var(--text);
 }
 
-[data-theme="light"] #s-portal {
-  background: var(--bg) !important;
-}
 
-/* Arreglar el título "CITAS PRO" para que resalte en fondo claro sin errores */
-[data-theme="light"] h1.fu {
-  background: linear-gradient(135deg, #1E3A8A 25%, #2563EB 65%, #60A5FA 100%) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
 
 /* 🔴 Tarjetas y Cuadritos Blancos con Sombras Elegantes y Relieve PROFUNDO */
 [data-theme="light"] .card,
