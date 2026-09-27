@@ -69,7 +69,9 @@ function rmGoStep2() {
     });
   });
   if (emailEnWorker) { showErr('rm-err1', 'Este correo ya está registrado como trabajador. Usa otro correo.'); return; }
-  _rmData = { email: email, phone: phone, pass: pass };
+  
+  const refCode = V('rm-referral') ? V('rm-referral').trim().toUpperCase() : null;
+  _rmData = { email: email, phone: phone, pass: pass, referred_by_code: refCode };
   _rmCode = String(Math.floor(100000 + Math.random() * 900000));
   fetch('/api/send-email', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -208,6 +210,8 @@ function bizRegStep(targetStep) {
       }
       
       REG.name = bn; REG.owner = on; REG.email = em.toLowerCase(); REG.pass = ps;
+      REG.phone = sanitizeText(V('br-phone')) || _rmData.phone;
+      REG.referred_by_code = _rmData.referred_by_code || null;
     }
     if (regStep === 3) {
       const country = V('br-country');
@@ -393,7 +397,7 @@ function finalizeBizReg() {
   if (DB.businesses.filter(function (b) { return (b.email || '').toLowerCase() === REG.email.toLowerCase(); })[0]) { toast('Email ya registrado', '#EF4444'); showRegStep(2); return; }
   const slug = (REG.name || 'negocio').toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').slice(0, 20) + '-' + Date.now().toString(36);
   const hoy = new Date(), trialEnd = new Date(hoy); trialEnd.setDate(trialEnd.getDate() + 7); // Periodo de prueba de 7 días
-  const biz = { id: slug, name: REG.name, owner: REG.owner, email: REG.email, pass: REG.pass, phone: REG.phone, addr: REG.addr, city: REG.city, country: REG.country, type: REG.type, teamSize: REG.teamSize, join_date: hoy.toISOString().split('T')[0], expires_at: trialEnd.toISOString().split('T')[0], plan: 'trial', desc: '', logo: REG.logo || '', photos: REG.photos || [], insta: '', facebook: '', x_url: '', cover: REG.cover || '', horario: DEFAULT_HORARIO.map(function (h) { return Object.assign({}, h); }), workers: [], services: [], appointments: [] };
+  const biz = { id: slug, name: REG.name, owner: REG.owner, email: REG.email, pass: REG.pass, phone: REG.phone, addr: REG.addr, city: REG.city, country: REG.country, type: REG.type, teamSize: REG.teamSize, join_date: hoy.toISOString().split('T')[0], expires_at: trialEnd.toISOString().split('T')[0], plan: 'trial', desc: '', logo: REG.logo || '', photos: REG.photos || [], insta: '', facebook: '', x_url: '', cover: REG.cover || '', horario: DEFAULT_HORARIO.map(function (h) { return Object.assign({}, h); }), workers: [], services: [], appointments: [], referred_by_code: REG.referred_by_code || null };
   DB.businesses.push(biz); DB.currentBiz = slug; DB.currentWorker = null; CUR = biz; saveDB();
 
   // Interceptar flujo si el usuario viene directo a comprar (Landing Page -> Checkout)

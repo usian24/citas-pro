@@ -51,6 +51,7 @@
       <div class="tab"   id="at-negocios"       onclick="admTab('negocios')">Negocios <span id="neg-badge" style="background:var(--blue);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:2px">0</span></div>
       <div class="tab"   id="at-suscripciones"  onclick="admTab('suscripciones')">Suscripciones</div>
       <div class="tab"   id="at-ingresos"       onclick="admTab('ingresos')">Ingresos</div>
+      <div class="tab"   id="at-afiliados"      onclick="admTab('afiliados')">Afiliados</div>
       <div class="tab"   id="at-notificaciones" onclick="admTab('notificaciones')">Alertas</div>
       <div class="tab"   id="at-config"         onclick="admTab('config')">Config</div>
       <div class="tab"   id="at-paises"         onclick="admTab('paises')">Países</div>
@@ -87,6 +88,20 @@
         </div>
         <div id="adm-biz-list"></div>
       </div>
+      
+      <div class="pane" id="ap-afiliados">
+        <div class="card" style="margin-bottom:14px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div class="sec-hdr" style="margin-bottom:0;"><span class="sec-ttl">Vendedores / Afiliados</span></div>
+            <button class="btn btn-blue" style="width:auto; padding:8px 16px; font-size:13px; font-weight:700" onclick="window.crearAfiliado()">+ Añadir Vendedor</button>
+          </div>
+          <p style="font-size:13px; color:var(--t2); margin-bottom:16px;">Aquí verás el rendimiento de todos los vendedores. Cuando un negocio usa su código al registrarse, quedará enlazado para siempre.</p>
+          <div id="adm-affiliate-list" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">No hay afiliados creados aún.</div>
+          </div>
+        </div>
+      </div>
+      
       <div class="pane" id="ap-suscripciones"><div id="adm-subs"></div></div>
       <div class="pane" id="ap-ingresos">
         <div class="stats2" style="margin-bottom:16px">

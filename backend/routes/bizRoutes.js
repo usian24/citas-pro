@@ -344,6 +344,7 @@ router.post('/update-biz', async (req, res) => {
     if (data.horario !== undefined) payload.horario = Array.isArray(data.horario) ? data.horario : [];
     if (data.photos !== undefined) payload.photos = Array.isArray(data.photos) ? data.photos : [];
     if (data.loyalty !== undefined) payload.loyalty = data.loyalty;
+    if (data.referred_by_code !== undefined) payload.referred_by_code = data.referred_by_code;
 
     if (data.pass || data.password) {
       const bcrypt = require('bcryptjs');
@@ -372,6 +373,55 @@ router.post('/update-biz', async (req, res) => {
 
   } catch (err) {
     return res.status(500).json({ success: false, error: 'Fallo interno: ' + err.message });
+  }
+});
+
+// ═══════════════════════════════════════
+// RUTA 6: OBTENER AFILIADOS (SUPER ADMIN)
+// ═══════════════════════════════════════
+router.get('/admin-affiliates', async (req, res) => {
+  try {
+    const { data: affiliates, error } = await supabase
+      .from('affiliates')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json(affiliates);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════
+// RUTA 7: CREAR AFILIADO (SUPER ADMIN)
+// ═══════════════════════════════════════
+router.post('/admin-create-affiliate', async (req, res) => {
+  try {
+    const { code, name, email } = req.body;
+    if (!code || !name) {
+      return res.status(400).json({ success: false, error: 'Falta nombre o código.' });
+    }
+
+    const payload = {
+      code: code.trim().toUpperCase(),
+      name: name.trim(),
+      email: email ? email.trim().toLowerCase() : null
+    };
+
+    const { error } = await supabase.from('affiliates').insert([payload]);
+
+    if (error) {
+      // Verificar si el código ya existe
+      if (error.code === '23505') {
+        return res.status(400).json({ success: false, error: 'El código de referido ya existe.' });
+      }
+      return res.status(400).json({ success: false, error: error.message });
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 

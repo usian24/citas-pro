@@ -128,7 +128,7 @@ function navigateToAdminState(state, replace = false) {
     }
   }
 
-  const tabs = ['dashboard', 'negocios', 'suscripciones', 'ingresos', 'notificaciones', 'config', 'paises'];
+  const tabs = ['dashboard', 'negocios', 'suscripciones', 'ingresos', 'afiliados', 'notificaciones', 'config', 'paises'];
   for (let i = 0; i < tabs.length; i++) {
     const t = tabs[i];
     const pa = G('ap-' + t), bt = G('at-' + t);
@@ -141,6 +141,7 @@ function navigateToAdminState(state, replace = false) {
   if (state === 'ingresos') renderRevenue();
   if (state === 'notificaciones') renderNotifications();
   if (state === 'paises') renderAdminPaises();
+  if (state === 'afiliados') renderAfiliadosAdmin();
 }
 
 function admTab(tab) {
@@ -602,6 +603,7 @@ function deleteBiz(id) {
               toast('Error al borrar de la base de datos', '#EF4444');
             }
           })
+          })
           .catch(function (e) {
             console.error('Error de red al eliminar en Supabase:', e);
           });
@@ -610,3 +612,123 @@ function deleteBiz(id) {
 
   }, 300);
 }
+
+/* ══════════════════════════
+   AFILIADOS (VENDEDORES)
+══════════════════════════ */
+async function renderAfiliadosAdmin() {
+  const c = G('adm-affiliate-list');
+  if (!c) return;
+  c.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">Cargando vendedores...</div>';
+
+  try {
+    const res = await fetch('/api/admin-affiliates');
+    if (!res.ok) throw new Error('Error de conexión');
+    const affiliates = await res.json();
+
+    if (!affiliates || affiliates.length === 0) {
+      c.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">No hay afiliados creados aún.</div>';
+      return;
+    }
+
+    let h = '';
+    affiliates.forEach(af => {
+      // Contar negocios traídos
+      const bizs = DB.businesses.filter(b => (b.referred_by_code || '').toUpperCase() === af.code.toUpperCase());
+      const activos = bizs.filter(b => b.plan === 'active').length;
+      const mrr = activos * 10; // Suponemos 10€/mes por activo
+
+      h += `
+        <div style="background:var(--bg2); border:1px solid var(--border); border-radius:16px; padding:16px; display:flex; align-items:center; gap:14px;">
+          <div style="width:40px; height:40px; border-radius:12px; background:rgba(74,127,212,.1); color:var(--blue); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px;">
+            ${(af.name || '?').charAt(0).toUpperCase()}
+          </div>
+          <div style="flex:1;">
+            <div style="font-weight:700; font-size:15px;">${san(af.name)}</div>
+            <div style="font-size:12px; color:var(--t2); margin-top:2px;">Código: <strong style="color:var(--text)">${san(af.code)}</strong> · ${san(af.email || 'Sin email')}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800; font-size:16px; color:var(--green);">${money(mrr)}/mes</div>
+            <div style="font-size:11px; color:var(--t2); margin-top:2px;">${bizs.length} negocios (${activos} activos)</div>
+          </div>
+        </div>
+      `;
+    });
+    c.innerHTML = h;
+
+  } catch (error) {
+    c.innerHTML = '<div style="text-align:center; padding:20px; color:var(--red); font-size:13px;">Error al cargar afiliados.</div>';
+  }
+}
+
+window.crearAfiliado = function() {
+  if (!G('ov-afiliado')) {
+    const html = `
+      <div class="ov" id="ov-afiliado">
+        <div class="modal" style="max-width: 400px;">
+          <div class="mhdr">
+            <span class="mttl">👤 Nuevo Vendedor</span>
+            <div class="xbtn" onclick="closeOv('ov-afiliado')">×</div>
+          </div>
+          <div class="field">
+            <label>Nombre del Vendedor</label>
+            <input type="text" id="af-name" class="inp" placeholder="Ej: Carlos Ventas">
+          </div>
+          <div class="field">
+            <label>Código Único (para referir)</label>
+            <input type="text" id="af-code" class="inp" placeholder="Ej: CARLOSPRO" style="text-transform:uppercase;">
+            <div style="font-size:11px; color:var(--muted); margin-top:4px;">Este código es el que los negocios deberán poner al registrarse.</div>
+          </div>
+          <div class="field">
+            <label>Correo Electrónico (Opcional)</label>
+            <input type="email" id="af-email" class="inp" placeholder="Ej: carlos@ventas.com">
+          </div>
+          <div id="af-err" class="err-box"></div>
+          <button class="btn btn-blue" id="af-btn-save" style="width:100%; margin-top:10px;" onclick="window.guardarAfiliado()">Crear Vendedor</button>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+  }
+  
+  hideErr('af-err');
+  G('af-name').value = '';
+  G('af-code').value = '';
+  G('af-email').value = '';
+  openOv('ov-afiliado');
+  setTimeout(() => { const i = G('af-name'); if (i) i.focus(); }, 200);
+};
+
+window.guardarAfiliado = async function() {
+  const n = V('af-name');
+  const c = V('af-code').toUpperCase();
+  const e = V('af-email');
+  hideErr('af-err');
+
+  if (!n || !c) { showErr('af-err', 'Nombre y código son obligatorios.'); return; }
+  
+  const btn = G('af-btn-save');
+  const originalText = btn.textContent;
+  btn.textContent = 'Guardando...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/admin-create-affiliate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: n, code: c, email: e })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al guardar');
+    
+    toast('Vendedor creado con éxito', '#22C55E');
+    closeOv('ov-afiliado');
+    renderAfiliadosAdmin();
+  } catch (error) {
+    showErr('af-err', error.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+};
