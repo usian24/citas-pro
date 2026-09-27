@@ -42,8 +42,8 @@
           </button>
           <div class="notif-dot" id="notif-dot"></div>
         </div>
-        <button class="btn btn-ghost btn-sm btn-icon" id="adm-home-btn">🏠</button>
-        <button class="btn btn-ghost btn-sm" style="width:auto" id="adm-out-btn">Salir</button>
+        <button class="btn btn-ghost btn-sm btn-icon" id="adm-home-btn" onclick="if(typeof goTo==='function') goTo('s-portal');">🏠</button>
+        <button class="btn btn-ghost btn-sm" style="width:auto" id="adm-out-btn" onclick="if(typeof doAdminLogout==='function') doAdminLogout();">Salir</button>
       </div>
     </div>
     <div class="tabs">
