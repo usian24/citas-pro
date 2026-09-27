@@ -51,6 +51,12 @@
 <body>
 
   <style>
+    #s-global-loader {
+      display: none !important;
+    }
+    #s-global-loader.on {
+      display: flex !important;
+    }
     .portal-bg {
       background: linear-gradient(135deg, rgba(12, 16, 32, 0.4), rgba(4, 6, 12, 0.8)), url('assets/img/salon-bg.jpg') no-repeat center center !important;
       background-size: cover !important;
@@ -188,7 +194,7 @@
   </div>
 
   <!-- LOADER GLOBAL TEMPORAL PARA RUTAS DIRECTAS -->
-  <div class="scr on portal-bg" id="s-global-loader" style="position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex !important;flex-direction:column;align-items:center;justify-content:center;z-index:99999;">
+  <div class="scr on portal-bg" id="s-global-loader" style="position:fixed;top:0;left:0;width:100vw;height:100vh;flex-direction:column;align-items:center;justify-content:center;z-index:99999;">
     <div style="width:80px;height:80px;border-radius:22px;background:linear-gradient(145deg,#5B8FE8,#3060D4);display:flex;align-items:center;justify-content:center;margin-bottom:24px;animation:glow 2s ease-in-out infinite, pulse 2s infinite ease-in-out;">
       <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
         <rect x="7" y="12" width="32" height="26" rx="5" fill="rgba(255,255,255,.15)" />
