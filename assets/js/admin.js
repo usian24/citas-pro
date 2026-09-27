@@ -603,7 +603,6 @@ function deleteBiz(id) {
               toast('Error al borrar de la base de datos', '#EF4444');
             }
           })
-          })
           .catch(function (e) {
             console.error('Error de red al eliminar en Supabase:', e);
           });
