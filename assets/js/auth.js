@@ -375,12 +375,15 @@ function showPaywall(bizName) {
 ══════════════════════════ */
 async function signInWithGoogle() {
   if (typeof supabase === 'undefined') {
-    console.error('Supabase no está inicializado.');
+    console.error('Librería Supabase no está cargada.');
     return;
   }
   
   try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    // Instanciar el cliente usando las credenciales globales de db.js
+    const supabaseClient = supabase.createClient(window.AppEnv.SUPABASE_URL, window.AppEnv.SUPABASE_ANON_KEY);
+
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: window.location.origin + '/app' // Redirigir a la app tras el login
@@ -388,7 +391,6 @@ async function signInWithGoogle() {
     });
     
     if (error) throw error;
-    // Si es exitoso, Supabase redirigirá automáticamente a la página de OAuth de Google
   } catch (error) {
     console.error('Error con Google:', error);
     var errBox = document.getElementById('li-err') || document.getElementById('reg-err');
