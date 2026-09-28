@@ -280,7 +280,7 @@ function renderCard(p, likes, animIdx) {
         ${stockHtml}
         ${precioHtml}
         <button class="p-add-btn" ${btnDisabled ? 'disabled' : ''} onclick="agregarAlCarrito('${p.id}')">
-          ${btnDisabled ? 'Sin stock' : '+ Añadir'}
+          ${btnDisabled ? 'Sin stock' : 'Añadir'}
         </button>
       </div>
     </div>`;
