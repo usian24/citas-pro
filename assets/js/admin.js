@@ -241,20 +241,20 @@ function renderAdminPaises() {
 
  // Diccionario nativo y robusto (Independiente de archivos externos)
 const countryData = {
-  'ES': { name: 'España', currency: 'EUR', symbol: '€', price: 10 },
-  'CO': { name: 'Colombia', currency: 'COP', symbol: '$', price: 25248.62 },
-  'MX': { name: 'México', currency: 'MXN', symbol: '$', price: 227.58 },
-  'AR': { name: 'Argentina', currency: 'ARS', symbol: '$', price: 10830.13 },
-  'DE': { name: 'Alemania', currency: 'EUR', symbol: '€', price: 14 },
-  'NL': { name: 'Holanda', currency: 'EUR', symbol: '€', price: 14 },
-  'FR': { name: 'Francia', currency: 'EUR', symbol: '€', price: 14 },
-  'CL': { name: 'Chile', currency: 'USD', symbol: '$', price: 10 },
-  'PE': { name: 'Perú', currency: 'PEN', symbol: 'S/', price: 25 },
-  'US': { name: 'Estados Unidos', currency: 'USD', symbol: '$', price: 15 },
-  'DO': { name: 'Rep. Dominicana', currency: 'DOP', symbol: 'RD$', price: 890 },
-  'VE': { name: 'Venezuela', currency: 'USD', symbol: '$', price: 15 },
-  'EC': { name: 'Ecuador', currency: 'USD', symbol: '$', price: 10 },
-  'BR': { name: 'Brasil', currency: 'BRL', symbol: 'R$', price: 80 }
+  'US': { name: 'Estados Unidos', currency: 'USD', symbol: '$', price: 10 },
+  'ES': { name: 'España', currency: 'USD', symbol: '$', price: 10 },
+  'MX': { name: 'México', currency: 'USD', symbol: '$', price: 7 },
+  'CL': { name: 'Chile', currency: 'USD', symbol: '$', price: 6.5 },
+  'PE': { name: 'Perú', currency: 'USD', symbol: '$', price: 6 },
+  'CO': { name: 'Colombia', currency: 'USD', symbol: '$', price: 5 },
+  'AR': { name: 'Argentina', currency: 'USD', symbol: '$', price: 4 },
+  'EC': { name: 'Ecuador', currency: 'USD', symbol: '$', price: 6 },
+  'DO': { name: 'Rep. Dominicana', currency: 'USD', symbol: '$', price: 6 },
+  'VE': { name: 'Venezuela', currency: 'USD', symbol: '$', price: 6 },
+  'BR': { name: 'Brasil', currency: 'USD', symbol: '$', price: 6 },
+  'DE': { name: 'Alemania', currency: 'USD', symbol: '$', price: 10 },
+  'NL': { name: 'Holanda', currency: 'USD', symbol: '$', price: 10 },
+  'FR': { name: 'Francia', currency: 'USD', symbol: '$', price: 10 }
 };
 
   const flags = {

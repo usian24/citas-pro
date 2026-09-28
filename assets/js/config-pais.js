@@ -96,14 +96,15 @@ function refreshMoneyUI() {
 //    La estructura ahora guarda el mes, trimestre y año.
 // ─────────────────────────────────────────
 const PRECIO_SUSCRIPCION = {
-  PE: { mes: 'S/ 22.10',       tri: 'S/ 66.30',       anu: 'S/ 265.30' },
-  CO: { mes: '$25,350 COP',    tri: '$76,050 COP',    anu: '$304,200 COP' },
-  MX: { mes: '$234.00 MXN',    tri: '$702.00 MXN',    anu: '$2,808.00 MXN' },
-  AR: { mes: '$12,000 ARS',    tri: '$36,000 ARS',    anu: '$144,000 ARS' },
-  ES: { mes: '10€',            tri: '30€',            anu: '120€' },
-  EC: { mes: '$10.00 USD',     tri: '$30.00 USD',     anu: '$120.00 USD' },
-  CL: { mes: '$9,500 CLP',     tri: '$28,500 CLP',    anu: '$114,000 CLP' },
-  DEFAULT: { mes: '$15.00 USD',tri: '$45.00 USD',     anu: '$180.00 USD' }
+  US: { mes: '$10.00 USD', tri: '$30.00 USD', anu: '$120.00 USD' },
+  ES: { mes: '$10.00 USD', tri: '$30.00 USD', anu: '$120.00 USD' },
+  MX: { mes: '$7.00 USD',  tri: '$21.00 USD', anu: '$84.00 USD' },
+  CL: { mes: '$6.50 USD',  tri: '$19.50 USD', anu: '$78.00 USD' },
+  PE: { mes: '$6.00 USD',  tri: '$18.00 USD', anu: '$72.00 USD' },
+  CO: { mes: '$5.00 USD',  tri: '$15.00 USD', anu: '$60.00 USD' },
+  AR: { mes: '$4.00 USD',  tri: '$12.00 USD', anu: '$48.00 USD' },
+  EC: { mes: '$6.00 USD',  tri: '$18.00 USD', anu: '$72.00 USD' },
+  DEFAULT: { mes: '$10.00 USD', tri: '$30.00 USD', anu: '$120.00 USD' }
 };
 
 function adaptarPrecioLocal(pais) {
