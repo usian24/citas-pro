@@ -94,17 +94,17 @@ function refreshMoneyUI() {
 // ─────────────────────────────────────────
 const PRECIO_SUSCRIPCION_USD = {
   US: 11.50,
-  ES: 11.50,
-  MX: 9.50,
-  CL: 9.50,
-  PE: 8.50,
-  CO: 7.50,
-  AR: 6.50,
-  EC: 8.50,
-  DO: 8.50,
-  VE: 8.50,
-  BR: 8.50,
-  DEFAULT: 11.50
+  ES: 10.00,
+  MX: 7.00,
+  CL: 6.50,
+  PE: 6.00,
+  CO: 5.00,
+  AR: 4.00,
+  EC: 6.00,
+  DO: 6.00,
+  VE: 6.00,
+  BR: 6.00,
+  DEFAULT: 10.00
 };
 
 function adaptarPrecioLocal(pais) {
@@ -113,10 +113,10 @@ function adaptarPrecioLocal(pais) {
   const tasa = cfg.tasaUSD || 1;
   const precioMensualLocal = precioUSD * tasa;
 
-  // Calculamos precios dinámicamente y usamos formatMoney para darle el formato correcto del país
+  // Descuentos: Trimestral ~6% descuento (x2.8), Anual ~16% descuento (x10, es decir 2 meses gratis)
   const strMes = formatMoney(precioMensualLocal, pais);
-  const strTri = formatMoney(precioMensualLocal * 3, pais);
-  const strAnu = formatMoney(precioMensualLocal * 12, pais);
+  const strTri = formatMoney(precioMensualLocal * 2.8, pais);
+  const strAnu = formatMoney(precioMensualLocal * 10, pais);
   
   // Inyectamos en las tarjetas de la Landing Page
   const elMes = document.getElementById('precio-mensual-val');
