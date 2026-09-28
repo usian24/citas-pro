@@ -1,31 +1,29 @@
 'use strict';
-// config-pais.js — CitasPro v2 (Adaptado a 3 Planes)
+// config-pais.js — CitasPro v2
 // ══════════════════════════════════════════════════════════════
-// Solución definitiva al problema de moneda:
-// 1. money() se sobreescribe ANTES de que db.js defina la suya
-// 2. Cuando CUR carga, refreshMoney() repinta todos los precios
-// 3. Si country es NULL en Supabase, lo lee del localStorage
-// 4. Precios adaptados con equivalencia en USD para mayor confianza
+// Solución de Pricing Dinámico con PPP y Moneda Local
+// 1. Manejo de USD internamente (SaaS PPP)
+// 2. Muestra precios locales en Landing y Modal basados en la tasa de cambio
 // ══════════════════════════════════════════════════════════════
 
 // ─────────────────────────────────────────
 // 1. DICCIONARIO CENTRAL
 // ─────────────────────────────────────────
 const PAIS_CONFIG = {
-  ES: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Madrid',                    decimales:2 },
-  CO: { simbolo:'$',   nombre:'Peso colombiano',   posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Bogota',                   decimales:0 },
-  MX: { simbolo:'$',   nombre:'Peso mexicano',     posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Mexico_City',               decimales:2 },
-  AR: { simbolo:'$',   nombre:'Peso argentino',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Argentina/Buenos_Aires',    decimales:2 },
-  PE: { simbolo:'S/',  nombre:'Sol peruano',       posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Lima',                      decimales:2 },
-  CL: { simbolo:'$',   nombre:'Peso chileno',      posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Santiago',                  decimales:0 },
-  VE: { simbolo:'Bs.', nombre:'Bolívar',           posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Caracas',                   decimales:2 },
-  EC: { simbolo:'$',   nombre:'Dólar (Ecuador)',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Guayaquil',                 decimales:2 },
-  DO: { simbolo:'RD$', nombre:'Peso dominicano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Santo_Domingo',             decimales:2 },
-  US: { simbolo:'$',   nombre:'Dólar americano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/New_York',                  decimales:2 },
-  BR: { simbolo:'R$',  nombre:'Real brasileño',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Sao_Paulo',                 decimales:2 },
-  DE: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Berlin',                     decimales:2 },
-  NL: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Amsterdam',                  decimales:2 },
-  FR: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Paris',                      decimales:2 }
+  ES: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Madrid',                    decimales:2, tasaUSD: 0.90 },
+  CO: { simbolo:'$',   nombre:'Peso colombiano',   posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Bogota',                   decimales:0, tasaUSD: 4150 },
+  MX: { simbolo:'$',   nombre:'Peso mexicano',     posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Mexico_City',               decimales:2, tasaUSD: 19.50 },
+  AR: { simbolo:'$',   nombre:'Peso argentino',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Argentina/Buenos_Aires',    decimales:2, tasaUSD: 980 },
+  PE: { simbolo:'S/',  nombre:'Sol peruano',       posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Lima',                      decimales:2, tasaUSD: 3.75 },
+  CL: { simbolo:'$',   nombre:'Peso chileno',      posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Santiago',                  decimales:0, tasaUSD: 920 },
+  VE: { simbolo:'Bs.', nombre:'Bolívar',           posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Caracas',                   decimales:2, tasaUSD: 36.80 },
+  EC: { simbolo:'$',   nombre:'Dólar (Ecuador)',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Guayaquil',                 decimales:2, tasaUSD: 1 },
+  DO: { simbolo:'RD$', nombre:'Peso dominicano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Santo_Domingo',             decimales:2, tasaUSD: 60 },
+  US: { simbolo:'$',   nombre:'Dólar americano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/New_York',                  decimales:2, tasaUSD: 1 },
+  BR: { simbolo:'R$',  nombre:'Real brasileño',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Sao_Paulo',                 decimales:2, tasaUSD: 5.50 },
+  DE: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Berlin',                     decimales:2, tasaUSD: 0.90 },
+  NL: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Amsterdam',                  decimales:2, tasaUSD: 0.90 },
+  FR: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Paris',                      decimales:2, tasaUSD: 0.90 }
 };
 const PAIS_DEFAULT = PAIS_CONFIG['ES'];
 
@@ -92,51 +90,59 @@ function refreshMoneyUI() {
 }
 
 // ─────────────────────────────────────────
-// 7. PRECIO DE SUSCRIPCIÓN (Visuales + USD) -> ADAPTADO A 3 PLANES
-//    La estructura ahora guarda el mes, trimestre y año.
+// 7. PRECIO DE SUSCRIPCIÓN (Visuales Locales con Base USD)
 // ─────────────────────────────────────────
-const PRECIO_SUSCRIPCION = {
-  US: { mes: '$11.50 USD', tri: '$34.50 USD', anu: '$138.00 USD' },
-  ES: { mes: '$11.50 USD', tri: '$34.50 USD', anu: '$138.00 USD' },
-  MX: { mes: '$9.50 USD',  tri: '$28.50 USD', anu: '$114.00 USD' },
-  CL: { mes: '$9.50 USD',  tri: '$28.50 USD', anu: '$114.00 USD' },
-  PE: { mes: '$8.50 USD',  tri: '$25.50 USD', anu: '$102.00 USD' },
-  EC: { mes: '$8.50 USD',  tri: '$25.50 USD', anu: '$102.00 USD' },
-  CO: { mes: '$7.50 USD',  tri: '$22.50 USD', anu: '$90.00 USD' },
-  AR: { mes: '$6.50 USD',  tri: '$19.50 USD', anu: '$78.00 USD' },
-  DEFAULT: { mes: '$11.50 USD', tri: '$34.50 USD', anu: '$138.00 USD' }
+const PRECIO_SUSCRIPCION_USD = {
+  US: 11.50,
+  ES: 11.50,
+  MX: 9.50,
+  CL: 9.50,
+  PE: 8.50,
+  CO: 7.50,
+  AR: 6.50,
+  EC: 8.50,
+  DO: 8.50,
+  VE: 8.50,
+  BR: 8.50,
+  DEFAULT: 11.50
 };
 
 function adaptarPrecioLocal(pais) {
-  // Buscamos el país o asignamos el default de Lemon Squeezy
-  const precios = PRECIO_SUSCRIPCION[pais] || PRECIO_SUSCRIPCION['DEFAULT'];
+  const precioUSD = PRECIO_SUSCRIPCION_USD[pais] || PRECIO_SUSCRIPCION_USD['DEFAULT'];
+  const cfg = PAIS_CONFIG[pais] || PAIS_CONFIG['US'];
+  const tasa = cfg.tasaUSD || 1;
+  const precioMensualLocal = precioUSD * tasa;
+
+  // Calculamos precios dinámicamente y usamos formatMoney para darle el formato correcto del país
+  const strMes = formatMoney(precioMensualLocal, pais);
+  const strTri = formatMoney(precioMensualLocal * 3, pais);
+  const strAnu = formatMoney(precioMensualLocal * 12, pais);
   
   // Inyectamos en las tarjetas de la Landing Page
   const elMes = document.getElementById('precio-mensual-val');
   const elTri = document.getElementById('precio-trimestral-val');
   const elAnu = document.getElementById('precio-anual-val');
   
-  if (elMes) elMes.textContent = precios.mes;
-  if (elTri) elTri.textContent = precios.tri;
-  if (elAnu) elAnu.textContent = precios.anu;
+  if (elMes) elMes.textContent = strMes;
+  if (elTri) elTri.textContent = strTri;
+  if (elAnu) elAnu.textContent = strAnu;
 
   // Actualizamos el modal de Suscripción en el portal del negocio (biz.html)
   const txtMes = document.getElementById('txt-precio-mensual');
   const txtTri = document.getElementById('txt-precio-trimestral');
   const txtAnu = document.getElementById('txt-precio-anual');
 
-  if (txtMes) txtMes.textContent = precios.mes + ' / mes';
-  if (txtTri) txtTri.textContent = precios.tri + ' / 3 meses';
-  if (txtAnu) txtAnu.textContent = precios.anu + ' / año';
+  if (txtMes) txtMes.textContent = strMes + ' / mes';
+  if (txtTri) txtTri.textContent = strTri + ' / 3 meses';
+  if (txtAnu) txtAnu.textContent = strAnu + ' / año';
 
-  // Mantenemos compatibilidad con tu código app.js anterior por si acaso
-  document.querySelectorAll('.precio-local-mes').forEach(el => el.textContent = precios.mes + ' / mes');
-  document.querySelectorAll('.precio-local-solo').forEach(el => el.textContent = precios.mes);
+  document.querySelectorAll('.precio-local-mes').forEach(el => el.textContent = strMes + ' / mes');
+  document.querySelectorAll('.precio-local-solo').forEach(el => el.textContent = strMes);
 }
 
 async function adaptarPrecioLocalPorIP() {
   const pais = getPaisActivo();
-  // Si tenemos un país en caché y NO es el fallback de error (ES o DEFAULT), lo usamos directamente
+  // Si tenemos un país en caché y NO es el fallback de error, lo usamos directamente
   if (pais && pais !== 'ES' && pais !== 'DEFAULT') {
     adaptarPrecioLocal(pais);
     return;
@@ -144,24 +150,21 @@ async function adaptarPrecioLocalPorIP() {
   
   let paisIP = null;
   try {
-    // Intento 1: GeoJS (Menos bloqueado por adblockers)
     const res = await fetch('https://get.geojs.io/v1/ip/country.json');
     const datos = await res.json();
     paisIP = datos.country;
   } catch (e1) {
     try {
-      // Intento 2: Country.is
       const res = await fetch('https://api.country.is/');
       const datos = await res.json();
       paisIP = datos.country;
     } catch (e2) {
       try {
-        // Intento 3: IPAPI
         const res = await fetch('https://ipapi.co/json/');
         const datos = await res.json();
         paisIP = datos.country_code;
       } catch (e3) {
-        paisIP = 'DEFAULT'; // Si todos fallan (ej. Adblocker estricto), usar USD
+        paisIP = 'DEFAULT';
       }
     }
   }
@@ -250,7 +253,7 @@ const LINKS_LEMON = {
 // 10. EXPORTAR TODO
 // ─────────────────────────────────────────
 window.PAIS_CONFIG             = PAIS_CONFIG;
-window.PRECIO_SUSCRIPCION      = PRECIO_SUSCRIPCION;
+window.PRECIO_SUSCRIPCION_USD  = PRECIO_SUSCRIPCION_USD;
 window.LINKS_LEMON             = LINKS_LEMON;
 window.getPaisActivo           = getPaisActivo;
 window.getConfigPais           = getConfigPais;
