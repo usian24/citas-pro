@@ -104,6 +104,23 @@
                 <a href="/app" class="bg-black text-white dark:bg-white dark:text-black px-5 py-2 rounded-full text-sm font-semibold hover:scale-105 active:scale-95 transition-transform shadow-md">
                     Obtener Citas Pro
                 </a>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="lg:hidden p-2 text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-white/95 dark:bg-zinc-950/95 blur-nav border-b border-zinc-200/50 dark:border-zinc-800/50 absolute w-full left-0 shadow-lg">
+            <div class="flex flex-col px-6 py-6 gap-6 font-medium text-lg text-zinc-800 dark:text-zinc-200">
+                <a href="para-quien" class="mobile-link">Para quién es</a>
+                <a href="#negocios" class="mobile-link">Gestión</a>
+                <a href="#equipo" class="mobile-link">Equipo</a>
+                <a href="#finanzas" class="mobile-link">Finanzas</a>
+                <a href="#precios" class="mobile-link">Precios</a>
+                <hr class="border-zinc-200 dark:border-zinc-800">
+                <a href="/app" class="mobile-link text-center bg-black text-white dark:bg-white dark:text-black py-3 rounded-xl">Entrar / Registrarse</a>
             </div>
         </div>
     </nav>
@@ -123,9 +140,6 @@
             <div class="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
                 <a href="/app" class="bg-white text-black px-12 py-5 rounded-full font-bold text-lg hover:scale-105 active:scale-95 transition-transform shadow-2xl">
                     Comenzar gratis
-                </a>
-                <a href="#explorar" class="bg-black/30 backdrop-blur-md text-white border border-white/20 px-12 py-5 rounded-full font-bold text-lg hover:bg-black/50 transition">
-                    Soy cliente, busco lugar
                 </a>
             </div>
         </div>
@@ -395,8 +409,25 @@
         </div>
     </footer>
 
-    <!-- LÓGICA MODO OSCURO TIPO APPLE -->
+    <!-- LÓGICA MODO OSCURO TIPO APPLE Y MENÚ MÓVIL -->
     <script>
+        // Lógica de Menú Móvil
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+        
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+        }
+
         const themeToggleBtn = document.getElementById('theme-toggle');
         const darkIcon = document.getElementById('theme-toggle-dark-icon');
         const lightIcon = document.getElementById('theme-toggle-light-icon');
