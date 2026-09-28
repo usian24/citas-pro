@@ -369,3 +369,32 @@ function showPaywall(bizName) {
     `;
     document.body.appendChild(div);
 }
+
+/* ══════════════════════════
+   INICIO DE SESIÓN CON GOOGLE
+══════════════════════════ */
+async function signInWithGoogle() {
+  if (typeof supabase === 'undefined') {
+    console.error('Supabase no está inicializado.');
+    return;
+  }
+  
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/app' // Redirigir a la app tras el login
+      }
+    });
+    
+    if (error) throw error;
+    // Si es exitoso, Supabase redirigirá automáticamente a la página de OAuth de Google
+  } catch (error) {
+    console.error('Error con Google:', error);
+    var errBox = document.getElementById('li-err') || document.getElementById('reg-err');
+    if(errBox) { 
+      errBox.style.display = 'block'; 
+      errBox.textContent = 'Error al conectar con Google. Inténtalo de nuevo.'; 
+    }
+  }
+}
