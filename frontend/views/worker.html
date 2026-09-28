@@ -35,16 +35,19 @@
       style="width:auto;padding:8px 14px;font-size:12px">Salir</button>
   </div>
 </div>
-<div class="bnav">
-  <div class="bn on" id="wn-home" onclick="workerTab('home')">Inicio</div>
-  <div class="bn" id="wn-agenda" onclick="workerTab('agenda')">Agenda</div>
-  <div class="bn" id="wn-servicios" onclick="workerTab('servicios')">Servicios</div>
-  <div class="bn" id="wn-horario" onclick="workerTab('horario')">Horario</div>
-  <div class="bn" id="wn-finanzas" onclick="workerTab('finanzas')">Finanzas</div>
-  <div class="bn" id="wn-historial" onclick="workerTab('historial')">Historial</div>
-  <div class="bn" id="wn-perfil" onclick="workerTab('perfil')">Perfil</div>
-</div>
-<div style="padding:14px 14px 90px">
+<div class="dash-layout">
+  <div class="dash-sidebar">
+    <div class="bnav">
+      <div class="bn on" id="wn-home" onclick="workerTab('home')">Inicio</div>
+      <div class="bn" id="wn-agenda" onclick="workerTab('agenda')">Agenda</div>
+      <div class="bn" id="wn-servicios" onclick="workerTab('servicios')">Servicios</div>
+      <div class="bn" id="wn-horario" onclick="workerTab('horario')">Horario</div>
+      <div class="bn" id="wn-finanzas" onclick="workerTab('finanzas')">Finanzas</div>
+      <div class="bn" id="wn-historial" onclick="workerTab('historial')">Historial</div>
+      <div class="bn" id="wn-perfil" onclick="workerTab('perfil')">Perfil</div>
+    </div>
+  </div>
+  <div class="dash-content" style="padding:14px 14px 90px">
   <div class="pane on" id="wp-home">
     <div style="font-size:20px;font-weight:900;margin-bottom:14px" id="wk-greeting">Bienvenido</div>
     <div class="stats2">
@@ -303,4 +306,5 @@
     </div>
   </div>
 </div>
+</div>  </div>
 </div>

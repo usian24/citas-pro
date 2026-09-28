@@ -45,17 +45,20 @@
         <button class="btn btn-ghost btn-sm" style="width:auto" id="adm-out-btn" onclick="if(typeof doAdminLogout==='function') doAdminLogout();">Salir</button>
       </div>
     </div>
-    <div class="tabs">
-      <div class="tab on" id="at-dashboard"     onclick="admTab('dashboard')">Dashboard</div>
-      <div class="tab"   id="at-negocios"       onclick="admTab('negocios')">Negocios <span id="neg-badge" style="background:var(--blue);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:2px">0</span></div>
-      <div class="tab"   id="at-suscripciones"  onclick="admTab('suscripciones')">Suscripciones</div>
-      <div class="tab"   id="at-ingresos"       onclick="admTab('ingresos')">Ingresos</div>
-      <div class="tab"   id="at-afiliados"      onclick="admTab('afiliados')">Afiliados</div>
-      <div class="tab"   id="at-notificaciones" onclick="admTab('notificaciones')">Alertas</div>
-      <div class="tab"   id="at-config"         onclick="admTab('config')">Config</div>
-      <div class="tab"   id="at-paises"         onclick="admTab('paises')">Países</div>
-    </div>
-    <div style="padding:14px 14px 80px">
+    <div class="dash-layout">
+      <div class="dash-sidebar">
+        <div class="bnav">
+          <div class="bn on" id="at-dashboard"     onclick="admTab('dashboard')">Dashboard</div>
+          <div class="bn"   id="at-negocios"       onclick="admTab('negocios')">Negocios <span id="neg-badge" style="background:var(--blue);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:2px">0</span></div>
+          <div class="bn"   id="at-suscripciones"  onclick="admTab('suscripciones')">Suscripciones</div>
+          <div class="bn"   id="at-ingresos"       onclick="admTab('ingresos')">Ingresos</div>
+          <div class="bn"   id="at-afiliados"      onclick="admTab('afiliados')">Afiliados</div>
+          <div class="bn"   id="at-notificaciones" onclick="admTab('notificaciones')">Alertas</div>
+          <div class="bn"   id="at-config"         onclick="admTab('config')">Config</div>
+          <div class="bn"   id="at-paises"         onclick="admTab('paises')">Países</div>
+        </div>
+      </div>
+      <div class="dash-content" style="padding:14px 14px 80px">
       <div class="pane on" id="ap-dashboard">
         <div style="border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:16px; display:flex; align-items:center; gap:14px">
           <div style="flex:1;"><div style="font-size:18px;font-weight:700">Bienvenido, Administrador</div><div style="font-size:13px;color:var(--muted);margin-top:2px" id="adm-date">Panel de control</div></div>
@@ -147,3 +150,5 @@
       <div class="pane" id="ap-paises"></div>
     </div>
   </div>
+  </div>
+</div>

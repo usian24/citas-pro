@@ -2266,3 +2266,38 @@ body {
   font-weight: 600;
   font-family: var(--font, sans-serif);
 }
+
+
+/* Layout Tipo Dashboard (Sidebar Izquierdo en Desktop) */
+@media (min-width: 768px) {
+  .dash-layout {
+    display: flex;
+    align-items: stretch;
+    min-height: calc(100vh - 65px);
+  }
+  .dash-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--b);
+    background: var(--bg);
+  }
+  .dash-sidebar .bnav {
+    flex-direction: column;
+    border-bottom: none;
+    padding: 20px 14px;
+    height: 100%;
+    align-items: stretch;
+    background: transparent;
+  }
+  .dash-sidebar .bn {
+    text-align: left;
+    margin-bottom: 6px;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  .dash-content {
+    flex: 1;
+    min-width: 0;
+    padding: 24px 30px !important;
+  }
+}

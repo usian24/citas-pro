@@ -277,16 +277,19 @@
         style="width:auto;padding:8px 14px;font-size:12px">Salir</button>
     </div>
   </div>
-  <div class="bnav">
-    <div class="bn on" id="bn-home" onclick="bizTab('home')">Inicio</div>
-    <div class="bn" id="bn-agenda" onclick="bizTab('agenda')">Agenda</div>
-    <div class="bn" id="bn-equipo" onclick="bizTab('equipo')">Equipo</div>
-    <div class="bn" id="bn-tienda" onclick="bizTab('tienda')">Tienda</div>
-    <div class="bn" id="bn-finanzas" onclick="bizTab('finanzas')">Finanzas</div>
-    <div class="bn" id="bn-historial" onclick="bizTab('historial')">Historial</div>
-    <div class="bn" id="bn-perfil" onclick="bizTab('perfil')">Perfil</div>
-  </div>
-  <div style="padding:14px 14px 90px">
+  <div class="dash-layout">
+    <div class="dash-sidebar">
+      <div class="bnav">
+        <div class="bn on" id="bn-home" onclick="bizTab('home')">Inicio</div>
+        <div class="bn" id="bn-agenda" onclick="bizTab('agenda')">Agenda</div>
+        <div class="bn" id="bn-equipo" onclick="bizTab('equipo')">Equipo</div>
+        <div class="bn" id="bn-tienda" onclick="bizTab('tienda')">Tienda</div>
+        <div class="bn" id="bn-finanzas" onclick="bizTab('finanzas')">Finanzas</div>
+        <div class="bn" id="bn-historial" onclick="bizTab('historial')">Historial</div>
+        <div class="bn" id="bn-perfil" onclick="bizTab('perfil')">Perfil</div>
+      </div>
+    </div>
+    <div class="dash-content" style="padding:14px 14px 90px">
     <div class="pane on" id="bp-home">
       <div style="font-size:20px;font-weight:900;margin-bottom:14px" id="biz-greeting">Bienvenido</div>
       <div class="stats2">
@@ -589,5 +592,7 @@
       
       <button class="btn btn-red" onclick="G('biz-out-btn').click()" style="margin-top:20px">Cerrar Sesión</button>
     </div>
+  </div>
+</div>
   </div>
 </div>
