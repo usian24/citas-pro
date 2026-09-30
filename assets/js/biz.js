@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 //biz.js
 
 function safeImg(url) {
@@ -405,13 +405,13 @@ function finalizeBizReg() {
   const planToBuy = urlParams.get('plan');
   if (planToBuy && (planToBuy === 'mensual' || planToBuy === 'trimestral' || planToBuy === 'anual')) {
     const pais = window.getPaisActivo ? window.getPaisActivo() : 'DEFAULT';
-    const linksLemon = window.LINKS_LEMON || {};
-    const links = linksLemon[pais] || linksLemon['GLOBAL'];
+    const linksDodo = window.LINKS_DODO || {};
+    const links = linksDodo[pais] || linksDodo['GLOBAL'];
     if (links) {
       let finalLink = links[planToBuy];
-      if (finalLink && finalLink.includes("LINK_")) finalLink = linksLemon['GLOBAL'][planToBuy];
+      if (finalLink && finalLink.includes("LINK_")) finalLink = linksDodo['GLOBAL'][planToBuy];
       if (finalLink) {
-        window.location.href = finalLink + "?checkout[custom][bizId]=" + biz.id;
+        window.location.href = finalLink + "?metadata[bizId]=" + biz.id;
         return; // Detener flujo para ir directo al pago
       }
     }
@@ -1430,7 +1430,7 @@ async function saveBizProfileAsync() {
   }
 }
 // ══════════════════════════════════════════════════════════════
-  //  INTEGRACIÓN DE PAGOS - LEMON SQUEEZY (PLAY STORE FRIENDLY)
+  //  INTEGRACIÓN DE PAGOS - DODOPAYMENTS (PLAY STORE FRIENDLY)
 
 function configurarBotonesDePago() {
   // Asegurarnos de que el negocio está cargado
@@ -1453,8 +1453,8 @@ function configurarBotonesDePago() {
 
   // 4. Elegimos el set de links y textos correctos
   var textosActuales = TEXTOS_PLANES[pais] || TEXTOS_PLANES['GLOBAL'];
-  const linksLemon = window.LINKS_LEMON || {};
-  var linksActuales = linksLemon[pais] || linksLemon['GLOBAL'];
+  const linksDodo = window.LINKS_DODO || {};
+  var linksActuales = linksDodo[pais] || linksDodo['GLOBAL'];
 
   // 5. Actualizamos los textos visuales en el HTML
   var txtM = document.getElementById('txt-precio-mensual');
@@ -1466,7 +1466,7 @@ function configurarBotonesDePago() {
   if (txtA) txtA.textContent = textosActuales.a;
 
   // 6. El truco maestro: Le pegamos el ID de tu base de datos al final del link
-  var parametroMagico = "?checkout[custom][bizId]=" + CUR.id;
+  var parametroMagico = "?metadata[bizId]=" + CUR.id;
 
   // 7. Seleccionamos los botones del HTML e inyectamos los links (Con inteligencia de Fallback)
   var btnM = document.getElementById('btn-mensual');
@@ -1475,17 +1475,17 @@ function configurarBotonesDePago() {
 
   if (btnM) { 
     // Si el link tiene la palabra "LINK_", usa el global. Si no, usa el del país.
-    var finalLinkM = linksActuales.mensual.includes("LINK_") ? linksLemon['GLOBAL'].mensual : linksActuales.mensual;
+    var finalLinkM = linksActuales.mensual.includes("LINK_") ? linksDodo['GLOBAL'].mensual : linksActuales.mensual;
     btnM.href = finalLinkM + parametroMagico; 
     btnM.target = "_blank"; 
   }
   if (btnT) { 
-    var finalLinkT = linksActuales.trimestral.includes("LINK_") ? linksLemon['GLOBAL'].trimestral : linksActuales.trimestral;
+    var finalLinkT = linksActuales.trimestral.includes("LINK_") ? linksDodo['GLOBAL'].trimestral : linksActuales.trimestral;
     btnT.href = finalLinkT + parametroMagico; 
     btnT.target = "_blank"; 
   }
   if (btnA) { 
-    var finalLinkA = linksActuales.anual.includes("LINK_") ? linksLemon['GLOBAL'].anual : linksActuales.anual;
+    var finalLinkA = linksActuales.anual.includes("LINK_") ? linksDodo['GLOBAL'].anual : linksActuales.anual;
     btnA.href = finalLinkA + parametroMagico; 
     btnA.target = "_blank"; 
   }
