@@ -1523,4 +1523,20 @@ function configurarBotonesDePago() {
       planBadge.style.color = 'var(--gold)';
     }
   }
-}
+
+/* ══════════════════════════
+   INICIO DE SESIÓN CON GOOGLE (Registro)
+══════════════════════════ */
+window.startGoogleRegistration = function(email, name) {
+  _rmData = { email: email, pass: 'GoogleOauth123!', phone: '', referred_by_code: null };
+  closeOv('ov-login');
+  closeOv('ov-registro');
+  if (typeof toast === 'function') toast('¡Bienvenido! Completa tu perfil para continuar', '#4A7FD4');
+  
+  goBiz();
+  setTimeout(function() {
+    bizRegStep(2);
+    const em = G('br-email'); if (em) em.value = email || '';
+    const nm = G('br-name'); if (nm && name) nm.value = name;
+  }, 400);
+};}

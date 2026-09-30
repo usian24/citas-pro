@@ -184,4 +184,58 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════
+// RUTA 5: GOOGLE LOGIN (Verificar Tipo de Usuario)
+// ═══════════════════════════════════════
+router.post('/google-login', async (req, res) => {
+  try {
+    const { email, name, avatar } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email requerido' });
+    }
+
+    const emailLower = email.toLowerCase();
+
+    // 1. ¿Es Dueño de negocio?
+    const { data: bizData, error: bizError } = await supabase
+      .from('businesses')
+      .select('*')
+      .eq('owner_email', emailLower)
+      .single();
+
+    if (bizData && !bizError) {
+      return res.status(200).json({
+        type: 'business',
+        biz: bizData
+      });
+    }
+
+    // 2. ¿Es Trabajador?
+    const { data: workerData, error: workerError } = await supabase
+      .from('workers')
+      .select('*')
+      .eq('email', emailLower)
+      .single();
+
+    if (workerData && !workerError) {
+      return res.status(200).json({
+        type: 'worker',
+        worker: workerData
+      });
+    }
+
+    // 3. Es usuario Nuevo
+    return res.status(200).json({
+      type: 'new',
+      email: emailLower,
+      name: name || '',
+      avatar: avatar || ''
+    });
+
+  } catch (error) {
+    console.error('Error en /google-login:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 module.exports = router;
