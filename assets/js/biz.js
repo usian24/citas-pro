@@ -1439,20 +1439,10 @@ function configurarBotonesDePago() {
   // 1. Obtenemos el país exacto usando tu función global (o el guardado en base de datos)
   const pais = typeof getPaisActivo === 'function' ? getPaisActivo() : (CUR.country || 'GLOBAL');
 
-  // 2. TEXTOS VISUALES: Esto cambia lo que el cliente lee en tu página web
-  const TEXTOS_PLANES = {
-    PE: { m: "S/ 25 / $6.60 USD / mes", t: "S/ 75 / $19.80 USD / 3 meses", a: "S/ 300 / $79.20 USD / año" },
-    CO: { m: "$ 25,248 / $6.50 USD / mes", t: "$ 75,744 / $19.50 USD / 3 meses", a: "$ 302,976 / $78.00 USD / año" },
-    EC: { m: "$10.00 USD / mes", t: "$30.00 USD / 3 meses", a: "$120.00 USD / año" },
-    CL: { m: "$10.00 USD / mes", t: "$30.00 USD / 3 meses", a: "$120.00 USD / año" },
-    ES: { m: "10€ / $11.00 USD / mes", t: "30€ / $33.00 USD / 3 meses", a: "120€ / $132.00 USD / año" },
-    AR: { m: "$ 10,830 / $12.00 USD / mes", t: "$ 32,490 / $36.00 USD / 3 meses", a: "$ 129,960 / $144.00 USD / año" },
-    MX: { m: "$ 227.58 / $13.00 USD / mes", t: "$ 682.74 / $39.00 USD / 3 meses", a: "$ 2,730.96 / $156.00 USD / año" },
-    GLOBAL: { m: "$15.00 USD / mes", t: "$45.00 USD / 3 meses", a: "$180.00 USD / año" }
-  };
+  
 
   // 4. Elegimos el set de links y textos correctos
-  var textosActuales = TEXTOS_PLANES[pais] || TEXTOS_PLANES['GLOBAL'];
+  
   const linksDodo = window.LINKS_DODO || {};
   var linksActuales = linksDodo[pais] || linksDodo['GLOBAL'];
 
@@ -1461,9 +1451,9 @@ function configurarBotonesDePago() {
   var txtT = document.getElementById('txt-precio-trimestral');
   var txtA = document.getElementById('txt-precio-anual');
 
-  if (txtM) txtM.textContent = textosActuales.m;
-  if (txtT) txtT.textContent = textosActuales.t;
-  if (txtA) txtA.textContent = textosActuales.a;
+  // (Removido: config-pais.js ya lo hace)
+  // (Removido: config-pais.js ya lo hace)
+  // (Removido: config-pais.js ya lo hace)
 
   // 6. El truco maestro: Le pegamos el ID de tu base de datos al final del link
   var parametroMagico = "?metadata[bizId]=" + CUR.id;

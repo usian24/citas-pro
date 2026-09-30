@@ -228,24 +228,24 @@ function actualizarLabelsPrecio() {
 // 9. ENLACES DE DODOPAYMENTS POR PAÍS
 // ─────────────────────────────────────────
 const LINKS_DODO = {
-  AR: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohPPyfHVTpaDxFwcxMn", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohPUyMKOQqHbuAasO2a", anual: "https://pay.dodopayments.com/buy/pdt_0NohPa3e8gTRjgtyl0Yxr" },
-  CO: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohP7bpTehnh1pxT81wJ", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohPBxdsogHguE3wwN2b", anual: "https://pay.dodopayments.com/buy/pdt_0NohPFouJkKV2e4l4UEuK" },
-  PE: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohOVVbcUVAakFd14DHe", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohOqI8P5EZhJToHKAzd", anual: "https://pay.dodopayments.com/buy/pdt_0NohOzFyjPMXYPbxtWQZR" },
-  EC: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohOVVbcUVAakFd14DHe", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohOqI8P5EZhJToHKAzd", anual: "https://pay.dodopayments.com/buy/pdt_0NohOzFyjPMXYPbxtWQZR" },
-  DO: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohOVVbcUVAakFd14DHe", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohOqI8P5EZhJToHKAzd", anual: "https://pay.dodopayments.com/buy/pdt_0NohOzFyjPMXYPbxtWQZR" },
-  VE: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohOVVbcUVAakFd14DHe", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohOqI8P5EZhJToHKAzd", anual: "https://pay.dodopayments.com/buy/pdt_0NohOzFyjPMXYPbxtWQZR" },
-  BR: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohOVVbcUVAakFd14DHe", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohOqI8P5EZhJToHKAzd", anual: "https://pay.dodopayments.com/buy/pdt_0NohOzFyjPMXYPbxtWQZR" },
-  CL: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohNoABnkIo8sdQG2lS6", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohNx2pVUetxlVJXRnRR", anual: "https://pay.dodopayments.com/buy/pdt_0NohOHNQ1Oh9sndZUgwaH" },
-  MX: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohNWH01gL8TLrCINV02", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohNci7U4Uma7IhbtO5k", anual: "https://pay.dodopayments.com/buy/pdt_0NohNiF1xBhKwmALqqhSx" },
-  ES: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohLnegsV9afjkpBkjFf", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohNCYrnpvbomICgbgxx", anual: "https://pay.dodopayments.com/buy/pdt_0NohNJFAbxhb7m3lTuSF9" },
-  US: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohGpuhbMIcE4DNHLDaj", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohLHRcyWTA69dsyfZ3B", anual: "https://pay.dodopayments.com/buy/pdt_0NohLQ8gI1G3zuocXEeD6" },
-  DE: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohLnegsV9afjkpBkjFf", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohNCYrnpvbomICgbgxx", anual: "https://pay.dodopayments.com/buy/pdt_0NohNJFAbxhb7m3lTuSF9" },
-  NL: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohLnegsV9afjkpBkjFf", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohNCYrnpvbomICgbgxx", anual: "https://pay.dodopayments.com/buy/pdt_0NohNJFAbxhb7m3lTuSF9" },
-  FR: { mensual: "https://pay.dodopayments.com/buy/pdt_0NohLnegsV9afjkpBkjFf", trimestral: "https://pay.dodopayments.com/buy/pdt_0NohNCYrnpvbomICgbgxx", anual: "https://pay.dodopayments.com/buy/pdt_0NohNJFAbxhb7m3lTuSF9" },
+  AR: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohPPyfHVTpaDxFwcxMn", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohPUyMKOQqHbuAasO2a", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohPa3e8gTRjgtyl0Yxr" },
+  CO: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohP7bpTehnh1pxT81wJ", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohPBxdsogHguE3wwN2b", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohPFouJkKV2e4l4UEuK" },
+  PE: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOVVbcUVAakFd14DHe", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohOqI8P5EZhJToHKAzd", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOzFyjPMXYPbxtWQZR" },
+  EC: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOVVbcUVAakFd14DHe", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohOqI8P5EZhJToHKAzd", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOzFyjPMXYPbxtWQZR" },
+  DO: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOVVbcUVAakFd14DHe", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohOqI8P5EZhJToHKAzd", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOzFyjPMXYPbxtWQZR" },
+  VE: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOVVbcUVAakFd14DHe", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohOqI8P5EZhJToHKAzd", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOzFyjPMXYPbxtWQZR" },
+  BR: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOVVbcUVAakFd14DHe", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohOqI8P5EZhJToHKAzd", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOzFyjPMXYPbxtWQZR" },
+  CL: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohNoABnkIo8sdQG2lS6", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohNx2pVUetxlVJXRnRR", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohOHNQ1Oh9sndZUgwaH" },
+  MX: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohNWH01gL8TLrCINV02", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohNci7U4Uma7IhbtO5k", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohNiF1xBhKwmALqqhSx" },
+  ES: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohLnegsV9afjkpBkjFf", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohNCYrnpvbomICgbgxx", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohNJFAbxhb7m3lTuSF9" },
+  US: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohGpuhbMIcE4DNHLDaj", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohLHRcyWTA69dsyfZ3B", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohLQ8gI1G3zuocXEeD6" },
+  DE: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohLnegsV9afjkpBkjFf", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohNCYrnpvbomICgbgxx", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohNJFAbxhb7m3lTuSF9" },
+  NL: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohLnegsV9afjkpBkjFf", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohNCYrnpvbomICgbgxx", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohNJFAbxhb7m3lTuSF9" },
+  FR: { mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohLnegsV9afjkpBkjFf", trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohNCYrnpvbomICgbgxx", anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohNJFAbxhb7m3lTuSF9" },
   GLOBAL: { 
-    mensual: "https://pay.dodopayments.com/buy/pdt_0NohLnegsV9afjkpBkjFf",
-    trimestral: "https://pay.dodopayments.com/buy/pdt_0NohNCYrnpvbomICgbgxx",
-    anual: "https://pay.dodopayments.com/buy/pdt_0NohNJFAbxhb7m3lTuSF9"
+    mensual: "https://test.checkout.dodopayments.com/buy/pdt_0NohLnegsV9afjkpBkjFf",
+    trimestral: "https://test.checkout.dodopayments.com/buy/pdt_0NohNCYrnpvbomICgbgxx",
+    anual: "https://test.checkout.dodopayments.com/buy/pdt_0NohNJFAbxhb7m3lTuSF9"
   }
 };
 
