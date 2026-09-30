@@ -109,14 +109,11 @@ const PRECIO_SUSCRIPCION_USD = {
 
 function adaptarPrecioLocal(pais) {
   const precioUSD = PRECIO_SUSCRIPCION_USD[pais] || PRECIO_SUSCRIPCION_USD['DEFAULT'];
-  const cfg = PAIS_CONFIG[pais] || PAIS_CONFIG['US'];
-  const tasa = cfg.tasaUSD || 1;
-  const precioMensualLocal = precioUSD * tasa;
 
-  // Descuentos: Trimestral ~6% descuento (x2.8), Anual ~16% descuento (x10, es decir 2 meses gratis)
-  const strMes = formatMoney(precioMensualLocal, pais);
-  const strTri = formatMoney(precioMensualLocal * 2.8, pais);
-  const strAnu = formatMoney(precioMensualLocal * 10, pais);
+  // Formato estricto en Dólares (USD) para evitar confusiones en Checkout
+  const strMes = "$" + precioUSD.toFixed(2) + " USD";
+  const strTri = "$" + (precioUSD * 2.8).toFixed(2) + " USD";
+  const strAnu = "$" + (precioUSD * 10).toFixed(2) + " USD";
   
   // Inyectamos en las tarjetas de la Landing Page
   const elMes = document.getElementById('precio-mensual-val');
