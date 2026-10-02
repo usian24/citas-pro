@@ -174,6 +174,12 @@ function showBizPanel() {
   if (p) p.style.display = 'block';
   DB = loadDB();
   CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : null;
+
+  if (CUR && typeof isBizExpired === 'function' && isBizExpired(CUR)) {
+      if (typeof showPaywall === 'function') {
+          showPaywall(CUR.name || CUR.owner);
+      }
+  }
   if (CUR) initBizPanel();
 }
 
