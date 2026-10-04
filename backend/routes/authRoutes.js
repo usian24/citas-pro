@@ -200,7 +200,7 @@ router.post('/google-login', async (req, res) => {
     const { data: bizData, error: bizError } = await supabase
       .from('businesses')
       .select('*')
-      .eq('owner_email', emailLower)
+      .eq('email', emailLower)
       .single();
 
     if (bizData && !bizError) {
