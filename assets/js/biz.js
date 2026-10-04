@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 //biz.js
 
 function safeImg(url) {
@@ -69,7 +69,9 @@ function rmGoStep2() {
     });
   });
   if (emailEnWorker) { showErr('rm-err1', 'Este correo ya está registrado como trabajador. Usa otro correo.'); return; }
-  _rmData = { email: email, phone: phone, pass: pass };
+  
+  const refCode = V('rm-referral') ? V('rm-referral').trim().toUpperCase() : null;
+  _rmData = { email: email, phone: phone, pass: pass, referred_by_code: refCode };
   _rmCode = String(Math.floor(100000 + Math.random() * 900000));
   fetch('/api/send-email', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -172,6 +174,12 @@ function showBizPanel() {
   if (p) p.style.display = 'block';
   DB = loadDB();
   CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : null;
+
+  if (CUR && typeof isBizExpired === 'function' && isBizExpired(CUR)) {
+      if (typeof showPaywall === 'function') {
+          showPaywall(CUR.name || CUR.owner);
+      }
+  }
   if (CUR) initBizPanel();
 }
 
@@ -208,6 +216,8 @@ function bizRegStep(targetStep) {
       }
       
       REG.name = bn; REG.owner = on; REG.email = em.toLowerCase(); REG.pass = ps;
+      REG.phone = sanitizeText(V('br-phone')) || _rmData.phone;
+      REG.referred_by_code = _rmData.referred_by_code || null;
     }
     if (regStep === 3) {
       const country = V('br-country');
@@ -334,7 +344,7 @@ function setupPhotoUpload() {
     const hint = G('reg-cover-hint'); if (hint) hint.style.display = 'none';
     if (!isPreview) {
       if (typeof REG !== 'undefined' && REG) REG.cover = d;
-      if (typeof CUR !== 'undefined' && CUR) { CUR.cover = d; saveDB(); renderBizGallery(); }
+      if (typeof CUR !== 'undefined' && CUR) { CUR.cover = d; saveDB(); }
       toast('Portada guardada', '#22C55E');
     }
   });
@@ -393,7 +403,7 @@ function finalizeBizReg() {
   if (DB.businesses.filter(function (b) { return (b.email || '').toLowerCase() === REG.email.toLowerCase(); })[0]) { toast('Email ya registrado', '#EF4444'); showRegStep(2); return; }
   const slug = (REG.name || 'negocio').toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').slice(0, 20) + '-' + Date.now().toString(36);
   const hoy = new Date(), trialEnd = new Date(hoy); trialEnd.setDate(trialEnd.getDate() + 7); // Periodo de prueba de 7 días
-  const biz = { id: slug, name: REG.name, owner: REG.owner, email: REG.email, pass: REG.pass, phone: REG.phone, addr: REG.addr, city: REG.city, country: REG.country, type: REG.type, teamSize: REG.teamSize, join_date: hoy.toISOString().split('T')[0], expires_at: trialEnd.toISOString().split('T')[0], plan: 'trial', desc: '', logo: REG.logo || '', photos: REG.photos || [], insta: '', facebook: '', x_url: '', cover: REG.cover || '', horario: DEFAULT_HORARIO.map(function (h) { return Object.assign({}, h); }), workers: [], services: [], appointments: [] };
+  const biz = { id: slug, name: REG.name, owner: REG.owner, email: REG.email, pass: REG.pass, phone: REG.phone, addr: REG.addr, city: REG.city, country: REG.country, type: REG.type, teamSize: REG.teamSize, join_date: hoy.toISOString().split('T')[0], expires_at: trialEnd.toISOString().split('T')[0], plan: 'trial', desc: '', logo: REG.logo || '', photos: REG.photos || [], insta: '', facebook: '', x_url: '', cover: REG.cover || '', horario: DEFAULT_HORARIO.map(function (h) { return Object.assign({}, h); }), workers: [], services: [], appointments: [], referred_by_code: REG.referred_by_code || null };
   DB.businesses.push(biz); DB.currentBiz = slug; DB.currentWorker = null; CUR = biz; saveDB();
 
   // Interceptar flujo si el usuario viene directo a comprar (Landing Page -> Checkout)
@@ -401,13 +411,13 @@ function finalizeBizReg() {
   const planToBuy = urlParams.get('plan');
   if (planToBuy && (planToBuy === 'mensual' || planToBuy === 'trimestral' || planToBuy === 'anual')) {
     const pais = window.getPaisActivo ? window.getPaisActivo() : 'DEFAULT';
-    const linksLemon = window.LINKS_LEMON || {};
-    const links = linksLemon[pais] || linksLemon['GLOBAL'];
+    const linksDodo = window.LINKS_DODO || {};
+    const links = linksDodo[pais] || linksDodo['GLOBAL'];
     if (links) {
       let finalLink = links[planToBuy];
-      if (finalLink && finalLink.includes("LINK_")) finalLink = linksLemon['GLOBAL'][planToBuy];
+      if (finalLink && finalLink.includes("LINK_")) finalLink = linksDodo['GLOBAL'][planToBuy];
       if (finalLink) {
-        window.location.href = finalLink + "?checkout[custom][bizId]=" + biz.id;
+        window.location.href = finalLink + "?metadata[bizId]=" + biz.id;
         return; // Detener flujo para ir directo al pago
       }
     }
@@ -1426,7 +1436,7 @@ async function saveBizProfileAsync() {
   }
 }
 // ══════════════════════════════════════════════════════════════
-  //  INTEGRACIÓN DE PAGOS - LEMON SQUEEZY (PLAY STORE FRIENDLY)
+  //  INTEGRACIÓN DE PAGOS - DODOPAYMENTS (PLAY STORE FRIENDLY)
 
 function configurarBotonesDePago() {
   // Asegurarnos de que el negocio está cargado
@@ -1435,34 +1445,24 @@ function configurarBotonesDePago() {
   // 1. Obtenemos el país exacto usando tu función global (o el guardado en base de datos)
   const pais = typeof getPaisActivo === 'function' ? getPaisActivo() : (CUR.country || 'GLOBAL');
 
-  // 2. TEXTOS VISUALES: Esto cambia lo que el cliente lee en tu página web
-  const TEXTOS_PLANES = {
-    PE: { m: "S/ 25 / $6.60 USD / mes", t: "S/ 75 / $19.80 USD / 3 meses", a: "S/ 300 / $79.20 USD / año" },
-    CO: { m: "$ 25,248 / $6.50 USD / mes", t: "$ 75,744 / $19.50 USD / 3 meses", a: "$ 302,976 / $78.00 USD / año" },
-    EC: { m: "$10.00 USD / mes", t: "$30.00 USD / 3 meses", a: "$120.00 USD / año" },
-    CL: { m: "$10.00 USD / mes", t: "$30.00 USD / 3 meses", a: "$120.00 USD / año" },
-    ES: { m: "10€ / $11.00 USD / mes", t: "30€ / $33.00 USD / 3 meses", a: "120€ / $132.00 USD / año" },
-    AR: { m: "$ 10,830 / $12.00 USD / mes", t: "$ 32,490 / $36.00 USD / 3 meses", a: "$ 129,960 / $144.00 USD / año" },
-    MX: { m: "$ 227.58 / $13.00 USD / mes", t: "$ 682.74 / $39.00 USD / 3 meses", a: "$ 2,730.96 / $156.00 USD / año" },
-    GLOBAL: { m: "$15.00 USD / mes", t: "$45.00 USD / 3 meses", a: "$180.00 USD / año" }
-  };
+  
 
   // 4. Elegimos el set de links y textos correctos
-  var textosActuales = TEXTOS_PLANES[pais] || TEXTOS_PLANES['GLOBAL'];
-  const linksLemon = window.LINKS_LEMON || {};
-  var linksActuales = linksLemon[pais] || linksLemon['GLOBAL'];
+  
+  const linksDodo = window.LINKS_DODO || {};
+  var linksActuales = linksDodo[pais] || linksDodo['GLOBAL'];
 
   // 5. Actualizamos los textos visuales en el HTML
   var txtM = document.getElementById('txt-precio-mensual');
   var txtT = document.getElementById('txt-precio-trimestral');
   var txtA = document.getElementById('txt-precio-anual');
 
-  if (txtM) txtM.textContent = textosActuales.m;
-  if (txtT) txtT.textContent = textosActuales.t;
-  if (txtA) txtA.textContent = textosActuales.a;
+  // (Removido: config-pais.js ya lo hace)
+  // (Removido: config-pais.js ya lo hace)
+  // (Removido: config-pais.js ya lo hace)
 
   // 6. El truco maestro: Le pegamos el ID de tu base de datos al final del link
-  var parametroMagico = "?checkout[custom][bizId]=" + CUR.id;
+  var parametroMagico = "?metadata[bizId]=" + CUR.id;
 
   // 7. Seleccionamos los botones del HTML e inyectamos los links (Con inteligencia de Fallback)
   var btnM = document.getElementById('btn-mensual');
@@ -1471,17 +1471,17 @@ function configurarBotonesDePago() {
 
   if (btnM) { 
     // Si el link tiene la palabra "LINK_", usa el global. Si no, usa el del país.
-    var finalLinkM = linksActuales.mensual.includes("LINK_") ? linksLemon['GLOBAL'].mensual : linksActuales.mensual;
+    var finalLinkM = linksActuales.mensual.includes("LINK_") ? linksDodo['GLOBAL'].mensual : linksActuales.mensual;
     btnM.href = finalLinkM + parametroMagico; 
     btnM.target = "_blank"; 
   }
   if (btnT) { 
-    var finalLinkT = linksActuales.trimestral.includes("LINK_") ? linksLemon['GLOBAL'].trimestral : linksActuales.trimestral;
+    var finalLinkT = linksActuales.trimestral.includes("LINK_") ? linksDodo['GLOBAL'].trimestral : linksActuales.trimestral;
     btnT.href = finalLinkT + parametroMagico; 
     btnT.target = "_blank"; 
   }
   if (btnA) { 
-    var finalLinkA = linksActuales.anual.includes("LINK_") ? linksLemon['GLOBAL'].anual : linksActuales.anual;
+    var finalLinkA = linksActuales.anual.includes("LINK_") ? linksDodo['GLOBAL'].anual : linksActuales.anual;
     btnA.href = finalLinkA + parametroMagico; 
     btnA.target = "_blank"; 
   }
@@ -1519,4 +1519,20 @@ function configurarBotonesDePago() {
       planBadge.style.color = 'var(--gold)';
     }
   }
-}
+
+/* ══════════════════════════
+   INICIO DE SESIÓN CON GOOGLE (Registro)
+══════════════════════════ */
+window.startGoogleRegistration = function(email, name) {
+  _rmData = { email: email, pass: 'GoogleOauth123!', phone: '', referred_by_code: null };
+  closeOv('ov-login');
+  closeOv('ov-registro');
+  if (typeof toast === 'function') toast('¡Bienvenido! Completa tu perfil para continuar', '#4A7FD4');
+  
+  goBiz();
+  setTimeout(function() {
+    bizRegStep(2);
+    const em = G('br-email'); if (em) em.value = email || '';
+    const nm = G('br-name'); if (nm && name) nm.value = name;
+  }, 400);
+};}

@@ -128,7 +128,7 @@ function navigateToAdminState(state, replace = false) {
     }
   }
 
-  const tabs = ['dashboard', 'negocios', 'suscripciones', 'ingresos', 'notificaciones', 'config', 'paises'];
+  const tabs = ['dashboard', 'negocios', 'suscripciones', 'ingresos', 'afiliados', 'notificaciones', 'config', 'paises'];
   for (let i = 0; i < tabs.length; i++) {
     const t = tabs[i];
     const pa = G('ap-' + t), bt = G('at-' + t);
@@ -141,6 +141,7 @@ function navigateToAdminState(state, replace = false) {
   if (state === 'ingresos') renderRevenue();
   if (state === 'notificaciones') renderNotifications();
   if (state === 'paises') renderAdminPaises();
+  if (state === 'afiliados') renderAfiliadosAdmin();
 }
 
 function admTab(tab) {
@@ -208,15 +209,15 @@ function planTag(plan) {
 function bizCardH(b) {
   const rev = (b.appointments || []).reduce(function (s, a) { return s + (a.price || 0); }, 0);
   const av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : '<span>' + san((b.name || '?').charAt(0)) + '</span>';
-  return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s" onclick="openBizProfile(\'' + sanitizeText(b.id) + '\')">'
-    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">'
-    + '<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden">' + av + '</div>'
-    + '<div style="flex:1"><div style="font-size:14px;font-weight:800">' + san(b.name) + '</div><div style="font-size:12px;color:var(--t2);margin-top:2px">' + san(b.owner) + ' · ' + (FLAGS[b.country] || '🌍') + ' ' + san(b.city || '') + '</div></div>'
+  return '<div style="border-bottom:1px solid var(--border);padding:14px 10px;margin-bottom:0;cursor:pointer;transition:opacity .15s" onclick="openBizProfile(\'' + sanitizeText(b.id) + '\')" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">'
+    + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
+    + '<div style="width:40px;height:40px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--text);flex-shrink:0;overflow:hidden">' + av + '</div>'
+    + '<div style="flex:1"><div style="font-size:15px;font-weight:700">' + san(b.name) + '</div><div style="font-size:12px;color:var(--muted);margin-top:2px">' + san(b.owner) + ' · ' + (FLAGS[b.country] || '🌍') + ' ' + san(b.city || '') + '</div></div>'
     + planTag(b.plan) + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
-    + '<div style="background:var(--bg3);border-radius:9px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--blue)">' + (b.barbers ? b.barbers.length : 0) + '</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Profesionales</div></div>'
-    + '<div style="background:var(--bg3);border-radius:9px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800">' + (b.appointments ? b.appointments.length : 0) + '</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Citas</div></div>'
-    + '<div style="background:var(--bg3);border-radius:9px;padding:9px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--green)">' + money(rev) + '</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Ganancia Tienda</div></div>'
+    + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + (b.barbers ? b.barbers.length : 0) + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Profesionales</div></div>'
+    + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + (b.appointments ? b.appointments.length : 0) + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Citas</div></div>'
+    + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + money(rev) + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Ganancia</div></div>'
     + '</div></div>';
 }
 
@@ -240,20 +241,20 @@ function renderAdminPaises() {
 
  // Diccionario nativo y robusto (Independiente de archivos externos)
 const countryData = {
-  'ES': { name: 'España', currency: 'EUR', symbol: '€', price: 10 },
-  'CO': { name: 'Colombia', currency: 'COP', symbol: '$', price: 25248.62 },
-  'MX': { name: 'México', currency: 'MXN', symbol: '$', price: 227.58 },
-  'AR': { name: 'Argentina', currency: 'ARS', symbol: '$', price: 10830.13 },
-  'DE': { name: 'Alemania', currency: 'EUR', symbol: '€', price: 14 },
-  'NL': { name: 'Holanda', currency: 'EUR', symbol: '€', price: 14 },
-  'FR': { name: 'Francia', currency: 'EUR', symbol: '€', price: 14 },
-  'CL': { name: 'Chile', currency: 'USD', symbol: '$', price: 10 },
-  'PE': { name: 'Perú', currency: 'PEN', symbol: 'S/', price: 25 },
-  'US': { name: 'Estados Unidos', currency: 'USD', symbol: '$', price: 15 },
-  'DO': { name: 'Rep. Dominicana', currency: 'DOP', symbol: 'RD$', price: 890 },
-  'VE': { name: 'Venezuela', currency: 'USD', symbol: '$', price: 15 },
-  'EC': { name: 'Ecuador', currency: 'USD', symbol: '$', price: 10 },
-  'BR': { name: 'Brasil', currency: 'BRL', symbol: 'R$', price: 80 }
+  'US': { name: 'Estados Unidos', currency: 'USD', symbol: '$', price: 11.50 },
+  'ES': { name: 'España', currency: 'USD', symbol: '$', price: 10.00 },
+  'MX': { name: 'México', currency: 'USD', symbol: '$', price: 7.00 },
+  'CL': { name: 'Chile', currency: 'USD', symbol: '$', price: 6.50 },
+  'PE': { name: 'Perú', currency: 'USD', symbol: '$', price: 6.00 },
+  'CO': { name: 'Colombia', currency: 'USD', symbol: '$', price: 5.00 },
+  'AR': { name: 'Argentina', currency: 'USD', symbol: '$', price: 4.00 },
+  'EC': { name: 'Ecuador', currency: 'USD', symbol: '$', price: 6.00 },
+  'DO': { name: 'Rep. Dominicana', currency: 'USD', symbol: '$', price: 6.00 },
+  'VE': { name: 'Venezuela', currency: 'USD', symbol: '$', price: 6.00 },
+  'BR': { name: 'Brasil', currency: 'USD', symbol: '$', price: 6.00 },
+  'DE': { name: 'Alemania', currency: 'USD', symbol: '$', price: 10.00 },
+  'NL': { name: 'Holanda', currency: 'USD', symbol: '$', price: 10.00 },
+  'FR': { name: 'Francia', currency: 'USD', symbol: '$', price: 10.00 }
 };
 
   const flags = {
@@ -318,19 +319,19 @@ function openBizProfile(bizId) {
   }
 
   // Acordeón desplegable
-  const accordionHtml = '<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;overflow:hidden;margin-bottom:14px">' +
-    '<div onclick="var el=document.getElementById(\'wk-list-' + b.id + '\'); var icon=document.getElementById(\'wk-icon-' + b.id + '\'); if(el.style.display===\'none\'){el.style.display=\'block\';icon.style.transform=\'rotate(180deg)\'}else{el.style.display=\'none\';icon.style.transform=\'rotate(0deg)\'}" style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:800;background:var(--bblue);color:var(--blue);font-size:13px;transition:background 0.2s" onmouseover="this.style.background=\'rgba(74,127,212,0.2)\'" onmouseout="this.style.background=\'var(--bblue)\'">' +
+  const accordionHtml = '<div style="border-bottom:1px solid var(--border);margin-bottom:14px;padding-bottom:14px;">' +
+    '<div onclick="var el=document.getElementById(\'wk-list-' + b.id + '\'); var icon=document.getElementById(\'wk-icon-' + b.id + '\'); if(el.style.display===\'none\'){el.style.display=\'block\';icon.style.transform=\'rotate(180deg)\'}else{el.style.display=\'none\';icon.style.transform=\'rotate(0deg)\'}" style="padding:10px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:600;color:var(--text);font-size:14px;">' +
     '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">💈</span> Ver Equipo de Trabajo (' + (b.workers ? b.workers.length : 0) + ')</div>' +
     '<span id="wk-icon-' + b.id + '" style="transition:transform 0.3s;font-size:10px">▼</span>' +
     '</div>' +
-    '<div id="wk-list-' + b.id + '" style="display:none;padding:14px;border-top:1px solid var(--b);background:var(--bg3)">' +
+    '<div id="wk-list-' + b.id + '" style="display:none;padding-top:14px;">' +
     workersHtml +
     '</div>' +
     '</div>';
 
   H('adm-biz-profile',
-    '<div style="display:flex;align-items:center;gap:14px;background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px;margin-bottom:16px">'
-    + '<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0">' + av + '</div>'
+    '<div style="display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px">'
+    + '<div style="width:56px;height:56px;border-radius:12px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--text);overflow:hidden;flex-shrink:0">' + av + '</div>'
     + '<div style="flex:1"><div style="font-size:18px;font-weight:800">' + san(b.name) + '</div>'
     + '<div style="font-size:12px;color:var(--t2);margin-top:4px;line-height:2"> ' + san(b.owner) + '<br> ' + san(b.phone || '—') + '<br> ' + san(b.email || '—') + '<br> ' + san((b.addr || '') + ' ' + (b.city || '')) + '<br> ' + san(b.type || '—') + '</div>'
     + '<div style="margin-top:8px">' + planTag(b.plan) + '</div></div></div>'
@@ -339,13 +340,13 @@ function openBizProfile(bizId) {
     + '<div class="sbox"><div class="slbl">Citas totales</div><div class="snum">' + allAppts.length + '</div></div>'
     + '<div class="sbox"><div class="slbl">Ingresos Generados</div><div class="snum" style="color:var(--green)">' + money(rev) + '</div></div>'
     + '<div class="sbox"><div class="slbl">Citas hoy</div><div class="snum" style="color:var(--blue)">' + todayA.length + '</div></div></div>'
-    + (b.desc ? '<div class="card" style="margin-bottom:12px;font-size:13px;color:var(--t2);line-height:1.6">' + san(b.desc) + '</div>' : '')
+    + (b.desc ? '<div style="margin-bottom:14px;font-size:13px;color:var(--muted);line-height:1.6">' + san(b.desc) + '</div>' : '')
     + '<div style="background:var(--bg3);border-radius:11px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
-    + '<span style="font-size:13px;color:var(--blue3);font-weight:600;word-break:break-all;flex:1">🔗 ' + window.location.host + '/#b/' + sanitizeText(b.id) + '</span>'
+    + '<span style="font-size:13px;color:var(--blue);font-weight:600;word-break:break-all;flex:1;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> ' + window.location.host + '/#b/' + sanitizeText(b.id) + '</span>'
     + '<button onclick="copyText(\'' + window.location.origin + '/#b/' + sanitizeText(b.id) + '\')" style="flex-shrink:0;padding:6px 12px;border-radius:8px;background:var(--bblue);color:var(--blue);font-size:12px;font-weight:700;border:1px solid rgba(74,127,212,.25);cursor:pointer;font-family:var(--font)">Copiar</button></div>'
     + accordionHtml
-    + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
-    + '<button onclick="extendTrial(\'' + sanitizeText(b.id) + '\')" class="btn btn-dark btn-sm" style="flex:1"> Extender prueba</button>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">'
+    + '<button onclick="extendTrial(\'' + sanitizeText(b.id) + '\')" class="btn btn-ghost btn-sm" style="flex:1">Extender prueba</button>'
     + '<button onclick="activateBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-green btn-sm" style="flex:1"> Activar</button>'
     + '<button onclick="suspendBiz(\'' + sanitizeText(b.id) + '\')" class="btn btn-red btn-sm" style="flex:1"> Suspender</button></div>'
   );
@@ -371,11 +372,11 @@ function openAdminWorkerProfile(bizId, workerId) {
      servicesHtml = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No tiene servicios registrados.</div>';
   }
 
-  const html = '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:20px">'
-    + '<div style="width:84px;height:84px;border-radius:24px;background:linear-gradient(135deg,#4A7FD4,#2855C8);margin-bottom:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.25);border:3px solid var(--b)">' + av + '</div>'
-    + '<div style="font-size:22px;font-weight:900;color:var(--text);letter-spacing:-0.5px">' + san(w.name) + '</div>'
-    + '<div style="font-size:13px;color:var(--blue);font-weight:800;margin-top:6px;text-transform:uppercase;letter-spacing:0.5px;background:var(--bblue);padding:4px 10px;border-radius:10px;display:inline-block">' + san(w.spec || w.role || 'Profesional') + '</div>'
-    + '<div style="font-size:13px;color:var(--t2);margin-top:12px;line-height:1.6">' + (w.email ? '✉️ ' + san(w.email) + '<br>' : '') + (w.phone ? '📱 ' + san(w.phone) : '') + '</div>'
+  const html = '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:20px;">'
+    + '<div style="width:70px;height:70px;border-radius:16px;background:var(--bg2);border:1px solid var(--border);color:var(--text);margin-bottom:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">' + av + '</div>'
+    + '<div style="font-size:18px;font-weight:700;color:var(--text);">' + san(w.name) + '</div>'
+    + '<div style="font-size:13px;color:var(--muted);margin-top:4px;">' + san(w.spec || w.role || 'Profesional') + '</div>'
+    + '<div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6;display:flex;flex-direction:column;gap:4px;">' + (w.email ? '<div style="display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> ' + san(w.email) + '</div>' : '') + (w.phone ? '<div style="display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> ' + san(w.phone) + '</div>' : '') + '</div>'
     + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">'
     + '<div class="sbox" style="padding:16px;text-align:center"><div class="slbl">Citas Completadas</div><div class="snum" style="font-size:24px">' + appts.length + '</div></div>'
@@ -392,7 +393,7 @@ function openAdminWorkerProfile(bizId, workerId) {
 }
 
 function renderBizListAdmin(bizs) {
-  H('adm-biz-list', bizs.length ? bizs.map(bizCardH).join('') : '<div style="text-align:center;color:var(--muted);padding:40px"><div style="font-size:36px;margin-bottom:12px">🔍</div><div>No se encontraron negocios</div></div>');
+  H('adm-biz-list', bizs.length ? bizs.map(bizCardH).join('') : '<div style="text-align:center;color:var(--muted);padding:40px"><svg style="opacity:0.3;margin-bottom:12px" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><div>No se encontraron negocios</div></div>');
 }
 
 function renderSubs() {
@@ -437,11 +438,11 @@ function renderNotifications() {
   H('notif-content', notifs.length
     ? notifs.map(function (n) {
       return '<div style="background:var(--card);border:1px solid var(--b);border-radius:20px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openBizProfile(\'' + sanitizeText(n.biz) + '\')">'
-        + '<div style="width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:' + n.color + '22">' + ({ trial: '', expired: '', new: '🆕' }[n.type] || '🔔') + '</div>'
+        + '<div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--border);color:var(--text);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>'
         + '<div style="flex:1"><div style="font-size:13px;font-weight:600">' + san(n.msg) + '</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Toca para ver detalles</div></div>'
         + '<span style="color:var(--muted);font-size:16px">›</span></div>';
     }).join('')
-    : '<div style="text-align:center;color:var(--muted);padding:36px"><div style="font-size:32px;margin-bottom:10px">🎉</div><div>Sin notificaciones</div></div>');
+    : '<div style="text-align:center;color:var(--muted);padding:36px"><svg style="opacity:0.3;margin-bottom:12px;" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><div>Sin notificaciones</div></div>');
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -538,7 +539,7 @@ async function confirmActivateBiz() {
 
   if (!b.notifications) b.notifications = [];
   b.notifications.unshift({
-    id: Date.now(), type: 'system', title: '¡Suscripción Activada! 🎉',
+    id: Date.now(), type: 'system', title: 'Suscripción Activada',
     msg: 'Suscripción Activada', body: 'Tu cuenta ha sido activada hasta el ' + b.expires_at + '. ¡Gracias por confiar en Citas Pro!',
     read: false, date: new Date().toISOString()
   });
@@ -610,3 +611,172 @@ function deleteBiz(id) {
 
   }, 300);
 }
+
+/* ══════════════════════════
+   AFILIADOS (VENDEDORES)
+══════════════════════════ */
+async function renderAfiliadosAdmin() {
+  const c = G('adm-affiliate-list');
+  if (!c) return;
+  c.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">Cargando vendedores...</div>';
+
+  try {
+    const res = await fetch('/api/admin-affiliates');
+    if (!res.ok) throw new Error('Error de conexión');
+    const affiliates = await res.json();
+
+    if (!affiliates || affiliates.length === 0) {
+      c.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">No hay afiliados creados aún.</div>';
+      return;
+    }
+
+    let h = '';
+    affiliates.forEach(af => {
+      // Contar negocios traídos
+      const bizs = DB.businesses.filter(b => (b.referred_by_code || '').toUpperCase() === af.code.toUpperCase());
+      const activos = bizs.filter(b => b.plan === 'active').length;
+      const mrr = activos * 10; // Suponemos 10€/mes por activo
+
+      h += `
+        <div style="padding:14px 10px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--border); cursor:pointer;" onclick="window.openAffiliateDetails('${san(af.code)}', '${san(af.name)}')">
+          <div style="width:38px; height:38px; border-radius:10px; background:var(--bg2); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">
+            ${(af.name || '?').charAt(0).toUpperCase()}
+          </div>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:15px; color:var(--text);">${san(af.name)}</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:3px;">Código: <span style="font-family:monospace; background:var(--bg2); padding:2px 6px; border-radius:4px; font-size:11px; color:var(--text);">${san(af.code)}</span></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:700; font-size:14px; color:var(--text);">${money(mrr)}/mes</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:3px;">${bizs.length} negocios</div>
+          </div>
+        </div>
+      `;
+    });
+    c.innerHTML = h;
+
+  } catch (error) {
+    c.innerHTML = '<div style="text-align:center; padding:20px; color:var(--red); font-size:13px;">Error al cargar afiliados.</div>';
+  }
+}
+
+window.crearAfiliado = function() {
+  if (!G('ov-afiliado')) {
+    const html = `
+      <div class="ov" id="ov-afiliado">
+        <div class="modal" style="max-width: 400px;">
+          <div class="mhdr">
+            <span class="mttl">Nuevo Vendedor</span>
+            <div class="xbtn" onclick="closeOv('ov-afiliado')">×</div>
+          </div>
+          <div class="field">
+            <label>Nombre del Vendedor</label>
+            <input type="text" id="af-name" class="inp" placeholder="Ej: Carlos Ventas">
+          </div>
+          <div class="field">
+            <label>Código Único (para referir)</label>
+            <input type="text" id="af-code" class="inp" placeholder="Ej: CARLOSPRO" style="text-transform:uppercase;">
+            <div style="font-size:11px; color:var(--muted); margin-top:4px;">Este código es el que los negocios deberán poner al registrarse.</div>
+          </div>
+          <div class="field">
+            <label>Correo Electrónico (Opcional)</label>
+            <input type="email" id="af-email" class="inp" placeholder="Ej: carlos@ventas.com">
+          </div>
+          <div id="af-err" class="err-box"></div>
+          <button class="btn btn-blue" id="af-btn-save" style="width:100%; margin-top:10px;" onclick="window.guardarAfiliado()">Crear Vendedor</button>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+  }
+  
+  hideErr('af-err');
+  G('af-name').value = '';
+  G('af-code').value = '';
+  G('af-email').value = '';
+  openOv('ov-afiliado');
+  setTimeout(() => { const i = G('af-name'); if (i) i.focus(); }, 200);
+};
+
+window.guardarAfiliado = async function() {
+  const n = V('af-name');
+  const c = V('af-code').toUpperCase();
+  const e = V('af-email');
+  hideErr('af-err');
+
+  if (!n || !c) { showErr('af-err', 'Nombre y código son obligatorios.'); return; }
+  
+  const btn = G('af-btn-save');
+  const originalText = btn.textContent;
+  btn.textContent = 'Guardando...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/admin-create-affiliate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: n, code: c, email: e })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al guardar');
+    
+    toast('Vendedor creado con éxito', '#22C55E');
+    closeOv('ov-afiliado');
+    renderAfiliadosAdmin();
+  } catch (error) {
+    showErr('af-err', error.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+};
+
+window.openAffiliateDetails = function(code, name) {
+  const bizs = DB.businesses.filter(b => (b.referred_by_code || '').toUpperCase() === code.toUpperCase());
+  
+  if (!G('ov-affiliate-details')) {
+    const html = `
+      <div class="ov" id="ov-affiliate-details">
+        <div class="modal" style="max-width: 450px; padding: 24px;">
+          <div class="mhdr" style="border-bottom:1px solid var(--border); padding-bottom:14px; margin-bottom:14px;">
+            <span class="mttl" id="ad-ttl" style="font-size:16px;"></span>
+            <div class="xbtn" onclick="closeOv('ov-affiliate-details')">×</div>
+          </div>
+          <div id="ad-list" style="max-height:60vh; overflow-y:auto;"></div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+  }
+
+  G('ad-ttl').textContent = 'Referidos por ' + name;
+  const listEl = G('ad-list');
+  
+  if (bizs.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center; padding:30px; color:var(--muted); font-size:13px;">Este vendedor aún no ha referido ningún negocio.</div>';
+  } else {
+    let lh = '';
+    bizs.forEach(b => {
+      const planStr = b.plan === 'active' 
+        ? '<span style="color:#22C55E; font-weight:600">Activo</span>' 
+        : (b.plan === 'trial' ? '<span style="color:#F59E0B">Prueba</span>' : '<span style="color:var(--muted)">Vencido</span>');
+      
+      const dateStr = b.join_date ? b.join_date : 'Sin fecha';
+      lh += `
+        <div style="padding:14px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:600; font-size:15px; color:var(--text);">${san(b.name)}</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Se registró el ${dateStr}</div>
+          </div>
+          <div style="font-size:12px; background:var(--bg2); padding:4px 10px; border-radius:12px; border:1px solid var(--border);">
+            ${planStr}
+          </div>
+        </div>
+      `;
+    });
+    listEl.innerHTML = lh;
+  }
+  
+  openOv('ov-affiliate-details');
+};

@@ -31,38 +31,41 @@
         </path>
       </svg>
     </button>
-    <button id="wk-out-btn" class="btn btn-ghost btn-sm"
+    <button id="wk-out-btn" class="btn btn-ghost btn-sm" onclick="if(typeof workerLogout==='function') workerLogout();"
       style="width:auto;padding:8px 14px;font-size:12px">Salir</button>
   </div>
 </div>
-<div class="bnav">
-  <div class="bn on" id="wn-home" onclick="workerTab('home')">Inicio</div>
-  <div class="bn" id="wn-agenda" onclick="workerTab('agenda')">Agenda</div>
-  <div class="bn" id="wn-servicios" onclick="workerTab('servicios')">Servicios</div>
-  <div class="bn" id="wn-horario" onclick="workerTab('horario')">Horario</div>
-  <div class="bn" id="wn-finanzas" onclick="workerTab('finanzas')">Finanzas</div>
-  <div class="bn" id="wn-historial" onclick="workerTab('historial')">Historial</div>
-  <div class="bn" id="wn-perfil" onclick="workerTab('perfil')">Perfil</div>
-</div>
-<div style="padding:14px 14px 90px">
+<div class="dash-layout">
+  <div class="dash-sidebar">
+    <div class="bnav">
+      <div class="bn on" id="wn-home" onclick="workerTab('home')">Inicio</div>
+      <div class="bn" id="wn-agenda" onclick="workerTab('agenda')">Agenda</div>
+      <div class="bn" id="wn-servicios" onclick="workerTab('servicios')">Servicios</div>
+      <div class="bn" id="wn-horario" onclick="workerTab('horario')">Horario</div>
+      <div class="bn" id="wn-finanzas" onclick="workerTab('finanzas')">Finanzas</div>
+      <div class="bn" id="wn-historial" onclick="workerTab('historial')">Historial</div>
+      <div class="bn" id="wn-perfil" onclick="workerTab('perfil')">Perfil</div>
+    </div>
+  </div>
+  <div class="dash-content" style="padding:14px 14px 90px">
   <div class="pane on" id="wp-home">
     <div style="font-size:20px;font-weight:900;margin-bottom:14px" id="wk-greeting">Bienvenido</div>
     <div class="stats2">
       <div class="sbox">
         <div class="slbl">Citas hoy</div>
-        <div class="snum" style="color:var(--blue)" id="wk-today">0</div>
+        <div class="snum" style="color:var(--text)" id="wk-today">0</div>
       </div>
       <div class="sbox">
         <div class="slbl">Ingresos hoy</div>
-        <div class="snum" style="color:var(--green)" id="wk-rev">0</div>
+        <div class="snum" style="color:var(--text)" id="wk-rev">0</div>
       </div>
       <div class="sbox">
         <div class="slbl">Esta semana</div>
-        <div class="snum" style="color:var(--blue)" id="wk-week">0</div>
+        <div class="snum" style="color:var(--text)" id="wk-week">0</div>
       </div>
       <div class="sbox">
         <div class="slbl">Este mes</div>
-        <div class="snum" style="color:var(--gold)" id="wk-month">0</div>
+        <div class="snum" style="color:var(--text)" id="wk-month">0</div>
       </div>
     </div>
     <div class="link-box" style="margin-bottom:14px">
@@ -128,7 +131,7 @@
   </div>
   <div class="pane" id="wp-servicios">
     <div class="sec-hdr"><span class="sec-ttl">Mis servicios</span><button class="btn btn-blue btn-sm"
-        style="width:auto" id="wk-add-svc-btn">Añadir +</button></div>
+        style="width:auto" id="wk-add-svc-btn">Añadir</button></div>
     <div class="tip-box" style="margin-bottom:12px">Los clientes verán estos servicios cuando te elijan.</div>
     <div id="wk-svcs-list"></div>
   </div>
@@ -137,19 +140,19 @@
     <div class="stats2">
       <div class="sbox">
         <div class="slbl">Ingresos mes</div>
-        <div class="snum" style="color:var(--green)" id="wk-fin-ing">0</div>
+        <div class="snum" style="color:var(--text)" id="wk-fin-ing">0</div>
       </div>
       <div class="sbox">
         <div class="slbl">Clientes únicos</div>
-        <div class="snum" style="color:var(--blue)" id="wk-fin-clients">0</div>
+        <div class="snum" style="color:var(--text)" id="wk-fin-clients">0</div>
       </div>
       <div class="sbox">
         <div class="slbl">Servicio top</div>
-        <div class="snum" style="font-size:14px;color:var(--gold)" id="wk-fin-top-svc">—</div>
+        <div class="snum" style="font-size:14px;color:var(--text)" id="wk-fin-top-svc">—</div>
       </div>
       <div class="sbox">
         <div class="slbl">Ticket medio</div>
-        <div class="snum" style="font-size:18px;color:var(--purple)" id="wk-fin-ticket">0</div>
+        <div class="snum" style="font-size:18px;color:var(--text)" id="wk-fin-ticket">0</div>
       </div>
     </div>
     <div class="card" style="margin-bottom:14px">
@@ -303,4 +306,5 @@
     </div>
   </div>
 </div>
+</div>  </div>
 </div>

@@ -50,123 +50,249 @@
 
 <body>
 
-  <div class="scr on" id="s-portal"
-    style="min-height:100vh;background:#07090F;flex-direction:column;align-items:center;padding:0 0 80px;position:relative">
+  <style>
+    #s-global-loader,
+    #s-portal {
+      display: none !important;
+    }
+    #s-global-loader.on,
+    #s-portal.on {
+      display: flex !important;
+    }
+    .portal-bg {
+      background: linear-gradient(135deg, rgba(12, 16, 32, 0.4), rgba(4, 6, 12, 0.8)), url('assets/img/salon-bg.jpg') no-repeat center center !important;
+      background-size: cover !important;
+      background-attachment: fixed !important;
+    }
+    
+    /* GLASS PANEL CORE */
+    .glass-panel {
+      background: rgba(74, 127, 212, 0.06);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(74, 127, 212, 0.15);
+      border-radius: 28px;
+      padding: 40px 32px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+      transition: all 0.3s ease;
+    }
+    .glass-panel h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #ffffff;
+      margin-bottom: 6px;
+      transition: color 0.3s ease;
+    }
+    .glass-panel p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 32px;
+      text-align: center;
+      transition: color 0.3s ease;
+    }
+    
+    /* SEARCH BOX */
+    .portal-search-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #8AB4F8;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      margin-left: 6px;
+      transition: color 0.3s ease;
+    }
+    .portal-search-box svg {
+      stroke: rgba(255, 255, 255, 0.6);
+      transition: stroke 0.3s ease;
+    }
+    .portal-search-box input {
+      color: #ffffff;
+    }
 
-    <div
-      style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:280px;background:radial-gradient(ellipse at 50% 0%,rgba(74,127,212,.16),transparent 70%);pointer-events:none;z-index:0">
+    /* THEME TOGGLES */
+    .portal-top-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 800;
+      font-size: 13px;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+    .portal-top-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* === LIGHT MODE OVERRIDES === */
+    [data-theme="light"] .glass-panel {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    [data-theme="light"] .glass-panel h1 {
+      color: #1E293B;
+    }
+    [data-theme="light"] .glass-panel p,
+    [data-theme="light"] .divider {
+      color: rgba(30, 41, 59, 0.6);
+    }
+    [data-theme="light"] .divider::before, 
+    [data-theme="light"] .divider::after {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    [data-theme="light"] .portal-search-label {
+      color: #3b82f6;
+    }
+    [data-theme="light"] .portal-search-box {
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.5);
+    }
+    [data-theme="light"] .portal-search-box svg {
+      stroke: #64748B;
+    }
+    [data-theme="light"] .portal-search-box input {
+      color: #1E293B;
+    }
+    [data-theme="light"] .btn-login-new {
+      background: rgba(255, 255, 255, 0.15);
+      color: #1E293B;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    [data-theme="light"] .btn-login-new:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .portal-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-login-new {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-login-new:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .btn-crear-new {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 14px rgba(74, 127, 212, 0.4);
+    }
+    .btn-crear-new:hover {
+      background: var(--blue2);
+      transform: translateY(-2px);
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin: 24px 0;
+      width: 100%;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .divider::before { margin-right: 12px; }
+    .divider::after { margin-left: 12px; }
+  </style>
+
+  <div class="scr portal-bg" id="s-portal" style="position:fixed;top:0;left:0;width:100%;height:100%;box-sizing:border-box;overflow:hidden;flex-direction:column;align-items:center;justify-content:center;padding:20px;">
+    
+    <!-- Theme and Lang Toggles -->
+    <div style="position:absolute;top:24px;right:24px;z-index:20;display:flex;gap:8px;align-items:center">
+      <button id="theme-toggle" class="portal-top-btn"></button>
+      <button class="portal-top-btn lang-toggle" onclick="toggleLanguage(this)">EN</button>
     </div>
 
-    <div style="position:absolute;top:18px;right:18px;z-index:20;display:flex;gap:8px;align-items:center">
-      <button id="theme-toggle"
-        style="width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.7)"></button>
-      <button class="lang-toggle" onclick="toggleLanguage(this)"
-        style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:800;color:var(--text);font-size:13px;flex-shrink:0;">EN</button>
-
-    </div>
-
-    <div
-      style="display:flex;flex-direction:column;align-items:center;padding-top:80px;margin-bottom:28px;text-align:center;width:100%;z-index:1">
-      <div class="fu"
-        style="width:100px;height:100px;border-radius:28px;background:linear-gradient(145deg,#5B8FE8,#3060D4);display:flex;align-items:center;justify-content:center;margin-bottom:22px;animation:glow 4s ease infinite">
-        <svg width="56" height="56" viewBox="0 0 46 46" fill="none">
+    <div class="glass-panel fu">
+      <!-- Logo -->
+      <div style="width:80px;height:80px;border-radius:22px;background:linear-gradient(145deg,#5B8FE8,#3060D4);display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 12px 24px rgba(74,127,212,0.3);">
+        <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
           <rect x="7" y="12" width="32" height="26" rx="5" fill="rgba(255,255,255,.15)" />
           <rect x="7" y="12" width="32" height="26" rx="5" stroke="rgba(255,255,255,.5)" stroke-width="1.8" />
           <rect x="7" y="12" width="32" height="10" rx="5" fill="rgba(255,255,255,.22)" />
           <line x1="16" y1="7" x2="16" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round" />
           <line x1="30" y1="7" x2="30" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round" />
-          <path d="M15.5 28 L21 33.5 L30.5 22" stroke="white" stroke-width="3" stroke-linecap="round"
-            stroke-linejoin="round" fill="none" />
+          <path d="M15.5 28 L21 33.5 L30.5 22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
         </svg>
       </div>
-      <h1 class="fu d1 notranslate"
-        style="font-size:clamp(32px, 10vw, 52px);font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#fff 25%,#7EB8FF 65%,#4A7FD4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:10px">
-        CITAS PRO</h1>
-      <p class="fu d2" style="font-size:15px;color:var(--t2);max-width:300px;line-height:1.65;margin-bottom:0;">La app
-        más completa para gestionar tu negocio</p>
-    </div>
+      
+      <h1 class="notranslate">CITAS PRO</h1>
+      <p>Gestión inteligente para tu negocio</p>
 
-    <div class="portal-search-wrap fu d3">
-      <div class="portal-search-label">Busca tu negocio preferido</div>
-      <div class="portal-search-box">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2"
-          stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <input id="portal-search-input" type="text" placeholder="Nombre del negocio..." autocomplete="off"
-          maxlength="60" />
-        <div id="portal-search-spinner"
-          style="display:none;width:16px;height:16px;border:2px solid rgba(74,127,212,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0">
+      <!-- Buscador -->
+      <div class="portal-search-wrap" style="width:100%; margin-bottom: 12px;">
+        <div class="portal-search-label">Encuentra un negocio</div>
+        <div class="portal-search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input id="portal-search-input" type="text" placeholder="Buscar por nombre..." autocomplete="off" maxlength="60" />
+          <div id="portal-search-spinner" style="display:none;width:16px;height:16px;border:2px solid rgba(74,127,212,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
         </div>
+        <div class="portal-search-results" id="portal-search-results" style="display:none; background:rgba(20,24,36,0.95); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; margin-top:8px; padding:8px; max-height:200px; overflow-y:auto;"></div>
       </div>
-      <div class="portal-search-results" id="portal-search-results" style="display:none"></div>
-    </div>
 
-    <div class="fu d4"
-      style="display:flex;flex-direction:column;align-items:center;text-align:center;width:100%;z-index:1;margin-bottom:24px;">
-      <p
-        style="font-size:11px;font-weight:700;color:#5B8FE8;letter-spacing:3.5px;text-transform:uppercase;margin-bottom:12px">
-        APP PARA</p>
-      <div style="width: 100%; max-width: 320px; overflow: hidden; position: relative;">
-        <div
-          style="position: absolute; top:0; left:0; width: 30px; height: 100%; background: linear-gradient(to right, var(--bg), transparent); z-index: 2;">
-        </div>
-        <div
-          style="position: absolute; top:0; right:0; width: 30px; height: 100%; background: linear-gradient(to left, var(--bg), transparent); z-index: 2;">
-        </div>
+      <div class="divider">o gestiona tu cuenta</div>
 
-        <div class="pills-container">
-          <div class="pill-item">💈 Barberías</div>
-          <div class="pill-item">✂️ Peluquerías</div>
-          <div class="pill-item">💅 Uñas</div>
-          <div class="pill-item">💆 Spa</div>
-          <div class="pill-item">💄 Maquillaje</div>
-          <div class="pill-item">💈 Barberías</div>
-          <div class="pill-item">✂️ Peluquerías</div>
-          <div class="pill-item">💅 Uñas</div>
-          <div class="pill-item">💆 Spa</div>
-          <div class="pill-item">💄 Maquillaje</div>
-        </div>
+      <!-- Botones -->
+      <div style="width:100%; display:flex; flex-direction:column; gap:12px;">
+        <button class="portal-btn btn-login-new" id="btn-login">
+          Iniciar sesión
+        </button>
+        <button class="portal-btn btn-crear-new" id="btn-crear">
+          Crear cuenta a tu negocio
+        </button>
       </div>
     </div>
+    
 
-    <div class="fu d5"
-      style="width:100%;max-width:380px;padding:0 22px;display:flex;flex-direction:column;gap:12px;z-index:1;margin-bottom:20px;">
-      <button class="btn btn-dark" id="btn-login" style="font-size:15px">Iniciar sesión</button>
-      <button class="btn btn-blue" id="btn-crear" style="font-size:16px;font-weight:800;padding:18px">Crear cuenta a tu
-        negocio</button>
-    </div>
-
-    <div id="robot-container" class="eve-wrapper">
-      <div id="robot-bubble" class="eve-bubble" style="opacity: 1; transform: translateY(0);">
-        ¡Hola! Bienvenido a Citas Pro Barber
-      </div>
-      <a href="https://wa.me/34611200984" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
-        <div id="robot-icon" class="eve-bot">
-          <div class="eve-head">
-            <div class="eve-face">
-              <div class="eve-eye"></div>
-              <div class="eve-eye"></div>
-            </div>
-          </div>
-        </div>
-      </a>
-    </div>
   </div>
 
   <!-- LOADER GLOBAL TEMPORAL PARA RUTAS DIRECTAS -->
-  <div class="scr" id="s-global-loader" style="min-height:100vh;background:#07090F;flex-direction:column;align-items:center;justify-content:center;">
-    <div style="width:40px;height:40px;border:3px solid rgba(74,127,212,.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;"></div>
+  <div class="scr on portal-bg" id="s-global-loader" style="position:fixed;top:0;left:0;width:100vw;height:100vh;flex-direction:column;align-items:center;justify-content:center;z-index:99999;">
+    <div style="width:80px;height:80px;border-radius:22px;background:linear-gradient(145deg,#5B8FE8,#3060D4);display:flex;align-items:center;justify-content:center;margin-bottom:24px;animation:glow 2s ease-in-out infinite, pulse 2s infinite ease-in-out;">
+      <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+        <rect x="7" y="12" width="32" height="26" rx="5" fill="rgba(255,255,255,.15)" />
+        <rect x="7" y="12" width="32" height="26" rx="5" stroke="rgba(255,255,255,.5)" stroke-width="1.8" />
+        <rect x="7" y="12" width="32" height="10" rx="5" fill="rgba(255,255,255,.22)" />
+        <line x1="16" y1="7" x2="16" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+        <line x1="30" y1="7" x2="30" y2="17" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+        <path d="M15.5 28 L21 33.5 L30.5 22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+      </svg>
+    </div>
+    <div style="width:28px;height:28px;border:3px solid rgba(74,127,212,.15);border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite;"></div>
   </div>
-  <script>
-    if (window.location.hash && (window.location.hash.startsWith('#b/') || window.location.hash.startsWith('#reset-password/') || window.location.hash.startsWith('#manage/') || window.location.hash.startsWith('#booking/'))) {
-      var _sPortal = document.getElementById('s-portal');
-      if (_sPortal) _sPortal.classList.remove('on');
-      var _sLoader = document.getElementById('s-global-loader');
-      if (_sLoader) _sLoader.classList.add('on');
-    }
-  </script>
 
   <!-- COMPONENTES DINÁMICOS (Se inyectan desde loader.js) -->
   <div class="scr" id="s-booking-portal"></div>

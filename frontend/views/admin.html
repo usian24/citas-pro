@@ -1,12 +1,11 @@
 
-  <div id="adm-login" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 22px;background:#07090F;position:relative">
-    <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:500px;height:220px;background:radial-gradient(ellipse at 50% 0%,rgba(74,127,212,.13),transparent 70%);pointer-events:none"></div>
-    <div style="width:78px;height:78px;border-radius:24px;background:linear-gradient(145deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;margin-bottom:16px;animation:glow 4s ease infinite;z-index:1">
-      <svg width="40" height="40" viewBox="0 0 46 46" fill="none"><rect x="7" y="12" width="32" height="26" rx="5" fill="rgba(255,255,255,.15)"/><rect x="7" y="12" width="32" height="26" rx="5" stroke="rgba(255,255,255,.45)" stroke-width="1.8"/><path d="M15.5 27 L20.5 32.5 L30.5 21" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+  <div id="adm-login" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 22px;background:var(--bg);position:relative">
+    <div style="width:70px;height:70px;border-radius:20px;background:var(--blue);display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+      <svg width="34" height="34" viewBox="0 0 46 46" fill="none"><rect x="7" y="12" width="32" height="26" rx="5" fill="rgba(255,255,255,.15)"/><rect x="7" y="12" width="32" height="26" rx="5" stroke="rgba(255,255,255,.9)" stroke-width="2"/><path d="M15.5 27 L20.5 32.5 L30.5 21" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
     </div>
-    <div style="font-size:32px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,#fff,#7EB8FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;z-index:1">CITAS PRO</div>
-    <div class="pill-blue" style="margin-bottom:28px;z-index:1">SUPER ADMINISTRADOR</div>
-    <div style="background:var(--card2);border:1px solid rgba(255,255,255,.1);border-radius:var(--r4);padding:28px;width:100%;max-width:380px;z-index:1">
+    <div style="font-size:28px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text);margin-bottom:6px;">CITAS PRO</div>
+    <div style="font-size:13px; font-weight:600; color:var(--muted); margin-bottom:28px;">SUPER ADMINISTRADOR</div>
+    <div style="border:1px solid var(--border);border-radius:12px;padding:28px;width:100%;max-width:380px;">
       <div class="field"><label>Email de administrador</label><input class="inp" id="adm-email" type="email" placeholder="tu@email.com" autocomplete="email"/></div>
       <div class="field" style="margin-bottom:10px">
         <label>Contraseña</label>
@@ -26,7 +25,7 @@
   <div id="adm-panel" style="display:none">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;font-size:16px">👑</div>
+        <div style="width:34px;height:34px;border-radius:10px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800">A</div>
         <div>
           <div style="font-size:14px;font-weight:800">Citas Pro</div>
           <div style="font-size:10px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Super Admin</div>
@@ -42,35 +41,38 @@
           </button>
           <div class="notif-dot" id="notif-dot"></div>
         </div>
-        <button class="btn btn-ghost btn-sm btn-icon" id="adm-home-btn">🏠</button>
-        <button class="btn btn-ghost btn-sm" style="width:auto" id="adm-out-btn">Salir</button>
+        <!-- Botón de casa eliminado -->
+        <button class="btn btn-ghost btn-sm" style="width:auto" id="adm-out-btn" onclick="if(typeof doAdminLogout==='function') doAdminLogout();">Salir</button>
       </div>
     </div>
-    <div class="tabs">
-      <div class="tab on" id="at-dashboard"     onclick="admTab('dashboard')">Dashboard</div>
-      <div class="tab"   id="at-negocios"       onclick="admTab('negocios')">Negocios <span id="neg-badge" style="background:var(--blue);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:2px">0</span></div>
-      <div class="tab"   id="at-suscripciones"  onclick="admTab('suscripciones')">Suscripciones</div>
-      <div class="tab"   id="at-ingresos"       onclick="admTab('ingresos')">Ingresos</div>
-      <div class="tab"   id="at-notificaciones" onclick="admTab('notificaciones')">Alertas</div>
-      <div class="tab"   id="at-config"         onclick="admTab('config')">Config</div>
-      <div class="tab"   id="at-paises"         onclick="admTab('paises')">Países</div>
-    </div>
-    <div style="padding:14px 14px 80px">
+    <div class="dash-layout">
+      <div class="dash-sidebar">
+        <div class="bnav">
+          <div class="bn on" id="at-dashboard"     onclick="admTab('dashboard')">Dashboard</div>
+          <div class="bn"   id="at-negocios"       onclick="admTab('negocios')">Negocios <span id="neg-badge" style="background:var(--blue);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:2px">0</span></div>
+          <div class="bn"   id="at-suscripciones"  onclick="admTab('suscripciones')">Suscripciones</div>
+          <div class="bn"   id="at-ingresos"       onclick="admTab('ingresos')">Ingresos</div>
+          <div class="bn"   id="at-afiliados"      onclick="admTab('afiliados')">Afiliados</div>
+          <div class="bn"   id="at-notificaciones" onclick="admTab('notificaciones')">Alertas</div>
+          <div class="bn"   id="at-config"         onclick="admTab('config')">Config</div>
+          <div class="bn"   id="at-paises"         onclick="admTab('paises')">Países</div>
+        </div>
+      </div>
+      <div class="dash-content" style="padding:14px 14px 80px">
       <div class="pane on" id="ap-dashboard">
-        <div style="background:rgba(74,127,212,.1);border:1px solid rgba(74,127,212,.2);border-radius:22px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
-          <div style="font-size:28px;animation:float 4s ease infinite"></div>
-          <div style="flex:1"><div style="font-size:15px;font-weight:800">Bienvenida, Super Admin</div><div style="font-size:12px;color:var(--t2);margin-top:2px" id="adm-date">Panel exclusivo · Citas Pro SaaS</div></div>
-          <div style="text-align:right"><div style="font-size:10px;color:var(--muted)">App v9</div><div style="font-size:12px;font-weight:700;color:var(--blue3)">citaspro.app</div></div>
+        <div style="border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:16px; display:flex; align-items:center; gap:14px">
+          <div style="flex:1;"><div style="font-size:18px;font-weight:700">Bienvenido, Administrador</div><div style="font-size:13px;color:var(--muted);margin-top:2px" id="adm-date">Panel de control</div></div>
+          <div style="text-align:right"><div style="font-size:11px;color:var(--muted)">App v9</div><div style="font-size:13px;font-weight:600;color:var(--text)">citaspro.app</div></div>
         </div>
         <div class="stats2">
-          <div class="sbox"><div class="slbl">Negocios</div><div class="snum" style="color:var(--blue)" id="ds-total">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px" id="ds-sub">0 activos</div></div>
-          <div class="sbox"><div class="slbl">MRR</div><div class="snum" style="color:var(--green)" id="ds-mrr">0€</div><div style="font-size:11px;color:var(--muted);margin-top:4px">por mes</div></div>
-          <div class="sbox"><div class="slbl">En prueba</div><div class="snum" style="color:var(--gold)" id="ds-trial">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">potenciales</div></div>
-          <div class="sbox"><div class="slbl">Citas totales</div><div class="snum" style="color:var(--blue)" id="ds-appts">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">gestionadas</div></div>
-          <div class="sbox"><div class="slbl">ARR anual</div><div class="snum" style="color:var(--green);font-size:20px" id="ds-arr">0€</div><div style="font-size:11px;color:var(--muted);margin-top:4px">proyección</div></div>
-          <div class="sbox"><div class="slbl">Países</div><div class="snum" style="color:var(--blue)" id="ds-countries">0</div><div style="font-size:14px;margin-top:4px" id="ds-flags"></div></div>
+          <div class="sbox"><div class="slbl">Negocios</div><div class="snum" style="color:var(--text)" id="ds-total">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px" id="ds-sub">0 activos</div></div>
+          <div class="sbox"><div class="slbl">MRR</div><div class="snum" style="color:var(--text)" id="ds-mrr"></div><div style="font-size:11px;color:var(--muted);margin-top:4px">por mes</div></div>
+          <div class="sbox"><div class="slbl">En prueba</div><div class="snum" style="color:var(--text)" id="ds-trial">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">potenciales</div></div>
+          <div class="sbox"><div class="slbl">Citas totales</div><div class="snum" style="color:var(--text)" id="ds-appts">0</div><div style="font-size:11px;color:var(--muted);margin-top:4px">gestionadas</div></div>
+          <div class="sbox"><div class="slbl">ARR anual</div><div class="snum" style="color:var(--green);font-size:20px" id="ds-arr"></div><div style="font-size:11px;color:var(--muted);margin-top:4px">proyección</div></div>
+          <div class="sbox"><div class="slbl">Países</div><div class="snum" style="color:var(--text)" id="ds-countries">0</div><div style="font-size:14px;margin-top:4px" id="ds-flags"></div></div>
         </div>
-        <div class="card" style="margin-bottom:14px">
+        <div style="margin-bottom:20px">
           <div class="sec-hdr"><span class="sec-ttl">Crecimiento MRR</span><span style="font-size:11px;color:var(--muted)">Últimos 6 meses</span></div>
           <div class="chart" id="ds-chart"></div>
           <div style="display:flex;gap:4px;margin-top:6px" id="ds-months"></div>
@@ -80,31 +82,47 @@
       </div>
       <div class="pane" id="ap-negocios">
         <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-          <div class="search-bar" style="flex:1;min-width:180px"><span>🔍</span><input id="biz-search" placeholder="Buscar negocio..." oninput="renderBizListAdmin(filterBiz())"/></div>
+          <div class="search-bar" style="flex:1;min-width:180px; position:relative;">
+            <svg style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input id="biz-search" placeholder="Buscar negocio..." oninput="renderBizListAdmin(filterBiz())" style="padding-left:36px; width:100%; box-sizing:border-box;"/>
+          </div>
           <select class="inp" id="biz-filter" style="width:auto;min-width:130px;padding:11px 14px;border-radius:16px" onchange="renderBizListAdmin(filterBiz())">
             <option value="all">Todos</option><option value="active">Activos</option><option value="trial">Prueba</option><option value="expired">Vencidos</option>
           </select>
         </div>
         <div id="adm-biz-list"></div>
       </div>
+      
+      <div class="pane" id="ap-afiliados">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div class="sec-hdr" style="margin-bottom:0;"><span class="sec-ttl">Vendedores / Afiliados</span></div>
+          <button class="btn btn-blue" style="width:auto; padding:8px 16px; font-size:13px; font-weight:700" onclick="window.crearAfiliado()">Añadir Vendedor</button>
+        </div>
+        <p style="font-size:13px; color:var(--t2); margin-bottom:16px;">Aquí verás el rendimiento de todos los vendedores. Cuando un negocio usa su código al registrarse, quedará enlazado para siempre.</p>
+        <div id="adm-affiliate-list" style="display:flex; flex-direction:column; gap:10px;">
+          <div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;">No hay afiliados creados aún.</div>
+        </div>
+      </div>
+      
       <div class="pane" id="ap-suscripciones"><div id="adm-subs"></div></div>
       <div class="pane" id="ap-ingresos">
         <div class="stats2" style="margin-bottom:16px">
-          <div class="sbox"><div class="slbl">MRR actual</div><div class="snum" style="color:var(--green)" id="rev-m">0€</div></div>
-          <div class="sbox"><div class="slbl">ARR estimado</div><div class="snum" style="color:var(--blue)" id="rev-y">0€</div></div>
-          <div class="sbox"><div class="slbl">En 6 meses</div><div class="snum" style="color:var(--gold);font-size:18px" id="rev-p6">0€</div></div>
-          <div class="sbox"><div class="slbl">En 12 meses</div><div class="snum" style="color:var(--purple);font-size:18px" id="rev-p12">0€</div></div>
+          <div class="sbox"><div class="slbl">MRR actual</div><div class="snum" style="color:var(--text)" id="rev-m"></div></div>
+          <div class="sbox"><div class="slbl">ARR estimado</div><div class="snum" style="color:var(--text)" id="rev-y"></div></div>
+          <div class="sbox"><div class="slbl">En 6 meses</div><div class="snum" style="color:var(--text);font-size:18px" id="rev-p6"></div></div>
+          <div class="sbox"><div class="slbl">En 12 meses</div><div class="snum" style="color:var(--text);font-size:18px" id="rev-p12"></div></div>
         </div>
-        <div class="card"><div class="sec-hdr"><span class="sec-ttl">Proyección</span></div><div id="adm-proj"></div></div>
+        <div style="margin-bottom:20px"><div class="sec-hdr"><span class="sec-ttl">Proyección</span></div><div id="adm-proj"></div></div>
       </div>
+
       <div class="pane" id="ap-notificaciones"><div id="adm-notif-list"></div></div>
       <div class="pane" id="ap-config">
-        <div class="card" style="margin-bottom:14px">
+        <div style="border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:16px;">
           <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Configuración</div>
           <div class="toggle-wrap"><div><div style="font-weight:600">Notificaciones por email</div><div style="font-size:12px;color:var(--muted)">Alertas de nuevos registros</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
           <div class="toggle-wrap"><div><div style="font-weight:600">Modo mantenimiento</div><div style="font-size:12px;color:var(--muted)">Ocultar app a nuevos usuarios</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
         </div>
-        <div class="card" style="margin-bottom:14px">
+        <div style="border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:16px;">
           <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Cambiar contraseña</div>
           <div class="field">
             <label>Nueva contraseña</label>
@@ -132,3 +150,5 @@
       <div class="pane" id="ap-paises"></div>
     </div>
   </div>
+  </div>
+</div>

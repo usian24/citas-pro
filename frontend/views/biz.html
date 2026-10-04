@@ -17,7 +17,7 @@
     <div class="progbar">
       <div class="progfill" style="width:16%"></div>
     </div>
-    <button class="btn btn-ghost btn-sm btn-icon" id="back-1" style="margin-bottom:22px;border-radius:50%">←</button>
+    <button class="btn btn-ghost btn-sm btn-icon" id="back-1" style="margin-bottom:22px;border-radius:50%"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
     <div style="font-size:24px;font-weight:900;margin-bottom:8px">Tipo de negocio</div>
     <div style="font-size:14px;color:var(--t2);margin-bottom:20px">Selecciona el que más se parece</div>
     <div class="tgrid2">
@@ -53,7 +53,7 @@
     <div class="progbar">
       <div class="progfill" style="width:33%"></div>
     </div>
-    <button class="btn btn-ghost btn-sm btn-icon" id="back-2" style="margin-bottom:22px;border-radius:50%">←</button>
+    <button class="btn btn-ghost btn-sm btn-icon" id="back-2" style="margin-bottom:22px;border-radius:50%"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
     <div style="font-size:24px;font-weight:900;margin-bottom:6px">Datos del negocio</div>
     <div class="field"><label>Nombre del negocio</label><input class="inp" id="br-bizname"
         placeholder="Ej: La 40 Barber Shop" maxlength="80" autocomplete="organization" /></div>
@@ -87,7 +87,7 @@
     <div class="progbar">
       <div class="progfill" style="width:50%"></div>
     </div>
-    <button class="btn btn-ghost btn-sm btn-icon" id="back-3" style="margin-bottom:22px;border-radius:50%">←</button>
+    <button class="btn btn-ghost btn-sm btn-icon" id="back-3" style="margin-bottom:22px;border-radius:50%"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
     <div style="font-size:24px;font-weight:900;margin-bottom:6px">¿Dónde estás?</div>
     <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Ubicación de tu negocio</div>
     <div class="field"><label>Dirección</label><input class="inp" id="br-addr" placeholder="Calle, número..."
@@ -158,7 +158,7 @@
     <div class="progbar">
       <div class="progfill" style="width:66%"></div>
     </div>
-    <button class="btn btn-ghost btn-sm btn-icon" id="back-4" style="margin-bottom:22px;border-radius:50%">←</button>
+    <button class="btn btn-ghost btn-sm btn-icon" id="back-4" style="margin-bottom:22px;border-radius:50%"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
     <div style="font-size:24px;font-weight:900;margin-bottom:6px">¿Cuántos son en tu equipo?</div>
     <div class="szopt" id="sz-1"><span style="font-size:24px"></span>
       <div style="flex:1;text-align:center">
@@ -191,7 +191,7 @@
     <div class="progbar">
       <div class="progfill" style="width:75%"></div>
     </div>
-    <button class="btn btn-ghost btn-sm btn-icon" id="back-5" style="margin-bottom:22px;border-radius:50%">←</button>
+    <button class="btn btn-ghost btn-sm btn-icon" id="back-5" style="margin-bottom:22px;border-radius:50%"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
     <div style="font-size:24px;font-weight:900;margin-bottom:6px">Foto de Portada y Logo</div>
     <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Personaliza tu perfil. Puedes cambiarlo después.
     </div>
@@ -273,38 +273,41 @@
           </path>
         </svg>
       </button>
-      <button id="biz-out-btn" class="btn btn-ghost btn-sm"
+      <button id="biz-out-btn" class="btn btn-ghost btn-sm" onclick="if(typeof bizLogout==='function') bizLogout();"
         style="width:auto;padding:8px 14px;font-size:12px">Salir</button>
     </div>
   </div>
-  <div class="bnav">
-    <div class="bn on" id="bn-home" onclick="bizTab('home')">Inicio</div>
-    <div class="bn" id="bn-agenda" onclick="bizTab('agenda')">Agenda</div>
-    <div class="bn" id="bn-equipo" onclick="bizTab('equipo')">Equipo</div>
-    <div class="bn" id="bn-tienda" onclick="bizTab('tienda')">Tienda</div>
-    <div class="bn" id="bn-finanzas" onclick="bizTab('finanzas')">Finanzas</div>
-    <div class="bn" id="bn-historial" onclick="bizTab('historial')">Historial</div>
-    <div class="bn" id="bn-perfil" onclick="bizTab('perfil')">Perfil</div>
-  </div>
-  <div style="padding:14px 14px 90px">
+  <div class="dash-layout">
+    <div class="dash-sidebar">
+      <div class="bnav">
+        <div class="bn on" id="bn-home" onclick="bizTab('home')">Inicio</div>
+        <div class="bn" id="bn-agenda" onclick="bizTab('agenda')">Agenda</div>
+        <div class="bn" id="bn-equipo" onclick="bizTab('equipo')">Equipo</div>
+        <div class="bn" id="bn-tienda" onclick="bizTab('tienda')">Tienda</div>
+        <div class="bn" id="bn-finanzas" onclick="bizTab('finanzas')">Finanzas</div>
+        <div class="bn" id="bn-historial" onclick="bizTab('historial')">Historial</div>
+        <div class="bn" id="bn-perfil" onclick="bizTab('perfil')">Perfil</div>
+      </div>
+    </div>
+    <div class="dash-content" style="padding:14px 14px 90px">
     <div class="pane on" id="bp-home">
       <div style="font-size:20px;font-weight:900;margin-bottom:14px" id="biz-greeting">Bienvenido</div>
       <div class="stats2">
         <div class="sbox">
           <div class="slbl">Citas hoy</div>
-          <div class="snum" style="color:var(--blue)" id="bh-today">0</div>
+          <div class="snum" style="color:var(--text)" id="bh-today">0</div>
         </div>
         <div class="sbox">
           <div class="slbl">Ingresos hoy</div>
-          <div class="snum" style="color:var(--green)" id="bh-rev">0</div>
+          <div class="snum" style="color:var(--text)" id="bh-rev">0</div>
         </div>
         <div class="sbox">
           <div class="slbl">Esta semana</div>
-          <div class="snum" style="color:var(--blue)" id="bh-week">0</div>
+          <div class="snum" style="color:var(--text)" id="bh-week">0</div>
         </div>
         <div class="sbox">
           <div class="slbl">Este mes</div>
-          <div class="snum" style="color:var(--gold)" id="bh-month">0</div>
+          <div class="snum" style="color:var(--text)" id="bh-month">0</div>
         </div>
       </div>
       <div class="link-box" style="margin-bottom:14px">
@@ -327,7 +330,7 @@
     </div>
     <div class="pane" id="bp-agenda">
       <div class="sec-hdr"><span class="sec-ttl">Agenda</span><button class="btn btn-blue btn-sm" style="width:auto"
-          id="new-appt-btn2">Nueva cita +</button></div>
+          id="new-appt-btn2">Nueva cita</button></div>
       <div class="card" style="margin-bottom:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
           <button onclick="prevMonth()"
@@ -355,7 +358,7 @@
     </div>
     <div class="pane" id="bp-equipo">
       <div class="sec-hdr"><span class="sec-ttl">Mi equipo</span><button class="btn btn-blue btn-sm" style="width:auto"
-          id="add-worker-btn">Añadir +</button></div>
+          id="add-worker-btn">Añadir</button></div>
       <div id="biz-workers-list"></div>
     </div>
 
@@ -364,8 +367,8 @@
         <span class="sec-ttl">Mi Tienda</span>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-dark btn-sm" style="width:auto"
-            onclick="abrirModalNuevaCategoria()">+Categoría</button>
-          <button class="btn btn-blue btn-sm" style="width:auto" onclick="openProdModal()">+Producto</button>
+            onclick="abrirModalNuevaCategoria()">Categoría</button>
+          <button class="btn btn-blue btn-sm" style="width:auto" onclick="openProdModal()">Producto</button>
         </div>
       </div>
       <div class="tip-box">Sube tus productos reales. Las categorías se crearán automáticamente según las etiquetas que
@@ -390,19 +393,19 @@
       <div class="stats2">
         <div class="sbox">
           <div class="slbl">Ingresos mes</div>
-          <div class="snum" style="color:var(--green)" id="fin-ing">0</div>
+          <div class="snum" style="color:var(--text)" id="fin-ing">0</div>
         </div>
         <div class="sbox">
           <div class="slbl">Clientes únicos</div>
-          <div class="snum" style="color:var(--blue)" id="fin-clients">0</div>
+          <div class="snum" style="color:var(--text)" id="fin-clients">0</div>
         </div>
         <div class="sbox">
           <div class="slbl">Servicio top</div>
-          <div class="snum" style="font-size:14px;color:var(--gold)" id="fin-top-svc">—</div>
+          <div class="snum" style="font-size:14px;color:var(--text)" id="fin-top-svc">—</div>
         </div>
         <div class="sbox">
           <div class="slbl">Ticket medio</div>
-          <div class="snum" style="font-size:18px;color:var(--purple)" id="fin-ticket">0</div>
+          <div class="snum" style="font-size:18px;color:var(--text)" id="fin-ticket">0</div>
         </div>
       </div>
       <div class="card" style="margin-bottom:14px">
@@ -589,5 +592,7 @@
       
       <button class="btn btn-red" onclick="G('biz-out-btn').click()" style="margin-top:20px">Cerrar Sesión</button>
     </div>
+  </div>
+</div>
   </div>
 </div>

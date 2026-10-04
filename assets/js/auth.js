@@ -369,3 +369,34 @@ function showPaywall(bizName) {
     `;
     document.body.appendChild(div);
 }
+
+/* ══════════════════════════
+   INICIO DE SESIÓN CON GOOGLE
+══════════════════════════ */
+async function signInWithGoogle() {
+  if (typeof supabase === 'undefined') {
+    console.error('Librería Supabase no está cargada.');
+    return;
+  }
+  
+  try {
+    // Instanciar el cliente usando las credenciales globales de db.js
+    const supabaseClient = supabase.createClient(window.AppEnv.SUPABASE_URL, window.AppEnv.SUPABASE_ANON_KEY);
+
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/app' // Redirigir a la app tras el login
+      }
+    });
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error con Google:', error);
+    var errBox = document.getElementById('li-err') || document.getElementById('reg-err');
+    if(errBox) { 
+      errBox.style.display = 'block'; 
+      errBox.textContent = 'Error al conectar con Google. Inténtalo de nuevo.'; 
+    }
+  }
+}

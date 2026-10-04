@@ -241,20 +241,35 @@ function syncBizToLocal(cloudData) {
    WINDOW.ONLOAD
 ══════════════════════════ */
 window.onload = async function () {
-  if (typeof bootComponents === 'function') {
-    await bootComponents();
+  // Asegurar que el loader se apague pase lo que pase en 1.5s (Fallback)
+  setTimeout(() => {
+    const gl = document.getElementById('s-global-loader');
+    if (gl) gl.classList.remove('on');
+  }, 1500);
+
+  try {
+    if (typeof bootComponents === 'function') {
+      await bootComponents();
+    }
+  } catch (err) {
+    console.error("Error booting components:", err);
   }
 
-  DB = loadDB();
-  initREG();
-  initCSEL();
-  initTheme();
+  try { DB = loadDB(); } catch(e){}
+  try { initREG(); } catch(e){}
+  try { initCSEL(); } catch(e){}
+  try { initTheme(); } catch(e){}
 
   // 🚀 CORRECCIÓN: Verificar el hash de reseteo ANTES de restaurar la sesión.
   const initialHash = window.location.hash;
   if (initialHash && initialHash.startsWith('#reset-password/')) {
     const token = initialHash.split('/')[1];
-    if (token && typeof showResetPasswordScreen === 'function') showResetPasswordScreen(token);
+    if (token && typeof showResetPasswordScreen === 'function') {
+      goTo('s-portal');
+      showResetPasswordScreen(token);
+    }
+    const globalLoader = document.getElementById('s-global-loader');
+    if(globalLoader) globalLoader.classList.remove('on');
     return; // Detener la ejecución para que no redirija al portal
   }
 
@@ -276,6 +291,12 @@ window.onload = async function () {
 
   // Sincronizar visualmente los interruptores de idioma ahora que los componentes ya existen
   if (typeof window.syncLanguageToggles === 'function') window.syncLanguageToggles();
+
+  // APAGAR EL LOADER GLOBAL
+  setTimeout(() => {
+    const globalLoader = document.getElementById('s-global-loader');
+    if(globalLoader) globalLoader.classList.remove('on');
+  }, 200); // Pequeño retraso para asegurar que todo se haya pintado suavemente
 
   /* Cerrar overlays al click en fondo */
   document.querySelectorAll('.ov').forEach(function (o) {

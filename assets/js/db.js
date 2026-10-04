@@ -586,11 +586,73 @@ window.autoCompletePastAppointments = function (biz) {
 /* ══════════════════════════
    AUTO-LOGIN
 ══════════════════════════ */
-function restaurarSesion() {
+async function restaurarSesion() {
   DB = loadDB();
   var hash = window.location.hash;
   if (hash && (hash.indexOf('#b/') === 0 || hash.indexOf('#manage/') === 0)) return;
 
+  // 1. Check for Supabase Auth (Google OAuth redirect)
+  if (typeof supabase !== 'undefined' && window.AppEnv) {
+    try {
+      const sbClient = supabase.createClient(window.AppEnv.SUPABASE_URL, window.AppEnv.SUPABASE_ANON_KEY);
+      const { data: { session }, error } = await sbClient.auth.getSession();
+      
+      if (session && session.user && session.user.email) {
+        // Mostrar un pequeño indicador opcional
+        const globalLoader = document.getElementById('s-global-loader');
+        if(globalLoader) globalLoader.classList.add('on');
+
+        // Enviar a nuestro backend
+        const res = await fetch('/api/google-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            email: session.user.email,
+            name: session.user.user_metadata?.full_name || '',
+            avatar: session.user.user_metadata?.avatar_url || ''
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          
+          if (data.type === 'business') {
+            DB.currentBiz = data.biz.id;
+            DB.currentWorker = null;
+            saveDB();
+            CUR = data.biz;
+            if (typeof toast === 'function') toast('Bienvenido/a ' + san(CUR.name || CUR.owner || ''), '#22C55E');
+            if (typeof goBiz === 'function') goBiz();
+            if(globalLoader) globalLoader.classList.remove('on');
+            return;
+          } else if (data.type === 'worker') {
+            DB.currentWorker = { bizId: data.worker.business_id, workerId: data.worker.id };
+            DB.currentBiz = null;
+            saveDB();
+            
+            var workerBiz = getBizById(DB.currentWorker.bizId);
+            if (workerBiz) CUR = workerBiz;
+            CUR_WORKER = data.worker;
+
+            if (typeof toast === 'function') toast('Bienvenido/a ' + san(CUR_WORKER.name), '#22C55E');
+            if (typeof goWorker === 'function') goWorker();
+            if(globalLoader) globalLoader.classList.remove('on');
+            return;
+          } else if (data.type === 'new') {
+            if (typeof window.startGoogleRegistration === 'function') {
+              window.startGoogleRegistration(data.email, data.name);
+            }
+            if(globalLoader) globalLoader.classList.remove('on');
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error validando sesión de Google:", e);
+    }
+  }
+
+  // 2. Fallback a sesión local (Citas Pro DB)
   if (DB && DB.currentWorker) {
     var workerBiz = getBizById(DB.currentWorker.bizId);
     if (workerBiz) {

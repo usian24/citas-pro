@@ -8,6 +8,30 @@
     {
       "source": "/app",
       "destination": "/app.html"
+    },
+    {
+      "source": "/nosotros",
+      "destination": "/nosotros.html"
+    },
+    {
+      "source": "/para-quien",
+      "destination": "/para-quien.html"
+    },
+    {
+      "source": "/privacidad",
+      "destination": "/privacidad.html"
+    },
+    {
+      "source": "/reembolsos",
+      "destination": "/reembolsos.html"
+    },
+    {
+      "source": "/terminos",
+      "destination": "/terminos.html"
+    },
+    {
+      "source": "/tienda",
+      "destination": "/tienda.html"
     }
   ]
 }

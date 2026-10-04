@@ -28,6 +28,11 @@
           </button>
         </div>
       </div>
+      
+      <div class="field">
+        <label>Código de vendedor o referido (Opcional)</label>
+        <input class="inp" id="rm-referral" type="text" placeholder="Ej: PRO2026" maxlength="20" style="text-transform:uppercase; letter-spacing: 1px;"/>
+      </div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:18px">
         <input type="checkbox" id="rm-terms" style="width:18px;height:18px;margin-top:3px;accent-color:var(--blue);flex-shrink:0;cursor:pointer"/>
         <label for="rm-terms" style="font-size:12px;color:var(--t2);line-height:1.6;cursor:pointer">
@@ -37,6 +42,15 @@
       <div id="rm-err1" class="err-box"></div>
       <button class="btn btn-blue" id="rm-btn-next" style="margin-bottom:12px">Continuar</button>
       <div class="divider-text">o</div>
+      <button class="btn" id="rm-btn-google" style="margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:8px; background:#fff; color:#000; border:1px solid #ddd;" onclick="if(typeof signInWithGoogle==='function') signInWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Registrarse con Google
+      </button>
       <div style="text-align:center;font-size:13px;color:var(--t2)">¿Ya tienes cuenta? <span id="rm-go-login" style="color:var(--blue3);font-weight:700;cursor:pointer">Iniciar sesión</span></div>
     </div>
     <div id="rm-step2" style="display:none">
@@ -46,7 +60,7 @@
       </div>
       <div style="height:3px;background:rgba(74,127,212,.12);border-radius:2px;margin-bottom:20px;overflow:hidden"><div style="width:100%;height:100%;background:linear-gradient(90deg,var(--blue),var(--blue3));border-radius:2px"></div></div>
       <div style="text-align:center;margin-bottom:24px">
-        <div style="width:72px;height:72px;border-radius:22px;background:rgba(74,127,212,.12);border:2px solid rgba(74,127,212,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px">📧</div>
+        
         <div style="font-size:15px;font-weight:700;margin-bottom:8px">Código enviado</div>
         <div style="font-size:13px;color:var(--t2);line-height:1.6" id="rm-email-confirm">Enviamos un código de 6 dígitos a tu email.</div>
       </div>
@@ -88,7 +102,16 @@
     <div id="li-err" class="err-box"></div>
     <button class="btn btn-blue" id="li-btn-login" style="margin-bottom:12px">Continuar</button>
     <div class="divider-text">o</div>
-    <button class="btn btn-dark" id="li-go-register">Nueva cuenta</button>
+    <button class="btn" id="li-btn-google" style="margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:8px; background:#fff; color:#000; border:1px solid #ddd;" onclick="if(typeof signInWithGoogle==='function') signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continuar con Google
+    </button>
+    <button class="btn btn-dark" id="li-go-register">Nueva cuenta con correo</button>
   </div>
 </div>
 
@@ -96,17 +119,17 @@
   <div class="modal" onclick="event.stopPropagation()">
     <div class="mhdr"><span class="mttl">Recuperar contraseña</span><div class="xbtn" id="forgot-close">×</div></div>
     <div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:40px;margin-bottom:10px">🔑</div>
+      
       <div style="font-size:13px;color:var(--t2);line-height:1.6">Introduce tu email y te enviaremos instrucciones.</div>
     </div>
     <div class="field"><label>Correo electrónico</label><input class="inp" id="fp-email" type="email" placeholder="tu@email.com" maxlength="100" autocomplete="email"/></div>
     <div id="fp-err" class="err-box"></div>
     <div id="fp-success" style="display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center">
-      <div style="font-size:20px;margin-bottom:6px">✅</div>
+      
       <div style="font-size:13px;color:#22C55E;font-weight:600">¡Listo! Revisa tu correo.</div>
     </div>
     <button class="btn btn-blue" id="fp-btn-send" style="margin-bottom:10px">Enviar instrucciones</button>
-    <button class="btn btn-ghost" id="fp-btn-back">← Volver al inicio de sesión</button>
+    <button class="btn btn-ghost" id="fp-btn-back">Volver al inicio de sesión</button>
   </div>
 </div>
 
@@ -169,7 +192,7 @@
     <div style="display:flex;gap:8px;margin-top:16px">
       <button class="btn btn-green btn-sm" style="flex:1" id="appt-complete-btn">Completada</button>
       <button class="btn btn-red btn-sm"   style="flex:1" id="appt-cancel-btn">Cancelar</button>
-      <a id="appt-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex:1"><button class="btn btn-green btn-sm" style="width:100%">💬</button></a>
+      <a id="appt-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex:1"><button class="btn btn-green btn-sm" style="width:100%">WhatsApp</button></a>
     </div>
   </div>
 </div>
@@ -181,7 +204,7 @@
     <div style="display:flex;gap:8px;margin-top:16px">
       <button class="btn btn-green btn-sm" style="flex:1" id="wk-appt-complete-btn">Completada</button>
       <button class="btn btn-red btn-sm"   style="flex:1" id="wk-appt-cancel-btn">Cancelar</button>
-      <a id="wk-appt-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex:1"><button class="btn btn-green btn-sm" style="width:100%">💬</button></a>
+      <a id="wk-appt-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex:1"><button class="btn btn-green btn-sm" style="width:100%">WhatsApp</button></a>
     </div>
   </div>
 </div>
@@ -207,13 +230,13 @@
 <div class="ov" id="ov-confirm">
   <div class="modal" onclick="event.stopPropagation()" style="max-width:340px">
     <div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:36px;margin-bottom:12px">⚠️</div>
+      
       <div style="font-size:17px;font-weight:800;margin-bottom:8px" id="confirm-title">¿Estás seguro?</div>
       <div style="font-size:13px;color:var(--t2);line-height:1.6" id="confirm-msg"></div>
     </div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost" style="flex:1" id="confirm-cancel-btn">Cancelar</button>
-      <button class="btn btn-red"   style="flex:1" id="confirm-ok-btn">Confirmar</button>
+      <button class="btn btn-ghost" style="flex:1" id="confirm-cancel-btn" onclick="if(typeof confirmCancel==='function') confirmCancel();">Cancelar</button>
+      <button class="btn btn-red"   style="flex:1" id="confirm-ok-btn" onclick="if(typeof confirmOk==='function') confirmOk();">Confirmar</button>
     </div>
   </div>
 </div>
@@ -221,7 +244,7 @@
 <div class="ov" id="ov-activate">
   <div class="modal" onclick="event.stopPropagation()" style="max-width:340px;text-align:center">
     <div class="mhdr"><span class="mttl">Activar Suscripción</span><div class="xbtn" onclick="closeOv('ov-activate')">×</div></div>
-    <div style="font-size:42px;margin-bottom:10px">💳</div>
+    
     <div style="font-size:17px;font-weight:800;margin-bottom:8px">Renovar plan</div>
     <div style="font-size:13px;color:var(--t2);margin-bottom:16px">¿Cuántos meses pagó el cliente?</div>
     <input type="number" id="act-months" class="inp" placeholder="Ej: 1, 3, 6, 12" min="1" max="60" style="margin-bottom:20px;text-align:center;font-size:20px;font-weight:900;color:var(--blue)" value="1"/>
@@ -266,7 +289,7 @@
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-blue btn-sm" style="flex:1" id="qr-copy-btn">Copiar enlace</button>
-      <a id="qr-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex:1"><button class="btn btn-green btn-sm" style="width:100%">💬</button></a>
+      <a id="qr-wa-btn" href="#" target="_blank" rel="noopener noreferrer" style="flex:1"><button class="btn btn-green btn-sm" style="width:100%">WhatsApp</button></a>
     </div>
     <div style="margin-top:12px"><button class="btn btn-dark btn-sm" id="qr-download-btn">Descargar QR</button></div>
   </div>
@@ -313,7 +336,7 @@
 
 <div class="ov" id="ov-tienda-alert">
   <div class="modal" onclick="event.stopPropagation()" style="max-width:320px; text-align:center; padding: 30px 20px;">
-    <div style="font-size:48px; margin-bottom:16px; animation: popIn 0.4s ease;" id="ta-icon">⚠️</div>
+    
     <div style="font-size:20px; font-weight:900; margin-bottom:8px; color:var(--text);" id="ta-title">Atención</div>
     <div style="font-size:14px; color:var(--t2); margin-bottom:24px; line-height:1.6" id="ta-msg">Mensaje</div>
     <button class="btn btn-blue" onclick="closeOv('ov-tienda-alert')" style="width:100%; font-size:15px; padding:14px;">Entendido</button>

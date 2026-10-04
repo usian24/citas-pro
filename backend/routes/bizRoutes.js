@@ -45,7 +45,7 @@ router.get('/get-biz', async (req, res) => {
     // Traer el negocio
     const { data: biz, error } = await supabase
       .from('businesses')
-      .select('*')
+      .select('id, name, owner, email, phone, addr, city, country, type, plan, desc_text, logo, cover, insta, facebook, x_url, tiktok, join_date, expires_at, horario, photos, loyalty, referred_by_code, created_at')
       .eq('id', bizId)
       .single();
 
@@ -344,11 +344,12 @@ router.post('/update-biz', async (req, res) => {
     if (data.horario !== undefined) payload.horario = Array.isArray(data.horario) ? data.horario : [];
     if (data.photos !== undefined) payload.photos = Array.isArray(data.photos) ? data.photos : [];
     if (data.loyalty !== undefined) payload.loyalty = data.loyalty;
+    if (data.referred_by_code !== undefined) payload.referred_by_code = data.referred_by_code;
 
-    if (data.pass || data.password) {
+    if (data.pass) {
       const bcrypt = require('bcryptjs');
-      const plainPassword = data.pass || data.password;
-      payload.password = bcrypt.hashSync(plainPassword, 10);
+      // removed plainPassword
+      payload.password = bcrypt.hashSync(data.pass, 10);
     }
 
     let error;
@@ -372,6 +373,55 @@ router.post('/update-biz', async (req, res) => {
 
   } catch (err) {
     return res.status(500).json({ success: false, error: 'Fallo interno: ' + err.message });
+  }
+});
+
+// ═══════════════════════════════════════
+// RUTA 6: OBTENER AFILIADOS (SUPER ADMIN)
+// ═══════════════════════════════════════
+router.get('/admin-affiliates', async (req, res) => {
+  try {
+    const { data: affiliates, error } = await supabase
+      .from('affiliates')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json(affiliates);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════
+// RUTA 7: CREAR AFILIADO (SUPER ADMIN)
+// ═══════════════════════════════════════
+router.post('/admin-create-affiliate', async (req, res) => {
+  try {
+    const { code, name, email } = req.body;
+    if (!code || !name) {
+      return res.status(400).json({ success: false, error: 'Falta nombre o código.' });
+    }
+
+    const payload = {
+      code: code.trim().toUpperCase(),
+      name: name.trim(),
+      email: email ? email.trim().toLowerCase() : null
+    };
+
+    const { error } = await supabase.from('affiliates').insert([payload]);
+
+    if (error) {
+      // Verificar si el código ya existe
+      if (error.code === '23505') {
+        return res.status(400).json({ success: false, error: 'El código de referido ya existe.' });
+      }
+      return res.status(400).json({ success: false, error: error.message });
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 

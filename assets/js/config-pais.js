@@ -1,31 +1,29 @@
-'use strict';
-// config-pais.js — CitasPro v2 (Adaptado a 3 Planes)
+﻿'use strict';
+// config-pais.js — CitasPro v2
 // ══════════════════════════════════════════════════════════════
-// Solución definitiva al problema de moneda:
-// 1. money() se sobreescribe ANTES de que db.js defina la suya
-// 2. Cuando CUR carga, refreshMoney() repinta todos los precios
-// 3. Si country es NULL en Supabase, lo lee del localStorage
-// 4. Precios adaptados con equivalencia en USD para mayor confianza
+// Solución de Pricing Dinámico con PPP y Moneda Local
+// 1. Manejo de USD internamente (SaaS PPP)
+// 2. Muestra precios locales en Landing y Modal basados en la tasa de cambio
 // ══════════════════════════════════════════════════════════════
 
 // ─────────────────────────────────────────
 // 1. DICCIONARIO CENTRAL
 // ─────────────────────────────────────────
 const PAIS_CONFIG = {
-  ES: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Madrid',                    decimales:2 },
-  CO: { simbolo:'$',   nombre:'Peso colombiano',   posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Bogota',                   decimales:0 },
-  MX: { simbolo:'$',   nombre:'Peso mexicano',     posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Mexico_City',               decimales:2 },
-  AR: { simbolo:'$',   nombre:'Peso argentino',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Argentina/Buenos_Aires',    decimales:2 },
-  PE: { simbolo:'S/',  nombre:'Sol peruano',       posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Lima',                      decimales:2 },
-  CL: { simbolo:'$',   nombre:'Peso chileno',      posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Santiago',                  decimales:0 },
-  VE: { simbolo:'Bs.', nombre:'Bolívar',           posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Caracas',                   decimales:2 },
-  EC: { simbolo:'$',   nombre:'Dólar (Ecuador)',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Guayaquil',                 decimales:2 },
-  DO: { simbolo:'RD$', nombre:'Peso dominicano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Santo_Domingo',             decimales:2 },
-  US: { simbolo:'$',   nombre:'Dólar americano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/New_York',                  decimales:2 },
-  BR: { simbolo:'R$',  nombre:'Real brasileño',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Sao_Paulo',                 decimales:2 },
-  DE: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Berlin',                     decimales:2 },
-  NL: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Amsterdam',                  decimales:2 },
-  FR: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Paris',                      decimales:2 }
+  ES: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Madrid',                    decimales:2, tasaUSD: 0.90 },
+  CO: { simbolo:'$',   nombre:'Peso colombiano',   posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Bogota',                   decimales:0, tasaUSD: 4150 },
+  MX: { simbolo:'$',   nombre:'Peso mexicano',     posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Mexico_City',               decimales:2, tasaUSD: 19.50 },
+  AR: { simbolo:'$',   nombre:'Peso argentino',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Argentina/Buenos_Aires',    decimales:2, tasaUSD: 980 },
+  PE: { simbolo:'S/',  nombre:'Sol peruano',       posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Lima',                      decimales:2, tasaUSD: 3.75 },
+  CL: { simbolo:'$',   nombre:'Peso chileno',      posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Santiago',                  decimales:0, tasaUSD: 920 },
+  VE: { simbolo:'Bs.', nombre:'Bolívar',           posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Caracas',                   decimales:2, tasaUSD: 36.80 },
+  EC: { simbolo:'$',   nombre:'Dólar (Ecuador)',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Guayaquil',                 decimales:2, tasaUSD: 1 },
+  DO: { simbolo:'RD$', nombre:'Peso dominicano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Santo_Domingo',             decimales:2, tasaUSD: 60 },
+  US: { simbolo:'$',   nombre:'Dólar americano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/New_York',                  decimales:2, tasaUSD: 1 },
+  BR: { simbolo:'R$',  nombre:'Real brasileño',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Sao_Paulo',                 decimales:2, tasaUSD: 5.50 },
+  DE: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Berlin',                     decimales:2, tasaUSD: 0.90 },
+  NL: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Amsterdam',                  decimales:2, tasaUSD: 0.90 },
+  FR: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Paris',                      decimales:2, tasaUSD: 0.90 }
 };
 const PAIS_DEFAULT = PAIS_CONFIG['ES'];
 
@@ -92,50 +90,56 @@ function refreshMoneyUI() {
 }
 
 // ─────────────────────────────────────────
-// 7. PRECIO DE SUSCRIPCIÓN (Visuales + USD) -> ADAPTADO A 3 PLANES
-//    La estructura ahora guarda el mes, trimestre y año.
+// 7. PRECIO DE SUSCRIPCIÓN (Visuales Locales con Base USD)
 // ─────────────────────────────────────────
-const PRECIO_SUSCRIPCION = {
-  PE: { mes: 'S/ 22.10',       tri: 'S/ 66.30',       anu: 'S/ 265.30' },
-  CO: { mes: '$25,350 COP',    tri: '$76,050 COP',    anu: '$304,200 COP' },
-  MX: { mes: '$234.00 MXN',    tri: '$702.00 MXN',    anu: '$2,808.00 MXN' },
-  AR: { mes: '$12,000 ARS',    tri: '$36,000 ARS',    anu: '$144,000 ARS' },
-  ES: { mes: '10€',            tri: '30€',            anu: '120€' },
-  EC: { mes: '$10.00 USD',     tri: '$30.00 USD',     anu: '$120.00 USD' },
-  CL: { mes: '$9,500 CLP',     tri: '$28,500 CLP',    anu: '$114,000 CLP' },
-  DEFAULT: { mes: '$15.00 USD',tri: '$45.00 USD',     anu: '$180.00 USD' }
+const PRECIO_SUSCRIPCION_USD = {
+  US: 11.50,
+  ES: 11.50,
+  MX: 7.00,
+  CL: 6.50,
+  PE: 6.00,
+  CO: 5.00,
+  AR: 4.00,
+  EC: 6.00,
+  DO: 6.00,
+  VE: 6.00,
+  BR: 6.00,
+  DEFAULT: 11.50
 };
 
 function adaptarPrecioLocal(pais) {
-  // Buscamos el país o asignamos el default de Lemon Squeezy
-  const precios = PRECIO_SUSCRIPCION[pais] || PRECIO_SUSCRIPCION['DEFAULT'];
+  const precioUSD = PRECIO_SUSCRIPCION_USD[pais] || PRECIO_SUSCRIPCION_USD['DEFAULT'];
+
+  // Formato estricto en Dólares (USD) para evitar confusiones en Checkout
+  const strMes = "$" + precioUSD.toFixed(2) + " USD";
+  const strTri = "$" + (precioUSD * 2.8).toFixed(2) + " USD";
+  const strAnu = "$" + (precioUSD * 10).toFixed(2) + " USD";
   
   // Inyectamos en las tarjetas de la Landing Page
   const elMes = document.getElementById('precio-mensual-val');
   const elTri = document.getElementById('precio-trimestral-val');
   const elAnu = document.getElementById('precio-anual-val');
   
-  if (elMes) elMes.textContent = precios.mes;
-  if (elTri) elTri.textContent = precios.tri;
-  if (elAnu) elAnu.textContent = precios.anu;
+  if (elMes) elMes.textContent = strMes;
+  if (elTri) elTri.textContent = strTri;
+  if (elAnu) elAnu.textContent = strAnu;
 
   // Actualizamos el modal de Suscripción en el portal del negocio (biz.html)
   const txtMes = document.getElementById('txt-precio-mensual');
   const txtTri = document.getElementById('txt-precio-trimestral');
   const txtAnu = document.getElementById('txt-precio-anual');
 
-  if (txtMes) txtMes.textContent = precios.mes + ' / mes';
-  if (txtTri) txtTri.textContent = precios.tri + ' / 3 meses';
-  if (txtAnu) txtAnu.textContent = precios.anu + ' / año';
+  if (txtMes) txtMes.textContent = strMes + ' / mes';
+  if (txtTri) txtTri.textContent = strTri + ' / 3 meses';
+  if (txtAnu) txtAnu.textContent = strAnu + ' / año';
 
-  // Mantenemos compatibilidad con tu código app.js anterior por si acaso
-  document.querySelectorAll('.precio-local-mes').forEach(el => el.textContent = precios.mes + ' / mes');
-  document.querySelectorAll('.precio-local-solo').forEach(el => el.textContent = precios.mes);
+  document.querySelectorAll('.precio-local-mes').forEach(el => el.textContent = strMes + ' / mes');
+  document.querySelectorAll('.precio-local-solo').forEach(el => el.textContent = strMes);
 }
 
 async function adaptarPrecioLocalPorIP() {
   const pais = getPaisActivo();
-  // Si tenemos un país en caché y NO es el fallback de error (ES o DEFAULT), lo usamos directamente
+  // Si tenemos un país en caché y NO es el fallback de error, lo usamos directamente
   if (pais && pais !== 'ES' && pais !== 'DEFAULT') {
     adaptarPrecioLocal(pais);
     return;
@@ -143,24 +147,21 @@ async function adaptarPrecioLocalPorIP() {
   
   let paisIP = null;
   try {
-    // Intento 1: GeoJS (Menos bloqueado por adblockers)
     const res = await fetch('https://get.geojs.io/v1/ip/country.json');
     const datos = await res.json();
     paisIP = datos.country;
   } catch (e1) {
     try {
-      // Intento 2: Country.is
       const res = await fetch('https://api.country.is/');
       const datos = await res.json();
       paisIP = datos.country;
     } catch (e2) {
       try {
-        // Intento 3: IPAPI
         const res = await fetch('https://ipapi.co/json/');
         const datos = await res.json();
         paisIP = datos.country_code;
       } catch (e3) {
-        paisIP = 'DEFAULT'; // Si todos fallan (ej. Adblocker estricto), usar USD
+        paisIP = 'DEFAULT';
       }
     }
   }
@@ -221,36 +222,32 @@ function actualizarLabelsPrecio() {
 }
 
 // ─────────────────────────────────────────
-// 9. ENLACES DE LEMON SQUEEZY POR PAÍS
+// 9. ENLACES DE DODOPAYMENTS POR PAÍS
 // ─────────────────────────────────────────
-const LINKS_LEMON = {
-  PE: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/6e795285-575c-482e-8f56-1e4659b214f4", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/d996da67-1f42-4df4-8606-3c81523d6897", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d0269cd4-9675-4c62-864f-f9e31f863b8a" },
-  CO: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/6e795285-575c-482e-8f56-1e4659b214f4", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/d996da67-1f42-4df4-8606-3c81523d6897", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d0269cd4-9675-4c62-864f-f9e31f863b8a" },
-  MX: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5afaef8a-752b-474d-8dc9-14f9efe58773", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/272cc6b5-fb57-4829-a722-73d388afc33b", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/0cdc9d31-1e37-4329-8061-040a3ae07656" },
-  AR: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/d961633c-5788-47a3-b8d1-ac818be8f6d6", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/40ab4189-4790-4316-82ea-c358553cef12", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/571ca211-0d43-4827-b008-a678a736cbb9" },
-  CL: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/c0fc8bb8-3d18-44e1-97ee-759e43b5f510", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/8e9cf35f-7a93-4e9d-b096-f07cf4e54dc0", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5d77b654-121e-42d6-871d-5fb1593f2e11" },
-  EC: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/c0fc8bb8-3d18-44e1-97ee-759e43b5f510", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/8e9cf35f-7a93-4e9d-b096-f07cf4e54dc0", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/5d77b654-121e-42d6-871d-5fb1593f2e11" },
-  US: { mensual: "LINK_US_MENSUAL", trimestral: "LINK_US_TRIMESTRAL", anual: "LINK_US_ANUAL" },
-  ES: { mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/4598f28d-6b5a-4b78-96d8-5b297b7b3d89", trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/ce2e651b-7847-404a-9203-12ea45adbc68", anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/2fe49ca1-185e-47ce-919f-98fdf39534fa" },
-  DE: { mensual: "LINK_DE_MENSUAL", trimestral: "LINK_DE_TRIMESTRAL", anual: "LINK_DE_ANUAL" },
-  NL: { mensual: "LINK_NL_MENSUAL", trimestral: "LINK_NL_TRIMESTRAL", anual: "LINK_NL_ANUAL" },
-  FR: { mensual: "LINK_FR_MENSUAL", trimestral: "LINK_FR_TRIMESTRAL", anual: "LINK_FR_ANUAL" },
-  DO: { mensual: "LINK_DO_MENSUAL", trimestral: "LINK_DO_TRIMESTRAL", anual: "LINK_DO_ANUAL" },
-  VE: { mensual: "LINK_VE_MENSUAL", trimestral: "LINK_VE_TRIMESTRAL", anual: "LINK_VE_ANUAL" },
-  BR: { mensual: "LINK_BR_MENSUAL", trimestral: "LINK_BR_TRIMESTRAL", anual: "LINK_BR_ANUAL" },
-  GLOBAL: { 
-    mensual: "https://citasproonline.lemonsqueezy.com/checkout/buy/3119a496-8da6-43d6-95a1-62e9f87c7cc7",
-    trimestral: "https://citasproonline.lemonsqueezy.com/checkout/buy/98f45e0a-463e-46bc-b2e7-5d5507d9c44e",
-    anual: "https://citasproonline.lemonsqueezy.com/checkout/buy/35d225c4-16c1-493d-8e6e-683c6bb07929"
-  }
+const LINKS_DODO = {
+  AR: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1dYzgTnhRYQ04DhXuJ", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1dicwcf5sv9GhFi1D9", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1dmqiOkEo7HTDGz7YG" },
+  CO: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1dt83Edy4kmId5rpi5", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1e0ZrXbqb6UYcxqCxe", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1e6Qolec6cNkmqM15y" },
+  PE: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1eCdqs1mVFzo2BGDCu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1eJEkxqD6Pv7jK7T62", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1eP3QwBIacsgBAIz8E" },
+  EC: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1eCdqs1mVFzo2BGDCu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1eJEkxqD6Pv7jK7T62", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1eP3QwBIacsgBAIz8E" },
+  DO: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1eCdqs1mVFzo2BGDCu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1eJEkxqD6Pv7jK7T62", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1eP3QwBIacsgBAIz8E" },
+  VE: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1eCdqs1mVFzo2BGDCu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1eJEkxqD6Pv7jK7T62", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1eP3QwBIacsgBAIz8E" },
+  BR: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1eCdqs1mVFzo2BGDCu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1eJEkxqD6Pv7jK7T62", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1eP3QwBIacsgBAIz8E" },
+  CL: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1ebVEQxaUcL5siBJBA", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1ekgyl0Tv4BDEZrOKG", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1epdW8tccvMqPPH8MU" },
+  MX: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1exOiPv40eZ5MjkFDN", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1fB17o7XNyV2W1T3EP", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1fLBDDRX1bXoAgE079" },
+  ES: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1figJAHRBYOv1QgZNu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1foghpvqHuJIcF8em9", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1fv99fInfrUcS4Wr07" },
+  US: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1figJAHRBYOv1QgZNu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1foghpvqHuJIcF8em9", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1fv99fInfrUcS4Wr07" },
+  DE: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1figJAHRBYOv1QgZNu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1foghpvqHuJIcF8em9", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1fv99fInfrUcS4Wr07" },
+  NL: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1figJAHRBYOv1QgZNu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1foghpvqHuJIcF8em9", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1fv99fInfrUcS4Wr07" },
+  FR: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1figJAHRBYOv1QgZNu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1foghpvqHuJIcF8em9", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1fv99fInfrUcS4Wr07" },
+  GLOBAL: { mensual: "https://checkout.dodopayments.com/buy/pdt_0Np1figJAHRBYOv1QgZNu", trimestral: "https://checkout.dodopayments.com/buy/pdt_0Np1foghpvqHuJIcF8em9", anual: "https://checkout.dodopayments.com/buy/pdt_0Np1fv99fInfrUcS4Wr07" }
 };
 
 // ─────────────────────────────────────────
 // 10. EXPORTAR TODO
 // ─────────────────────────────────────────
 window.PAIS_CONFIG             = PAIS_CONFIG;
-window.PRECIO_SUSCRIPCION      = PRECIO_SUSCRIPCION;
-window.LINKS_LEMON             = LINKS_LEMON;
+window.PRECIO_SUSCRIPCION_USD  = PRECIO_SUSCRIPCION_USD;
+window.LINKS_DODO             = LINKS_DODO;
 window.getPaisActivo           = getPaisActivo;
 window.getConfigPais           = getConfigPais;
 window.formatMoney             = formatMoney;
