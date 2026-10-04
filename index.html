@@ -7,7 +7,7 @@
     
     <script>
         // Redirección si viene con hash (SPA)
-        if (window.location.hash && (window.location.hash.startsWith('#b/') || window.location.hash.startsWith('#reset-password/') || window.location.hash.startsWith('#manage/') || window.location.hash.startsWith('#booking/'))) {
+        if (window.location.hash && (window.location.hash.startsWith('#b/') || window.location.hash.startsWith('#reset-password/') || window.location.hash.startsWith('#manage/') || window.location.hash.startsWith('#booking/') || window.location.hash.includes('access_token='))) {
             window.location.href = '/app' + window.location.hash;
         }
 
