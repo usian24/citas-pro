@@ -682,8 +682,29 @@ window.onload = async function () {
               DB.currentWorker = data.worker;
               saveDB();
             } else if (data.type === 'new') {
-              // Redirigir a inicio para que se registre (pasándole parámetros si es posible)
-              window.location.href = '/?new_google_user=true&email=' + encodeURIComponent(email) + '&name=' + encodeURIComponent(name);
+              // Abrir el modal de registro directamente en la app
+              window.location.hash = '';
+              goTo('s-portal');
+              
+              // Esperar a que los modales carguen si aún no lo han hecho
+              const checkModal = setInterval(() => {
+                const em = document.getElementById('rm-email');
+                const modal = document.getElementById('ov-registro');
+                if (em && modal) {
+                  clearInterval(checkModal);
+                  em.value = email;
+                  em.readOnly = true;
+                  em.style.opacity = '0.7';
+                  
+                  const pass1 = document.getElementById('rm-pass');
+                  if (pass1) pass1.closest('.field').style.display = 'none';
+                  const pass2 = document.getElementById('rm-pass2');
+                  if (pass2) pass2.closest('.field').style.display = 'none';
+
+                  window.isGoogleReg = true;
+                  modal.style.display = 'flex';
+                }
+              }, 100);
               return;
             }
           }
