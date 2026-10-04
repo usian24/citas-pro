@@ -473,14 +473,30 @@
           const name = urlParams.get('name');
           
           if (email) {
-            document.getElementById('reg-email').value = email;
+            const em = document.getElementById('rm-email');
+            if(em) {
+              em.value = email;
+              em.readOnly = true;
+              em.style.opacity = '0.7';
+            }
           }
           if (name) {
-            document.getElementById('reg-name').value = name;
+            // Se llenará después si es necesario
           }
           
+          // Ocultar contraseñas
+          const pass1 = document.getElementById('rm-pass');
+          if (pass1) pass1.closest('.field').style.display = 'none';
+          
+          const pass2 = document.getElementById('rm-pass2');
+          if (pass2) pass2.closest('.field').style.display = 'none';
+
+          // Setear flag global
+          window.isGoogleReg = true;
+          
           // Abrir modal de registro
-          document.getElementById('ov-register').style.display = 'flex';
+          const modal = document.getElementById('ov-registro');
+          if(modal) modal.style.display = 'flex';
           
           // Limpiar la URL para que no quede fea
           window.history.replaceState({}, document.title, "/");

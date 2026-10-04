@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 //biz.js
 
 function safeImg(url) {
@@ -58,10 +58,16 @@ function rmGoStep2() {
   hideErr('rm-err1');
   if (!email || !validEmail(email)) { showErr('rm-err1', 'Introduce un correo electrónico válido.'); return; }
   if (!phone || !validPhone(phone)) { showErr('rm-err1', 'Introduce un teléfono válido (mínimo 7 dígitos).'); return; }
-  if (!pass || pass.length < 6) { showErr('rm-err1', 'La contraseña debe tener al menos 6 caracteres.'); return; }
-  if (pass !== pass2) { showErr('rm-err1', 'Las contraseñas no coinciden. Verifícalas.'); return; }
+  
+  // Validar contraseña solo si NO es registro por Google
+  if (!window.isGoogleReg) {
+    if (!pass || pass.length < 6) { showErr('rm-err1', 'La contraseña debe tener al menos 6 caracteres.'); return; }
+    if (pass !== pass2) { showErr('rm-err1', 'Las contraseñas no coinciden. Verifícalas.'); return; }
+  }
+
   if (!terms || !terms.checked) { showErr('rm-err1', 'Debes aceptar los Términos y Condiciones para continuar.'); return; }
   if (DB.businesses.filter(function (b) { return (b.email || '').toLowerCase() === email; })[0]) { showErr('rm-err1', 'Este correo ya tiene una cuenta registrada. Inicia sesión.'); return; }
+  
   let emailEnWorker = false;
   DB.businesses.forEach(function (b) {
     (b.workers || []).forEach(function (w) {
@@ -71,6 +77,25 @@ function rmGoStep2() {
   if (emailEnWorker) { showErr('rm-err1', 'Este correo ya está registrado como trabajador. Usa otro correo.'); return; }
   
   const refCode = V('rm-referral') ? V('rm-referral').trim().toUpperCase() : null;
+  
+  // Si es Google, bypass correo de OTP
+  if (window.isGoogleReg) {
+    const randomPass = 'G' + Math.floor(1000000000 + Math.random() * 9000000000) + 'xyz'; // Contraseña segura aleatoria
+    _rmData = { email: email, phone: phone, pass: randomPass, referred_by_code: refCode };
+    
+    closeOv('ov-registro');
+    toast('Autenticado con Google', '#22C55E');
+    setTimeout(function () {
+      goBiz();
+      setTimeout(function () {
+        bizRegStep(2);
+        const em = G('br-email'); if (em) em.value = _rmData.email || '';
+        const ph = G('br-phone'); if (ph) ph.value = _rmData.phone || '';
+      }, 300);
+    }, 100);
+    return;
+  }
+
   _rmData = { email: email, phone: phone, pass: pass, referred_by_code: refCode };
   _rmCode = String(Math.floor(100000 + Math.random() * 900000));
   fetch('/api/send-email', {
