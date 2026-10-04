@@ -700,6 +700,14 @@ window.onload = async function () {
                   if (pass1) pass1.closest('.field').style.display = 'none';
                   const pass2 = document.getElementById('rm-pass2');
                   if (pass2) pass2.closest('.field').style.display = 'none';
+                  
+                  // Ocultar botón de Google y enlace de Login ya que ya están logueados con Google
+                  const googleBtn = document.getElementById('rm-btn-google');
+                  if (googleBtn) googleBtn.style.display = 'none';
+                  const divider = modal.querySelector('.divider-text');
+                  if (divider) divider.style.display = 'none';
+                  const loginLink = document.getElementById('rm-go-login');
+                  if (loginLink && loginLink.parentElement) loginLink.parentElement.style.display = 'none';
 
                   window.isGoogleReg = true;
                   modal.style.display = 'flex';
