@@ -91,6 +91,8 @@ function rmGoStep2() {
         bizRegStep(2);
         const em = G('br-email'); if (em) em.value = _rmData.email || '';
         const ph = G('br-phone'); if (ph) ph.value = _rmData.phone || '';
+        const pf = G('br-pass-field'); if (pf) pf.style.display = 'none';
+        const ps = G('br-pass'); if (ps) { ps.value = _rmData.pass || ''; updatePassStrength(_rmData.pass || ''); }
       }, 300);
     }, 100);
     return;
