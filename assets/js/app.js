@@ -650,6 +650,50 @@ window.onload = async function () {
   (async function startup() {
     const hash = window.location.hash;
 
+    // ─────────────────────────────────────────────────────────────
+    // [NUEVO] INTERCEPTAR REDIRECCIÓN DE GOOGLE (SUPABASE AUTH)
+    // ─────────────────────────────────────────────────────────────
+    if (hash && hash.includes('access_token=') && typeof supabase !== 'undefined') {
+      try {
+        const supabaseClient = supabase.createClient(window.AppEnv.SUPABASE_URL, window.AppEnv.SUPABASE_ANON_KEY);
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        
+        if (session && session.user) {
+          const email = session.user.email;
+          const name = session.user.user_metadata?.full_name || '';
+          
+          // Limpiar hash rápido para que no quede feo en la URL
+          window.location.hash = '';
+
+          // Llamar al backend para validar usuario
+          const res = await fetch('/api/google-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, name })
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            if (data.type === 'business') {
+              syncBizToLocal(data.biz);
+              DB.currentWorker = null;
+              saveDB();
+            } else if (data.type === 'worker') {
+              DB.currentWorker = data.worker;
+              saveDB();
+            } else if (data.type === 'new') {
+              // Redirigir a inicio para que se registre (pasándole parámetros si es posible)
+              window.location.href = '/?new_google_user=true&email=' + encodeURIComponent(email) + '&name=' + encodeURIComponent(name);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error procesando Google Auth:', err);
+      }
+    }
+    // ─────────────────────────────────────────────────────────────
+
     if (hash && hash.startsWith('#b/')) {
       goTo('s-booking-portal');
       const targetBizId = hash.split('/')[1];

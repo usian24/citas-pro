@@ -464,5 +464,28 @@
     <!-- Script de Monedas original -->
     <script src="assets/js/config-pais.js"></script>
 
+    <!-- Interceptar nuevo usuario de Google -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('new_google_user') === 'true') {
+          const email = urlParams.get('email');
+          const name = urlParams.get('name');
+          
+          if (email) {
+            document.getElementById('reg-email').value = email;
+          }
+          if (name) {
+            document.getElementById('reg-name').value = name;
+          }
+          
+          // Abrir modal de registro
+          document.getElementById('ov-register').style.display = 'flex';
+          
+          // Limpiar la URL para que no quede fea
+          window.history.replaceState({}, document.title, "/");
+        }
+      });
+    </script>
 </body>
 </html>
