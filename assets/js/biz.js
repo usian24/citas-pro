@@ -363,23 +363,24 @@ function setupPhotoUpload() {
   }
   handleImg('biz-cover-input', function (d, isPreview) {
     const p = G('reg-cover-preview');
-    if (p) {
+    if (isPreview && p) {
       p.style.backgroundImage = 'url(' + d + ')';
       p.style.backgroundSize = 'cover';
       p.style.backgroundPosition = 'center';
+      const hint = G('reg-cover-hint'); if (hint) hint.style.display = 'none';
     }
-    const hint = G('reg-cover-hint'); if (hint) hint.style.display = 'none';
     if (!isPreview) {
       if (typeof REG !== 'undefined' && REG) REG.cover = d;
-      if (typeof CUR !== 'undefined' && CUR) { CUR.cover = d; saveDB(); }
+      if (typeof CUR !== 'undefined' && CUR) { CUR.cover = d; saveDB(); if (typeof renderHeader === 'function') renderHeader(); if (typeof initProfile === 'function') initProfile(); }
       toast('Portada guardada', '#22C55E');
     }
   });
   handleImg('logo-input', function (d, isPreview) {
     const p = G('logo-preview');
-    if (p) { p.style.backgroundImage = 'url(' + d + ')'; p.style.backgroundSize = 'cover'; p.style.backgroundPosition = 'center'; p.innerHTML = ''; }
+    if (isPreview && p) { p.style.backgroundImage = 'url(' + d + ')'; p.style.backgroundSize = 'cover'; p.style.backgroundPosition = 'center'; p.innerHTML = ''; }
     if (!isPreview) {
       if (typeof REG !== 'undefined' && REG) REG.logo = d;
+      if (typeof CUR !== 'undefined' && CUR) { CUR.logo = d; saveDB(); if (typeof renderHeader === 'function') renderHeader(); if (typeof initProfile === 'function') initProfile(); }
       toast('Logo guardado', '#22C55E');
     }
   });
