@@ -710,7 +710,7 @@ window.onload = async function () {
                   if (loginLink && loginLink.parentElement) loginLink.parentElement.style.display = 'none';
 
                   window.isGoogleReg = true;
-                  modal.style.display = 'flex';
+                  modal.classList.add('on');
                 }
               }, 100);
               return;

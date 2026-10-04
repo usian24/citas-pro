@@ -496,7 +496,7 @@
           
           // Abrir modal de registro
           const modal = document.getElementById('ov-registro');
-          if(modal) modal.style.display = 'flex';
+          if(modal) modal.classList.add('on');
           
           // Limpiar la URL para que no quede fea
           window.history.replaceState({}, document.title, "/");
