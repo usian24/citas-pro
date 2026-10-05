@@ -48,7 +48,7 @@ router.post('/webhook', async (req, res) => {
     console.log(`[INFO] Recibido Webhook de DodoPayments: ${eventName} para negocio: ${bizId}`);
 
     if (!bizId) {
-       console.log('[INFO] Webhook sin bizId, ignorando...');
+       console.log('[INFO] Webhook sin bizId, ignorando. Payload data recibido:', JSON.stringify(dodoData, null, 2));
        return res.status(200).send('Ignorado, no es una compra desde la App');
     }
 
