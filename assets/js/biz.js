@@ -486,8 +486,8 @@ function initBizPanel() {
 
   const planEl = G('biz-hdr-plan');
   if (planEl) {
-    planEl.textContent = CUR.plan === 'active' ? 'Plan activo' : CUR.plan === 'trial' ? 'Prueba gratis' : 'Suscripción vencida';
-    planEl.style.color = CUR.plan === 'active' ? 'var(--green)' : CUR.plan === 'trial' ? 'var(--gold)' : 'var(--red)';
+    planEl.textContent = (CUR.plan === 'active' || CUR.plan === 'pro') ? 'Plan activo' : CUR.plan === 'trial' ? 'Prueba gratis' : 'Suscripción vencida';
+    planEl.style.color = (CUR.plan === 'active' || CUR.plan === 'pro') ? 'var(--green)' : CUR.plan === 'trial' ? 'var(--gold)' : 'var(--red)';
   }
 
   const av = G('biz-hdr-av');
@@ -549,7 +549,7 @@ function initBizPanel() {
     pfLoyaltyStamps.value = (CUR.loyalty && CUR.loyalty.stamps) ? CUR.loyalty.stamps : 10;
   }
 
-  if (pfPs) pfPs.textContent = CUR.plan === 'active' ? 'Plan activo · Próxima factura el día 1' : CUR.plan === 'trial' ? 'En período de prueba gratuito' : 'Suscripción vencida — contacta soporte';
+  if (pfPs) pfPs.textContent = (CUR.plan === 'active' || CUR.plan === 'pro') ? 'Plan activo · Próxima factura el día 1' : CUR.plan === 'trial' ? 'En período de prueba gratuito' : 'Suscripción vencida — contacta soporte';
   const pfPb = G('pf-plan-badge'); if (pfPb) pfPb.innerHTML = planTag(CUR.plan);
 
   // 🚀 INYECTAMOS LA LÓGICA DE PAGOS AQUÍ (Justo antes de abrir el tab)
@@ -1519,7 +1519,7 @@ function configurarBotonesDePago() {
   var planStatus = document.getElementById('pf-plan-status');
   var planBadge = document.getElementById('pf-plan-badge');
 
-  if (CUR.plan === 'active') {
+  if (CUR.plan === 'active' || CUR.plan === 'pro') {
     if (upgradeBox) upgradeBox.style.display = 'none';
     var inicio = CUR.join_date ? CUR.join_date : 'Inicio';
     var fin = CUR.expires_at ? CUR.expires_at : 'Renovación automática';
