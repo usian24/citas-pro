@@ -445,7 +445,7 @@ function finalizeBizReg() {
       let finalLink = links[planToBuy];
       if (finalLink && finalLink.includes("LINK_")) finalLink = linksDodo['GLOBAL'][planToBuy];
       if (finalLink) {
-        window.location.href = finalLink + "?metadata[bizId]=" + biz.id;
+        window.location.href = finalLink + "?metadata_bizId=" + biz.id;
         return; // Detener flujo para ir directo al pago
       }
     }
@@ -1490,7 +1490,7 @@ function configurarBotonesDePago() {
   // (Removido: config-pais.js ya lo hace)
 
   // 6. El truco maestro: Le pegamos el ID de tu base de datos al final del link
-  var parametroMagico = "?metadata[bizId]=" + CUR.id;
+  var parametroMagico = "?metadata_bizId=" + CUR.id;
 
   // 7. Seleccionamos los botones del HTML e inyectamos los links (Con inteligencia de Fallback)
   var btnM = document.getElementById('btn-mensual');
