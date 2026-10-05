@@ -52,8 +52,8 @@ router.post('/webhook', async (req, res) => {
        return res.status(200).send('Ignorado, no es una compra desde la App');
     }
 
-    // 3A. Lógica Positiva: Compra exitosa o Suscripción Creada
-    if (eventName === 'subscription.active' || eventName === 'payment.succeeded') {
+    // 3A. Lógica Positiva: Compra exitosa, Suscripción Creada o Renovada
+    if (eventName === 'subscription.active' || eventName === 'payment.succeeded' || eventName === 'subscription.renewed') {
       
       // En Dodo, renueva en 1 mes o 1 año dependiendo del producto
       // Si dodo no envía expiración explícita fácil, podemos setearlo manual o leer dodoData.current_period_end
@@ -84,7 +84,7 @@ router.post('/webhook', async (req, res) => {
     }
 
     // 3B. Lógica Negativa: Suscripción Expirada O Cancelada
-    else if (eventName === 'subscription.canceled' || eventName === 'subscription.expired' || eventName === 'payment.failed') {
+    else if (eventName === 'subscription.cancelled' || eventName === 'subscription.expired' || eventName === 'payment.failed') {
       
       const { error } = await supabase
         .from('businesses')
