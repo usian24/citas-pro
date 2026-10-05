@@ -71,11 +71,7 @@ router.post('/webhook', async (req, res) => {
         .from('businesses')
         .update({
           plan: 'pro',
-          subscription_status: 'active',
-          expires_at: expiresAt, 
-          dodo_customer_id: customerId?.toString() || null,
-          dodo_subscription_id: subscriptionId?.toString() || null,
-          dodo_product_id: productId?.toString() || null
+          expires_at: expiresAt
         })
         .eq('id', bizId);
 
@@ -93,8 +89,7 @@ router.post('/webhook', async (req, res) => {
       const { error } = await supabase
         .from('businesses')
         .update({
-          plan: 'expired',
-          subscription_status: 'inactive'
+          plan: 'expired'
         })
         .eq('id', bizId);
 
