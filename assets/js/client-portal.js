@@ -474,7 +474,7 @@ function confirmBooking() {
 
   var appt = {
     id: apptId, client: name, phone: phone, email: email,
-    date: CSEL.date, time: CSEL.time, svc: CSEL.svc, workerName: worker.name,
+    date: CSEL.date, time: CSEL.time, svc: CSEL.svc, workerName: worker.name, workerId: worker.id,
     price: CSEL.svcPrice || 0, status: apptStatus, notes: '', token: token
   };
 

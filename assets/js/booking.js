@@ -240,6 +240,7 @@ function confirmBooking() {
     time: CSEL.time,
     svc: CSEL.svc,
     workerName: CSEL.workerId || 'Cualquiera',
+    workerId: CSEL.workerId || '',
     price: CSEL.svcPrice || 0,
     status: 'confirmed',
     notes: ''

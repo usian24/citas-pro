@@ -1392,8 +1392,9 @@ function saveAppt() {
   if (!svcRaw) { toast('Selecciona un servicio', '#EF4444'); return; }
   if (!CUR) return;
   const parts = svcRaw.split(',');
-  const appt = { id: Date.now(), client: name, phone: phone, email: '', svc: parts[0], workerName: workerId || '', date: date, time: time, price: safeNum(parts[1], 0), status: status, notes: notes };
-  if (workerId) { const w = (CUR.workers || []).filter(function (x) { return x.id === workerId; })[0]; if (w) { if (!w.appointments) w.appointments = []; w.appointments.push(appt); } }
+  const w = workerId ? (CUR.workers || []).filter(function (x) { return x.id === workerId; })[0] : null;
+  const appt = { id: Date.now(), client: name, phone: phone, email: '', svc: parts[0], workerName: w ? w.name : '', workerId: workerId || '', date: date, time: time, price: safeNum(parts[1], 0), status: status, notes: notes };
+  if (w) { if (!w.appointments) w.appointments = []; w.appointments.push(appt); }
   else { if (!CUR.appointments) CUR.appointments = []; CUR.appointments.push(appt); }
   saveDB(); closeOv('ov-appt'); initAgenda(); renderBizFinances(); initBizPanel();
   toast('Cita guardada', '#22C55E');

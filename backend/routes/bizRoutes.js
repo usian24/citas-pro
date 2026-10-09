@@ -73,8 +73,12 @@ router.get('/get-biz', async (req, res) => {
 
     // Mapear workers con sus citas y servicios
     biz.workers = (workers || []).map(function (w) {
-      var wAppts = (appointments || []).filter(function (a) { return a.worker_id === w.id; });
-      var wSvcs = (services || []).filter(function (s) { return s.worker_id === w.id; });
+      var wAppts = (appointments || []).filter(function (a) { 
+        return String(a.worker_id || '').trim() === String(w.id || '').trim(); 
+      });
+      var wSvcs = (services || []).filter(function (s) { 
+        return String(s.worker_id || '').trim() === String(w.id || '').trim(); 
+      });
 
       return {
         id: w.id,
@@ -100,6 +104,7 @@ router.get('/get-biz', async (req, res) => {
         appointments: wAppts.map(function (a) {
           return {
             id: a.id,
+            workerId: a.worker_id,
             client: a.client_name || '',
             phone: a.client_phone || '',
             email: a.client_email || '',
@@ -120,7 +125,7 @@ router.get('/get-biz', async (req, res) => {
 
     // Appointments sin worker
     var unassignedAppts = (appointments || []).filter(function (a) {
-      return !a.worker_id;
+      return !a.worker_id || String(a.worker_id).trim() === '';
     });
     biz.appointments = unassignedAppts.map(function (a) {
       return {
@@ -199,8 +204,8 @@ router.get('/get-db', verifyToken, async (req, res) => {
         .from('products').select('*').eq('business_id', biz.id);
 
       biz.workers = (workers || []).map(function (w) {
-        var wAppts = (appointments || []).filter(function (a) { return a.worker_id === w.id; });
-        var wSvcs = (services || []).filter(function (s) { return s.worker_id === w.id; });
+        var wAppts = (appointments || []).filter(function (a) { return String(a.worker_id || '').trim() === String(w.id || '').trim(); });
+        var wSvcs = (services || []).filter(function (s) { return String(s.worker_id || '').trim() === String(w.id || '').trim(); });
 
         return {
           id: w.id,
@@ -227,6 +232,7 @@ router.get('/get-db', verifyToken, async (req, res) => {
           appointments: wAppts.map(function (a) {
             return {
               id: a.id,
+              workerId: a.worker_id,
               client: a.client_name || '',
               phone: a.client_phone || '',
               email: a.client_email || '',
@@ -244,7 +250,7 @@ router.get('/get-db', verifyToken, async (req, res) => {
         };
       });
 
-      var unassignedAppts = (appointments || []).filter(function (a) { return !a.worker_id; });
+      var unassignedAppts = (appointments || []).filter(function (a) { return !a.worker_id || String(a.worker_id).trim() === ''; });
       biz.appointments = unassignedAppts.map(function (a) {
         return {
           id: a.id, client: a.client_name || '', phone: a.client_phone || '', email: '',
