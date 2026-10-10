@@ -1491,7 +1491,9 @@ function configurarBotonesDePago() {
   // (Removido: config-pais.js ya lo hace)
 
   // 6. El truco maestro: Le pegamos el ID de tu base de datos al final del link
-  var parametroMagico = "?metadata_bizId=" + CUR.id + "&redirect_url=" + encodeURIComponent(window.location.href);
+  var returnUrlObj = new URL(window.location.href);
+  returnUrlObj.searchParams.set('payment_success', '1');
+  var parametroMagico = "?metadata_bizId=" + CUR.id + "&redirect_url=" + encodeURIComponent(returnUrlObj.toString());
 
   // 7. Seleccionamos los botones del HTML e inyectamos los links (Con inteligencia de Fallback)
   var btnM = document.getElementById('btn-mensual');

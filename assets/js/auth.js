@@ -342,6 +342,29 @@ function isBizExpired(biz) {
 
 function showPaywall(bizName) {
     closeOv('ov-login');
+    if (new URLSearchParams(window.location.search).get('payment_success') === '1') {
+        var divSuccess = document.createElement('div');
+        divSuccess.id = 'dynamic-paywall';
+        divSuccess.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+        divSuccess.innerHTML = `
+            <div style="background:#07090F;border:1px solid rgba(74,127,212,.3);border-radius:24px;padding:30px;max-width:400px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.5)">
+                <div style="font-size:40px;margin-bottom:15px">🎉</div>
+                <div style="font-size:20px;font-weight:900;margin-bottom:10px;color:white;">¡Pago Exitoso!</div>
+                <div style="color:var(--t2);font-size:14px;line-height:1.6;margin-bottom:24px">
+                    Muchas gracias por confiar en nosotros. Tu suscripción se ha activado correctamente.
+                </div>
+                <button onclick="document.getElementById('dynamic-paywall').remove(); if(typeof forceCloudSync==='function' && typeof CUR!=='undefined') forceCloudSync(CUR.id, true); window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);" style="width:100%;background:#4A7FD4;color:white;border:none;padding:16px;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px">
+                    Ir a mi panel
+                </button>
+            </div>
+        `;
+        document.body.appendChild(divSuccess);
+        
+        // Auto-refresh en background por si acaso
+        if(typeof forceCloudSync==='function' && typeof CUR!=='undefined') forceCloudSync(CUR.id, true);
+        return;
+    }
+
     var div = document.createElement('div');
     div.id = 'dynamic-paywall';
     div.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
@@ -364,7 +387,12 @@ function showPaywall(bizName) {
                     Renovar por WhatsApp
                 </button>
             </a>
-            <button onclick="document.getElementById('dynamic-paywall').remove()" style="margin-top:16px;background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer">Volver al inicio</button>
+            
+            <button onclick="document.getElementById('dynamic-paywall').remove(); if(typeof bizTab === 'function') { bizTab('perfil'); setTimeout(function(){window.scrollTo(0, document.body.scrollHeight);}, 200); }" style="width:100%;background:#4A7FD4;color:white;border:none;padding:16px;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;margin-top:16px;">
+                💳 Pagar ahora
+            </button>
+            
+            <button onclick="document.getElementById('dynamic-paywall').remove()" style="margin-top:24px;background:var(--card);border:1px solid var(--b);color:var(--text);padding:10px 20px;border-radius:10px;font-size:14px;cursor:pointer;transition:all 0.2s;font-weight:600">Volver a tu panel</button>
         </div>
     `;
     document.body.appendChild(div);
