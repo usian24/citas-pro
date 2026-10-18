@@ -28,6 +28,44 @@ router.get('/public-businesses', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════
+// HELPER: Traer TODAS las citas sin el tope de 1.000 filas de Supabase
+// ═══════════════════════════════════════════════════════════════════
+async function fetchAllAppointments(businessId) {
+  let allAppointments = [];
+  let from = 0;
+  const batchSize = 1000;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('business_id', businessId)
+      .order('date', { ascending: false })
+      .order('time', { ascending: false })
+      .range(from, from + batchSize - 1);
+
+    if (error) {
+      console.error('Error fetching appointments batch for ' + businessId + ':', error.message);
+      break;
+    }
+
+    if (!data || data.length === 0) {
+      break;
+    }
+
+    allAppointments = allAppointments.concat(data);
+
+    if (data.length < batchSize) {
+      break;
+    }
+
+    from += batchSize;
+  }
+
+  return allAppointments;
+}
+
 // ═══════════════════════════════════════
 // RUTA 2: OBTENER DATOS DEL NEGOCIO (GET-BIZ)
 // ═══════════════════════════════════════
@@ -59,11 +97,8 @@ router.get('/get-biz', async (req, res) => {
       .select('id, business_id, created_at, name, email, phone, avatar, cover, role, horario')
       .eq('business_id', bizId);
 
-    // Traer appointments
-    const { data: appointments } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('business_id', bizId);
+    // Traer appointments (paginadas para superar el límite de 1.000)
+    const appointments = await fetchAllAppointments(bizId);
 
     // Traer services
     const { data: services } = await supabase
@@ -191,8 +226,7 @@ router.get('/get-db', verifyToken, async (req, res) => {
         .select('id, business_id, created_at, name, email, phone, avatar, cover, role, horario')
         .eq('business_id', biz.id);
 
-      const { data: appointments } = await supabase
-        .from('appointments').select('*').eq('business_id', biz.id);
+      const appointments = await fetchAllAppointments(biz.id);
 
       const { data: services } = await supabase
         .from('services').select('*').eq('business_id', biz.id);
