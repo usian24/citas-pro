@@ -12,9 +12,9 @@ function showWorkerPanel() {
   var worker = getWorkerById(DB.currentWorker.bizId, DB.currentWorker.workerId);
   if (!biz || !worker) { goTo('s-portal'); return; }
 
-  // 🛡️ ESCUDO: Bloquear el acceso a trabajadores si el negocio está suspendido
-  if (biz.plan === 'expired' || biz.plan === 'suspended') {
-    toast('El negocio está inactivo por falta de pago o suspensión.', '#EF4444');
+  // 🛡️ ESCUDO: Bloquear el acceso a trabajadores si el negocio está suspendido o vencido
+  if (typeof isBizExpired === 'function' ? isBizExpired(biz) : (biz.plan === 'expired' || biz.plan === 'suspended')) {
+    toast('El negocio está inactivo por falta de pago o suscripción vencida.', '#EF4444');
     goTo('s-portal');
     return;
   }
@@ -998,9 +998,9 @@ function renderWorkerDailyTimeline(dateStr) {
     const worker = getWorkerById(DB.currentWorker.bizId, DB.currentWorker.workerId);
     if (!biz || !worker) { goTo('s-portal'); return; }
   
-    // 🛡️ ESCUDO: Bloquear el acceso a trabajadores si el negocio está suspendido
-    if (biz.plan === 'expired' || biz.plan === 'suspended') {
-      toast('El negocio está inactivo por falta de pago o suspensión.', '#EF4444');
+    // 🛡️ ESCUDO: Bloquear el acceso a trabajadores si el negocio está suspendido o vencido
+    if (typeof isBizExpired === 'function' ? isBizExpired(biz) : (biz.plan === 'expired' || biz.plan === 'suspended')) {
+      toast('El negocio está inactivo por falta de pago o suscripción vencida.', '#EF4444');
       goTo('s-portal');
       return;
     }

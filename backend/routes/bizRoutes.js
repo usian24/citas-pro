@@ -91,6 +91,25 @@ router.get('/get-biz', async (req, res) => {
       return res.status(404).json({ error: 'Negocio no encontrado' });
     }
 
+    // 🛡️ CORTE AUTOMÁTICO POR FECHA: Si expires_at ya venció, marcar inmediatamente como expired
+    if (biz.expires_at && biz.plan !== 'expired' && biz.plan !== 'suspended' && biz.plan !== 'lifetime') {
+      const expDate = new Date(biz.expires_at + 'T23:59:59');
+      const now = new Date();
+      if (now > expDate) {
+        biz.plan = 'expired';
+        supabase
+          .from('businesses')
+          .update({ plan: 'expired' })
+          .eq('id', biz.id)
+          .then(() => {
+            console.log(`[AUTO-EXPIRE] Negocio ${biz.id} (${biz.name}) venció el ${biz.expires_at}. Plan cambiado a 'expired'.`);
+          })
+          .catch(err => {
+            console.error('[AUTO-EXPIRE] Error actualizando plan expired:', err.message);
+          });
+      }
+    }
+
     // Traer workers (¡MAGIA DE SEGURIDAD! Sin password)
     const { data: workers } = await supabase
       .from('workers')

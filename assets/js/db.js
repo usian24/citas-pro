@@ -447,6 +447,20 @@ function getBizById(id) {
   return DB.businesses.filter(function (b) { return b.id === id; })[0] || null;
 }
 
+function isBizExpired(biz) {
+  if (!biz) return false;
+  if (biz.plan === 'expired' || biz.plan === 'suspended') return true;
+  if (biz.expires_at) {
+    try {
+      var exp = new Date(biz.expires_at + 'T23:59:59');
+      var now = new Date();
+      if (now > exp) return true;
+    } catch (e) {}
+  }
+  return false;
+}
+window.isBizExpired = isBizExpired;
+
 function getWorkerById(bizId, workerId) {
   var biz = getBizById(bizId); if (!biz) return null;
   return (biz.workers || []).filter(function (w) { return w.id === workerId; })[0] || null;

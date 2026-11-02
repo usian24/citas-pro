@@ -52,18 +52,44 @@ router.post('/webhook', async (req, res) => {
        return res.status(200).send('Ignorado, no es una compra desde la App');
     }
 
+    // Listado de productos trimestrales (3 meses) y anuales (12 meses) de DodoPayments
+    const TRIMESTRAL_PRODUCTS = [
+      'pdt_0Np1dicwcf5sv9GhFi1D9',
+      'pdt_0Np1e0ZrXbqb6UYcxqCxe',
+      'pdt_0Np1eJEkxqD6Pv7jK7T62',
+      'pdt_0Np1ekgyl0Tv4BDEZrOKG',
+      'pdt_0Np1fB17o7XNyV2W1T3EP',
+      'pdt_0Np1foghpvqHuJIcF8em9'
+    ];
+
+    const ANUAL_PRODUCTS = [
+      'pdt_0Np1dmqiOkEo7HTDGz7YG',
+      'pdt_0Np1e6Qolec6cNkmqM15y',
+      'pdt_0Np1eP3QwBIacsgBAIz8E',
+      'pdt_0Np1epdW8tccvMqPPH8MU',
+      'pdt_0Np1fLBDDRX1bXoAgE079',
+      'pdt_0Np1fv99fInfrUcS4Wr07'
+    ];
+
     // 3A. Lógica Positiva: Compra exitosa, Suscripción Creada o Renovada
     if (eventName === 'subscription.active' || eventName === 'payment.succeeded' || eventName === 'subscription.renewed') {
       
-      // En Dodo, renueva en 1 mes o 1 año dependiendo del producto
-      // Si dodo no envía expiración explícita fácil, podemos setearlo manual o leer dodoData.current_period_end
       let expiresAt = null;
       if (dodoData.current_period_end) {
         expiresAt = new Date(dodoData.current_period_end).toISOString().split('T')[0];
       } else {
-        // Fallback: +1 mes por defecto
         const d = new Date();
-        d.setMonth(d.getMonth() + 1);
+        const pId = String(productId || dodoData.product_id || '').trim();
+        const metaPlan = String(dodoData.metadata?.plan || dodoData.custom_data?.plan || '').toLowerCase();
+
+        if (ANUAL_PRODUCTS.includes(pId) || metaPlan === 'anual' || metaPlan === 'anualidad') {
+          d.setFullYear(d.getFullYear() + 1);
+        } else if (TRIMESTRAL_PRODUCTS.includes(pId) || metaPlan === 'trimestral' || metaPlan === 'trimestre') {
+          d.setMonth(d.getMonth() + 3);
+        } else {
+          // Mensual por defecto (1 mes)
+          d.setMonth(d.getMonth() + 1);
+        }
         expiresAt = d.toISOString().split('T')[0];
       }
 
@@ -83,9 +109,15 @@ router.post('/webhook', async (req, res) => {
       console.log(`[SUCCESS] Negocio ${bizId} actualizado vía DodoPayments, activo hasta ${expiresAt}.`);
     }
 
-    // 3B. Lógica Negativa: Suscripción Expirada O Cancelada
-    else if (eventName === 'subscription.cancelled' || eventName === 'subscription.expired' || eventName === 'payment.failed') {
-      
+    // 3B. Lógica Negativa: Suscripción Expirada, Cancelada, Fallida o en Pausa
+    else if (
+      eventName === 'subscription.cancelled' ||
+      eventName === 'subscription.expired' ||
+      eventName === 'subscription.failed' ||
+      eventName === 'subscription.on_hold' ||
+      eventName === 'subscription.paused' ||
+      eventName === 'payment.failed'
+    ) {
       const { error } = await supabase
         .from('businesses')
         .update({
@@ -98,7 +130,7 @@ router.post('/webhook', async (req, res) => {
         return res.status(500).json({ error: 'Error actualizando base de datos' });
       }
 
-      console.log(`[WARNING] Negocio ${bizId} ha expirado o cancelado en DodoPayments y fue bloqueado.`);
+      console.log(`[WARNING] Negocio ${bizId} evento ${eventName} en DodoPayments. Plan marcado como 'expired'.`);
     }
 
     // 4. Confirmación de éxito a los servidores de DodoPayments
