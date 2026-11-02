@@ -222,6 +222,11 @@ function confirmBooking() {
   var biz = DB.businesses.filter(function (b) { return b.id === CSEL.bizId; })[0];
   if (!biz) return;
 
+  if (typeof isBizExpired === 'function' && isBizExpired(biz)) {
+    toast('Este negocio se encuentra temporalmente inactivo.', '#EF4444');
+    return;
+  }
+
   // (Bloqueador de cita activa única por Email removido para permitir reservas múltiples)
 
   var dup = (biz.appointments || []).filter(function (a) {

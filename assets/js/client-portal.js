@@ -41,9 +41,40 @@ function loadBizDirect(bizId) {
   if (!biz) { toast('Negocio no encontrado', '#EF4444'); return; }
 
   // 🛡️ ESCUDO: Si la barbería está suspendida o expirada, bloquear la entrada a los clientes
-  if (biz.plan === 'expired' || biz.plan === 'suspended') {
+  if (typeof isBizExpired === 'function' ? isBizExpired(biz) : (biz.plan === 'expired' || biz.plan === 'suspended')) {
     var bp = G('s-booking-portal');
-    if (bp) bp.innerHTML = '<div style="padding:40px 20px;text-align:center;margin-top:50px;"><div style="font-size:48px;margin-bottom:16px;">🛑</div><h2 style="font-size:22px;color:var(--text);margin-bottom:12px;">Página no disponible</h2><p style="color:var(--t2);font-size:15px;line-height:1.6;">Este negocio se encuentra suspendido temporalmente.<br>Por favor, comunícate directamente con ellos.</p></div>';
+    if (bp) {
+      var rawPhone = biz.phone || '';
+      var cleanPhone = rawPhone.replace(/\D/g, '');
+      var countryPfx = {
+        ES: '34', PE: '51', CO: '57', MX: '52', AR: '54', CL: '56',
+        EC: '593', VE: '58', DO: '1', US: '1', BR: '55', DE: '49', FR: '33', NL: '31'
+      };
+      var pfx = countryPfx[biz.country] || '';
+      if (pfx && !cleanPhone.startsWith(pfx) && cleanPhone.length <= 10) {
+        cleanPhone = pfx + cleanPhone;
+      }
+
+      var waBtnHtml = '';
+      if (cleanPhone) {
+        var bizName = biz.name || 'su negocio';
+        var waMsg = 'Hola ' + bizName + ', quise reservar una cita desde su enlace de Citas Pro pero me dice que no está habilitada o disponible temporalmente. ¿Tienen citas disponibles?';
+        var waUrl = 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(waMsg);
+        waBtnHtml = '<div style="margin-top:24px;width:100%;max-width:340px;">' +
+          '<a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;box-sizing:border-box;background:#25D366;color:#ffffff;padding:16px 20px;border-radius:14px;font-size:15px;font-weight:800;text-decoration:none;box-shadow:0 6px 20px rgba(37,211,102,0.35);transition:transform .15s ease,box-shadow .15s ease;">' +
+            '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.28-2.42 5.84a8.18 8.18 0 0 1-5.83 2.41c-1.42 0-2.82-.37-4.06-1.07l-.29-.17-3.03.8 0.81-2.96-.19-.3a8.15 8.15 0 0 1-1.25-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.64c-.25-.13-1.48-.73-1.71-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.26-1.5-1.4-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.4-.42-.56-.43h-.47c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.78 2.72 4.31 3.81.6.26 1.07.42 1.44.53.61.2 1.16.17 1.6.1.49-.07 1.48-.61 1.69-1.2.21-.58.21-1.08.15-1.2-.06-.11-.21-.18-.46-.3z"/></svg>' +
+            'Contactar por WhatsApp' +
+          '</a>' +
+        '</div>';
+      }
+
+      bp.innerHTML = '<div style="min-height:75vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;">' +
+        '<div style="font-size:52px;margin-bottom:16px;">🛑</div>' +
+        '<h2 style="font-size:24px;font-weight:900;color:var(--text);margin-bottom:12px;">Página no disponible</h2>' +
+        '<p style="color:var(--t2);font-size:15px;line-height:1.6;max-width:380px;margin:0 auto 6px;">Este negocio se encuentra suspendido temporalmente.<br>Por favor, comunícate directamente con ellos.</p>' +
+        waBtnHtml +
+      '</div>';
+    }
     goTo('s-booking-portal');
     return;
   }
