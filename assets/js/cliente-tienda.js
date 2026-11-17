@@ -85,9 +85,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (bizIdGlobal) {
-    const biz = window.DB?.businesses?.find(b => b.id === bizIdGlobal);
-    document.getElementById('shop-title').textContent = biz ? biz.name : 'Nuestra Tienda';
-    if (biz?.phone) bizWAPhone = biz.phone.replace(/\D/g, '');
+    const titleEl = document.getElementById('shop-title');
+    if (titleEl && (!titleEl.textContent || titleEl.textContent === 'Cargando...')) {
+      const biz = window.DB?.businesses?.find(b => b.id === bizIdGlobal);
+      titleEl.textContent = biz ? biz.name : 'Nuestra Tienda';
+      if (biz?.phone && !bizWAPhone) bizWAPhone = biz.phone.replace(/\D/g, '');
+    }
     await fetchProductos(bizIdGlobal);
   } else {
     document.getElementById('shop-title').textContent = 'Enlace inválido';
@@ -99,7 +102,7 @@ async function fetchProductos(bizId) {
     const { data, error } = await tiendaSupa
       .from('products').select('*').eq('business_id', bizId);
     if (error) throw error;
-    productosDB = data || [];
+    productosDB = (data || []).filter(p => p.active !== false);
     maxRating = Math.max(1, ...productosDB.map(p => p.rating || 0));
     inicializarTienda();
   } catch (err) {

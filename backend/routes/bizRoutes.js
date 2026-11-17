@@ -177,23 +177,25 @@ router.get('/get-biz', async (req, res) => {
       };
     });
 
-    // Appointments sin worker
+    // Appointments sin worker (Servicios Generales)
     var unassignedAppts = (appointments || []).filter(function (a) {
       return !a.worker_id || String(a.worker_id).trim() === '';
     });
     biz.appointments = unassignedAppts.map(function (a) {
       return {
         id: a.id,
+        workerId: '',
         client: a.client_name || '',
         phone: a.client_phone || '',
-        email: '',
+        email: a.client_email || '',
         date: a.date || '',
         time: a.time || '',
         svc: a.service_name || '',
-        workerName: '',
+        workerName: 'Servicios Generales',
         price: parseFloat(a.service_price) || 0,
         status: a.status || 'confirmed',
-        notes: ''
+        notes: a.notes || '',
+        token: a.token || a.id
       };
     });
 
@@ -201,7 +203,7 @@ router.get('/get-biz', async (req, res) => {
     biz.joinDate = biz.join_date;
     biz.desc = biz.desc_text || '';
     var unassignedSvcs = (services || []).filter(function (s) {
-      return !s.worker_id;
+      return !s.worker_id || String(s.worker_id).trim() === '';
     });
     biz.services = unassignedSvcs.map(function (s) {
       return {
@@ -210,8 +212,10 @@ router.get('/get-biz', async (req, res) => {
         price: parseFloat(s.price) || 0,
         dur: parseInt(s.duration) || 30,
         desc: s.description || '',
-        color: s.color || '',
-        photo: s.image || ''
+        color: s.color || '#4A7FD4',
+        photo: s.image || '',
+        active: s.active !== false,
+        points: s.points != null ? parseInt(s.points, 10) : 10
       };
     });
 

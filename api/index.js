@@ -8,6 +8,7 @@ const workerRoutes = require('../backend/routes/workerRoutes');
 const appointmentRoutes = require('../backend/routes/appointmentRoutes');
 const utilRoutes = require('../backend/routes/utilRoutes');
 const paymentRoutes = require('../backend/routes/paymentRoutes');
+const posRoutes = require('../backend/routes/posRoutes');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api', syncRoutes);
 app.use('/api', workerRoutes);
 app.use('/api', appointmentRoutes);
 app.use('/api', utilRoutes);
+app.use('/api', posRoutes);
 
 // Rutas "comodín" por si alguien pide algo que no existe
 app.use((req, res) => {

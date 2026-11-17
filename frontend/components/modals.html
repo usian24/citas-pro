@@ -345,51 +345,147 @@
 
 <div class="ov bot" id="ov-tienda-prod">
   <div class="mbot" onclick="event.stopPropagation()">
-    <div class="mhdr"><span class="mttl">Añadir Producto</span><div class="xbtn" onclick="closeOv('ov-tienda-prod')">×</div></div>
+    <div class="mhdr"><span class="mttl" id="prod-modal-title">Añadir producto</span><div class="xbtn" onclick="closeOv('ov-tienda-prod')">×</div></div>
 
-    <div class="field"><label>Nombre del Producto *</label>
+    <div class="field">
+      <label for="prod-barcode">Código de barras (EAN-13, UPC, Code 128)</label>
+      <div style="display:flex;gap:8px">
+        <input class="inp" id="prod-barcode" placeholder="Escanea o escribe el código" maxlength="64" autocomplete="off" oninput="updateBarcodeHint()"/>
+      </div>
+      <div id="prod-barcode-hint" style="font-size:11px;color:var(--t2);margin-top:4px;min-height:14px"></div>
+    </div>
+
+    <div class="field"><label for="prod-name">Nombre del producto *</label>
       <input class="inp" id="prod-name" placeholder="Ej: Cera Fijadora Mate" maxlength="80"/>
     </div>
 
     <div class="field">
-      <label>Categoría / Etiqueta *</label>
-      <input class="inp" id="prod-cat" list="cat-list" placeholder="Ej: Ceras, Rostro, Cortes..." maxlength="30"/>
+      <label for="prod-cat">Categoría *</label>
+      <input class="inp" id="prod-cat" list="cat-list" placeholder="Ej: Ceras, Cuidado capilar, Barba..." maxlength="30"/>
       <datalist id="cat-list"></datalist>
     </div>
 
     <div style="display:flex;gap:10px;">
       <div class="field" style="flex:1;">
-        <label>Precio (€) *</label>
-        <input class="inp" id="prod-price" type="number" placeholder="15" min="0" step="0.5"
+        <label for="prod-price" id="prod-price-lbl">Precio de venta *</label>
+        <input class="inp" id="prod-price" type="number" placeholder="0.00" min="0" step="0.01"
                oninput="actualizarPreviewDescuento()"/>
       </div>
       <div class="field" style="flex:1;">
-        <label>Stock (unidades)</label>
-        <input class="inp" id="prod-stock" type="number" placeholder="10" min="0" step="1"/>
+        <label for="prod-cost" id="prod-cost-lbl">Coste de compra</label>
+        <input class="inp" id="prod-cost" type="number" placeholder="0.00" min="0" step="0.01"/>
       </div>
     </div>
 
-    <div class="field">
-      <label>Descuento % <span style="color:var(--muted);font-weight:400;font-size:11px">(0 = sin descuento)</span></label>
-      <input class="inp" id="prod-discount" type="number" placeholder="0" min="0" max="90" step="1" value="0"
-             oninput="actualizarPreviewDescuento()"/>
-      <div id="prod-discount-preview" style="font-size:11px;color:#EF4444;margin-top:5px;min-height:16px;font-weight:600;"></div>
+    <div style="display:flex;gap:10px;">
+      <div class="field" style="flex:1;">
+        <label for="prod-stock">Stock actual (uds)</label>
+        <input class="inp" id="prod-stock" type="number" placeholder="10" min="0" step="1"/>
+      </div>
+      <div class="field" style="flex:1;">
+        <label for="prod-min-stock">Alerta stock bajo</label>
+        <input class="inp" id="prod-min-stock" type="number" placeholder="5" min="0" step="1"/>
+      </div>
     </div>
 
-    <div class="field"><label>Descripción breve</label>
+    <div style="display:flex;gap:10px;">
+      <div class="field" style="flex:1;">
+        <label for="prod-discount">Descuento %</label>
+        <input class="inp" id="prod-discount" type="number" placeholder="0" min="0" max="90" step="1" value="0"
+               oninput="actualizarPreviewDescuento()"/>
+      </div>
+      <div class="field" style="flex:1;">
+        <label for="prod-supplier">Proveedor</label>
+        <input class="inp" id="prod-supplier" placeholder="Opcional" maxlength="60"/>
+      </div>
+    </div>
+    <div id="prod-discount-preview" style="font-size:12px;color:var(--blue);margin-top:-6px;margin-bottom:10px;min-height:16px;font-weight:600;"></div>
+
+    <div class="field"><label for="prod-desc">Descripción breve</label>
       <input class="inp" id="prod-desc" placeholder="Detalles del producto..." maxlength="150"/>
     </div>
 
-    <div class="field">
-      <label>Foto del producto</label>
-      <!-- Contenedor para las vistas previas de las imágenes -->
-      <div id="prod-photo-previews" class="img-gallery-container">
-        <!-- El botón de añadir se generará dinámicamente con JS -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--b);border-bottom:1px solid var(--b);margin-bottom:14px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Visible en Caja y Tienda</div>
+        <div style="font-size:11px;color:var(--t2)">Los productos inactivos conservan su historial</div>
       </div>
-      <!-- Input de archivo ahora permite selección múltiple -->
+      <div class="pos-switch on" id="prod-active-switch" onclick="this.classList.toggle('on')"></div>
+    </div>
+
+    <div class="field">
+      <label>Imágenes del producto</label>
+      <div id="prod-photo-previews" class="img-gallery-container"></div>
       <input type="file" id="prod-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none" multiple/>
     </div>
 
-    <button class="btn btn-blue" onclick="saveProduct()">Guardar Producto</button>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="pos-btn danger-ghost" id="prod-delete-btn" style="display:none" onclick="confirmDeleteCurrentProduct()">Eliminar</button>
+      <button class="btn btn-blue" id="prod-save-btn" style="flex:1" onclick="saveProduct()">Guardar producto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DESCUENTO POR CATEGORÍA -->
+<div class="ov" id="ov-tienda-cat-disc">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:360px">
+    <div class="mhdr"><span class="mttl">Descuento por categoría</span><div class="xbtn" onclick="closeOv('ov-tienda-cat-disc')">×</div></div>
+    <div class="field">
+      <label for="tcd-cat">Categoría</label>
+      <select class="inp" id="tcd-cat"></select>
+    </div>
+    <div class="field">
+      <label for="tcd-pct">Porcentaje de descuento (0 a 90%)</label>
+      <input class="inp" id="tcd-pct" type="number" min="0" max="90" step="1" value="0"/>
+    </div>
+    <button class="btn btn-blue" onclick="applyCategoryDiscount()">Aplicar descuento</button>
+  </div>
+</div>
+
+<!-- MODAL: SERVICIO GENERAL (DESDE CAJA) -->
+<div class="ov bot" id="ov-pos-gsvc">
+  <div class="mbot" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mttl" id="gsvc-modal-title">Servicio general</span><div class="xbtn" onclick="closeOv('ov-pos-gsvc')">×</div></div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.5">
+      Los servicios generales aparecen en tu portal de reservas bajo el perfil de tu tienda y pueden ser atendidos por cualquier profesional disponible.
+    </div>
+    <div class="field"><label for="gsvc-name">Nombre del servicio *</label>
+      <input class="inp" id="gsvc-name" placeholder="Ej: Corte Clásico, Lavado y Secado..." maxlength="80"/>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="field" style="flex:1"><label for="gsvc-price" id="gsvc-price-lbl">Precio *</label>
+        <input class="inp" id="gsvc-price" type="number" min="0" step="0.01" placeholder="0.00"/>
+      </div>
+      <div class="field" style="flex:1"><label for="gsvc-dur">Duración (min)</label>
+        <input class="inp" id="gsvc-dur" type="number" min="5" max="480" step="5" value="30"/>
+      </div>
+    </div>
+    <div class="field"><label for="gsvc-desc">Descripción breve</label>
+      <input class="inp" id="gsvc-desc" placeholder="Opcional" maxlength="140"/>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--b);border-bottom:1px solid var(--b);margin-bottom:14px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Activo en portal y Caja</div>
+        <div style="font-size:11px;color:var(--t2)">Desactívalo para ocultarlo temporalmente</div>
+      </div>
+      <div class="pos-switch on" id="gsvc-active-switch" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="pos-btn danger-ghost" id="gsvc-delete-btn" style="display:none" onclick="deleteCurrentGeneralService()">Eliminar</button>
+      <button class="btn btn-blue" id="gsvc-save-btn" style="flex:1" onclick="saveGeneralService()">Guardar servicio</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PIN DEL PROPIETARIO (CAJA) -->
+<div class="ov" id="ov-pos-pin">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:340px;text-align:center">
+    <div class="mhdr"><span class="mttl">PIN de propietario</span><div class="xbtn" onclick="closeOv('ov-pos-pin')">×</div></div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:14px" id="pos-pin-hint">Introduce el PIN para acceder a esta sección.</div>
+    <div class="field">
+      <input class="inp pos-pin-input" id="pos-pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="•••••" autocomplete="off" onkeydown="if(event.key==='Enter')submitPosPin()"/>
+    </div>
+    <div id="pos-pin-err" style="display:none;color:var(--red);font-size:12px;margin-bottom:10px;font-weight:600"></div>
+    <button class="btn btn-blue" id="pos-pin-submit" onclick="submitPosPin()">Continuar</button>
   </div>
 </div>

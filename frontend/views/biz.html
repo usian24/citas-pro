@@ -282,6 +282,7 @@
       <div class="bnav">
         <div class="bn on" id="bn-home" onclick="bizTab('home')">Inicio</div>
         <div class="bn" id="bn-agenda" onclick="bizTab('agenda')">Agenda</div>
+        <div class="bn" id="bn-caja" onclick="bizTab('caja')">Caja</div>
         <div class="bn" id="bn-equipo" onclick="bizTab('equipo')">Equipo</div>
         <div class="bn" id="bn-tienda" onclick="bizTab('tienda')">Tienda</div>
         <div class="bn" id="bn-finanzas" onclick="bizTab('finanzas')">Finanzas</div>
@@ -356,6 +357,10 @@
       <div id="biz-agenda-list"></div>
       <div id="biz-daily-timeline"></div>
     </div>
+    <div class="pane" id="bp-caja">
+      <div id="pos-root" class="pos-wrap"></div>
+    </div>
+
     <div class="pane" id="bp-equipo">
       <div class="sec-hdr"><span class="sec-ttl">Mi equipo</span><button class="btn btn-blue btn-sm" style="width:auto"
           id="add-worker-btn">Añadir</button></div>
@@ -363,28 +368,32 @@
     </div>
 
     <div class="pane" id="bp-tienda">
-      <div class="sec-hdr">
-        <span class="sec-ttl">Mi Tienda</span>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-dark btn-sm" style="width:auto"
-            onclick="abrirModalNuevaCategoria()">Categoría</button>
-          <button class="btn btn-blue btn-sm" style="width:auto" onclick="openProdModal()">Producto</button>
+      <div class="pos-wrap">
+        <div class="pos-header">
+          <div class="pos-title-group">
+            <div class="pos-title">Tienda e Inventario</div>
+            <div class="pos-subtitle" id="tienda-stock-summary">Gestiona productos, stock y códigos de barras</div>
+          </div>
+          <div class="pos-header-actions">
+            <button class="pos-btn secondary sm" onclick="openTiendaDiscountModal()">Descuento</button>
+            <button class="pos-btn primary sm" onclick="openProdModal()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Producto
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="tip-box">Sube tus productos reales. Las categorías se crearán automáticamente según las etiquetas que
-        uses.</div>
 
-      <div
-        style="font-size:14px;font-weight:800;margin-bottom:12px;margin-top:20px;display:flex;justify-content:space-between">
-        <span>Tus Categorías</span>
-      </div>
-      <div id="biz-categorias-list"
-        style="display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;">
-      </div>
+        <div id="tienda-low-stock-banner"></div>
 
-      <div style="font-size:14px;font-weight:800;margin-bottom:12px;margin-top:20px;">Tus Productos</div>
-      <div id="biz-productos-list"
-        style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;">
+        <div class="pos-input-bar">
+          <div class="pos-input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="inp" id="tienda-search-input" type="search" placeholder="Buscar producto o escanear código de barras..." oninput="filterTiendaAdmin(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();handleTiendaBarcodeInput(this);}" autocomplete="off"/>
+          </div>
+        </div>
+
+        <div id="biz-categorias-list" class="tienda-cat-strip"></div>
+        <div id="biz-productos-list" class="tienda-prod-grid"></div>
       </div>
     </div>
 

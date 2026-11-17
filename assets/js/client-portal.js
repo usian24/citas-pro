@@ -234,24 +234,41 @@ function buildWorkerCards() {
   if (loyaltyContainer) loyaltyContainer.innerHTML = loyaltyHtml;
 
   var workers = (biz.workers || []).filter(function (w) { return w.active; });
-  H('cl-workers-list', workers.length
-    ? workers.map(function (w) {
-      var av = w.photo
-        ? '<img src="' + sanitizeImageDataURL(w.photo) + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="Foto"/>'
-        : '<span style="font-size:28px;font-weight:900;color:#fff">' + (w.name || '?').charAt(0).toUpperCase() + '</span>';
-      var svcCount = (w.services || []).length;
-      return '<div class="worker-card" data-wid="' + sanitizeText(w.id) + '" onclick="selectWorker(\'' + sanitizeText(w.id) + '\')">'
-        + '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;overflow:hidden;box-shadow:0 4px 16px rgba(74,127,212,.3)">' + av + '</div>'
-        + '<div style="font-weight:700;font-size:15px;margin-bottom:4px;text-align:center">' + san(w.name) + '</div>'
-        + '<div style="font-size:12px;color:var(--t2);text-align:center;margin-bottom:6px">' + san(w.spec || '') + '</div>'
-        + '<div style="font-size:11px;color:var(--muted);text-align:center">' + svcCount + ' servicio' + (svcCount !== 1 ? 's' : '') + '</div>'
-        + '</div>';
-    }).join('')
-    : '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">No hay trabajadores disponibles</div></div>');
+  var genSvcs = (biz.services || []).filter(function (s) { return s.active !== false; });
+  var cardsHtml = '';
+
+  if (genSvcs.length > 0) {
+    var storeAv = biz.logo
+      ? '<img src="' + san(sanitizeImageDataURL(biz.logo)) + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="' + san(biz.name) + '"/>'
+      : '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+    cardsHtml += '<div class="worker-card" data-wid="__GENERAL__" onclick="selectWorker(\'__GENERAL__\')">'
+      + '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;overflow:hidden;box-shadow:0 4px 16px rgba(74,127,212,.3)">' + storeAv + '</div>'
+      + '<div style="font-weight:700;font-size:15px;margin-bottom:4px;text-align:center">Servicios Generales</div>'
+      + '<div style="font-size:12px;color:var(--t2);text-align:center;margin-bottom:6px">Cualquier profesional</div>'
+      + '<div style="font-size:11px;color:var(--muted);text-align:center">' + genSvcs.length + ' servicio' + (genSvcs.length !== 1 ? 's' : '') + '</div>'
+      + '</div>';
+  }
+
+  cardsHtml += workers.map(function (w) {
+    var av = w.photo
+      ? '<img src="' + san(sanitizeImageDataURL(w.photo)) + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="Foto"/>'
+      : '<span style="font-size:28px;font-weight:900;color:#fff">' + san((w.name || '?').charAt(0).toUpperCase()) + '</span>';
+    var svcCount = (w.services || []).length;
+    return '<div class="worker-card" data-wid="' + sanitizeText(w.id) + '" onclick="selectWorker(\'' + sanitizeText(w.id) + '\')">'
+      + '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#4A7FD4,#2855C8);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;overflow:hidden;box-shadow:0 4px 16px rgba(74,127,212,.3)">' + av + '</div>'
+      + '<div style="font-weight:700;font-size:15px;margin-bottom:4px;text-align:center">' + san(w.name) + '</div>'
+      + '<div style="font-size:12px;color:var(--t2);text-align:center;margin-bottom:6px">' + san(w.spec || '') + '</div>'
+      + '<div style="font-size:11px;color:var(--muted);text-align:center">' + svcCount + ' servicio' + (svcCount !== 1 ? 's' : '') + '</div>'
+      + '</div>';
+  }).join('');
+
+  H('cl-workers-list', cardsHtml || '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">No hay trabajadores ni servicios disponibles</div></div>');
 }
 
 function selectWorker(workerId) {
   CSEL.workerId = workerId;
+  CSEL.svc = null;
+  CSEL.time = null;
   document.querySelectorAll('.worker-card').forEach(function (c) { c.classList.remove('sel'); });
   var card = document.querySelector('.worker-card[data-wid="' + workerId + '"]');
   if (card) card.classList.add('sel');
@@ -260,22 +277,30 @@ function selectWorker(workerId) {
 
 function buildServicesList(workerId) {
   var biz = getBizById(CSEL.bizId); if (!biz) return;
-  var worker = (biz.workers || []).filter(function (w) { return w.id === workerId; })[0]; if (!worker) return;
-  T('cl-worker-name', worker.name);
-  var svcs = worker.services || [];
+  var isGeneral = (workerId === '__GENERAL__');
+  var svcs = [];
+  if (isGeneral) {
+    T('cl-worker-name', 'Servicios Generales (' + (biz.name || 'Tienda') + ')');
+    svcs = (biz.services || []).filter(function (s) { return s.active !== false; });
+  } else {
+    var worker = (biz.workers || []).filter(function (w) { return w.id === workerId; })[0]; if (!worker) return;
+    T('cl-worker-name', worker.name);
+    svcs = (worker.services || []).filter(function (s) { return s.active !== false; });
+  }
+  var defaultSvcSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>';
   H('cl-svc-list', svcs.length
     ? svcs.map(function (s) {
       var thumb = s.photo
-        ? '<img src="' + sanitizeImageDataURL(s.photo) + '" style="width:50px;height:50px;border-radius:12px;object-fit:cover;flex-shrink:0" alt="Servicio">'
-        : '<div style="width:50px;height:50px;border-radius:12px;background:var(--bblue);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">&#9986;</div>';
-      return '<div class="svcitem" data-sn="' + san(s.name) + '" data-sp="' + s.price + '" data-dur="' + s.dur + '">'
+        ? '<img src="' + san(sanitizeImageDataURL(s.photo)) + '" style="width:50px;height:50px;border-radius:12px;object-fit:cover;flex-shrink:0" alt="Servicio">'
+        : '<div style="width:50px;height:50px;border-radius:12px;background:var(--bblue);display:flex;align-items:center;justify-content:center;flex-shrink:0">' + defaultSvcSvg + '</div>';
+      return '<div class="svcitem" data-sn="' + san(s.name) + '" data-sp="' + (parseFloat(s.price) || 0) + '" data-dur="' + (parseInt(s.dur, 10) || 30) + '">'
         + thumb
         + '<div style="flex:1"><div style="font-weight:700;font-size:15px;margin-bottom:2px">' + san(s.name) + '</div>'
-        + '<div style="font-size:12px;color:var(--t2)">' + s.dur + ' min' + (s.desc ? ' · ' + san(s.desc) : '') + '</div></div>'
-        + '<div style="font-weight:800;font-size:17px;color:var(--blue)">' + money(s.price) + '</div>'
+        + '<div style="font-size:12px;color:var(--t2)">' + (parseInt(s.dur, 10) || 30) + ' min' + (s.desc ? ' · ' + san(s.desc) : '') + '</div></div>'
+        + '<div style="font-weight:800;font-size:17px;color:var(--blue);font-variant-numeric:tabular-nums">' + money(s.price) + '</div>'
         + '</div>';
     }).join('')
-    : '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">Este trabajador no tiene servicios aún</div></div>');
+    : '<div style="text-align:center;padding:28px;color:var(--muted)"><div style="font-size:13px">No hay servicios disponibles aún</div></div>');
   document.querySelectorAll('.svcitem').forEach(function (item) {
     item.addEventListener('click', function () {
       document.querySelectorAll('.svcitem').forEach(function (x) { x.classList.remove('sel'); });
@@ -296,8 +321,9 @@ function clStep4() {
 
 function buildDates(bizId, workerId, startDateStr) {
   var biz = getBizById(bizId); if (!biz) return;
-  var worker = (biz.workers || []).filter(function (w) { return w.id === workerId; })[0];
-  var horario = (worker && worker.horario) ? worker.horario : (biz.horario || DEFAULT_HORARIO);
+  var isGeneral = (workerId === '__GENERAL__');
+  var worker = isGeneral ? null : (biz.workers || []).filter(function (w) { return w.id === workerId; })[0];
+  var horario = (worker && worker.horario && worker.horario.length) ? worker.horario : (biz.horario && biz.horario.length ? biz.horario : DEFAULT_HORARIO);
   
   var today = getNowInBizTimezone(biz.country || 'ES');
   var now = startDateStr ? new Date(startDateStr + 'T00:00:00') : new Date(today);
@@ -363,8 +389,10 @@ function buildDates(bizId, workerId, startDateStr) {
 
 function buildTimes(bizId, workerId) {
   var biz = getBizById(bizId); if (!biz || !CSEL.date) return;
-  var worker = (biz.workers || []).filter(function (w) { return w.id === workerId; })[0];
-  var horario = (worker && worker.horario) ? worker.horario : (biz.horario || DEFAULT_HORARIO);
+  CSEL.time = null;
+  var isGeneral = (workerId === '__GENERAL__');
+  var worker = isGeneral ? null : (biz.workers || []).filter(function (w) { return w.id === workerId; })[0];
+  var horario = (worker && worker.horario && worker.horario.length) ? worker.horario : (biz.horario && biz.horario.length ? biz.horario : DEFAULT_HORARIO);
   var d = new Date(CSEL.date + 'T12:00');
   var dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   var horDay = horario.filter(function (h) { return h.day === dayNames[d.getDay()]; })[0] || { open: true, from1: '09:00', to1: '20:00' };
@@ -384,26 +412,46 @@ function buildTimes(bizId, workerId) {
   }
   var svcDur = CSEL.svcDur || 30, slotsNeeded = Math.ceil(svcDur / 30);
   var blockedMinutes = {};
-  if (worker && worker.appointments) {
-    worker.appointments.forEach(function (a) {
-      if (a.date === CSEL.date && a.status !== 'cancelled') {
+  var occupiedCountByMin = {};
+  var activeWorkers = (biz.workers || []).filter(function (w) { return w.active !== false; });
+  var teamCapacity = Math.max(1, activeWorkers.length);
+
+  function markApptsOnMap(apptsList, svcsList, targetMap, isCounter) {
+    (apptsList || []).forEach(function (a) {
+      if (a.date === CSEL.date && a.status !== 'cancelled' && a.time) {
         if (CSEL.editingToken && a.token === CSEL.editingToken) return;
         var existingDur = 30;
-        if (worker.services) {
-          var existingSvc = worker.services.find(function (s) { return s.name === a.svc; });
+        if (svcsList) {
+          var existingSvc = svcsList.find(function (s) { return s.name === a.svc; });
           if (existingSvc) existingDur = existingSvc.dur || 30;
         }
         var existingSlots = Math.ceil(existingDur / 30);
         var pts = a.time.split(':').map(Number), startMin = pts[0] * 60 + pts[1];
-        for (var i = 0; i < existingSlots; i++) blockedMinutes[startMin + (i * 30)] = true;
+        for (var i = 0; i < existingSlots; i++) {
+          var slotMin = startMin + (i * 30);
+          if (isCounter) targetMap[slotMin] = (targetMap[slotMin] || 0) + 1;
+          else targetMap[slotMin] = true;
+        }
       }
     });
   }
+
+  if (isGeneral) {
+    activeWorkers.forEach(function (w) { markApptsOnMap(w.appointments, w.services, occupiedCountByMin, true); });
+    markApptsOnMap(biz.appointments, biz.services, occupiedCountByMin, true);
+  } else if (worker && worker.appointments) {
+    markApptsOnMap(worker.appointments, worker.services, blockedMinutes, false);
+  }
+
   function isSlotAvailable(timeStr) {
     var pts = timeStr.split(':').map(Number), startMin = pts[0] * 60 + pts[1];
     for (var i = 0; i < slotsNeeded; i++) {
       var checkMin = startMin + (i * 30);
-      if (blockedMinutes[checkMin]) return false;
+      if (isGeneral) {
+        if ((occupiedCountByMin[checkMin] || 0) >= teamCapacity) return false;
+      } else {
+        if (blockedMinutes[checkMin]) return false;
+      }
       if (i > 0) {
         var checkH = Math.floor(checkMin / 60), checkM = checkMin % 60;
         var checkStr = String(checkH).padStart(2, '0') + ':' + String(checkM).padStart(2, '0');
@@ -413,7 +461,8 @@ function buildTimes(bizId, workerId) {
     return true;
   }
   var currentNow = getNowInBizTimezone(biz.country || 'ES');
-  var isToday = (CSEL.date === currentNow.toISOString().split('T')[0]);
+  var todayLocalStr = currentNow.getFullYear() + '-' + String(currentNow.getMonth() + 1).padStart(2, '0') + '-' + String(currentNow.getDate()).padStart(2, '0');
+  var isToday = (CSEL.date === todayLocalStr);
   var currentMinutes = currentNow.getHours() * 60 + currentNow.getMinutes();
   var validTimes = times.filter(function (t) {
     var pts = t.split(':').map(Number), startMin = pts[0] * 60 + pts[1], endMin = startMin + svcDur;
@@ -458,11 +507,13 @@ function clStep5() {
 
 function buildSummary() {
   var biz = getBizById(CSEL.bizId);
-  var worker = biz ? (biz.workers || []).filter(function (w) { return w.id === CSEL.workerId; })[0] : null;
+  var isGeneral = (CSEL.workerId === '__GENERAL__');
+  var worker = (!isGeneral && biz) ? (biz.workers || []).filter(function (w) { return w.id === CSEL.workerId; })[0] : null;
+  var proLabel = isGeneral ? 'Cualquier profesional disponible' : (worker ? worker.name : '');
   H('cl-summary',
     '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Resumen de tu reserva</div>'
     + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Negocio</span><span style="font-size:13px;font-weight:700">' + san(biz ? biz.name : '') + '</span></div>'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Profesional</span><span style="font-size:13px;font-weight:700">' + san(worker ? worker.name : '') + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Profesional</span><span style="font-size:13px;font-weight:700">' + san(proLabel) + '</span></div>'
     + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Cliente</span><span style="font-size:13px;font-weight:700">' + san(CSEL.clientName || '') + '</span></div>'
     + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Servicio</span><span style="font-size:13px;font-weight:700">' + san(CSEL.svc || '') + '</span></div>'
     + '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">Fecha</span><span style="font-size:13px;font-weight:700">' + sanitizeText(CSEL.date || '—') + '</span></div>'
@@ -473,76 +524,106 @@ function buildSummary() {
 
 window._isBookingProcessing = false;
 
-function confirmBooking() {
+async function confirmBooking() {
   if (window._isBookingProcessing) return;
   window._isBookingProcessing = true;
-  setTimeout(function() { window._isBookingProcessing = false; }, 4000);
 
   var name = CSEL.clientName || sanitizeText(V('cl-name'));
   var phone = CSEL.clientPhone || sanitizeText(V('cl-phone'));
   var email = CSEL.clientEmail || sanitizeText(V('cl-email'));
   if (!name || !phone || !email || !CSEL.svc || !CSEL.date || !CSEL.time || !CSEL.workerId) {
+    window._isBookingProcessing = false;
     toast('Faltan datos. Vuelve atrás y completa todo.', '#EF4444'); return;
   }
-  var biz = getBizById(CSEL.bizId); if (!biz) return;
-  var worker = (biz.workers || []).filter(function (w) { return w.id === CSEL.workerId; })[0]; if (!worker) return;
+  var biz = getBizById(CSEL.bizId);
+  if (!biz) { window._isBookingProcessing = false; return; }
+  var isGeneral = (CSEL.workerId === '__GENERAL__');
+  var worker = isGeneral ? null : (biz.workers || []).filter(function (w) { return w.id === CSEL.workerId; })[0];
+  if (!isGeneral && !worker) { window._isBookingProcessing = false; return; }
   var isModifying = !!CSEL.editingToken;
   var dup = false;
 
-  // (Bloqueador de cita activa única por Email removido para permitir reservas múltiples)
-
-  (worker.appointments || []).forEach(function (a) {
-    if (a.date === CSEL.date && a.time === CSEL.time && a.status !== 'cancelled') {
-      if (isModifying && a.token === CSEL.editingToken) return;
-      dup = true;
-    }
-  });
-  if (dup) { toast('Esa hora ya está ocupada. Elige otra.', '#EF4444'); clGoStep(4); return; }
+  if (!isGeneral) {
+    (worker.appointments || []).forEach(function (a) {
+      if (a.date === CSEL.date && a.time === CSEL.time && a.status !== 'cancelled') {
+        if (isModifying && a.token === CSEL.editingToken) return;
+        dup = true;
+      }
+    });
+  }
+  if (dup) {
+    window._isBookingProcessing = false;
+    toast('Esa hora ya está ocupada. Elige otra.', '#EF4444'); clGoStep(4); return;
+  }
 
   var token = isModifying ? CSEL.editingToken : 'tk_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
   var apptId = String(Date.now());
   var apptStatus = isModifying ? 'rescheduled' : 'confirmed';
+  var displayWorkerName = isGeneral ? 'Servicios Generales' : worker.name;
 
   var appt = {
     id: apptId, client: name, phone: phone, email: email,
-    date: CSEL.date, time: CSEL.time, svc: CSEL.svc, workerName: worker.name, workerId: worker.id,
-    price: CSEL.svcPrice || 0, status: apptStatus, notes: '', token: token
+    date: CSEL.date, time: CSEL.time, svc: CSEL.svc,
+    workerName: displayWorkerName, workerId: isGeneral ? '' : worker.id,
+    price: CSEL.svcPrice || 0, status: apptStatus, notes: isGeneral ? 'Servicio General' : '', token: token
   };
 
-  if (!worker.appointments) worker.appointments = [];
-  if (isModifying) {
-    worker.appointments = worker.appointments.filter(function (a) { return a.token !== token; });
-    worker.appointments.push(appt);
-    CSEL.editingToken = null;
-  } else {
-    worker.appointments.push(appt);
+  try {
+    var syncRes = await fetch('/api/sync', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'appointments', business_id: biz.id,
+        appointments: [{
+          id: apptId, business_id: biz.id, worker_id: isGeneral ? null : worker.id,
+          client_id: '', client_name: name, client_phone: phone, client_email: email,
+          token: token, notes: isGeneral ? 'Servicio General' : '', service_name: CSEL.svc,
+          service_price: CSEL.svcPrice || 0, date: CSEL.date, time: CSEL.time,
+          status: apptStatus
+        }]
+      })
+    });
+    if (!syncRes.ok) {
+      var syncErr = await syncRes.json().catch(function () { return {}; });
+      var errMsg = (syncErr.errors && syncErr.errors[0] && syncErr.errors[0].msg) || syncErr.error || 'No se pudo guardar la cita.';
+      toast(errMsg, '#EF4444');
+      window._isBookingProcessing = false;
+      clGoStep(4);
+      return;
+    }
+  } catch (e) {
+    console.error('Error sync appointment:', e);
+    toast('Error de conexión al confirmar tu cita. Intenta nuevamente.', '#EF4444');
+    window._isBookingProcessing = false;
+    return;
   }
 
-
-  fetch('/api/sync', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      type: 'appointments', business_id: biz.id,
-      appointments: [{
-        id: apptId, business_id: biz.id, worker_id: worker.id,
-        client_id: '', client_name: name, client_phone: phone, client_email: email,
-        token: token, notes: '', service_name: CSEL.svc,
-        service_price: CSEL.svcPrice || 0, date: CSEL.date, time: CSEL.time,
-        status: apptStatus
-      }]
-    })
-  }).catch(function (e) { console.error('Error sync appointment:', e); });
+  if (isGeneral) {
+    if (!biz.appointments) biz.appointments = [];
+    if (isModifying) {
+      biz.appointments = biz.appointments.filter(function (a) { return a.token !== token; });
+      CSEL.editingToken = null;
+    }
+    biz.appointments.push(appt);
+  } else {
+    if (!worker.appointments) worker.appointments = [];
+    if (isModifying) {
+      worker.appointments = worker.appointments.filter(function (a) { return a.token !== token; });
+      CSEL.editingToken = null;
+    }
+    worker.appointments.push(appt);
+  }
 
   if (typeof syncClientToCloud === 'function') syncClientToCloud(CSEL.bizId, { name: name, phone: phone, email: email });
 
   try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch (e) { }
 
-  if (worker.email) {
+  var notifyEmail = isGeneral ? biz.email : (worker && worker.email);
+  if (notifyEmail) {
     fetch('/api/send-email', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type: 'new_booking_biz', to: worker.email,
-        data: { clientName: name, clientPhone: phone, service: CSEL.svc, date: CSEL.date, time: CSEL.time, workerName: worker.name }
+        type: 'new_booking_biz', to: notifyEmail,
+        data: { clientName: name, clientPhone: phone, service: CSEL.svc, date: CSEL.date, time: CSEL.time, workerName: displayWorkerName }
       })
     }).catch(function (e) { console.error(e); });
   }
@@ -551,17 +632,17 @@ function confirmBooking() {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         type: 'booking_confirmed', to: email,
-        data: { bizName: biz.name, workerName: worker.name, service: CSEL.svc, date: CSEL.date, time: CSEL.time, price: money(CSEL.svcPrice) }
+        data: { bizName: biz.name, workerName: displayWorkerName, service: CSEL.svc, date: CSEL.date, time: CSEL.time, price: money(CSEL.svcPrice) }
       })
     }).catch(function (e) { console.error(e); });
   }
 
   var exitoTexto = isModifying ? 'ha sido modificada' : 'ha sido confirmada';
-  T('cl-confirm-txt', '¡Hola ' + sanitizeText(name) + '! Tu cita en ' + sanitizeText(biz.name) + ' con ' + sanitizeText(worker.name) + ' ' + exitoTexto + '.');
+  T('cl-confirm-txt', 'Hola ' + sanitizeText(name) + ', tu cita en ' + sanitizeText(biz.name) + ' (' + sanitizeText(displayWorkerName) + ') ' + exitoTexto + '.');
   H('cl-confirm-card',
     '<div style="display:flex;flex-direction:column;gap:10px">'
     + '<div style="display:flex;justify-content:space-between"><span style="color:var(--t2);font-size:13px">Negocio</span><span style="font-weight:700;font-size:13px">' + san(biz.name) + '</span></div>'
-    + '<div style="display:flex;justify-content:space-between"><span style="color:var(--t2);font-size:13px">Profesional</span><span style="font-weight:700;font-size:13px">' + san(worker.name) + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between"><span style="color:var(--t2);font-size:13px">Profesional</span><span style="font-weight:700;font-size:13px">' + san(displayWorkerName) + '</span></div>'
     + '<div style="display:flex;justify-content:space-between"><span style="color:var(--t2);font-size:13px">Servicio</span><span style="font-weight:700;font-size:13px">' + san(CSEL.svc || '') + '</span></div>'
     + '<div style="display:flex;justify-content:space-between"><span style="color:var(--t2);font-size:13px">Fecha</span><span style="font-weight:700;font-size:13px">' + sanitizeText(CSEL.date) + '</span></div>'
     + '<div style="display:flex;justify-content:space-between"><span style="color:var(--t2);font-size:13px">Hora</span><span style="font-weight:700;font-size:13px">' + sanitizeText(CSEL.time) + '</span></div>'
@@ -570,12 +651,13 @@ function confirmBooking() {
   );
   var wa = G('cl-wa-btn');
   if (wa) {
-    var waMsg = isModifying ? '¡Mi cita fue modificada en ' + biz.name + '!\n' : '¡Cita confirmada en ' + biz.name + '!\n';
-    waMsg += 'Profesional: ' + worker.name + '\nServicio: ' + CSEL.svc + '\nFecha: ' + CSEL.date + ' a las ' + CSEL.time
-      + '\nTotal: ' + money(CSEL.svcPrice) + '\n\nPara gestionar o cancelar tu cita visita:\n' + window.location.origin + '/#manage/' + biz.id + '/' + token;
+    var waMsg = isModifying ? 'Mi cita fue modificada en ' + biz.name + '\n' : 'Cita confirmada en ' + biz.name + '\n';
+    waMsg += 'Profesional: ' + displayWorkerName + '\nServicio: ' + CSEL.svc + '\nFecha: ' + CSEL.date + ' a las ' + CSEL.time
+      + '\nTotal: ' + money(CSEL.svcPrice) + '\n\nPara gestionar o cancelar tu cita visita:\n' + window.location.origin + '/app#manage/' + biz.id + '/' + token;
     wa.href = 'https://wa.me/' + phone.replace(/\D/g, '') + '?text=' + encodeURIComponent(waMsg);
   }
   CSEL.bookingToken = token;
+  window._isBookingProcessing = false;
   clGoStep(6);
 }
 

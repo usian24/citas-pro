@@ -211,28 +211,53 @@ router.post('/sync', async (req, res) => {
         const esNueva = !enSupabase && appt.status === 'confirmed';
         const esReagendada = appt.status === 'rescheduled' && !!enSupabase;
 
+        const normalizedWorkerId = (appt.worker_id && String(appt.worker_id).trim() && String(appt.worker_id).trim() !== '__GENERAL__')
+          ? String(appt.worker_id).trim()
+          : null;
+
         // 🛡️ PREVENCIÓN DE DOBLE RESERVA (RACE CONDITION)
         if (appt.status !== 'cancelled') {
-          const { data: conflict } = await supabase
-            .from('appointments')
-            .select('id')
-            .eq('business_id', business_id)
-            .eq('date', appt.date)
-            .eq('time', appt.time)
-            .neq('status', 'cancelled')
-            .neq('id', String(appt.id))
-            .limit(1);
+          if (normalizedWorkerId) {
+            const { data: conflict } = await supabase
+              .from('appointments')
+              .select('id')
+              .eq('business_id', business_id)
+              .eq('worker_id', normalizedWorkerId)
+              .eq('date', appt.date)
+              .eq('time', appt.time)
+              .neq('status', 'cancelled')
+              .neq('id', String(appt.id))
+              .limit(1);
 
-          if (conflict && conflict.length > 0) {
-            apptErrors.push({ id: appt.id, msg: 'El horario de las ' + appt.time + ' acaba de ser ocupado por otra persona. Por favor elige otro.' });
-            continue; // Saltamos esta cita para no crear un duplicado
+            if (conflict && conflict.length > 0) {
+              apptErrors.push({ id: appt.id, msg: 'El horario de las ' + appt.time + ' acaba de ser ocupado por otra persona. Por favor elige otro.' });
+              continue; // Saltamos esta cita para no crear un duplicado
+            }
+          } else {
+            // Servicio General: permitir mientras exista al menos un trabajador activo libre
+            const [workersRes, sameSlotRes] = await Promise.all([
+              supabase.from('workers').select('id').eq('business_id', business_id),
+              supabase.from('appointments')
+                .select('id')
+                .eq('business_id', business_id)
+                .eq('date', appt.date)
+                .eq('time', appt.time)
+                .neq('status', 'cancelled')
+                .neq('id', String(appt.id))
+            ]);
+            const capacity = Math.max(1, (workersRes.data || []).length);
+            const occupied = (sameSlotRes.data || []).length;
+            if (occupied >= capacity) {
+              apptErrors.push({ id: appt.id, msg: 'El horario de las ' + appt.time + ' ya no tiene profesionales disponibles. Por favor elige otro.' });
+              continue;
+            }
           }
         }
 
         const { error } = await supabase.from('appointments').upsert({
           id: String(appt.id),
           business_id: business_id,
-          worker_id: appt.worker_id || '',
+          worker_id: normalizedWorkerId,
           client_id: appt.client_id || '',
           client_name: appt.client_name || '',
           client_phone: appt.client_phone || '',
@@ -251,16 +276,16 @@ router.post('/sync', async (req, res) => {
           continue;
         }
 
-        if (appt.worker_id) {
+        if (normalizedWorkerId) {
           if (esNueva) {
             await enviarPushWorker(
               supabase,
-              appt.worker_id,
-              '📅 Nueva cita',
+              normalizedWorkerId,
+              'Nueva cita',
               (appt.client_name || 'Cliente') + ' · ' + (appt.service_name || '') + ' · ' + (appt.date || '') + ' a las ' + (appt.time || '')
             );
             await supabase.from('notifications').insert({
-              worker_id: appt.worker_id,
+              worker_id: normalizedWorkerId,
               business_id: business_id,
               type: 'new_booking',
               msg: 'Nueva cita: ' + (appt.client_name || 'Cliente'),
@@ -270,12 +295,12 @@ router.post('/sync', async (req, res) => {
           } else if (esReagendada) {
             await enviarPushWorker(
               supabase,
-              appt.worker_id,
-              '🔄 Cita reagendada',
+              normalizedWorkerId,
+              'Cita reagendada',
               (appt.client_name || 'Cliente') + ' cambió a ' + (appt.date || '') + ' a las ' + (appt.time || '')
             );
             await supabase.from('notifications').insert({
-              worker_id: appt.worker_id,
+              worker_id: normalizedWorkerId,
               business_id: business_id,
               type: 'booking_modify',
               msg: 'Cita reagendada: ' + (appt.client_name || 'Cliente'),
@@ -401,8 +426,8 @@ router.post('/sync', async (req, res) => {
         stock: parseInt(data.stock) || 0,
         image: data.image || '',
         category: data.category || '',
-        rating: parseFloat(data.rating) || 0,
-        reviews_count: parseInt(data.reviews_count) || 0
+        rating: parseFloat(data.rating) || 5.0,
+        discount_percent: parseFloat(data.discount_percent) || 0
       });
 
       if (error) {
