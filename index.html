@@ -11,8 +11,8 @@
             window.location.href = '/app' + window.location.hash;
         }
 
-        // Script inicial para evitar parpadeo de modo oscuro
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        // Modo claro por defecto (solo activar oscuro si el usuario lo eligió explícitamente)
+        if (localStorage.theme === 'dark') {
             document.documentElement.classList.add('dark')
         } else {
             document.documentElement.classList.remove('dark')

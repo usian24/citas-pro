@@ -1413,28 +1413,24 @@ select.inp option {
 }
 
 /* ════════════════════════════════════════
-   MODO CLARO - DISEÑO PREMIUM Y ELEGANTE CON PROFUNDIDAD
+   MODO CLARO - ESTILO APPLE LIMPIO (POR DEFECTO)
 ════════════════════════════════════════ */
 [data-theme="light"] {
-  --bg: #F4F7FB;
-  /* Fondo gris perlado súper suave (no blanco puro) */
-  --bg2: #E2E8F0;
-  --bg3: #E9EEF5;
+  --bg: #F5F5F7;
+  --bg2: #ECEEF2;
+  --bg3: #EEF1F6;
   --card: #FFFFFF;
-  /* Blanco puro SOLO para tarjetas y modales */
-  --card2: #FAFCFF;
-  --b: rgba(15, 23, 42, 0.1);
-  /* Bordes definidos pero extremadamente suaves */
+  --card2: #FAFAFC;
+  --b: rgba(15, 23, 42, 0.09);
+  --b2: rgba(15, 23, 42, 0.14);
+  --b3: rgba(15, 23, 42, 0.22);
   --text: #0F172A;
-  /* Texto gris oscuro/casi negro (máxima legibilidad) */
-  --t2: #334155;
-  /* Texto secundario gris oscuro */
-  --muted: #8B9BB4;
-  /* Texto terciario gris medio */
+  --t2: #475569;
+  --muted: #64748B;
   --blue: #2563EB;
-  /* Azul profesional vibrante pero no chillón */
-  --blue3: #111827;
-  --bblue: rgba(37, 99, 235, .1);
+  --blue2: #1D4ED8;
+  --blue3: #1E40AF;
+  --bblue: rgba(37, 99, 235, 0.08);
   --green: #16A34A;
   --red: #DC2626;
   --gold: #D97706;
@@ -1449,7 +1445,7 @@ select.inp option {
 
 
 
-/* 🔴 Tarjetas y Cuadritos Blancos con Sombras Elegantes y Relieve PROFUNDO */
+/* Superficies blancas limpias con elevación sutil estilo Apple */
 [data-theme="light"] .card,
 [data-theme="light"] .sbox,
 [data-theme="light"] .link-box,
@@ -1461,9 +1457,12 @@ select.inp option {
 [data-theme="light"] .topt {
   background: var(--card);
   border-color: var(--b);
-  /* Nueva sombra premium con profundidad real */
-  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.05) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03) !important;
   color: var(--text);
+}
+
+[data-theme="light"] .dash-sidebar {
+  background: #FFFFFF;
 }
 
 [data-theme="light"] .modal,

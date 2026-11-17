@@ -1,20 +1,29 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5"/>
-  <meta name="theme-color" content="#07090F"/>
+  <meta name="theme-color" content="#F5F5F7"/>
+  <script>
+    (function () {
+      try {
+        var v2 = localStorage.getItem('citaspro_theme_v2');
+        var t = v2 ? (localStorage.getItem('citaspro_theme') || 'light') : 'light';
+        document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+      } catch (e) {}
+    })();
+  </script>
   <title>Tienda | Citas Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/css/styles.css"/>
-  <link rel="stylesheet" href="assets/css/tienda.css">
+  <link rel="stylesheet" href="assets/css/styles.css?v=3"/>
+  <link rel="stylesheet" href="assets/css/tienda.css?v=2">
 </head>
 <body>
 
 <!-- Header -->
 <header class="shop-header">
   <button onclick="window.history.back()"
-          style="background:rgba(255,255,255,0.07);border:1px solid var(--b);border-radius:12px;
+          style="background:var(--bg3);border:1px solid var(--b);border-radius:12px;
                  padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);
                  display:flex;align-items:center;gap:6px;">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -23,8 +32,8 @@
     </svg> Atrás
   </button>
   <div style="font-size:15px;font-weight:800;text-align:center" id="shop-title">Cargando...</div>
-  <button onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'"
-          style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.07);
+  <button onclick="(function(){var n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;try{localStorage.setItem('citaspro_theme',n);localStorage.setItem('citaspro_theme_v2','1');}catch(e){}})()"
+          style="width:36px;height:36px;border-radius:12px;background:var(--bg3);
                  border:1px solid var(--b);display:flex;align-items:center;justify-content:center;color:var(--text);">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

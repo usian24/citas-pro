@@ -13,7 +13,7 @@
       display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid var(--b);
     }
-    [data-theme="light"] .shop-header { background: rgba(244,247,251,0.96); }
+    [data-theme="light"] .shop-header { background: rgba(255,255,255,0.94); }
 
     /* ── Buscador ── */
     .shop-search {
@@ -57,6 +57,7 @@
       max-width:66px; text-align:center; line-height:1.2;
     }
     .cat-pill-client.active .cat-label { color:#7EB8FF; }
+    [data-theme="light"] .cat-pill-client.active .cat-label { color: var(--blue); }
 
     /* ── Tren de productos ── */
     .catalogo-seccion { margin-bottom:32px; }
