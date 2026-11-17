@@ -349,6 +349,14 @@ function _pStaffOptions() {
   return list;
 }
 
+function _pWorkersOnly() {
+  return (CUR && CUR.workers || [])
+    .filter(function (w) { return w.active !== false; })
+    .map(function (w) {
+      return { id: w.id, name: w.name, role: w.spec || 'Profesional', photo: w.photo || '' };
+    });
+}
+
 /* ══════════════════════════════════════════════════
    RENDER PRINCIPAL DE CAJA
 ══════════════════════════════════════════════════ */
@@ -548,7 +556,7 @@ function _pStep1Client() {
   } else {
     var q = _pNorm(c.clientSearch);
     var matches = q ? POS_STATE.clients.filter(function (cl) {
-      return _pNorm(cl.name).indexOf(q) >= 0 || _pNorm(cl.phone).indexOf(q) >= 0;
+      return _pNorm(cl.name).indexOf(q) >= 0 || _pNorm(cl.phone).indexOf(q) >= 0 || _pNorm(cl.email).indexOf(q) >= 0;
     }).slice(0, 6) : POS_STATE.clients.slice(0, 5);
 
     html += '<div class="pos-input-bar"><div class="pos-input-wrap">'
@@ -594,7 +602,7 @@ function posRenderClientMatches() {
   if (!el) return;
   var q = _pNorm(POS_STATE.cart.clientSearch);
   var matches = q ? POS_STATE.clients.filter(function (cl) {
-    return _pNorm(cl.name).indexOf(q) >= 0 || _pNorm(cl.phone).indexOf(q) >= 0;
+    return _pNorm(cl.name).indexOf(q) >= 0 || _pNorm(cl.phone).indexOf(q) >= 0 || _pNorm(cl.email).indexOf(q) >= 0;
   }).slice(0, 6) : POS_STATE.clients.slice(0, 5);
   el.innerHTML = _pBuildClientMatchesHtml(matches);
 }
@@ -602,7 +610,7 @@ function posRenderClientMatches() {
 function posSelectClient(clientId) {
   var cl = POS_STATE.clients.find(function (x) { return x.id === clientId; });
   if (!cl) return;
-  POS_STATE.cart.client = { id: cl.id, name: cl.name, phone: cl.phone || '', email: cl.email || '' };
+  POS_STATE.cart.client = { id: cl.from_appointments ? null : cl.id, name: cl.name, phone: cl.phone || '', email: cl.email || '' };
   POS_STATE.cart.clientSearch = '';
   posRender();
 }
@@ -887,27 +895,48 @@ function posAdjSvc(key, delta) {
   posRender();
 }
 
-/* ── Paso 4: Profesional ── */
+/* ── Paso 4: Profesional (solo trabajadores del negocio + alta rápida) ── */
 function _pStep4Worker() {
-  var staff = _pStaffOptions();
+  var workers = _pWorkersOnly();
   var c = POS_STATE.cart;
   var html = '<button type="button" class="pos-back-btn" onclick="posGoStep(3)">' + _pSvg('back', 15) + ' Servicios</button>';
-  html += '<div class="pos-sec-label">4. ¿Quién atendió?</div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">'
+    + '<div class="pos-sec-label" style="margin:0">4. ¿Quién atendió?</div>'
+    + '<button type="button" class="pos-btn secondary sm" onclick="posQuickAddWorker()">' + _pSvg('plus', 13) + ' Añadir trabajador</button>'
+    + '</div>';
+
+  if (!workers.length) {
+    html += '<div class="pos-surface pos-surface-pad" style="text-align:center">'
+      + '<div style="font-size:14px;font-weight:700;margin-bottom:4px">No hay trabajadores registrados</div>'
+      + '<div style="font-size:13px;color:var(--t2);margin-bottom:14px">Registra a tu equipo para asignar quién atendió. Si eres el dueño y también atiendes clientes, crea tu perfil de trabajador.</div>'
+      + '<button type="button" class="pos-btn primary" onclick="posQuickAddWorker()">' + _pSvg('plus', 15) + ' Registrar trabajador</button>'
+      + '</div>';
+    return html;
+  }
+
   html += '<div class="pos-grid">';
-  staff.forEach(function (st) {
-    var isSel = (c.workerName === st.name && (c.workerId || '') === (st.id || ''));
-    var img = _pFirstImg(st.photo);
-    html += '<div class="pos-tile' + (isSel ? ' selected' : '') + '" onclick="posPickWorker(\'' + san(st.id) + '\',\'' + san(st.name) + '\')">'
+  workers.forEach(function (w) {
+    var isSel = (c.workerId && c.workerId === w.id);
+    var img = _pFirstImg(w.photo);
+    html += '<div class="pos-tile' + (isSel ? ' selected' : '') + '" onclick="posPickWorker(\'' + san(w.id) + '\',\'' + san(w.name) + '\')">'
       + '<div class="pos-tile-head"><div class="pos-tile-media round">' + (img ? '<img src="' + san(img) + '" alt=""/>' : _pSvg('user', 18)) + '</div></div>'
-      + '<div class="pos-tile-name">' + san(st.name) + '</div>'
-      + '<div style="font-size:12px;color:var(--t2)">' + san(st.role) + '</div>'
+      + '<div class="pos-tile-name">' + san(w.name) + '</div>'
+      + '<div style="font-size:12px;color:var(--t2)">' + san(w.role) + '</div>'
       + '</div>';
   });
   html += '</div>';
   html += '<div class="pos-actions">'
-    + '<button type="button" class="pos-btn primary full" ' + (c.workerName ? '' : 'disabled') + ' onclick="posGoStep(5)">Continuar al pago</button>'
+    + '<button type="button" class="pos-btn primary full" ' + (c.workerId ? '' : 'disabled') + ' onclick="posGoStep(5)">Continuar al pago</button>'
     + '</div>';
   return html;
+}
+
+function posQuickAddWorker() {
+  if (typeof openWorkerModal === 'function') {
+    openWorkerModal(null);
+  } else {
+    toast('Ve a la pestaña Equipo para añadir un trabajador', '#4A7FD4');
+  }
 }
 
 function posPickWorker(id, name) {
@@ -1602,6 +1631,7 @@ window.posManualBarcodeScan = posManualBarcodeScan;
 window.posToggleSvc = posToggleSvc;
 window.posAdjSvc = posAdjSvc;
 window.posPickWorker = posPickWorker;
+window.posQuickAddWorker = posQuickAddWorker;
 window.posUpdatePayTotal = posUpdatePayTotal;
 window.posConfirmSale = posConfirmSale;
 window.posOpenCloseFlow = posOpenCloseFlow;

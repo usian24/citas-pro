@@ -71,19 +71,53 @@ router.get('/pos/state', async (req, res) => {
       salesRes,
       prodsRes,
       svcsRes,
-      clientsRes
+      clientsRes,
+      apptsClientsRes
     ] = await Promise.all([
       supabase.from('businesses').select('id, name, country, owner_pin, pos_config').eq('id', bizId).single(),
       supabase.from('pos_cash_registers').select('*').eq('business_id', bizId).order('date', { ascending: false }).limit(20),
       supabase.from('pos_sales').select('*').eq('business_id', bizId).eq('sale_date', today).order('created_at', { ascending: false }).limit(300),
       supabase.from('products').select('*').eq('business_id', bizId).order('name', { ascending: true }),
       supabase.from('services').select('*').eq('business_id', bizId).eq('worker_id', '').order('name', { ascending: true }),
-      supabase.from('clients').select('*').eq('business_id', bizId).order('name', { ascending: true }).limit(500)
+      supabase.from('clients').select('*').eq('business_id', bizId).order('name', { ascending: true }).limit(500),
+      supabase.from('appointments').select('client_name, client_phone, client_email').eq('business_id', bizId).order('date', { ascending: false }).limit(500)
     ]);
 
     if (bizRes.error || !bizRes.data) {
       return res.status(404).json({ error: 'Negocio no encontrado' });
     }
+
+    // Combinar clientes de public.clients + clientes históricos de citas del MISMO negocio sin duplicar
+    const mergedClients = (clientsRes.data || []).slice();
+    const seenKeys = new Set();
+    mergedClients.forEach(c => {
+      const ph = String(c.phone || '').replace(/\D/g, '');
+      const em = String(c.email || '').toLowerCase().trim();
+      const nm = String(c.name || '').toLowerCase().trim();
+      if (ph) seenKeys.add('p:' + ph);
+      if (em) seenKeys.add('e:' + em);
+      if (nm) seenKeys.add('n:' + nm);
+    });
+    (apptsClientsRes.data || []).forEach((a, idx) => {
+      const name = String(a.client_name || '').trim();
+      if (!name) return;
+      const ph = String(a.client_phone || '').replace(/\D/g, '');
+      const em = String(a.client_email || '').toLowerCase().trim();
+      const nm = name.toLowerCase();
+      if ((ph && seenKeys.has('p:' + ph)) || (em && seenKeys.has('e:' + em)) || seenKeys.has('n:' + nm)) return;
+      if (ph) seenKeys.add('p:' + ph);
+      if (em) seenKeys.add('e:' + em);
+      seenKeys.add('n:' + nm);
+      mergedClients.push({
+        id: 'appt_cl_' + idx,
+        business_id: bizId,
+        name,
+        phone: a.client_phone || '',
+        email: a.client_email || '',
+        from_appointments: true
+      });
+    });
+    mergedClients.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'es'));
 
     const registers = regRes.data || [];
     const todayRegister = registers.find(r => r.date === today) || null;
@@ -127,7 +161,7 @@ router.get('/pos/state', async (req, res) => {
         active: s.active !== false,
         points: s.points != null ? parseInt(s.points, 10) : 10
       })),
-      clients: clientsRes.data || [],
+      clients: mergedClients,
       posConfig: mergePosConfig(bizRes.data.pos_config),
       hasCustomPin: Boolean(bizRes.data.owner_pin)
     });
@@ -494,7 +528,7 @@ router.post('/pos/sale', async (req, res) => {
     const total = Math.max(0, Math.round((gross - discountLoyalty - discountManual) * 100) / 100);
 
     // 3. Resolver o crear cliente si viene teléfono/nombre
-    let resolvedClientId = body.client_id || null;
+    let resolvedClientId = (body.client_id && !String(body.client_id).startsWith('appt_cl_')) ? body.client_id : null;
     const clientName = String(body.client_name || '').trim();
     const clientPhone = String(body.client_phone || '').trim();
 

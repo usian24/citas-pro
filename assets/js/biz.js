@@ -1062,6 +1062,7 @@ function saveBizWorkerProfile() {
   else { if (!validEmail(email)) { toast('Email inválido', '#EF4444'); return; } if (!pass || pass.length < 6) { toast('Contraseña mínimo 6 caracteres', '#EF4444'); return; } CUR.workers.push({ id: workerId, name: name, email: email, pass: pass, phone: phone, spec: spec, photo: photo || '', active: true, services: [], horario: DEFAULT_HORARIO.map(function (h) { return Object.assign({}, h); }), appointments: [], photos: [], notifications: [], cover: '' }); toast('Trabajador creado', '#22C55E'); }
   fetch('/api/save-worker', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upsert', worker: workerDbObj }) }).catch(function (err) { });
   editWorkerId = null; window._barPhoto = null; saveDB(); renderBizWorkers(); closeOv('ov-worker');
+  if (typeof posRender === 'function' && G('bp-caja') && G('bp-caja').classList.contains('on')) { posRender(); }
 }
 
 function confirmDeleteWorker(id) {
