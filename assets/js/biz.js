@@ -1245,13 +1245,52 @@ function _kpi(label, value, color, sub) {
 }
 
 /* ══════════════════════════
-   CALENDARIO Y AGENDA DUEÑO
+   CALENDARIO Y AGENDA DUEÑO (Apple-Clean + Zona Horaria Real + Click en Hueco Vacío)
 ══════════════════════════ */
+var AG_PASTEL_PALETTE = ['#9FD8F5', '#F9BD68', '#F59CC3', '#6FD6C8', '#B9B8FF', '#A7F0C0', '#F7E07A', '#F7A59A', '#D6B4F7', '#B8E1FF'];
+var _agLastRenderedDate = null;
+var _agNowInterval = null;
+
+function _agBizNow() {
+  var ctry = (CUR && CUR.country) ? CUR.country : 'ES';
+  return typeof ahoraEnNegocio === 'function' ? ahoraEnNegocio(ctry) : new Date();
+}
+
+function _agBizTodayStr() {
+  var n = _agBizNow();
+  return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0');
+}
+
+function _agServiceColor(svcName) {
+  var allSvcs = (CUR && CUR.services ? CUR.services : []).slice();
+  (CUR && CUR.workers || []).forEach(function (w) {
+    (w.services || []).forEach(function (s) { allSvcs.push(s); });
+  });
+  var match = allSvcs.find(function (s) { return s.name === svcName && s.color && s.color !== '#4A7FD4'; });
+  if (match && match.color) return match.color;
+  var hash = 0;
+  String(svcName || 'Servicio').split('').forEach(function (ch) { hash = ((hash * 31) + ch.charCodeAt(0)) | 0; });
+  return AG_PASTEL_PALETTE[Math.abs(hash) % AG_PASTEL_PALETTE.length];
+}
+
+function _agMinutesToHM(mins) {
+  var h = Math.floor(mins / 60) % 24;
+  var m = mins % 60;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+}
+
+function _agFormatTime(hm) {
+  if (typeof formatHora === 'function' && CUR && CUR.country === 'US') {
+    return formatHora(hm, 'US');
+  }
+  return hm;
+}
+
 function renderCalendar() {
   const now = calendarDate, year = now.getFullYear(), month = now.getMonth();
   T('cal-title', MONTHS[month] + ' ' + year);
   const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date().toISOString().split('T')[0];
+  const today = _agBizTodayStr();
   const apptDates = {};
   (CUR ? (CUR.workers || []) : []).forEach(function (w) { (w.appointments || []).forEach(function (a) { if (a.date && a.status !== 'cancelled') apptDates[a.date] = true; }); });
   (CUR ? (CUR.appointments || []) : []).forEach(function (a) { if (a.date && a.status !== 'cancelled') apptDates[a.date] = true; });
@@ -1268,139 +1307,449 @@ function renderCalendar() {
   H('cal-grid', html);
 }
 
-function selectCalDay(ds) { selectedCalDay = ds; renderCalendar(); initAgenda(); }
+function toggleAgCalendar() {
+  var panel = G('ag-cal-panel');
+  var btn = G('ag-cal-toggle-btn');
+  if (!panel) return;
+  var isOpen = panel.classList.toggle('open');
+  if (btn) btn.classList.toggle('active', isOpen);
+  if (isOpen) renderCalendar();
+}
+
+function agGoToday() {
+  var t = _agBizTodayStr();
+  selectedCalDay = t;
+  calendarDate = new Date(t + 'T12:00:00');
+  renderCalendar();
+  initAgenda();
+}
+
+function agShiftDay(delta) {
+  var base = new Date((selectedCalDay || _agBizTodayStr()) + 'T12:00:00');
+  base.setDate(base.getDate() + delta);
+  var ds = base.getFullYear() + '-' + String(base.getMonth() + 1).padStart(2, '0') + '-' + String(base.getDate()).padStart(2, '0');
+  selectCalDay(ds);
+}
+
+function selectCalDay(ds) {
+  selectedCalDay = ds;
+  calendarDate = new Date(ds + 'T12:00:00');
+  renderCalendar();
+  initAgenda();
+}
 function prevMonth() { calendarDate.setMonth(calendarDate.getMonth() - 1); renderCalendar(); }
 function nextMonth() { calendarDate.setMonth(calendarDate.getMonth() + 1); renderCalendar(); }
 
+function _renderAgWeekStrip(dateStr) {
+  var strip = G('ag-week-strip');
+  if (!strip) return;
+  var todayStr = _agBizTodayStr();
+  var d0 = new Date(dateStr + 'T12:00:00');
+  var offset = (d0.getDay() + 6) % 7; // Lunes = 0
+  var dayLetters = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+
+  var apptDates = {};
+  (CUR ? (CUR.workers || []) : []).forEach(function (w) {
+    (w.appointments || []).forEach(function (a) {
+      if (a.date && a.status !== 'cancelled' && (window._currentBizWorkerFilter === 'all' || window._currentBizWorkerFilter === w.id)) {
+        apptDates[a.date] = true;
+      }
+    });
+  });
+  if (window._currentBizWorkerFilter === 'all') {
+    (CUR ? (CUR.appointments || []) : []).forEach(function (a) {
+      if (a.date && a.status !== 'cancelled') apptDates[a.date] = true;
+    });
+  }
+
+  var html = '';
+  for (var i = 0; i < 7; i++) {
+    var dd = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() - offset + i);
+    var ds = dd.getFullYear() + '-' + String(dd.getMonth() + 1).padStart(2, '0') + '-' + String(dd.getDate()).padStart(2, '0');
+    var cls = 'ag-week-btn' + (ds === dateStr ? ' sel' : '') + (ds === todayStr ? ' today' : '');
+    html += '<button type="button" class="' + cls + '" onclick="selectCalDay(\'' + ds + '\')">'
+      + '<small>' + dayLetters[dd.getDay()] + '</small>'
+      + '<strong>' + dd.getDate() + '</strong>'
+      + (apptDates[ds] ? '<span class="ag-week-dot"></span>' : '')
+      + '</button>';
+  }
+  strip.innerHTML = html;
+}
+
+function _renderAgLegend() {
+  var legEl = G('ag-service-legend');
+  if (!legEl || !CUR) return;
+  var seen = {};
+  var items = [];
+  (CUR.services || []).forEach(function (s) {
+    if (s.active !== false && s.name && !seen[s.name]) { seen[s.name] = true; items.push(s.name); }
+  });
+  (CUR.workers || []).forEach(function (w) {
+    (w.services || []).forEach(function (s) {
+      if (s.name && !seen[s.name]) { seen[s.name] = true; items.push(s.name); }
+    });
+  });
+  legEl.innerHTML = items.slice(0, 12).map(function (name) {
+    return '<span class="ag-leg-item"><span class="ag-leg-dot" style="background:' + _agServiceColor(name) + '"></span>' + san(name) + '</span>';
+  }).join('');
+}
+
 function initAgenda() {
   if (!CUR) return;
-  const parts = selectedCalDay.split('-');
-  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const d = new Date(selectedCalDay + 'T12:00');
-  const lbl = G('agenda-day-label');
-  if (lbl) { lbl.textContent = days[d.getDay()] + ' ' + parseInt(parts[2]) + ' de ' + MONTHS[parseInt(parts[1]) - 1] + ' de ' + parts[0]; lbl.style.textAlign = 'center'; lbl.style.fontSize = '14px'; }
+  if (!selectedCalDay) selectedCalDay = _agBizTodayStr();
+
+  var d = new Date(selectedCalDay + 'T12:00:00');
+  var lbl = G('agenda-day-label');
+  if (lbl) {
+    lbl.textContent = d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '');
+  }
+  var picker = G('ag-date-picker');
+  if (picker) picker.value = selectedCalDay;
+
+  var sel = G('ag-worker-filter');
+  if (sel) {
+    var allW = CUR.workers || [];
+    var opts = '<option value="all"' + (window._currentBizWorkerFilter === 'all' ? ' selected' : '') + '>Todo el equipo</option>';
+    allW.forEach(function (w) {
+      opts += '<option value="' + san(w.id) + '"' + (window._currentBizWorkerFilter === w.id ? ' selected' : '') + '>' + san(w.name) + '</option>';
+    });
+    sel.innerHTML = opts;
+  }
+
+  _renderAgWeekStrip(selectedCalDay);
+  _renderAgLegend();
   const listEl = G('biz-agenda-list'); if (listEl) listEl.innerHTML = '';
   renderBizDailyTimeline(selectedCalDay);
+
+  if (!_agNowInterval) {
+    _agNowInterval = setInterval(function () {
+      var pane = G('bp-agenda');
+      if (pane && pane.classList.contains('on') && selectedCalDay === _agBizTodayStr()) {
+        renderBizDailyTimeline(selectedCalDay);
+      }
+    }, 60000);
+  }
 }
 
 window._currentBizWorkerFilter = 'all';
 
 /* ══════════════════════════════════════════════════
-   TIMELINE
+   TIMELINE DE EQUIPO (Estilo Apple/Booksy + Línea Roja en Vivo + Click para Crear Cita)
 ══════════════════════════════════════════════════ */
 function generateBlockedTimeHTML(worker, dateStr, startHour, endHour, pxPerMin) {
   const d = new Date(dateStr + 'T12:00');
   const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const dayName = dayNames[d.getDay()];
-  const horario = worker.horario || [];
-  const hDay = horario.find(function (h) { return h.day === dayName; }) || { open: true, from1: '09:00', to1: '14:00' };
+  const horario = (worker && worker.horario && worker.horario.length) ? worker.horario : (CUR && CUR.horario && CUR.horario.length ? CUR.horario : DEFAULT_HORARIO);
+  const hDay = horario.find(function (h) { return h.day === dayName; }) || { open: true, from1: '09:00', to1: '20:00' };
   let html = '', startMinTotal = startHour * 60, endMinTotal = endHour * 60;
   function timeToMins(t) { if (!t) return 0; const p = t.split(':').map(Number); return p[0] * 60 + p[1]; }
-  function drawBlock(startM, endM) { const ds = Math.max(startM, startMinTotal), de = Math.min(endM, endMinTotal); if (ds >= de) return ''; return '<div class="tl-out" style="top:' + (ds - startMinTotal) * pxPerMin + 'px;height:' + (de - ds) * pxPerMin + 'px;"></div>'; }
+  function drawBlock(startM, endM) {
+    const ds = Math.max(startM, startMinTotal), de = Math.min(endM, endMinTotal);
+    if (ds >= de) return '';
+    return '<div class="ag-hatch" style="top:' + ((ds - startMinTotal) * pxPerMin) + 'px;height:' + ((de - ds) * pxPerMin) + 'px;"></div>';
+  }
   if (!hDay.open) return drawBlock(startMinTotal, endMinTotal);
-  const f1 = timeToMins(hDay.from1 || hDay.from || '09:00'), t1 = timeToMins(hDay.to1 || hDay.to || '14:00');
+  const f1 = timeToMins(hDay.from1 || hDay.from || '09:00'), t1 = timeToMins(hDay.to1 || hDay.to || '20:00');
   html += drawBlock(startMinTotal, f1);
-  if (hDay.hasBreak && hDay.from2 && hDay.to2) { const f2 = timeToMins(hDay.from2), t2 = timeToMins(hDay.to2); html += drawBlock(t1, f2); html += drawBlock(t2, endMinTotal); } else html += drawBlock(t1, endMinTotal);
+  if (hDay.hasBreak && hDay.from2 && hDay.to2) {
+    const f2 = timeToMins(hDay.from2), t2 = timeToMins(hDay.to2);
+    html += drawBlock(t1, f2);
+    html += drawBlock(t2, endMinTotal);
+  } else {
+    html += drawBlock(t1, endMinTotal);
+  }
   return html;
 }
 
-// Reemplaza generateTimelineApptHTML en biz.js
-
 function generateTimelineApptHTML(a, worker, startHour, pxPerMin, idx, clickFn) {
   if (!a.time) return '';
-  const pts = a.time.split(':').map(Number), minsFromStart = (pts[0] * 60 + pts[1]) - (startHour * 60);
+  const pts = a.time.split(':').map(Number);
+  const startMin = pts[0] * 60 + pts[1];
+  const minsFromStart = startMin - (startHour * 60);
   if (minsFromStart < 0) return '';
+
   let dur = 30;
-  if (worker && worker.services) {
-    const sObj = worker.services.find(function (s) { return s.name === a.svc; });
-    if (sObj && sObj.dur) dur = parseInt(sObj.dur);
-  }
-  const top = minsFromStart * pxPerMin, height = Math.max((dur * pxPerMin) - 2, 28);
+  const svcPool = (worker && worker.services ? worker.services : []).concat(CUR && CUR.services ? CUR.services : []);
+  const sObj = svcPool.find(function (s) { return s.name === a.svc; });
+  if (sObj && sObj.dur) dur = parseInt(sObj.dur, 10) || 30;
 
-  const stateStyles = {
-    confirmed: { bg: 'rgba(74,127,212,0.28)', border: '#4A7FD4', label: 'Confirmada', lc: '#7EB8FF' },
-    pending: { bg: 'rgba(245,158,11,0.28)', border: '#F59E0B', label: 'Pendiente', lc: '#FCD34D' },
-    completed: { bg: 'rgba(34,197,94,0.28)', border: '#22C55E', label: 'Completada', lc: '#4ADE80' },
-    cancelled: { bg: 'rgba(239,68,68,0.28)', border: '#EF4444', label: 'Cancelada', lc: '#FCA5A5' },
-    in_progress: { bg: 'rgba(168,85,247,0.28)', border: '#A855F7', label: 'En curso', lc: '#C084FC' },
-    rescheduled: { bg: 'rgba(245,158,11,0.22)', border: '#F59E0B', label: 'Reagendada', lc: '#FCD34D' }
-  };
-
-  const st = stateStyles[a.status] || stateStyles['confirmed'];
-
-  // ✅ Usa money() en lugar de .toFixed(2)+'€'
+  const top = Math.round(minsFromStart * pxPerMin);
+  const height = Math.max(Math.round(dur * pxPerMin) - 3, 28);
+  const endHM = _agMinutesToHM(startMin + dur);
+  const bgColor = _agServiceColor(a.svc);
   const precio = parseFloat(a.price || 0);
   const priceStr = precio > 0 ? money(precio) : '';
+  const doneBadge = a.status === 'completed'
+    ? '<span class="ag-ev-done" title="Completada"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>'
+    : '';
 
   let inner = '';
-  if (height >= 52) {
-    inner = '<div style="font-size:11px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">' + san(a.client) + '</div>'
-      + '<div style="font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">' + san(a.time) + ' · ' + san(a.svc) + '</div>'
-      + (priceStr ? '<div style="font-size:10px;font-weight:800;color:' + st.lc + ';line-height:1.4">' + priceStr + '</div>' : '')
-      + '<div style="margin-top:2px;display:inline-block;font-size:9px;font-weight:700;background:' + st.border + '55;color:' + st.lc + ';border-radius:5px;padding:1px 5px">' + st.label + '</div>';
-  } else if (height >= 34) {
-    inner = '<div style="font-size:11px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3">' + san(a.client) + '</div>'
-      + '<div style="font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + san(a.time)
-      + (priceStr ? ' · <span style="font-weight:800;color:' + st.lc + '">' + priceStr + '</span>' : '')
-      + ' <span style="background:' + st.border + '55;color:' + st.lc + ';border-radius:4px;padding:0 4px;font-size:9px;font-weight:700">' + st.label + '</span></div>';
+  if (height >= 48) {
+    inner = '<div class="ag-ev-time">' + san(_agFormatTime(a.time)) + ' – ' + san(_agFormatTime(endHM)) + '</div>'
+      + '<div class="ag-ev-client">' + san(a.client || 'Cliente') + '</div>'
+      + '<div class="ag-ev-svc">' + san(a.svc || '') + (priceStr ? ' · ' + priceStr : '') + '</div>';
   } else {
-    inner = '<div style="font-size:10px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
-      + san(a.client) + ' <span style="font-weight:400;color:rgba(255,255,255,.7)">' + san(a.time) + '</span></div>';
+    inner = '<div class="ag-ev-client">' + san(_agFormatTime(a.time)) + ' · ' + san(a.client || 'Cliente') + '</div>'
+      + '<div class="ag-ev-svc">' + san(a.svc || '') + (priceStr ? ' · ' + priceStr : '') + '</div>';
   }
 
-  return '<div onclick="' + clickFn + '(\'' + a.id + '\')" style="position:absolute;top:' + (top + 2) + 'px;height:' + (height - 4) + 'px;left:5px;right:5px;background:' + st.bg + ';border-left:4px solid ' + st.border + ';border-top:1px solid ' + st.border + '99;border-right:1px solid ' + st.border + '66;border-bottom:1px solid ' + st.border + '66;border-radius:0 8px 8px 0;padding:5px 8px;cursor:pointer;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,0.35);z-index:2;">' + inner + '</div>';
+  return '<div class="ag-ev" onclick="event.stopPropagation();' + clickFn + '(\'' + sanitizeText(a.id) + '\')" style="top:' + (top + 1) + 'px;height:' + height + 'px;background:' + bgColor + ';">'
+    + doneBadge + inner + '</div>';
+}
+
+function agClickEmptySlot(event, workerId, dateStr) {
+  if (!CUR) return;
+  var col = event.currentTarget;
+  if (!col) return;
+  var rect = col.getBoundingClientRect();
+  var startHour = 7, endHour = 23, pxPerHour = 84;
+  var relY = Math.max(0, event.clientY - rect.top);
+  var rawMins = startHour * 60 + Math.floor((relY / pxPerHour) * 60 / 15) * 15;
+  var clamped = Math.min(Math.max(rawMins, startHour * 60), endHour * 60 - 15);
+  var slotHM = _agMinutesToHM(clamped);
+
+  // Abrir modal de nueva cita pre-llenado con la fecha, hora exacta y profesional
+  openApptModal({
+    date: dateStr,
+    time: slotHM,
+    workerId: workerId === '__GENERAL__' ? '' : workerId
+  });
 }
 
 function renderBizDailyTimeline(dateStr) {
   const container = G('biz-daily-timeline'); if (!container || !CUR) return;
-  const startHour = 7, endHour = 22, pxPerMin = 1.5, totalHeight = (endHour - startHour) * 60 * pxPerMin;
-  const allWorkers = CUR.workers || []; if (!allWorkers.length) { container.innerHTML = ''; return; }
-  let workersToRender = allWorkers;
-  if (window._currentBizWorkerFilter !== 'all') workersToRender = allWorkers.filter(function (w) { return w.id === window._currentBizWorkerFilter; });
-  let html = '<div style="display:flex;justify-content:flex-end;margin-bottom:12px;"><select class="inp" style="width:auto;padding:8px 14px;font-size:12px;border-radius:12px;background:var(--card);" onchange="window._currentBizWorkerFilter=this.value;renderBizDailyTimeline(\'' + dateStr + '\')"><option value="all"' + (window._currentBizWorkerFilter === 'all' ? ' selected' : '') + '>Todos los trabajadores</option>';
-  allWorkers.forEach(function (w) { html += '<option value="' + w.id + '"' + (window._currentBizWorkerFilter === w.id ? ' selected' : '') + '>' + san(w.name) + '</option>'; });
-  html += '</select></div><div class="tl-wrap"><div class="tl-grid"><div class="tl-times"><div class="tl-header"></div><div class="tl-body" style="height:' + totalHeight + 'px;background:none;">';
-  for (let h = startHour; h <= endHour; h++) html += '<div class="tl-time-lbl" style="top:' + ((h - startHour) * 60 * pxPerMin) + 'px">' + String(h).padStart(2, '0') + ':00</div>';
-  html += '</div></div>';
-  workersToRender.forEach(function (w) {
-    const av = w.photo ? '<img src="' + sanitizeImageDataURL(w.photo) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover">'
-      : '<div style="width:28px;height:28px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px">' + w.name.charAt(0) + '</div>';
-    html += '<div class="tl-col"><div class="tl-header">' + av + '<div style="font-size:10px;font-weight:700;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;padding:0 4px;">' + san(w.name) + '</div></div><div class="tl-body" style="height:' + totalHeight + 'px;background-size:100% ' + (60 * pxPerMin) + 'px;">';
-    html += generateBlockedTimeHTML(w, dateStr, startHour, endHour, pxPerMin);
-    (w.appointments || []).filter(function (a) { return a.date === dateStr && a.status !== 'cancelled'; }).forEach(function (a, i) { html += generateTimelineApptHTML(a, w, startHour, pxPerMin, i, 'openApptDetail'); });
-    html += '</div></div>';
+
+  var prevWrap = container.querySelector('.ag-grid-wrap');
+  var keepScroll = (prevWrap && _agLastRenderedDate === dateStr) ? [prevWrap.scrollTop, prevWrap.scrollLeft] : null;
+
+  const startHour = 7, endHour = 23, pxPerHour = 84, pxPerMin = pxPerHour / 60;
+  const totalHeight = (endHour - startHour) * pxPerHour;
+
+  const allWorkers = CUR.workers || [];
+  let cols = allWorkers.filter(function (w) {
+    return window._currentBizWorkerFilter === 'all' || w.id === window._currentBizWorkerFilter;
+  }).map(function (w) {
+    return {
+      id: w.id,
+      name: w.name,
+      photo: w.photo || '',
+      worker: w,
+      appts: (w.appointments || []).filter(function (a) { return a.date === dateStr && a.status !== 'cancelled'; })
+    };
   });
+
+  // Incluir columna "Servicios Generales" si hay citas sin asignar ese día o si aún no hay trabajadores
+  var genAppts = (CUR.appointments || []).filter(function (a) { return a.date === dateStr && a.status !== 'cancelled'; });
+  if ((window._currentBizWorkerFilter === 'all' && genAppts.length > 0) || cols.length === 0) {
+    cols.push({
+      id: '__GENERAL__',
+      name: 'Servicios Generales',
+      photo: CUR.logo || '',
+      worker: null,
+      appts: genAppts
+    });
+  }
+
+  // Hora actual en la zona horaria real del negocio
+  var bizNow = _agBizNow();
+  var todayStr = _agBizTodayStr();
+  var nowMins = (dateStr === todayStr) ? (bizNow.getHours() * 60 + bizNow.getMinutes()) : -1;
+  var showNowLine = nowMins >= startHour * 60 && nowMins <= endHour * 60;
+  var nowTop = showNowLine ? Math.round((nowMins - startHour * 60) * pxPerMin) : 0;
+
+  var colMinW = cols.length === 1 ? '220px' : '155px';
+  var html = '<div class="ag-grid-wrap"><div class="ag-grid" style="grid-template-columns:56px repeat(' + cols.length + ', minmax(' + colMinW + ', 1fr));">';
+
+  // Esquina superior izquierda + cabeceras de trabajadores
+  html += '<div class="ag-head-corner"></div>';
+  cols.forEach(function (col) {
+    var avHtml = col.photo
+      ? '<div class="ag-head-av"><img src="' + san(sanitizeImageDataURL(col.photo)) + '" alt=""/></div>'
+      : '<div class="ag-head-av">' + san((col.name || '?').charAt(0).toUpperCase()) + '</div>';
+    html += '<div class="ag-head">' + avHtml + '<div class="ag-head-name">' + san(col.name) + '</div></div>';
+  });
+
+  // Columna de horas sticky izquierda
+  html += '<div class="ag-time-col" style="height:' + totalHeight + 'px;">';
+  for (let h = startHour + 1; h < endHour; h++) {
+    html += '<span class="ag-time-lbl" style="top:' + ((h - startHour) * pxPerHour) + 'px">' + san(_agFormatTime(String(h).padStart(2, '0') + ':00')) + '</span>';
+  }
+  if (showNowLine) {
+    html += '<span class="ag-now-dot" style="top:' + nowTop + 'px"></span>';
+  }
+  html += '</div>';
+
+  // Columnas de profesionales
+  cols.forEach(function (col) {
+    html += '<div class="ag-col" style="height:' + totalHeight + 'px;background-size:100% ' + pxPerHour + 'px, 100% ' + (pxPerHour / 4) + 'px;" onclick="agClickEmptySlot(event, \'' + sanitizeText(col.id) + '\', \'' + sanitizeText(dateStr) + '\')">';
+    html += generateBlockedTimeHTML(col.worker, dateStr, startHour, endHour, pxPerMin);
+    if (showNowLine) {
+      html += '<div class="ag-now" style="top:' + nowTop + 'px"></div>';
+    }
+    col.appts.forEach(function (a, i) {
+      html += generateTimelineApptHTML(a, col.worker, startHour, pxPerMin, i, 'openApptDetail');
+    });
+    html += '</div>';
+  });
+
   html += '</div></div>';
   container.innerHTML = html;
+
+  var wrap = container.querySelector('.ag-grid-wrap');
+  if (wrap) {
+    if (keepScroll) {
+      wrap.scrollTop = keepScroll[0];
+      wrap.scrollLeft = keepScroll[1];
+    } else {
+      var targetMins = showNowLine ? Math.max(startHour * 60, nowMins - 60) : (9 * 60 - 30);
+      wrap.scrollTop = Math.max(0, Math.round((targetMins - startHour * 60) * pxPerMin));
+    }
+  }
+  _agLastRenderedDate = dateStr;
 }
+
+window.toggleAgCalendar = toggleAgCalendar;
+window.agGoToday = agGoToday;
+window.agShiftDay = agShiftDay;
+window.agClickEmptySlot = agClickEmptySlot;
 
 /* ══════════════════════════
-   NUEVA CITA MANUAL
+   NUEVA CITA MANUAL (Desde botón o click directo en horario vacío)
 ══════════════════════════ */
-function openApptModal() {
+function openApptModal(prefill) {
   if (!CUR) return;
-  const today = new Date().toISOString().split('T')[0], nowTime = new Date().toTimeString().slice(0, 5);
+  const bizNow = _agBizNow();
+  const defaultDate = (prefill && prefill.date) || selectedCalDay || _agBizTodayStr();
+  const defaultTime = (prefill && prefill.time) || (String(bizNow.getHours()).padStart(2, '0') + ':' + String(Math.floor(bizNow.getMinutes() / 15) * 15).padStart(2, '0'));
+  const prefillWorkerId = (prefill && prefill.workerId !== undefined) ? prefill.workerId : '';
+
   const dateEl = G('ap-date'), timeEl = G('ap-time'), nameEl = G('ap-name'), phoneEl = G('ap-phone'), notesEl = G('ap-notes');
-  if (dateEl) dateEl.value = today; if (timeEl) timeEl.value = nowTime;
-  if (nameEl) nameEl.value = ''; if (phoneEl) phoneEl.value = ''; if (notesEl) notesEl.value = '';
-  const svcSel = G('ap-svc'); if (svcSel) { let opts = ''; (CUR.workers || []).forEach(function (w) { (w.services || []).forEach(function (s) { opts += '<option value="' + san(s.name) + ',' + s.price + ',' + sanitizeText(w.id) + '">' + san(w.name) + ' — ' + san(s.name) + ' (' + money(s.price) + ')</option>'; }); }); svcSel.innerHTML = opts; }
-  const barSel = G('ap-bar'); if (barSel) barSel.innerHTML = '<option value="">Sin asignar</option>' + (CUR.workers || []).map(function (w) { return '<option value="' + sanitizeText(w.id) + '">' + san(w.name) + '</option>'; }).join('');
+  if (dateEl) dateEl.value = defaultDate;
+  if (timeEl) timeEl.value = defaultTime;
+  if (nameEl) nameEl.value = '';
+  if (phoneEl) phoneEl.value = '';
+  if (notesEl) notesEl.value = '';
+
+  const svcSel = G('ap-svc');
+  if (svcSel) {
+    let opts = '';
+    const genSvcs = (CUR.services || []).filter(function (s) { return s.active !== false; });
+    if (genSvcs.length > 0) {
+      opts += '<optgroup label="Servicios generales">';
+      genSvcs.forEach(function (s) {
+        opts += '<option value="' + san(s.name) + '|||' + (parseFloat(s.price) || 0) + '|||">' + san(s.name) + ' (' + money(s.price) + ')</option>';
+      });
+      opts += '</optgroup>';
+    }
+    (CUR.workers || []).forEach(function (w) {
+      if ((w.services || []).length > 0) {
+        opts += '<optgroup label="' + san(w.name) + '">';
+        w.services.forEach(function (s) {
+          opts += '<option value="' + san(s.name) + '|||' + (parseFloat(s.price) || 0) + '|||' + sanitizeText(w.id) + '">' + san(s.name) + ' (' + money(s.price) + ')</option>';
+        });
+        opts += '</optgroup>';
+      }
+    });
+    svcSel.innerHTML = opts || '<option value="">Añade servicios en Caja o Equipo</option>';
+  }
+
+  const barSel = G('ap-bar');
+  if (barSel) {
+    barSel.innerHTML = '<option value="">Servicios Generales (sin asignar)</option>'
+      + (CUR.workers || []).map(function (w) {
+        return '<option value="' + sanitizeText(w.id) + '"' + (w.id === prefillWorkerId ? ' selected' : '') + '>' + san(w.name) + '</option>';
+      }).join('');
+  }
   openOv('ov-appt');
+  setTimeout(function () { if (nameEl) nameEl.focus(); }, 180);
 }
 
-function saveAppt() {
+async function saveAppt() {
   const name = sanitizeText(V('ap-name')), phone = sanitizeText(V('ap-phone'));
   const date = V('ap-date'), time = V('ap-time'), svcRaw = V('ap-svc'), workerId = V('ap-bar'), status = V('ap-status') || 'confirmed', notes = sanitizeText(V('ap-notes'));
   if (!name) { toast('Nombre del cliente requerido', '#EF4444'); return; }
   if (!date || !time) { toast('Fecha y hora requeridas', '#EF4444'); return; }
   if (!svcRaw) { toast('Selecciona un servicio', '#EF4444'); return; }
   if (!CUR) return;
-  const parts = svcRaw.split(',');
+
+  const parts = svcRaw.indexOf('|||') >= 0 ? svcRaw.split('|||') : svcRaw.split(',');
+  const svcName = parts[0];
+  const svcPrice = safeNum(parts[1], 0);
   const w = workerId ? (CUR.workers || []).filter(function (x) { return x.id === workerId; })[0] : null;
-  const appt = { id: Date.now(), client: name, phone: phone, email: '', svc: parts[0], workerName: w ? w.name : '', workerId: workerId || '', date: date, time: time, price: safeNum(parts[1], 0), status: status, notes: notes };
-  if (w) { if (!w.appointments) w.appointments = []; w.appointments.push(appt); }
-  else { if (!CUR.appointments) CUR.appointments = []; CUR.appointments.push(appt); }
-  saveDB(); closeOv('ov-appt'); initAgenda(); renderBizFinances(); initBizPanel();
+  const apptId = String(Date.now());
+  const token = 'tk_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+
+  const appt = {
+    id: apptId,
+    client: name,
+    phone: phone,
+    email: '',
+    svc: svcName,
+    workerName: w ? w.name : 'Servicios Generales',
+    workerId: w ? w.id : '',
+    date: date,
+    time: time,
+    price: svcPrice,
+    status: status,
+    notes: notes,
+    token: token
+  };
+
+  try {
+    const syncRes = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'appointments',
+        business_id: CUR.id,
+        appointments: [{
+          id: apptId,
+          business_id: CUR.id,
+          worker_id: w ? w.id : null,
+          client_id: '',
+          client_name: name,
+          client_phone: phone,
+          client_email: '',
+          token: token,
+          notes: notes,
+          service_name: svcName,
+          service_price: svcPrice,
+          date: date,
+          time: time,
+          status: status
+        }]
+      })
+    });
+    if (!syncRes.ok) {
+      const errData = await syncRes.json().catch(function () { return {}; });
+      const msg = (errData.errors && errData.errors[0] && errData.errors[0].msg) || errData.error || 'Ese horario ya está ocupado';
+      toast(msg, '#EF4444');
+      return;
+    }
+  } catch (e) {
+    console.error('Error sincronizando nueva cita:', e);
+  }
+
+  if (w) {
+    if (!w.appointments) w.appointments = [];
+    w.appointments.push(appt);
+  } else {
+    if (!CUR.appointments) CUR.appointments = [];
+    CUR.appointments.push(appt);
+  }
+
+  if (phone && typeof syncClientToCloud === 'function') {
+    syncClientToCloud(CUR.id, { name: name, phone: phone, email: '' });
+  }
+
+  try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch (e) {}
+  selectedCalDay = date;
+  calendarDate = new Date(date + 'T12:00:00');
+  closeOv('ov-appt');
+  renderCalendar();
+  initAgenda();
+  renderBizFinances();
   toast('Cita guardada', '#22C55E');
 }
 

@@ -330,32 +330,62 @@
       </div>
     </div>
     <div class="pane" id="bp-agenda">
-      <div class="sec-hdr"><span class="sec-ttl">Agenda</span><button class="btn btn-blue btn-sm" style="width:auto"
-          id="new-appt-btn2">Nueva cita</button></div>
-      <div class="card" style="margin-bottom:14px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <button onclick="prevMonth()"
-            style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--rpill);padding:7px 14px;color:var(--t2);cursor:pointer;font-size:14px">‹</button>
-          <span style="font-size:14px;font-weight:700" id="cal-title"></span>
-          <button onclick="nextMonth()"
-            style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--rpill);padding:7px 14px;color:var(--t2);cursor:pointer;font-size:14px">›</button>
+      <div class="ag-shell">
+        <div class="ag-bar">
+          <button type="button" class="ag-pill-btn" onclick="agGoToday()">Hoy</button>
+          <button type="button" class="ag-circle-btn" onclick="agShiftDay(-1)" aria-label="Día anterior">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <label class="ag-date-trigger" title="Elegir fecha">
+            <span id="agenda-day-label">Hoy</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            <input type="date" id="ag-date-picker" onchange="if(this.value) selectCalDay(this.value)"/>
+          </label>
+          <button type="button" class="ag-circle-btn" onclick="agShiftDay(1)" aria-label="Día siguiente">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button type="button" class="ag-circle-btn" id="ag-cal-toggle-btn" onclick="toggleAgCalendar()" title="Ver calendario mensual" aria-label="Ver calendario mensual">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </button>
+          <div class="ag-bar-right">
+            <select class="ag-worker-sel" id="ag-worker-filter" onchange="window._currentBizWorkerFilter=this.value;initAgenda()">
+              <option value="all">Todo el equipo</option>
+            </select>
+            <button type="button" class="pos-btn primary sm" id="new-appt-btn2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nueva cita
+            </button>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px">
-          <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">D</div>
-          <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">L</div>
-          <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">M</div>
-          <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">X</div>
-          <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">J</div>
-          <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">V</div>
-          <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px">S</div>
+
+        <div id="ag-week-strip" class="ag-week"></div>
+
+        <div id="ag-cal-panel" class="ag-cal-panel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <button type="button" class="ag-circle-btn" style="width:30px;height:30px" onclick="prevMonth()" aria-label="Mes anterior">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span style="font-size:13px;font-weight:700" id="cal-title"></span>
+            <button type="button" class="ag-circle-btn" style="width:30px;height:30px" onclick="nextMonth()" aria-label="Mes siguiente">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px">
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:2px">D</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:2px">L</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:2px">M</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:2px">X</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:2px">J</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:2px">V</div>
+            <div style="text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:2px">S</div>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
         </div>
-        <div class="cal-grid" id="cal-grid"></div>
+
+        <div id="ag-service-legend" class="ag-legend"></div>
+        <div id="biz-agenda-list"></div>
+        <div id="biz-daily-timeline"></div>
       </div>
-      <div id="agenda-day-label"
-        style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
-      </div>
-      <div id="biz-agenda-list"></div>
-      <div id="biz-daily-timeline"></div>
     </div>
     <div class="pane" id="bp-caja">
       <div id="pos-root" class="pos-wrap"></div>
