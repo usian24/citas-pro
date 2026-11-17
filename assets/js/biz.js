@@ -538,16 +538,24 @@ function initBizPanel() {
   var pfDs = G('pf-desc'); if (pfDs) pfDs.value = CUR.desc || '';
   const pfPs = G('pf-plan-status');
 
+  const loyCfg = typeof normalizeLoyaltyConfig === 'function'
+    ? normalizeLoyaltyConfig(CUR.loyalty)
+    : Object.assign({ active: true, mode: 'stamps', stamps: 10, points_goal: 100, reward_type: 'free_service', reward_pct: 50, reward_product_id: '', reward_product_name: '' }, CUR.loyalty || {});
+
   const pfLoyaltyToggle = G('toggle-loyalty');
-  const pfLoyaltyStamps = G('pf-loyalty-stamps');
   if (pfLoyaltyToggle) {
-    const isActive = CUR.loyalty && CUR.loyalty.active !== undefined ? CUR.loyalty.active : true;
-    if (isActive) pfLoyaltyToggle.classList.add('on');
+    if (loyCfg.active) pfLoyaltyToggle.classList.add('on');
     else pfLoyaltyToggle.classList.remove('on');
   }
-  if (pfLoyaltyStamps) {
-    pfLoyaltyStamps.value = (CUR.loyalty && CUR.loyalty.stamps) ? CUR.loyalty.stamps : 10;
+  if (G('pf-loyalty-mode')) G('pf-loyalty-mode').value = loyCfg.mode;
+  if (G('pf-loyalty-stamps')) G('pf-loyalty-stamps').value = loyCfg.stamps;
+  if (G('pf-loyalty-pts')) G('pf-loyalty-pts').value = loyCfg.points_goal;
+  if (G('pf-loyalty-reward')) G('pf-loyalty-reward').value = loyCfg.reward_type;
+  if (G('pf-loyalty-pct')) G('pf-loyalty-pct').value = loyCfg.reward_pct;
+  if (typeof populateProfileLoyaltyProducts === 'function') {
+    populateProfileLoyaltyProducts(loyCfg.reward_product_id, loyCfg.reward_product_name);
   }
+  if (typeof syncProfileLoyaltyFields === 'function') syncProfileLoyaltyFields();
 
   if (pfPs) pfPs.textContent = (CUR.plan === 'active' || CUR.plan === 'pro') ? 'Plan activo · Próxima factura el día 1' : CUR.plan === 'trial' ? 'En período de prueba gratuito' : 'Suscripción vencida — contacta soporte';
   const pfPb = G('pf-plan-badge'); if (pfPb) pfPb.innerHTML = planTag(CUR.plan);
@@ -574,7 +582,7 @@ function navigateToBizState(state, replace = false) {
   }
 
   // 2. Lógica para mostrar la vista correcta (tu código original)
-  const tabs = ['home', 'agenda', 'caja', 'equipo', 'tienda', 'finanzas', 'historial', 'perfil'];
+  const tabs = ['home', 'agenda', 'caja', 'equipo', 'clientes', 'tienda', 'finanzas', 'historial', 'perfil'];
   for (let i = 0; i < tabs.length; i++) {
     const t = tabs[i]; const pa = G('bp-' + t), bt = G('bn-' + t);
     if (pa) pa.classList[t === state ? 'add' : 'remove']('on');
@@ -584,8 +592,13 @@ function navigateToBizState(state, replace = false) {
   // 3. Cargar datos específicos de la pestaña
   if (state === 'agenda') { DB = loadDB(); CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : CUR; initAgenda(); }
   if (state === 'caja' && typeof initPosPanel === 'function') { initPosPanel(); }
+  if (state === 'clientes' && typeof initBizClientsCrm === 'function') { initBizClientsCrm(); }
   if (state === 'tienda' && typeof renderTiendaAdmin === 'function') { renderTiendaAdmin(); }
-  if (state === 'finanzas' || state === 'historial') renderBizFinances();
+  if (state === 'finanzas') {
+    if (typeof initBizFinancesPro === 'function') initBizFinancesPro();
+    else renderBizFinances();
+  }
+  if (state === 'historial') renderBizFinances();
   if (state === 'home') {
     DB = loadDB(); CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : CUR;
     if (typeof renderBizHomeStats === 'function') renderBizHomeStats();
@@ -630,7 +643,10 @@ function openApptDetail(id) {
   if (!a) return;
 
   const loyaltyHtml = typeof buildLoyaltyHtml === 'function' ? buildLoyaltyHtml(a, _getAllAppts()) : '';
-  const waLink = a.phone ? 'https://wa.me/' + a.phone.replace(/\D/g, '') + '?text=' + encodeURIComponent('Hola ' + a.client + ', te recordamos tu cita en ' + CUR.name + ' el ' + a.date + ' a las ' + a.time + '.') : '#';
+  const waMsg = 'Hola ' + a.client + ', te recordamos tu cita en ' + CUR.name + ' el ' + a.date + ' a las ' + a.time + '.';
+  const waLink = a.phone
+    ? (typeof buildWhatsAppUrl === 'function' ? buildWhatsAppUrl(a.phone, waMsg, CUR.country) : ('https://wa.me/' + a.phone.replace(/\D/g, '') + '?text=' + encodeURIComponent(waMsg)))
+    : '#';
 
   // 🧹 LIMPIEZA DE BOTONES ANTIGUOS (HARDCODEADOS EN HTML)
   ['appt-wa-btn', 'appt-complete-btn', 'appt-cancel-btn'].forEach(function(b) {
@@ -1043,23 +1059,27 @@ function openWorkerModal(id) {
     const w = (CUR.workers || []).filter(function (x) { return x.id === id; })[0];
     if (w) {
       const n = G('bar-name'), sp = G('bar-spec'), ph = G('bar-phone'), em = G('bar-email');
+      const cs = G('bar-comm-svc'), cp = G('bar-comm-prod');
       if (n) n.value = w.name || ''; if (sp) sp.value = w.spec || ''; if (ph) ph.value = w.phone || ''; if (em) em.value = w.email || '';
+      if (cs) cs.value = w.commission_services || ''; if (cp) cp.value = w.commission_products || '';
       if (pv && w.photo) pv.innerHTML = '<img src="' + safeImg(w.photo) + '" class="photo-preview" alt="Foto"/>';
     }
-  } else { ['bar-name', 'bar-spec', 'bar-phone', 'bar-email', 'bar-pass'].forEach(function (fid) { const e = G(fid); if (e) e.value = ''; }); }
+  } else { ['bar-name', 'bar-spec', 'bar-phone', 'bar-email', 'bar-pass', 'bar-comm-svc', 'bar-comm-prod'].forEach(function (fid) { const e = G(fid); if (e) e.value = ''; }); }
   openOv('ov-worker');
 }
 
 function saveBizWorkerProfile() {
   const name = sanitizeText(V('bar-name')), spec = sanitizeText(V('bar-spec')), phone = sanitizeText(V('bar-phone')), email = V('bar-email').trim().toLowerCase(), pass = V('bar-pass'), photo = window._barPhoto || null;
+  const commSvc = Math.min(100, Math.max(0, parseFloat(V('bar-comm-svc')) || 0));
+  const commProd = Math.min(100, Math.max(0, parseFloat(V('bar-comm-prod')) || 0));
   if (!name) { toast('Nombre requerido', '#EF4444'); return; } if (!CUR) return; if (!CUR.workers) CUR.workers = [];
   const workerId = editWorkerId || 'w_' + Date.now();
   let existingPhoto = '', existingCover = '', existingHorario = [];
   if (editWorkerId) { const existing = (CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0]; if (existing) { existingPhoto = existing.photo || ''; existingCover = existing.cover || ''; existingHorario = existing.horario || []; } }
   const finalPhoto = photo || existingPhoto;
-  const workerDbObj = { id: workerId, business_id: CUR.id, name: name, email: email, password: pass || (editWorkerId && (CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0] ? ((CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0].pass || '') : ''), phone: phone, avatar: finalPhoto, cover: existingCover, role: spec || 'worker', horario: existingHorario };
-  if (editWorkerId) { const w = (CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0]; if (w) { w.name = name; w.spec = spec; w.phone = phone; w.photo = finalPhoto; } toast('Trabajador editado', '#4A7FD4'); }
-  else { if (!validEmail(email)) { toast('Email inválido', '#EF4444'); return; } if (!pass || pass.length < 6) { toast('Contraseña mínimo 6 caracteres', '#EF4444'); return; } CUR.workers.push({ id: workerId, name: name, email: email, pass: pass, phone: phone, spec: spec, photo: photo || '', active: true, services: [], horario: DEFAULT_HORARIO.map(function (h) { return Object.assign({}, h); }), appointments: [], photos: [], notifications: [], cover: '' }); toast('Trabajador creado', '#22C55E'); }
+  const workerDbObj = { id: workerId, business_id: CUR.id, name: name, email: email, password: pass || (editWorkerId && (CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0] ? ((CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0].pass || '') : ''), phone: phone, avatar: finalPhoto, cover: existingCover, role: spec || 'worker', horario: existingHorario, commission_services: commSvc, commission_products: commProd };
+  if (editWorkerId) { const w = (CUR.workers || []).filter(function (x) { return x.id === editWorkerId; })[0]; if (w) { w.name = name; w.spec = spec; w.phone = phone; w.photo = finalPhoto; w.commission_services = commSvc; w.commission_products = commProd; } toast('Trabajador editado', '#4A7FD4'); }
+  else { if (!validEmail(email)) { toast('Email inválido', '#EF4444'); return; } if (!pass || pass.length < 6) { toast('Contraseña mínimo 6 caracteres', '#EF4444'); return; } CUR.workers.push({ id: workerId, name: name, email: email, pass: pass, phone: phone, spec: spec, photo: photo || '', active: true, commission_services: commSvc, commission_products: commProd, services: [], horario: DEFAULT_HORARIO.map(function (h) { return Object.assign({}, h); }), appointments: [], photos: [], notifications: [], cover: '' }); toast('Trabajador creado', '#22C55E'); }
   fetch('/api/save-worker', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upsert', worker: workerDbObj }) }).catch(function (err) { });
   editWorkerId = null; window._barPhoto = null; saveDB(); renderBizWorkers(); closeOv('ov-worker');
   if (typeof posRender === 'function' && G('bp-caja') && G('bp-caja').classList.contains('on')) { posRender(); }
@@ -1227,7 +1247,9 @@ function renderBizFinances() {
     html += '</tbody></table></div></div>';
   }
 
-  const el = G('bp-finanzas'); if (el) el.innerHTML = html;
+  if (typeof initBizFinancesPro !== 'function') {
+    const el = G('bp-finanzas'); if (el) el.innerHTML = html;
+  }
 
   // Generar historial exclusivamente en su propia pestaña
   const historial = paid.slice().sort(function (a, b) { return b.date.localeCompare(a.date); }).slice(0, 100);
@@ -1366,7 +1388,7 @@ function _renderAgWeekStrip(dateStr) {
   for (var i = 0; i < 7; i++) {
     var dd = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate() - offset + i);
     var ds = dd.getFullYear() + '-' + String(dd.getMonth() + 1).padStart(2, '0') + '-' + String(dd.getDate()).padStart(2, '0');
-    var cls = 'ag-week-btn' + (ds === dateStr ? ' sel' : '') + (ds === todayStr ? ' today' : '');
+    var cls = 'ag-week-btn' + (ds === dateStr ? ' ag-active' : '') + (ds === todayStr ? ' today' : '');
     html += '<button type="button" class="' + cls + '" onclick="selectCalDay(\'' + ds + '\')">'
       + '<small>' + dayLetters[dd.getDay()] + '</small>'
       + '<strong>' + dd.getDate() + '</strong>'
@@ -1769,11 +1791,38 @@ async function saveBizProfileAsync() {
   CUR.name = nm; CUR.addr = addr; CUR.phone = phone; CUR.desc = desc.slice(0, 300);
   CUR.insta = insta; CUR.facebook = facebook; CUR.x_url = x_url; CUR.tiktok = tiktok;
 
-  if (!CUR.loyalty) CUR.loyalty = {};
   const tglLoyalty = G('toggle-loyalty');
-  CUR.loyalty.active = tglLoyalty && tglLoyalty.classList.contains('on');
+  const loyMode = (G('pf-loyalty-mode') && G('pf-loyalty-mode').value === 'points') ? 'points' : 'stamps';
   const stmps = safeInt(V('pf-loyalty-stamps'), 10);
-  CUR.loyalty.stamps = stmps > 1 ? stmps : 10;
+  const ptsGoal = safeInt(V('pf-loyalty-pts'), 100);
+  const rewType = (G('pf-loyalty-reward') && G('pf-loyalty-reward').value) || 'free_service';
+  const rewPct = rewType === 'free_service' ? 100 : Math.min(100, Math.max(1, safeInt(V('pf-loyalty-pct'), 50)));
+  const prodSel = G('pf-loyalty-prod');
+  const rewProdId = prodSel ? String(prodSel.value || '').trim() : '';
+  const rewProdName = (prodSel && prodSel.selectedIndex >= 0 && prodSel.options[prodSel.selectedIndex])
+    ? String(prodSel.options[prodSel.selectedIndex].getAttribute('data-name') || '').trim()
+    : '';
+
+  CUR.loyalty = {
+    active: Boolean(tglLoyalty && tglLoyalty.classList.contains('on')),
+    mode: loyMode,
+    stamps: stmps > 1 ? stmps : 10,
+    points_goal: ptsGoal >= 10 ? ptsGoal : 100,
+    reward_type: rewType,
+    reward_pct: rewPct,
+    reward_product_id: rewProdId,
+    reward_product_name: rewProdName
+  };
+  if (typeof POS_STATE !== 'undefined' && POS_STATE && typeof normalizeLoyaltyConfig === 'function') {
+    POS_STATE.loyalty = normalizeLoyaltyConfig(CUR.loyalty);
+  }
+  if (CUR.id) {
+    fetch('/api/pos/loyalty', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ business_id: CUR.id, loyalty: CUR.loyalty })
+    }).catch(function () {});
+  }
 
   saveDB(); 
   toast('Perfil guardado', '#4A7FD4');
@@ -1920,3 +1969,40 @@ window.startGoogleRegistration = function(email, name) {
     const nm = G('br-name'); if (nm && name) nm.value = name;
   }, 400);
 };}
+
+window.syncProfileLoyaltyFields = function () {
+  var mode = G('pf-loyalty-mode') ? G('pf-loyalty-mode').value : 'stamps';
+  var rew = G('pf-loyalty-reward') ? G('pf-loyalty-reward').value : 'free_service';
+  if (G('pf-loyalty-stamps-wrap')) G('pf-loyalty-stamps-wrap').style.display = mode === 'stamps' ? '' : 'none';
+  if (G('pf-loyalty-pts-wrap')) G('pf-loyalty-pts-wrap').style.display = mode === 'points' ? '' : 'none';
+  if (G('pf-loyalty-pct-wrap')) G('pf-loyalty-pct-wrap').style.display = rew === 'discount_pct' ? '' : 'none';
+  if (G('pf-loyalty-prod-wrap')) G('pf-loyalty-prod-wrap').style.display = rew === 'free_product' ? '' : 'none';
+};
+
+window.populateProfileLoyaltyProducts = function (selectedId, fallbackName) {
+  var sel = G('pf-loyalty-prod');
+  if (!sel) return;
+  var prods = (typeof POS_STATE !== 'undefined' && POS_STATE && Array.isArray(POS_STATE.products) && POS_STATE.products.length)
+    ? POS_STATE.products
+    : [];
+  if (!prods.length && CUR && CUR.id) {
+    fetch('/api/pos/state?business_id=' + encodeURIComponent(CUR.id) + '&date=' + encodeURIComponent(typeof hoyEnNegocio === 'function' ? hoyEnNegocio() : new Date().toISOString().slice(0, 10)), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !Array.isArray(d.products)) return;
+        if (typeof POS_STATE !== 'undefined' && POS_STATE) POS_STATE.products = d.products;
+        window.populateProfileLoyaltyProducts(selectedId, fallbackName);
+      }).catch(function () {});
+  }
+  var activeProds = prods.filter(function (p) { return p.active !== false; });
+  if (!activeProds.length) {
+    sel.innerHTML = selectedId
+      ? '<option value="' + san(selectedId) + '" data-name="' + san(fallbackName || 'Producto') + '">' + san(fallbackName || 'Producto seleccionado') + '</option>'
+      : '<option value="" data-name="">Añade productos en Tienda primero</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="" data-name="">Selecciona un producto...</option>' + activeProds.map(function (p) {
+    var isSel = String(p.id) === String(selectedId || '');
+    return '<option value="' + san(p.id) + '" data-name="' + san(p.name) + '"' + (isSel ? ' selected' : '') + '>' + san(p.name) + ' (stock: ' + (p.stock || 0) + ')</option>';
+  }).join('');
+};

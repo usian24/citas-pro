@@ -21,6 +21,7 @@ window.POS_STATE = {
   products: [],
   generalServices: [],
   clients: [],
+  loyalty: null,
   posConfig: {
     low_stock_alert: 5,
     close_reminder_time: '21:00',
@@ -34,19 +35,21 @@ window.POS_STATE = {
   cart: {
     step: 1, // 1: cliente, 2: productos, 3: servicios, 4: profesional, 5: pago, 6: exito
     appointmentId: null,
-    client: null, // { id, name, phone, email }
+    client: null, // { id, name, phone, email, points }
     clientSearch: '',
     newClientName: '',
     newClientPhone: '',
     products: {}, // { prodId: qty }
     prodSearch: '',
-    services: {}, // { key: { id, name, price, qty, isGeneral } }
+    services: {}, // { key: { id, name, price, qty, points, isGeneral } }
     workerId: null,
     workerName: '',
+    redeemLoyalty: false,
     discountManual: 0,
     tip: 0,
     paymentMethod: 'Efectivo',
-    lastSale: null
+    lastSale: null,
+    lastClientLoyalty: null
   },
   // Estado de cierre/apertura
   closingDate: null,
@@ -77,7 +80,8 @@ function _pSvg(name, size) {
     plus: '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
     sliders: '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>',
     clock: '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    send: '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'
+    send: '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+    gift: '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>'
   };
   return icons[name] || '';
 }
@@ -145,10 +149,12 @@ function posResetCart() {
     services: {},
     workerId: null,
     workerName: '',
+    redeemLoyalty: false,
     discountManual: 0,
     tip: 0,
     paymentMethod: methods[0] ? methods[0].name : 'Efectivo',
-    lastSale: null
+    lastSale: null,
+    lastClientLoyalty: null
   };
 }
 
@@ -175,13 +181,15 @@ async function posLoadState(force) {
     POS_STATE.generalServices = data.generalServices || [];
     POS_STATE.clients = data.clients || [];
     POS_STATE.posConfig = data.posConfig || POS_STATE.posConfig;
+    POS_STATE.loyalty = data.loyalty || (typeof normalizeLoyaltyConfig === 'function' ? normalizeLoyaltyConfig(CUR.loyalty) : null);
     POS_STATE.hasCustomPin = Boolean(data.hasCustomPin);
     POS_STATE.loaded = true;
 
-    // Mantener sincronizados productos y servicios generales con el resto de la app
+    // Mantener sincronizados productos, servicios generales y fidelización con el resto de la app
     window._tiendaProducts = POS_STATE.products;
     if (CUR) {
       CUR.services = POS_STATE.generalServices.slice();
+      if (data.loyalty) CUR.loyalty = data.loyalty;
     }
   } catch (err) {
     console.error('[POS] Load error:', err);
@@ -298,11 +306,32 @@ function posSwitchTab(tab) {
   posRender();
 }
 
+/* ── Helpers de fidelización en Caja ── */
+function _pLoyaltyCfg() {
+  var raw = POS_STATE.loyalty || (CUR && CUR.loyalty) || null;
+  if (typeof normalizeLoyaltyConfig === 'function') return normalizeLoyaltyConfig(raw);
+  return { active: true, mode: 'stamps', stamps: 10, points_goal: 100, goal: 10, unit: 'sellos', reward_type: 'free_service', reward_pct: 100, reward_product_id: '', reward_product_name: '', reward_label: 'Servicio gratis' };
+}
+
+function _pGiftProduct() {
+  var loy = _pLoyaltyCfg();
+  if (loy.reward_type !== 'free_product' || !loy.reward_product_id) return null;
+  return POS_STATE.products.find(function (p) { return String(p.id) === String(loy.reward_product_id); }) || null;
+}
+
+function _pClientPoints(cl) {
+  if (!cl) return 0;
+  return Math.max(0, parseInt(cl.points, 10) || 0);
+}
+
 /* ── Totales del carrito ── */
 function posCalcTotals() {
   var c = POS_STATE.cart;
+  var loy = _pLoyaltyCfg();
   var prodTot = 0;
   var svcTot = 0;
+  var svcPts = 0;
+  var svcCount = 0;
 
   Object.keys(c.products).forEach(function (pid) {
     var qty = c.products[pid] || 0;
@@ -318,16 +347,49 @@ function posCalcTotals() {
     var s = c.services[k];
     if (s && s.qty > 0) {
       svcTot += (parseFloat(s.price) || 0) * s.qty;
+      svcPts += (s.points != null ? (parseInt(s.points, 10) || 0) : 10) * s.qty;
+      svcCount += s.qty;
     }
   });
 
   prodTot = Math.round(prodTot * 100) / 100;
   svcTot = Math.round(svcTot * 100) / 100;
   var gross = Math.round((prodTot + svcTot) * 100) / 100;
-  var dm = Math.min(gross, Math.max(0, parseFloat(c.discountManual) || 0));
+
+  var clPts = _pClientPoints(c.client);
+  var giftProd = _pGiftProduct();
+  var giftInStock = Boolean(giftProd && (giftProd.stock || 0) > (c.products[giftProd.id] || 0));
+  var hasEnoughPts = Boolean(loy.active && c.client && clPts >= loy.goal);
+  var canRedeem = hasEnoughPts && (loy.reward_type === 'free_product' ? giftInStock : svcTot > 0);
+  var redeemActive = Boolean(c.redeemLoyalty && canRedeem);
+
+  var dl = 0;
+  if (redeemActive && loy.reward_type !== 'free_product') {
+    dl = Math.min(svcTot, Math.round(svcTot * (loy.reward_pct / 100) * 100) / 100);
+  }
+
+  var dm = Math.min(Math.max(0, gross - dl), Math.max(0, parseFloat(c.discountManual) || 0));
   var tip = Math.max(0, parseFloat(c.tip) || 0);
-  var net = Math.max(0, Math.round((gross - dm) * 100) / 100);
-  return { prodTot: prodTot, svcTot: svcTot, gross: gross, dm: dm, tip: tip, net: net };
+  var net = Math.max(0, Math.round((gross - dl - dm) * 100) / 100);
+  var pointsToEarn = (loy.active && c.client && svcCount > 0) ? (loy.mode === 'points' ? svcPts : 1) : 0;
+
+  return {
+    prodTot: prodTot,
+    svcTot: svcTot,
+    gross: gross,
+    dl: dl,
+    dm: dm,
+    tip: tip,
+    net: net,
+    loy: loy,
+    clPts: clPts,
+    giftProd: giftProd,
+    giftInStock: giftInStock,
+    hasEnoughPts: hasEnoughPts,
+    canRedeem: canRedeem,
+    redeemActive: redeemActive,
+    pointsToEarn: pointsToEarn
+  };
 }
 
 function _pIsRegisterOpen() {
@@ -478,12 +540,12 @@ function _pRenderCobrar() {
 
   var c = POS_STATE.cart;
 
-  // Paso 6: Confirmación limpia
+  // Paso 6: Confirmación limpia + recibo WhatsApp con tarjeta actualizada
   if (c.step === 6 && c.lastSale) {
     var sl = c.lastSale;
+    var clLoy = c.lastClientLoyalty;
     var waHtml = '';
     if (sl.client_phone) {
-      var cleanTel = String(sl.client_phone).replace(/\D/g, '');
       var lines = [
         (CUR.name || 'Citas Pro'),
         'Recibo de compra · ' + _pFormatDate(sl.sale_date),
@@ -493,13 +555,39 @@ function _pRenderCobrar() {
         lines.push(s.name + (s.qty > 1 ? ' x' + s.qty : '') + ' — ' + money(s.price * s.qty));
       });
       (sl.items_products || []).forEach(function (p) {
-        lines.push(p.name + ' x' + p.qty + ' — ' + money(p.price * p.qty));
+        lines.push(p.name + ' x' + p.qty + (p.is_gift ? ' — Regalo (0)' : (' — ' + money(p.price * p.qty))));
       });
-      if (sl.discount_manual > 0) lines.push('Descuento: -' + money(sl.discount_manual));
-      if (sl.tip > 0) lines.push('Propina: ' + money(sl.tip));
+      if (parseFloat(sl.discount_loyalty) > 0) lines.push('Descuento fidelización: -' + money(sl.discount_loyalty));
+      if (parseFloat(sl.discount_manual) > 0) lines.push('Descuento: -' + money(sl.discount_manual));
+      if (parseFloat(sl.tip) > 0) lines.push('Propina: ' + money(sl.tip));
       lines.push('', 'TOTAL: ' + money(sl.total) + ' (' + sl.payment_method + ')');
-      var waUrl = 'https://wa.me/' + cleanTel + '?text=' + encodeURIComponent(lines.join('\n'));
+      if (clLoy && clLoy.active) {
+        var falt = Math.max(0, clLoy.goal - clLoy.points);
+        lines.push('');
+        if (clLoy.points_redeemed > 0) {
+          lines.push('Premio canjeado: ' + clLoy.reward_label);
+        }
+        lines.push('Tu tarjeta: ' + clLoy.points + ' / ' + clLoy.goal + ' ' + clLoy.unit
+          + (falt === 0 ? ' (Premio listo para tu próxima visita)' : (' (te faltan ' + falt + ' para ' + clLoy.reward_label.toLowerCase() + ')')));
+      }
+      var waUrl = typeof buildWhatsAppUrl === 'function'
+        ? buildWhatsAppUrl(sl.client_phone, lines.join('\n'), CUR.country)
+        : ('https://wa.me/' + String(sl.client_phone).replace(/\D/g, '') + '?text=' + encodeURIComponent(lines.join('\n')));
       waHtml = '<a class="pos-btn secondary full" href="' + waUrl + '" target="_blank" rel="noopener noreferrer" style="margin-bottom:10px">' + _pSvg('send', 15) + ' Enviar recibo por WhatsApp</a>';
+    }
+
+    var loySummaryHtml = '';
+    if (clLoy && clLoy.active) {
+      var loyParts = [];
+      if (clLoy.points_redeemed > 0) loyParts.push('Premio canjeado (−' + clLoy.points_redeemed + ' ' + clLoy.unit + ')');
+      if (clLoy.points_earned > 0) loyParts.push('+' + clLoy.points_earned + ' ' + (clLoy.points_earned === 1 && clLoy.mode === 'stamps' ? 'sello' : clLoy.unit));
+      loySummaryHtml = '<div style="margin:0 0 14px;padding:10px 14px;border-radius:10px;border:1px solid var(--b);background:var(--bg);font-size:12.5px;color:var(--text);text-align:left">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700">'
+        + '  <span>' + san(sl.client_name || 'Cliente') + ' · Tarjeta</span>'
+        + '  <span style="color:' + (clLoy.points >= clLoy.goal ? 'var(--green)' : 'var(--blue)') + ';font-variant-numeric:tabular-nums">' + clLoy.points + ' / ' + clLoy.goal + ' ' + san(clLoy.unit) + '</span>'
+        + '</div>'
+        + (loyParts.length ? '<div style="font-size:11.5px;color:var(--t2);margin-top:3px">' + san(loyParts.join(' · ')) + '</div>' : '')
+        + '</div>';
     }
 
     return '<div class="pos-surface pos-surface-pad pos-success">'
@@ -507,6 +595,7 @@ function _pRenderCobrar() {
       + '<div style="font-size:15px;font-weight:700;color:var(--t2)">Cobro registrado</div>'
       + '<div class="pos-success-amount">' + money(sl.total) + '</div>'
       + '<div class="pos-success-meta">' + san(sl.payment_method) + (sl.worker_name ? ' · ' + san(sl.worker_name) : '') + (sl.client_name ? ' · ' + san(sl.client_name) : '') + '</div>'
+      + loySummaryHtml
       + waHtml
       + '<button type="button" class="pos-btn primary full" onclick="posResetCart();posRender()">Nuevo cobro</button>'
       + '</div>';
@@ -545,13 +634,22 @@ function _pRenderCobrar() {
 
 function _pStep1Client() {
   var c = POS_STATE.cart;
+  var loy = _pLoyaltyCfg();
   var html = '<div class="pos-sec-label">1. Cliente</div>';
 
   if (c.client) {
+    var clPts = _pClientPoints(c.client);
+    var ready = loy.active && clPts >= loy.goal;
     html += '<div class="pos-surface">'
       + '<div class="pos-row">'
-      + '  <div class="pos-row-main"><div class="pos-row-title">' + san(c.client.name) + '</div><div class="pos-row-sub">' + san(c.client.phone || c.client.email || 'Cliente seleccionado') + '</div></div>'
-      + '  <button type="button" class="pos-btn danger-ghost" onclick="POS_STATE.cart.client=null;posRender()">Quitar</button>'
+      + '  <div class="pos-row-main"><div class="pos-row-title">' + san(c.client.name) + '</div><div class="pos-row-sub">'
+      + san(c.client.phone || c.client.email || 'Cliente seleccionado')
+      + (loy.active ? (' · ' + clPts + '/' + loy.goal + ' ' + san(loy.unit)) : '')
+      + '</div></div>'
+      + '  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'
+      + (ready ? '<span class="pos-badge open">Premio listo</span>' : '')
+      + '  <button type="button" class="pos-btn danger-ghost" onclick="POS_STATE.cart.client=null;POS_STATE.cart.redeemLoyalty=false;posRender()">Quitar</button>'
+      + '  </div>'
       + '</div></div>';
   } else {
     var q = _pNorm(c.clientSearch);
@@ -589,10 +687,17 @@ function _pBuildClientMatchesHtml(matches) {
       ? '<div class="pos-surface pos-surface-pad" style="font-size:13px;color:var(--t2)">Sin coincidencias. Puedes registrarlo abajo.</div>'
       : '';
   }
+  var loy = _pLoyaltyCfg();
   return '<div class="pos-surface">' + matches.map(function (cl) {
+    var pts = _pClientPoints(cl);
+    var ready = loy.active && pts >= loy.goal;
+    var sub = [cl.phone || cl.email || '', loy.active ? (pts + '/' + loy.goal + ' ' + loy.unit) : ''].filter(Boolean).join(' · ');
     return '<div class="pos-row clickable" onclick="posSelectClient(\'' + san(cl.id) + '\')">'
-      + '<div class="pos-row-main"><div class="pos-row-title">' + san(cl.name) + '</div><div class="pos-row-sub">' + san(cl.phone || cl.email || '') + '</div></div>'
+      + '<div class="pos-row-main"><div class="pos-row-title">' + san(cl.name) + '</div><div class="pos-row-sub">' + san(sub) + '</div></div>'
+      + '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'
+      + (ready ? '<span class="pos-badge open">Premio</span>' : '')
       + '<span style="font-size:12px;color:var(--blue);font-weight:600">Elegir</span>'
+      + '</div>'
       + '</div>';
   }).join('') + '</div>';
 }
@@ -610,7 +715,14 @@ function posRenderClientMatches() {
 function posSelectClient(clientId) {
   var cl = POS_STATE.clients.find(function (x) { return x.id === clientId; });
   if (!cl) return;
-  POS_STATE.cart.client = { id: cl.from_appointments ? null : cl.id, name: cl.name, phone: cl.phone || '', email: cl.email || '' };
+  POS_STATE.cart.client = {
+    id: cl.from_appointments ? null : cl.id,
+    name: cl.name,
+    phone: cl.phone || '',
+    email: cl.email || '',
+    points: _pClientPoints(cl)
+  };
+  POS_STATE.cart.redeemLoyalty = false;
   POS_STATE.cart.clientSearch = '';
   posRender();
 }
@@ -622,7 +734,8 @@ function posNextFromClient() {
       id: null,
       name: c.newClientName.trim(),
       phone: c.newClientPhone.trim(),
-      email: ''
+      email: '',
+      points: 0
     };
   }
   posGoStep(2);
@@ -801,13 +914,13 @@ function _pCollectAvailableServices() {
   var gen = POS_STATE.generalServices
     .filter(function (s) { return s.active !== false; })
     .map(function (s) {
-      return { key: 'g_' + s.id, id: s.id, name: s.name, price: s.price, dur: s.dur || 30, group: 'Servicios generales', isGeneral: true };
+      return { key: 'g_' + s.id, id: s.id, name: s.name, price: s.price, dur: s.dur || 30, points: s.points != null ? parseInt(s.points, 10) : 10, group: 'Servicios generales', isGeneral: true };
     });
 
   var team = [];
   (CUR && CUR.workers || []).forEach(function (w) {
     (w.services || []).forEach(function (s) {
-      team.push({ key: 'w_' + w.id + '_' + s.id, id: s.id, name: s.name, price: s.price, dur: s.dur || 30, group: w.name, workerId: w.id, isGeneral: false });
+      team.push({ key: 'w_' + w.id + '_' + s.id, id: s.id, name: s.name, price: s.price, dur: s.dur || 30, points: s.points != null ? parseInt(s.points, 10) : 10, group: w.name, workerId: w.id, isGeneral: false });
     });
   });
 
@@ -851,7 +964,7 @@ function _pStep3Services() {
     html += '<div class="pos-row total-row"><span>Total servicios</span><span style="color:var(--blue)">' + money(totals.svcTot) + '</span></div></div>';
   }
 
-  var canProceed = (totals.svcTot > 0 || totals.prodTot > 0);
+  var canProceed = (totals.svcTot > 0 || totals.prodTot > 0 || (totals.canRedeem && totals.loy.reward_type === 'free_product'));
   html += '<div class="pos-actions">'
     + '<button type="button" class="pos-btn primary full" ' + (canProceed ? '' : 'disabled') + ' onclick="posGoStep(4)">Siguiente</button>'
     + '</div>';
@@ -881,7 +994,7 @@ function posToggleSvc(key) {
     var all = groups.gen.concat(groups.team);
     var found = all.find(function (x) { return x.key === key; });
     if (!found) return;
-    POS_STATE.cart.services[key] = { id: found.id, name: found.name, price: found.price, qty: 1, isGeneral: found.isGeneral };
+    POS_STATE.cart.services[key] = { id: found.id, name: found.name, price: found.price, qty: 1, points: found.points != null ? found.points : 10, isGeneral: found.isGeneral };
   }
   posRender();
 }
@@ -951,16 +1064,49 @@ function _pStep5Payment() {
   var t = posCalcTotals();
   var sym = typeof getSimboloMoneda === 'function' ? getSimboloMoneda() : '€';
   var methods = (POS_STATE.posConfig && POS_STATE.posConfig.payment_methods) || [];
+  var loy = t.loy;
 
   var html = '<button type="button" class="pos-back-btn" onclick="posGoStep(4)">' + _pSvg('back', 15) + ' Profesional</button>';
   html += '<div class="pos-sec-label">5. Resumen y método de pago</div>';
 
+  // Bloque de Fidelización y canje (solo si el programa está activo y hay cliente)
+  if (loy && loy.active && c.client) {
+    var earnNote = t.pointsToEarn > 0
+      ? ('Sumará +' + t.pointsToEarn + ' ' + (t.pointsToEarn === 1 && loy.mode === 'stamps' ? 'sello' : loy.unit) + ' al cobrar')
+      : 'Sin servicios en este cobro';
+    var redeemBtnHtml = '';
+    if (t.canRedeem) {
+      var btnLbl = loy.reward_type === 'free_product'
+        ? (t.redeemActive ? ('Regalo aplicado: ' + (t.giftProd ? t.giftProd.name : loy.reward_product_name) + ' (gratis)') : ('Canjear ' + loy.goal + ' ' + loy.unit + ': ' + (t.giftProd ? t.giftProd.name : loy.reward_product_name) + ' gratis'))
+        : (t.redeemActive ? ('Premio aplicado: ' + loy.reward_label + ' (−' + money(t.dl) + ')') : ('Canjear ' + loy.goal + ' ' + loy.unit + ': ' + loy.reward_label));
+      redeemBtnHtml = '<div style="padding:10px 14px;border-top:1px solid var(--b)">'
+        + '<button type="button" class="pos-btn ' + (t.redeemActive ? 'primary' : 'secondary') + ' full" onclick="posToggleRedeemLoyalty()">'
+        + _pSvg(t.redeemActive ? 'check' : 'gift', 15) + ' ' + san(btnLbl)
+        + '</button></div>';
+    } else if (t.hasEnoughPts) {
+      var reason = loy.reward_type === 'free_product'
+        ? 'El producto regalo está agotado o no está configurado en Fidelización.'
+        : 'Este premio aplica sobre servicios. Vuelve atrás y añade un servicio para canjearlo.';
+      redeemBtnHtml = '<div style="padding:8px 14px;border-top:1px solid var(--b);font-size:12px;color:var(--t2)">' + reason + '</div>';
+    }
+
+    html += '<div class="pos-surface">'
+      + '<div class="pos-row">'
+      + '  <div class="pos-row-main"><div class="pos-row-title">' + san(c.client.name) + ' · Tarjeta</div><div class="pos-row-sub">' + san(earnNote) + '</div></div>'
+      + '  <span class="pos-badge ' + (t.hasEnoughPts ? 'open' : 'closed') + '" style="font-variant-numeric:tabular-nums">' + t.clPts + ' / ' + loy.goal + ' ' + san(loy.unit) + '</span>'
+      + '</div>'
+      + redeemBtnHtml
+      + '</div>';
+  }
+
   html += '<div class="pos-surface">'
     + (c.client ? '<div class="pos-row"><span class="pos-row-sub">Cliente</span><span class="pos-row-val">' + san(c.client.name) + '</span></div>' : '')
-    + '<div class="pos-row"><span class="pos-row-sub">Atendido por</span><span class="pos-row-val">' + san(c.workerName || 'Propietario') + '</span></div>'
+    + '<div class="pos-row"><span class="pos-row-sub">Atendido por</span><span class="pos-row-val">' + san(c.workerName || 'Profesional') + '</span></div>'
     + (t.svcTot > 0 ? '<div class="pos-row"><span class="pos-row-sub">Servicios</span><span class="pos-row-val">' + money(t.svcTot) + '</span></div>' : '')
     + (t.prodTot > 0 ? '<div class="pos-row"><span class="pos-row-sub">Productos</span><span class="pos-row-val">' + money(t.prodTot) + '</span></div>' : '')
-    + (t.dm > 0 ? '<div class="pos-row"><span class="pos-row-sub">Descuento</span><span class="pos-row-val" style="color:var(--red)">−' + money(t.dm) + '</span></div>' : '')
+    + (t.redeemActive && loy.reward_type === 'free_product' && t.giftProd ? '<div class="pos-row"><span class="pos-row-sub">Regalo fidelización</span><span class="pos-row-val" style="color:var(--green)">' + san(t.giftProd.name) + ' (0)</span></div>' : '')
+    + (t.dl > 0 ? '<div class="pos-row"><span class="pos-row-sub">Descuento fidelización</span><span class="pos-row-val" style="color:var(--green)">−' + money(t.dl) + '</span></div>' : '')
+    + (t.dm > 0 ? '<div class="pos-row"><span class="pos-row-sub">Descuento manual</span><span class="pos-row-val" style="color:var(--red)">−' + money(t.dm) + '</span></div>' : '')
     + (t.tip > 0 ? '<div class="pos-row"><span class="pos-row-sub">Propina (aparte)</span><span class="pos-row-val" style="color:var(--green)">+' + money(t.tip) + '</span></div>' : '')
     + '<div class="pos-row total-row"><span>Total a cobrar</span><span id="pos-pay-total-val" style="color:var(--blue)">' + money(t.net) + '</span></div>'
     + '</div>';
@@ -988,6 +1134,11 @@ function _pStep5Payment() {
   return html;
 }
 
+function posToggleRedeemLoyalty() {
+  POS_STATE.cart.redeemLoyalty = !POS_STATE.cart.redeemLoyalty;
+  posRender();
+}
+
 function posUpdatePayTotal() {
   var t = posCalcTotals();
   var el = G('pos-pay-total-val');
@@ -1004,12 +1155,13 @@ function posGoStep(step) {
 async function posConfirmSale() {
   if (!CUR || !CUR.id) return;
   var c = POS_STATE.cart;
+  var t = posCalcTotals();
   var btn = G('pos-confirm-sale-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Registrando...'; }
 
   var itemsServices = Object.keys(c.services).map(function (k) {
     var s = c.services[k];
-    return { id: s.id, name: s.name, qty: s.qty, price: s.price };
+    return { id: s.id, name: s.name, qty: s.qty, price: s.price, points: s.points != null ? s.points : 10 };
   });
   var itemsProducts = Object.keys(c.products).map(function (pid) {
     var p = POS_STATE.products.find(function (x) { return x.id === pid; });
@@ -1026,13 +1178,15 @@ async function posConfirmSale() {
         cash_register_id: POS_STATE.register ? POS_STATE.register.id : null,
         appointment_id: c.appointmentId || null,
         worker_id: c.workerId || null,
-        worker_name: c.workerName || 'Propietario',
+        worker_name: c.workerName || 'Profesional',
         client_id: c.client ? c.client.id : null,
         client_name: c.client ? c.client.name : '',
         client_phone: c.client ? c.client.phone : '',
         client_email: c.client ? c.client.email : '',
         items_services: itemsServices,
         items_products: itemsProducts,
+        redeem_loyalty: Boolean(t.redeemActive),
+        discount_loyalty: t.dl || 0,
         discount_manual: parseFloat(c.discountManual) || 0,
         tip: parseFloat(c.tip) || 0,
         payment_method: c.paymentMethod || 'Efectivo'
@@ -1043,6 +1197,7 @@ async function posConfirmSale() {
     if (!res.ok || !data.success) throw new Error(data.error || 'No se pudo registrar el cobro');
 
     c.lastSale = data.sale;
+    c.lastClientLoyalty = data.clientLoyalty || null;
     c.step = 6;
     _pBeep(true);
     await posLoadState(true);
@@ -1433,6 +1588,14 @@ function deleteCurrentGeneralService() {
 /* ── SUBTAB 4: AJUSTES DE CAJA Y PIN (PIN-PROTEGIDO) ── */
 function _pRenderAjustes() {
   var cfg = POS_STATE.posConfig || {};
+  var loy = _pLoyaltyCfg();
+  var activeProds = POS_STATE.products.filter(function (p) { return p.active !== false; });
+
+  var prodOpts = '<option value="" data-name="">Selecciona un producto...</option>' + activeProds.map(function (p) {
+    var sel = String(p.id) === String(loy.reward_product_id || '');
+    return '<option value="' + san(p.id) + '" data-name="' + san(p.name) + '"' + (sel ? ' selected' : '') + '>' + san(p.name) + ' (stock: ' + (p.stock || 0) + ')</option>';
+  }).join('');
+
   return '<div class="pos-sec-label">Seguridad · PIN del propietario</div>'
     + '<div class="pos-surface pos-surface-pad">'
     + '  <div style="font-size:13px;color:var(--t2);margin-bottom:14px">' + (POS_STATE.hasCustomPin ? 'Tu PIN personalizado está activo.' : 'Actualmente usas el PIN inicial por defecto (12345). Cámbialo cuando quieras.') + '</div>'
@@ -1444,11 +1607,43 @@ function _pRenderAjustes() {
     + '  <button type="button" class="pos-btn primary full" id="pos-btn-save-pin" onclick="posSaveNewPin()">Actualizar PIN</button>'
     + '</div>'
 
-    + '<div class="pos-sec-label">Preferencias operativas</div>'
+    + '<div class="pos-sec-label">Programa de Fidelización y Tarjeta</div>'
+    + '<div class="pos-surface pos-surface-pad">'
+    + '  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px">'
+    + '    <div><div style="font-size:14px;font-weight:700">Programa activo</div><div style="font-size:12px;color:var(--t2)">Sincronizado con el portal de clientes, Caja y CRM</div></div>'
+    + '    <div class="toggle' + (loy.active ? ' on' : '') + '" id="pos-loy-active" onclick="this.classList.toggle(\'on\')"></div>'
+    + '  </div>'
+    + '  <div style="display:flex;gap:10px;flex-wrap:wrap">'
+    + '    <div class="field" style="flex:1;min-width:160px"><label for="pos-loy-mode">Modalidad</label>'
+    + '      <select class="inp" id="pos-loy-mode" onchange="posSyncLoyaltyFields()">'
+    + '        <option value="stamps"' + (loy.mode === 'stamps' ? ' selected' : '') + '>Tarjeta de sellos (1 por visita)</option>'
+    + '        <option value="points"' + (loy.mode === 'points' ? ' selected' : '') + '>Puntos por servicio</option>'
+    + '      </select></div>'
+    + '    <div class="field" style="flex:1;min-width:120px' + (loy.mode === 'stamps' ? '' : ';display:none') + '" id="pos-loy-stamps-wrap"><label for="pos-loy-stamps">Sellos para premio</label><input class="inp pos-num" id="pos-loy-stamps" type="number" min="2" max="20" value="' + loy.stamps + '"/></div>'
+    + '    <div class="field" style="flex:1;min-width:120px' + (loy.mode === 'points' ? '' : ';display:none') + '" id="pos-loy-pts-wrap"><label for="pos-loy-pts">Puntos para premio</label><input class="inp pos-num" id="pos-loy-pts" type="number" min="10" max="10000" step="10" value="' + loy.points_goal + '"/></div>'
+    + '  </div>'
+    + '  <div style="display:flex;gap:10px;flex-wrap:wrap">'
+    + '    <div class="field" style="flex:1;min-width:160px"><label for="pos-loy-reward">Premio al completar</label>'
+    + '      <select class="inp" id="pos-loy-reward" onchange="posSyncLoyaltyFields()">'
+    + '        <option value="free_service"' + (loy.reward_type === 'free_service' ? ' selected' : '') + '>Servicio gratis (100% dto.)</option>'
+    + '        <option value="discount_pct"' + (loy.reward_type === 'discount_pct' ? ' selected' : '') + '>Descuento % en el servicio</option>'
+    + '        <option value="free_product"' + (loy.reward_type === 'free_product' ? ' selected' : '') + '>Producto gratis de la tienda</option>'
+    + '      </select></div>'
+    + '    <div class="field" style="width:120px' + (loy.reward_type === 'discount_pct' ? '' : ';display:none') + '" id="pos-loy-pct-wrap"><label for="pos-loy-pct">Descuento (%)</label><input class="inp pos-num" id="pos-loy-pct" type="number" min="5" max="100" step="5" value="' + loy.reward_pct + '"/></div>'
+    + '    <div class="field" style="flex:1;min-width:160px' + (loy.reward_type === 'free_product' ? '' : ';display:none') + '" id="pos-loy-prod-wrap"><label for="pos-loy-prod">Producto de regalo</label><select class="inp" id="pos-loy-prod">' + prodOpts + '</select></div>'
+    + '  </div>'
+    + '  <button type="button" class="pos-btn secondary full" id="pos-btn-save-loy" onclick="posSaveLoyalty()">Guardar fidelización</button>'
+    + '</div>'
+
+    + '<div class="pos-sec-label">Preferencias operativas y métodos de pago</div>'
     + '<div class="pos-surface pos-surface-pad">'
     + '  <div style="display:flex;gap:10px">'
     + '    <div class="field" style="flex:1"><label for="pos-cfg-stock">Aviso stock bajo (uds)</label><input class="inp pos-num" id="pos-cfg-stock" type="number" min="0" step="1" value="' + (cfg.low_stock_alert != null ? cfg.low_stock_alert : 5) + '"/></div>'
     + '    <div class="field" style="flex:1"><label for="pos-cfg-close">Recordatorio de cierre</label><input class="inp" id="pos-cfg-close" type="time" value="' + san(cfg.close_reminder_time || '21:00') + '"/></div>'
+    + '  </div>'
+    + '  <div class="field"><label for="pos-cfg-methods">Métodos de pago (separados por coma)</label>'
+    + '    <input class="inp" id="pos-cfg-methods" placeholder="Efectivo, Tarjeta, Transferencia, Yape, Bizum..." value="' + san(((cfg.payment_methods || []).map(function (m) { return m.name; })).join(', ')) + '"/>'
+    + '    <div style="font-size:11px;color:var(--t2);margin-top:4px">Adapta los métodos a tu país (ej: Efectivo, Tarjeta, Yape, Plin, Bizum, Nequi).</div>'
     + '  </div>'
     + '  <button type="button" class="pos-btn secondary full" id="pos-btn-save-cfg" onclick="posSaveConfig()">Guardar preferencias</button>'
     + '</div>'
@@ -1460,6 +1655,66 @@ function _pRenderAjustes() {
     + '    <span style="font-size:13px;color:var(--blue);font-weight:600">Abrir Tienda</span>'
     + '  </div>'
     + '</div>';
+}
+
+function posSyncLoyaltyFields() {
+  var mode = G('pos-loy-mode') ? G('pos-loy-mode').value : 'stamps';
+  var rew = G('pos-loy-reward') ? G('pos-loy-reward').value : 'free_service';
+  if (G('pos-loy-stamps-wrap')) G('pos-loy-stamps-wrap').style.display = mode === 'stamps' ? '' : 'none';
+  if (G('pos-loy-pts-wrap')) G('pos-loy-pts-wrap').style.display = mode === 'points' ? '' : 'none';
+  if (G('pos-loy-pct-wrap')) G('pos-loy-pct-wrap').style.display = rew === 'discount_pct' ? '' : 'none';
+  if (G('pos-loy-prod-wrap')) G('pos-loy-prod-wrap').style.display = rew === 'free_product' ? '' : 'none';
+}
+
+async function posSaveLoyalty() {
+  if (!CUR || !CUR.id) return;
+  var active = Boolean(G('pos-loy-active') && G('pos-loy-active').classList.contains('on'));
+  var mode = G('pos-loy-mode') ? G('pos-loy-mode').value : 'stamps';
+  var stamps = parseInt(V('pos-loy-stamps'), 10) || 10;
+  var ptsGoal = parseInt(V('pos-loy-pts'), 10) || 100;
+  var rewType = G('pos-loy-reward') ? G('pos-loy-reward').value : 'free_service';
+  var rewPct = rewType === 'free_service' ? 100 : (parseInt(V('pos-loy-pct'), 10) || 50);
+  var prodSel = G('pos-loy-prod');
+  var prodId = prodSel ? String(prodSel.value || '').trim() : '';
+  var prodName = (prodSel && prodSel.selectedIndex >= 0 && prodSel.options[prodSel.selectedIndex])
+    ? String(prodSel.options[prodSel.selectedIndex].getAttribute('data-name') || '').trim()
+    : '';
+
+  if (rewType === 'free_product' && !prodId) {
+    toast('Selecciona el producto de regalo de tu tienda', '#EF4444');
+    return;
+  }
+
+  var btn = G('pos-btn-save-loy');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  try {
+    var payload = {
+      active: active,
+      mode: mode,
+      stamps: stamps,
+      points_goal: ptsGoal,
+      reward_type: rewType,
+      reward_pct: rewPct,
+      reward_product_id: prodId,
+      reward_product_name: prodName
+    };
+    var res = await fetch('/api/pos/loyalty', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ business_id: CUR.id, loyalty: payload })
+    });
+    var data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Error guardando fidelización');
+    POS_STATE.loyalty = data.loyalty;
+    CUR.loyalty = data.loyalty;
+    if (typeof saveDB === 'function') saveDB();
+    toast('Programa de fidelización actualizado', '#22C55E');
+    posRender();
+  } catch (e) {
+    toast(e.message || 'No se pudo guardar', '#EF4444');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar fidelización'; }
+  }
 }
 
 async function posSaveNewPin() {
@@ -1495,12 +1750,19 @@ async function posSaveConfig() {
   if (!CUR || !CUR.id) return;
   var low = parseInt(V('pos-cfg-stock'), 10);
   var closeTime = V('pos-cfg-close') || '21:00';
+  var rawMethods = V('pos-cfg-methods').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  var parsedMethods = rawMethods.length > 0 ? rawMethods.map(function (name) {
+    var key = /efectivo|cash/i.test(name) ? 'cash' : (/tarjeta|card|cr[eé]dito|d[eé]bito/i.test(name) ? 'card' : 'transfer');
+    return { name: name, key: key };
+  }) : POS_STATE.posConfig.payment_methods;
+
   var btn = G('pos-btn-save-cfg');
   if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
   try {
     var nextCfg = Object.assign({}, POS_STATE.posConfig, {
       low_stock_alert: isNaN(low) ? 5 : Math.max(0, low),
-      close_reminder_time: closeTime
+      close_reminder_time: closeTime,
+      payment_methods: parsedMethods
     });
     var res = await fetch('/api/pos/config', {
       method: 'POST',
@@ -1544,20 +1806,34 @@ async function posChargeAppointment(apptId) {
 
   POS_STATE.cart.appointmentId = appt.id;
   if (appt.client) {
+    var apptPh = String(appt.phone || '').replace(/\D/g, '');
+    var apptEm = String(appt.email || '').toLowerCase().trim();
+    var matchedCl = POS_STATE.clients.find(function (cl) {
+      var cPh = String(cl.phone || '').replace(/\D/g, '');
+      var cEm = String(cl.email || '').toLowerCase().trim();
+      if (apptPh && cPh && (apptPh === cPh || (apptPh.length >= 8 && cPh.endsWith(apptPh.slice(-8))))) return true;
+      if (apptEm && cEm && apptEm === cEm) return true;
+      return false;
+    });
     POS_STATE.cart.client = {
-      id: null,
-      name: appt.client,
-      phone: appt.phone || '',
-      email: appt.email || ''
+      id: (matchedCl && !matchedCl.from_appointments) ? matchedCl.id : null,
+      name: (matchedCl && matchedCl.name) || appt.client,
+      phone: (matchedCl && matchedCl.phone) || appt.phone || '',
+      email: (matchedCl && matchedCl.email) || appt.email || '',
+      points: matchedCl ? _pClientPoints(matchedCl) : 0
     };
   }
   if (appt.svc) {
     var svcKey = 'appt_' + appt.id;
+    var groups = _pCollectAvailableServices();
+    var allSvcs = groups.gen.concat(groups.team);
+    var matchedSvc = allSvcs.find(function (x) { return _pNorm(x.name) === _pNorm(appt.svc); });
     POS_STATE.cart.services[svcKey] = {
-      id: '',
+      id: matchedSvc ? matchedSvc.id : '',
       name: appt.svc,
       price: parseFloat(appt.price) || 0,
       qty: 1,
+      points: matchedSvc && matchedSvc.points != null ? matchedSvc.points : 10,
       isGeneral: !workerObj
     };
   }
@@ -1633,6 +1909,7 @@ window.posAdjSvc = posAdjSvc;
 window.posPickWorker = posPickWorker;
 window.posQuickAddWorker = posQuickAddWorker;
 window.posUpdatePayTotal = posUpdatePayTotal;
+window.posToggleRedeemLoyalty = posToggleRedeemLoyalty;
 window.posConfirmSale = posConfirmSale;
 window.posOpenCloseFlow = posOpenCloseFlow;
 window.posUpdateCloseDiff = posUpdateCloseDiff;
@@ -1645,5 +1922,7 @@ window.saveGeneralService = saveGeneralService;
 window.deleteCurrentGeneralService = deleteCurrentGeneralService;
 window.posSaveNewPin = posSaveNewPin;
 window.posSaveConfig = posSaveConfig;
+window.posSyncLoyaltyFields = posSyncLoyaltyFields;
+window.posSaveLoyalty = posSaveLoyalty;
 window.posChargeAppointment = posChargeAppointment;
 

@@ -55,129 +55,169 @@ function openQRModal() {
 }
 
 /* ══════════════════════════
-   FIDELIZACIÓN (TARJETA DE SELLOS)
+   FIDELIZACIÓN UNIFICADA (TARJETA DE SELLOS O PUNTOS)
 ══════════════════════════ */
-window.buildLoyaltyHtml = function (a, allAppts) {
-  if (!a || !allAppts) return '';
+window.normalizeLoyaltyConfig = function (raw) {
+  var cfg = (raw && typeof raw === 'object') ? raw : {};
+  var mode = cfg.mode === 'points' ? 'points' : 'stamps';
+  var stamps = Math.min(30, Math.max(2, parseInt(cfg.stamps, 10) || 10));
+  var points_goal = Math.min(10000, Math.max(10, parseInt(cfg.points_goal, 10) || 100));
+  var reward_type = (cfg.reward_type === 'discount_pct' || cfg.reward_type === 'free_product' || cfg.reward_type === 'free_service')
+    ? cfg.reward_type
+    : 'free_service';
+  var reward_pct = reward_type === 'free_service' ? 100 : Math.min(100, Math.max(1, parseInt(cfg.reward_pct, 10) || 50));
+  var reward_product_id = String(cfg.reward_product_id || '').trim();
+  var reward_product_name = String(cfg.reward_product_name || '').trim();
+  return {
+    active: cfg.active !== undefined ? Boolean(cfg.active) : true,
+    mode: mode,
+    stamps: stamps,
+    points_goal: points_goal,
+    goal: mode === 'points' ? points_goal : stamps,
+    unit: mode === 'points' ? 'puntos' : 'sellos',
+    reward_type: reward_type,
+    reward_pct: reward_pct,
+    reward_product_id: reward_product_id,
+    reward_product_name: reward_product_name,
+    reward_label: reward_type === 'free_product'
+      ? ((reward_product_name || 'Producto') + ' gratis')
+      : (reward_type === 'free_service' ? 'Servicio gratis' : (reward_pct + '% dto. en servicio'))
+  };
+};
 
+window._resolveClientLoyaltyBalance = function (biz, phone, email, allAppts) {
+  var cfg = window.normalizeLoyaltyConfig(biz && biz.loyalty);
+  var e1 = String(email || '').toLowerCase().trim();
+  var p1 = String(phone || '').replace(/\D/g, '');
+  var match = null;
+  var list = (biz && Array.isArray(biz.clientLoyalty)) ? biz.clientLoyalty : [];
+  if (list.length > 0 && (e1 || p1)) {
+    match = list.find(function (c) {
+      var ce = String(c.email || '').toLowerCase().trim();
+      var cp = String(c.phone || '').replace(/\D/g, '');
+      if (e1 && ce && e1 === ce) return true;
+      if (p1 && cp && (p1 === cp || (p1.length >= 8 && cp.endsWith(p1.slice(-8))) || (cp.length >= 8 && p1.endsWith(cp.slice(-8))))) return true;
+      return false;
+    });
+  }
+  if (match && (match.points > 0 || match.last_visit_at)) {
+    return parseInt(match.points, 10) || 0;
+  }
+  // Fallback retrocompatible: clientes antiguos con citas completadas previas a Caja
+  if (cfg.mode === 'stamps' && Array.isArray(allAppts) && (e1 || p1)) {
+    var pastCompleted = allAppts.filter(function (x) {
+      if (x.status !== 'completed') return false;
+      var xe = String(x.email || '').toLowerCase().trim();
+      var xp = String(x.phone || '').replace(/\D/g, '');
+      if (e1 && xe && e1 === xe) return true;
+      if (p1 && xp && (p1 === xp || (p1.length >= 8 && xp.endsWith(p1.slice(-8))))) return true;
+      return false;
+    }).length;
+    return pastCompleted > 0 ? (pastCompleted % cfg.goal) : 0;
+  }
+  return match ? (parseInt(match.points, 10) || 0) : 0;
+};
+
+window.renderLoyaltyCardHtml = function (opts) {
+  opts = opts || {};
+  var cfg = window.normalizeLoyaltyConfig(opts.loyalty);
+  if (!cfg.active && !opts.forceShow) return '';
+  var pts = Math.max(0, parseInt(opts.points, 10) || 0);
+  var goal = cfg.goal;
+  var ready = pts >= goal;
+  var shown = Math.min(pts, goal);
+  var remaining = Math.max(0, goal - pts);
+  var pct = Math.min(100, Math.round((shown / goal) * 100));
+  var title = opts.title || (cfg.mode === 'points' ? 'Tarjeta de Puntos' : 'Tarjeta de Fidelidad');
+  var subtitle = opts.subtitle || ('Premio: ' + cfg.reward_label);
+
+  var svgCheck = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  var svgGift = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>';
+
+  var bodyHtml = '';
+  if (cfg.mode === 'stamps' && goal <= 20) {
+    var circles = '';
+    for (var i = 1; i <= goal; i++) {
+      var isOn = i <= shown;
+      var isLast = i === goal;
+      circles += '<span class="loy-stamp' + (isOn ? ' on' : '') + (isLast ? ' goal' : '') + '">'
+        + (isLast ? svgGift : (isOn ? svgCheck : ''))
+        + '</span>';
+    }
+    bodyHtml = '<div class="loy-stamps-grid' + (goal > 10 ? ' wrap' : '') + '">' + circles + '</div>';
+  } else {
+    bodyHtml = '<div class="loy-bar-track"><div class="loy-bar-fill' + (ready ? ' ready' : '') + '" style="width:' + pct + '%"></div></div>';
+  }
+
+  var footerMsg = ready
+    ? '<span class="loy-msg ready">Premio listo para canjear en caja (' + san(cfg.reward_label) + ')</span>'
+    : '<span class="loy-msg">Faltan ' + remaining + ' ' + san(cfg.unit) + ' para ' + san(cfg.reward_label.toLowerCase()) + '</span>';
+
+  return '<div class="loy-wallet-card' + (ready ? ' is-ready' : '') + '">'
+    + '<div class="loy-wallet-top">'
+    + '  <div class="loy-wallet-titles">'
+    + '    <div class="loy-wallet-title">' + san(title) + '</div>'
+    + '    <div class="loy-wallet-sub">' + san(subtitle) + '</div>'
+    + '  </div>'
+    + '  <span class="loy-wallet-pill' + (ready ? ' ready' : '') + '">' + pts + ' / ' + goal + ' ' + san(cfg.unit) + '</span>'
+    + '</div>'
+    + bodyHtml
+    + '<div class="loy-wallet-foot">' + footerMsg + '</div>'
+    + '</div>';
+};
+
+window.buildLoyaltyHtml = function (a, allAppts) {
+  if (!a) return '';
   var bizId = a.business_id || (typeof CUR !== 'undefined' && CUR ? CUR.id : null) || (typeof CUR_WORKER !== 'undefined' && CUR_WORKER ? CUR_WORKER.business_id : null);
   var biz = typeof getBizById === 'function' ? getBizById(bizId) : null;
-  if (!biz && typeof DB !== 'undefined' && DB.businesses) biz = DB.businesses.find(b => b.id === bizId);
+  if (!biz && typeof DB !== 'undefined' && DB.businesses) biz = DB.businesses.find(function (b) { return b.id === bizId; });
   if (!biz && typeof CUR !== 'undefined' && CUR) biz = CUR;
+  if (!biz) return '';
 
-  var isActive = biz && biz.loyalty && biz.loyalty.active !== undefined ? biz.loyalty.active : true;
-  if (!isActive) return '';
-  var MAX_STAMPS = (biz && biz.loyalty && biz.loyalty.stamps) ? biz.loyalty.stamps : 10;
+  var cfg = window.normalizeLoyaltyConfig(biz.loyalty);
+  if (!cfg.active) return '';
 
-  // Buscar cuántas citas completadas tuvo el cliente ANTES de esta cita
-  var pastCompleted = allAppts.filter(function (x) {
-    if (x.status !== 'completed' || String(x.id) === String(a.id)) return false;
-    // Solo contar citas que sucedieron antes que la actual
-    var dateX = new Date(x.date + 'T' + (x.time || '00:00'));
-    var dateA = new Date(a.date + 'T' + (a.time || '00:00'));
-    if (dateX >= dateA) return false;
+  var pts = window._resolveClientLoyaltyBalance(biz, a.phone, a.email, allAppts || []);
+  if (pts <= 0) return '';
 
-    // Identificación EXACTA por Correo Electrónico (Login Automático)
-    var e1 = String(a.email || '').toLowerCase().trim();
-    var e2 = String(x.email || '').toLowerCase().trim();
-    if (e1 && e2 && e1 === e2) return true;
-
-    return false;
-  }).length;
-
-  // REGLA: Mostrar a los trabajadores o administradores SOLO a partir de la racha 3 (2 citas completadas en el pasado)
-  if (pastCompleted < 2) return '';
-
-  var stampsBefore = pastCompleted % MAX_STAMPS;
-  var currentStamps = a.status === 'completed' ? (pastCompleted + 1) % MAX_STAMPS : stampsBefore;
-  var displayStamps = (a.status === 'completed' && stampsBefore === (MAX_STAMPS - 1)) ? MAX_STAMPS : currentStamps;
-
-  var circles = '';
-  for (var i = 1; i <= MAX_STAMPS; i++) {
-    var isOn = i <= displayStamps;
-    if (i === MAX_STAMPS) {
-      circles += '<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:' + (isOn ? 'var(--green)' : 'var(--bg3)') + ';border:1px solid ' + (isOn ? 'var(--green)' : 'var(--b)') + ';color:#fff;box-shadow:' + (isOn ? '0 0 10px rgba(34,197,94,.4)' : 'none') + ';transition:all .3s;flex-shrink:0">🎁</div>';
-    } else {
-      circles += '<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:' + (isOn ? 'var(--blue)' : 'var(--bg3)') + ';border:1px solid ' + (isOn ? 'var(--blue)' : 'var(--b)') + ';color:' + (isOn ? '#fff' : 'transparent') + ';transition:all .3s;flex-shrink:0">✓</div>';
-    }
-  }
-  var circlesStyle = MAX_STAMPS > 10 ? 'display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-bottom:12px' : 'display:flex;justify-content:space-between;gap:4px;margin-bottom:12px';
-
-  var msg = '';
-  if (displayStamps === MAX_STAMPS) msg = '<span style="color:var(--green);font-weight:800">¡Premio canjeado en esta asistencia! 🎉</span>';
-  else if (stampsBefore === (MAX_STAMPS - 1) && a.status !== 'completed') msg = '<span style="color:var(--green);font-weight:800;font-size:12px">🎁 ¡Esta asistencia es el premio! (Gratis)</span>';
-  else msg = 'Faltan ' + (MAX_STAMPS - displayStamps) + ' asistencias para el premio.';
-
-  return '<div style="background:var(--card);border:1px solid var(--b);border-radius:16px;padding:16px;margin-bottom:14px">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
-    + '<div style="font-size:13px;font-weight:800;color:var(--text)">Racha de Asistencias</div>'
-    + '<div style="font-size:11px;font-weight:700;color:var(--blue);background:var(--bblue);padding:3px 8px;border-radius:8px">' + displayStamps + '/' + MAX_STAMPS + ' Rachas</div>'
-    + '</div>'
-    + '<div style="' + circlesStyle + '">' + circles + '</div>'
-    + '<div style="text-align:center;font-size:11px;color:var(--muted)">' + msg + '</div>'
-    + '</div>';
+  return window.renderLoyaltyCardHtml({
+    loyalty: cfg,
+    points: pts,
+    title: 'Tarjeta de Fidelidad'
+  });
 };
 
 window.buildClientLoyaltyHtml = function (bizId, phone, email, name) {
   var biz = typeof getBizById === 'function' ? getBizById(bizId) : null;
-  if (!biz && typeof DB !== 'undefined' && DB.businesses) biz = DB.businesses.find(b => b.id === bizId);
+  if (!biz && typeof DB !== 'undefined' && DB.businesses) biz = DB.businesses.find(function (b) { return b.id === bizId; });
   if (!biz) return '';
 
-  var isActive = biz.loyalty && biz.loyalty.active !== undefined ? biz.loyalty.active : true;
-  if (!isActive) return '';
-  var MAX_STAMPS = (biz.loyalty && biz.loyalty.stamps) ? biz.loyalty.stamps : 10;
+  var cfg = window.normalizeLoyaltyConfig(biz.loyalty);
+  if (!cfg.active) return '';
 
   var allAppts = [];
   (biz.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (ap) { allAppts.push(ap); }); });
   (biz.appointments || []).forEach(function (ap) { allAppts.push(ap); });
 
-  var pastCompleted = allAppts.filter(function (x) {
-    if (x.status !== 'completed') return false;
-    // Identificación EXACTA por Correo Electrónico (Login Automático)
-    var e1 = String(email || '').toLowerCase().trim();
-    var e2 = String(x.email || '').toLowerCase().trim();
-    if (e1 && e2 && e1 === e2) return true;
-    return false;
-  }).length;
+  var pts = window._resolveClientLoyaltyBalance(biz, phone, email, allAppts);
+  var firstName = name ? String(name).trim().split(' ')[0] : 'Cliente';
 
-  var currentStamps = pastCompleted % MAX_STAMPS;
-
-  var circles = '';
-  for (var i = 1; i <= MAX_STAMPS; i++) {
-    var isOn = i <= currentStamps;
-    if (i === MAX_STAMPS) {
-      circles += '<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:' + (isOn ? 'var(--green)' : 'var(--bg3)') + ';border:1px solid ' + (isOn ? 'var(--green)' : 'var(--b)') + ';color:#fff;box-shadow:' + (isOn ? '0 0 10px rgba(34,197,94,.4)' : 'none') + ';transition:all .3s;flex-shrink:0">🎁</div>';
-    } else {
-      circles += '<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:' + (isOn ? 'var(--blue)' : 'var(--bg3)') + ';border:1px solid ' + (isOn ? 'var(--blue)' : 'var(--b)') + ';color:' + (isOn ? '#fff' : 'transparent') + ';transition:all .3s;flex-shrink:0">✓</div>';
-    }
-  }
-  var circlesStyle = MAX_STAMPS > 10 ? 'display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-bottom:12px' : 'display:flex;justify-content:space-between;gap:4px;margin-bottom:12px';
-
-  var msg = '';
-  if (currentStamps === (MAX_STAMPS - 1)) msg = '<span style="color:var(--green);font-weight:800">¡Tu próxima cita es el premio! 🎁 (Gratis)</span>';
-  else msg = 'Faltan ' + (MAX_STAMPS - currentStamps) + ' asistencias para tu premio.';
-
-  var firstName = name ? name.split(' ')[0] : 'Cliente';
-
-  return '<div style="background:var(--bblue);border:1px solid rgba(74,127,212,.2);border-radius:16px;padding:16px;margin-bottom:20px;animation:fadeUp .4s ease">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
-    + '<div style="font-size:13px;font-weight:800;color:var(--text)">¡Hola, ' + san(firstName) + '! Tu Racha actual</div>'
-    + '<div style="font-size:11px;font-weight:700;color:var(--blue);background:rgba(74,127,212,.15);padding:3px 8px;border-radius:8px">' + currentStamps + '/' + MAX_STAMPS + ' Rachas</div>'
-    + '</div>'
-    + '<div style="' + circlesStyle + '">' + circles + '</div>'
-    + '<div style="text-align:center;font-size:12px;color:var(--blue3);font-weight:600">' + msg + '</div>'
-    + '</div>';
+  return window.renderLoyaltyCardHtml({
+    loyalty: cfg,
+    points: pts,
+    title: 'Hola, ' + firstName + ' · Tu Tarjeta'
+  });
 };
 
 window.checkLoyaltyReward = function (bizId, appt) {
   if (!appt || !appt.email) return;
   var biz = typeof getBizById === 'function' ? getBizById(bizId) : null;
-  if (!biz && typeof DB !== 'undefined' && DB.businesses) biz = DB.businesses.find(b => b.id === bizId);
+  if (!biz && typeof DB !== 'undefined' && DB.businesses) biz = DB.businesses.find(function (b) { return b.id === bizId; });
   if (!biz) return;
 
-  var isActive = biz.loyalty && biz.loyalty.active !== undefined ? biz.loyalty.active : true;
-  if (!isActive) return;
-  var MAX_STAMPS = (biz.loyalty && biz.loyalty.stamps) ? biz.loyalty.stamps : 10;
+  var cfg = window.normalizeLoyaltyConfig(biz.loyalty);
+  if (!cfg.active) return;
+  var MAX_STAMPS = cfg.goal;
 
   var allAppts = [];
   (biz.workers || []).forEach(function (w) { (w.appointments || []).forEach(function (a) { allAppts.push(a); }); });
@@ -186,13 +226,12 @@ window.checkLoyaltyReward = function (bizId, appt) {
   var pastCompleted = allAppts.filter(function (x) {
     if (x.status !== 'completed' || String(x.id) === String(appt.id)) return false;
     if (x.date && appt.date && new Date(x.date) > new Date(appt.date)) return false;
-    // Identificación EXACTA por Correo Electrónico
     var e1 = String(appt.email || '').toLowerCase().trim(); var e2 = String(x.email || '').toLowerCase().trim();
     if (e1 && e2 && e1 === e2) return true;
     return false;
   }).length;
 
-  if (pastCompleted % MAX_STAMPS === (MAX_STAMPS - 1) && appt.status === 'completed') {
+  if (cfg.mode === 'stamps' && pastCompleted % MAX_STAMPS === (MAX_STAMPS - 1) && appt.status === 'completed') {
     fetch('/api/send-email', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'loyalty_reward', to: appt.email, data: { clientName: appt.client, bizName: biz.name } }) }).catch(function (e) { console.error(e); });
   }
 };

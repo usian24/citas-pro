@@ -21,6 +21,8 @@ function genId(prefix) {
 
 function mergePosConfig(raw) {
   const cfg = (raw && typeof raw === 'object') ? raw : {};
+  const taxRaw = (cfg.tax && typeof cfg.tax === 'object') ? cfg.tax : null;
+  const crmRaw = (cfg.crm && typeof cfg.crm === 'object') ? cfg.crm : {};
   return {
     low_stock_alert: Number.isFinite(Number(cfg.low_stock_alert)) ? Math.max(0, parseInt(cfg.low_stock_alert, 10)) : DEFAULT_POS_CONFIG.low_stock_alert,
     close_reminder_time: typeof cfg.close_reminder_time === 'string' && /^\d{2}:\d{2}$/.test(cfg.close_reminder_time)
@@ -28,7 +30,50 @@ function mergePosConfig(raw) {
       : DEFAULT_POS_CONFIG.close_reminder_time,
     payment_methods: Array.isArray(cfg.payment_methods) && cfg.payment_methods.length > 0
       ? cfg.payment_methods
-      : DEFAULT_POS_CONFIG.payment_methods
+      : DEFAULT_POS_CONFIG.payment_methods,
+    tax: taxRaw ? {
+      name: String(taxRaw.name || 'IVA').trim().slice(0, 20),
+      rate_services: Math.min(60, Math.max(0, parseFloat(taxRaw.rate_services) || 0)),
+      rate_products: Math.min(60, Math.max(0, parseFloat(taxRaw.rate_products) || 0)),
+      included: taxRaw.included !== false
+    } : null,
+    crm: {
+      review_url: String(crmRaw.review_url || '').trim(),
+      msg_inactive: String(crmRaw.msg_inactive || 'Hola {nombre}, hace tiempo que no te vemos por {negocio}. Llevas {puntos}/{meta} {unidad} en tu tarjeta ({faltan} para tu premio). Te esperamos pronto.').trim(),
+      msg_birthday: String(crmRaw.msg_birthday || 'Feliz cumpleaños {nombre}. Desde {negocio} te deseamos un gran día y te esperamos para celebrarlo.').trim(),
+      msg_review: String(crmRaw.msg_review || 'Hola {nombre}, gracias por visitarnos en {negocio}. Si quedaste satisfecho, nos ayudaría mucho tu reseña aquí: {enlace}').trim(),
+      msg_reward: String(crmRaw.msg_reward || 'Hola {nombre}, enhorabuena. Ya completaste tu tarjeta en {negocio} ({puntos}/{meta} {unidad}) y tienes listo tu premio: {premio}. Te esperamos para canjearlo.').trim()
+    }
+  };
+}
+
+function normalizeLoyaltyConfig(raw) {
+  const cfg = (raw && typeof raw === 'object') ? raw : {};
+  const mode = cfg.mode === 'points' ? 'points' : 'stamps';
+  const stamps = Math.min(30, Math.max(2, parseInt(cfg.stamps, 10) || 10));
+  const points_goal = Math.min(10000, Math.max(10, parseInt(cfg.points_goal, 10) || 100));
+  const reward_type = ['free_service', 'discount_pct', 'free_product'].includes(cfg.reward_type)
+    ? cfg.reward_type
+    : 'free_service';
+  const reward_pct = reward_type === 'free_service'
+    ? 100
+    : Math.min(100, Math.max(1, parseInt(cfg.reward_pct, 10) || 50));
+  const reward_product_id = String(cfg.reward_product_id || '').trim();
+  const reward_product_name = String(cfg.reward_product_name || '').trim();
+  return {
+    active: cfg.active !== undefined ? Boolean(cfg.active) : true,
+    mode,
+    stamps,
+    points_goal,
+    goal: mode === 'points' ? points_goal : stamps,
+    unit: mode === 'points' ? 'puntos' : 'sellos',
+    reward_type,
+    reward_pct,
+    reward_product_id,
+    reward_product_name,
+    reward_label: reward_type === 'free_product'
+      ? ((reward_product_name || 'Producto') + ' gratis')
+      : (reward_type === 'free_service' ? 'Servicio gratis (100% dto.)' : (reward_pct + '% dto. en servicio'))
   };
 }
 
@@ -74,7 +119,7 @@ router.get('/pos/state', async (req, res) => {
       clientsRes,
       apptsClientsRes
     ] = await Promise.all([
-      supabase.from('businesses').select('id, name, country, owner_pin, pos_config').eq('id', bizId).single(),
+      supabase.from('businesses').select('id, name, country, owner_pin, pos_config, loyalty').eq('id', bizId).single(),
       supabase.from('pos_cash_registers').select('*').eq('business_id', bizId).order('date', { ascending: false }).limit(20),
       supabase.from('pos_sales').select('*').eq('business_id', bizId).eq('sale_date', today).order('created_at', { ascending: false }).limit(300),
       supabase.from('products').select('*').eq('business_id', bizId).order('name', { ascending: true }),
@@ -114,6 +159,7 @@ router.get('/pos/state', async (req, res) => {
         name,
         phone: a.client_phone || '',
         email: a.client_email || '',
+        points: 0,
         from_appointments: true
       });
     });
@@ -163,6 +209,7 @@ router.get('/pos/state', async (req, res) => {
       })),
       clients: mergedClients,
       posConfig: mergePosConfig(bizRes.data.pos_config),
+      loyalty: normalizeLoyaltyConfig(bizRes.data.loyalty),
       hasCustomPin: Boolean(bizRes.data.owner_pin)
     });
   } catch (err) {
@@ -453,19 +500,101 @@ router.post('/pos/sale', async (req, res) => {
     }
 
     const itemsServices = Array.isArray(body.items_services) ? body.items_services : [];
-    const itemsProducts = Array.isArray(body.items_products) ? body.items_products : [];
+    const itemsProductsInput = Array.isArray(body.items_products) ? body.items_products.slice() : [];
+    const wantRedeem = Boolean(body.redeem_loyalty);
+
+    // 0. Cargar configuración de fidelización del negocio
+    const { data: bizRow } = await supabase
+      .from('businesses')
+      .select('loyalty')
+      .eq('id', business_id)
+      .single();
+    const loyaltyCfg = normalizeLoyaltyConfig(bizRow ? bizRow.loyalty : null);
+
+    // 0b. Resolver o crear cliente primero para consultar su saldo real de puntos/sellos
+    let resolvedClientId = (body.client_id && !String(body.client_id).startsWith('appt_cl_')) ? body.client_id : null;
+    const clientName = String(body.client_name || '').trim();
+    const clientPhone = String(body.client_phone || '').trim();
+    const clientEmail = String(body.client_email || '').trim().toLowerCase();
+    let currentClientPoints = 0;
+
+    if (resolvedClientId) {
+      const { data: clRow } = await supabase
+        .from('clients')
+        .select('id, points')
+        .eq('id', resolvedClientId)
+        .eq('business_id', business_id)
+        .single();
+      if (clRow) {
+        currentClientPoints = Math.max(0, parseInt(clRow.points, 10) || 0);
+      } else {
+        resolvedClientId = null;
+      }
+    }
+
+    if (!resolvedClientId && clientName && (clientPhone || clientEmail)) {
+      let existingCl = null;
+      if (clientPhone) {
+        const { data: byPh } = await supabase
+          .from('clients')
+          .select('id, points')
+          .eq('business_id', business_id)
+          .eq('phone', clientPhone)
+          .limit(1);
+        if (byPh && byPh.length > 0) existingCl = byPh[0];
+      }
+      if (!existingCl && clientEmail) {
+        const { data: byEm } = await supabase
+          .from('clients')
+          .select('id, points')
+          .eq('business_id', business_id)
+          .eq('email', clientEmail)
+          .limit(1);
+        if (byEm && byEm.length > 0) existingCl = byEm[0];
+      }
+
+      if (existingCl) {
+        resolvedClientId = existingCl.id;
+        currentClientPoints = Math.max(0, parseInt(existingCl.points, 10) || 0);
+      } else {
+        resolvedClientId = genId('cl');
+        await supabase.from('clients').insert({
+          id: resolvedClientId,
+          business_id,
+          name: clientName,
+          phone: clientPhone,
+          email: clientEmail,
+          points: 0,
+          last_visit_at: new Date().toISOString()
+        });
+        currentClientPoints = 0;
+      }
+    }
+
+    // 0c. Verificar si se canjea premio de producto gratis
+    let redeemedGiftProduct = false;
+    const itemsProducts = itemsProductsInput.filter(item => !item.is_gift);
+    if (wantRedeem && loyaltyCfg.active && resolvedClientId && currentClientPoints >= loyaltyCfg.goal && loyaltyCfg.reward_type === 'free_product' && loyaltyCfg.reward_product_id) {
+      itemsProducts.push({
+        id: loyaltyCfg.reward_product_id,
+        name: loyaltyCfg.reward_product_name || 'Regalo fidelización',
+        qty: 1,
+        is_gift: true
+      });
+      redeemedGiftProduct = true;
+    }
 
     if (itemsServices.length === 0 && itemsProducts.length === 0) {
       return res.status(400).json({ success: false, error: 'Debes añadir al menos un servicio o producto' });
     }
 
-    // 1. Verificar stock real de los productos solicitados
-    const stockUpdates = [];
+    // 1. Verificar stock real de los productos solicitados (soportando mismo producto normal + regalo)
+    const stockUpdatesMap = {};
     const normalizedProducts = [];
     let productsTotal = 0;
 
     if (itemsProducts.length > 0) {
-      const prodIds = itemsProducts.map(p => String(p.id)).filter(Boolean);
+      const prodIds = [...new Set(itemsProducts.map(p => String(p.id)).filter(Boolean))];
       const { data: dbProds, error: pErr } = await supabase
         .from('products')
         .select('id, name, price, cost_price, stock, discount_percent')
@@ -475,7 +604,11 @@ router.post('/pos/sale', async (req, res) => {
       if (pErr) return res.status(500).json({ success: false, error: pErr.message });
 
       const prodMap = {};
-      (dbProds || []).forEach(p => { prodMap[p.id] = p; });
+      const remainingStock = {};
+      (dbProds || []).forEach(p => {
+        prodMap[p.id] = p;
+        remainingStock[p.id] = parseInt(p.stock, 10) || 0;
+      });
 
       for (const item of itemsProducts) {
         const qty = Math.max(1, parseInt(item.qty, 10) || 1);
@@ -483,10 +616,13 @@ router.post('/pos/sale', async (req, res) => {
         if (!dbP) {
           return res.status(400).json({ success: false, error: `Producto no encontrado: ${item.name || item.id}` });
         }
-        const currentStock = parseInt(dbP.stock, 10) || 0;
-        if (currentStock < qty) {
-          return res.status(400).json({ success: false, error: `Stock insuficiente para "${dbP.name}" (disponible: ${currentStock})` });
+        const avail = remainingStock[dbP.id];
+        if (avail < qty) {
+          return res.status(400).json({ success: false, error: `Stock insuficiente para "${dbP.name}" (disponible: ${avail})` });
         }
+        remainingStock[dbP.id] = avail - qty;
+        stockUpdatesMap[dbP.id] = remainingStock[dbP.id];
+
         const rawPrice = parseFloat(dbP.price) || 0;
         const disc = parseFloat(dbP.discount_percent) || 0;
         const unitPrice = item.is_gift ? 0 : Math.round((disc > 0 ? rawPrice * (1 - disc / 100) : rawPrice) * 100) / 100;
@@ -500,16 +636,34 @@ router.post('/pos/sale', async (req, res) => {
           cost_price: parseFloat(dbP.cost_price) || 0,
           is_gift: Boolean(item.is_gift)
         });
-        stockUpdates.push({ id: dbP.id, newStock: Math.max(0, currentStock - qty) });
       }
     }
+    const stockUpdates = Object.keys(stockUpdatesMap).map(id => ({ id, newStock: stockUpdatesMap[id] }));
 
-    // 2. Calcular servicios y totales
+    // 2. Calcular servicios, puntos ganados y canje de fidelización
     let servicesTotal = 0;
+    const svcIds = [...new Set(itemsServices.map(s => String(s.id || '')).filter(Boolean))];
+    const svcPointsMap = {};
+    if (svcIds.length > 0 && loyaltyCfg.active && loyaltyCfg.mode === 'points') {
+      const { data: dbSvcs } = await supabase
+        .from('services')
+        .select('id, points')
+        .eq('business_id', business_id)
+        .in('id', svcIds);
+      (dbSvcs || []).forEach(s => {
+        svcPointsMap[s.id] = s.points != null ? Math.max(0, parseInt(s.points, 10) || 0) : 10;
+      });
+    }
+
+    let pointsFromServices = 0;
     const normalizedServices = itemsServices.map(s => {
       const qty = Math.max(1, parseInt(s.qty, 10) || 1);
       const price = Math.max(0, parseFloat(s.price) || 0);
       servicesTotal += price * qty;
+      const ptsPerUnit = (s.id && svcPointsMap[s.id] !== undefined)
+        ? svcPointsMap[s.id]
+        : (s.points != null ? Math.max(0, parseInt(s.points, 10) || 0) : 10);
+      pointsFromServices += ptsPerUnit * qty;
       return {
         id: s.id || '',
         name: String(s.name || 'Servicio').trim(),
@@ -522,41 +676,37 @@ router.post('/pos/sale', async (req, res) => {
     productsTotal = Math.round(productsTotal * 100) / 100;
 
     const gross = servicesTotal + productsTotal;
-    const discountLoyalty = Math.min(gross, Math.max(0, parseFloat(body.discount_loyalty) || 0));
+    let discountLoyalty = 0;
+    let pointsRedeemed = 0;
+
+    if (redeemedGiftProduct) {
+      pointsRedeemed = loyaltyCfg.goal;
+    } else if (wantRedeem && loyaltyCfg.active && resolvedClientId && currentClientPoints >= loyaltyCfg.goal && servicesTotal > 0 && loyaltyCfg.reward_type !== 'free_product') {
+      discountLoyalty = Math.min(servicesTotal, Math.round(servicesTotal * (loyaltyCfg.reward_pct / 100) * 100) / 100);
+      pointsRedeemed = loyaltyCfg.goal;
+    } else if (!wantRedeem && body.discount_loyalty) {
+      discountLoyalty = Math.min(gross, Math.max(0, parseFloat(body.discount_loyalty) || 0));
+    }
+
     const discountManual = Math.min(Math.max(0, gross - discountLoyalty), Math.max(0, parseFloat(body.discount_manual) || 0));
     const tip = Math.max(0, Math.round((parseFloat(body.tip) || 0) * 100) / 100);
     const total = Math.max(0, Math.round((gross - discountLoyalty - discountManual) * 100) / 100);
 
-    // 3. Resolver o crear cliente si viene teléfono/nombre
-    let resolvedClientId = (body.client_id && !String(body.client_id).startsWith('appt_cl_')) ? body.client_id : null;
-    const clientName = String(body.client_name || '').trim();
-    const clientPhone = String(body.client_phone || '').trim();
+    let pointsEarned = 0;
+    if (loyaltyCfg.active && resolvedClientId && normalizedServices.length > 0) {
+      pointsEarned = loyaltyCfg.mode === 'points' ? pointsFromServices : 1;
+    }
 
-    if (!resolvedClientId && clientName && clientPhone) {
-      const { data: existingCl } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('business_id', business_id)
-        .eq('phone', clientPhone)
-        .limit(1);
-
-      if (existingCl && existingCl.length > 0) {
-        resolvedClientId = existingCl[0].id;
-      } else {
-        resolvedClientId = genId('cl');
-        await supabase.from('clients').insert({
-          id: resolvedClientId,
-          business_id,
-          name: clientName,
-          phone: clientPhone,
-          email: String(body.client_email || '').trim(),
-          last_visit_at: new Date().toISOString()
-        });
-      }
-    } else if (resolvedClientId) {
+    // 3. Actualizar saldo de puntos/sellos y última visita del cliente
+    let newClientPoints = currentClientPoints;
+    if (resolvedClientId) {
+      newClientPoints = Math.max(0, currentClientPoints - pointsRedeemed + pointsEarned);
       await supabase
         .from('clients')
-        .update({ last_visit_at: new Date().toISOString() })
+        .update({
+          last_visit_at: new Date().toISOString(),
+          points: newClientPoints
+        })
         .eq('id', resolvedClientId)
         .eq('business_id', business_id);
     }
@@ -573,7 +723,7 @@ router.post('/pos/sale', async (req, res) => {
       if (openReg && openReg.length > 0) cashRegisterId = openReg[0].id;
     }
 
-    // 5. Insertar cobro
+    // 5. Insertar cobro (con fallback si las columnas points_earned/points_redeemed aún no existen)
     const saleId = genId('sale');
     const saleRecord = {
       id: saleId,
@@ -591,6 +741,8 @@ router.post('/pos/sale', async (req, res) => {
       products_total: productsTotal,
       discount_manual: Math.round(discountManual * 100) / 100,
       discount_loyalty: Math.round(discountLoyalty * 100) / 100,
+      points_earned: pointsEarned,
+      points_redeemed: pointsRedeemed,
       tip,
       total,
       payment_method: String(payment_method).trim(),
@@ -598,11 +750,19 @@ router.post('/pos/sale', async (req, res) => {
       sale_date
     };
 
-    const { data: insertedSale, error: insErr } = await supabase
+    let { data: insertedSale, error: insErr } = await supabase
       .from('pos_sales')
       .insert(saleRecord)
       .select()
       .single();
+
+    if (insErr && /points_earned|points_redeemed/i.test(insErr.message || '')) {
+      delete saleRecord.points_earned;
+      delete saleRecord.points_redeemed;
+      const retry = await supabase.from('pos_sales').insert(saleRecord).select().single();
+      insertedSale = retry.data;
+      insErr = retry.error;
+    }
 
     if (insErr) {
       return res.status(500).json({ success: false, error: insErr.message });
@@ -630,8 +790,19 @@ router.post('/pos/sale', async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      sale: insertedSale,
-      stockUpdates
+      sale: Object.assign({}, insertedSale, { points_earned: pointsEarned, points_redeemed: pointsRedeemed }),
+      stockUpdates,
+      clientLoyalty: resolvedClientId ? {
+        client_id: resolvedClientId,
+        active: loyaltyCfg.active,
+        mode: loyaltyCfg.mode,
+        unit: loyaltyCfg.unit,
+        goal: loyaltyCfg.goal,
+        points: newClientPoints,
+        points_earned: pointsEarned,
+        points_redeemed: pointsRedeemed,
+        reward_label: loyaltyCfg.reward_label
+      } : null
     });
   } catch (err) {
     console.error('[POS] Error en /pos/sale:', err);
@@ -700,6 +871,27 @@ router.post('/pos/sale-void', async (req, res) => {
         .update({ status: 'confirmed' })
         .eq('id', sale.appointment_id)
         .eq('business_id', business_id);
+    }
+
+    // Revertir puntos/sellos de fidelización si aplica
+    const earned = parseInt(sale.points_earned, 10) || 0;
+    const redeemed = parseInt(sale.points_redeemed, 10) || 0;
+    if (sale.client_id && (earned > 0 || redeemed > 0)) {
+      const { data: clRow } = await supabase
+        .from('clients')
+        .select('points')
+        .eq('id', sale.client_id)
+        .eq('business_id', business_id)
+        .single();
+      if (clRow) {
+        const curPts = parseInt(clRow.points, 10) || 0;
+        const reverted = Math.max(0, curPts - earned + redeemed);
+        await supabase
+          .from('clients')
+          .update({ points: reverted })
+          .eq('id', sale.client_id)
+          .eq('business_id', business_id);
+      }
     }
 
     return res.status(200).json({ success: true });
@@ -896,6 +1088,354 @@ router.post('/pos/general-service-delete', async (req, res) => {
     if (error) return res.status(400).json({ success: false, error: error.message });
 
     return res.status(200).json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// GET /api/pos/finance-summary — Resumen contable, gastos, liquidación y gráficas
+// ═══════════════════════════════════════════════════
+router.get('/pos/finance-summary', async (req, res) => {
+  try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    const bizId = String(req.query.business_id || '').trim();
+    const from = req.query.from ? String(req.query.from).trim() : null;
+    const to = req.query.to ? String(req.query.to).trim() : null;
+
+    if (!bizId) {
+      return res.status(400).json({ error: 'business_id requerido' });
+    }
+
+    let salesQuery = supabase
+      .from('pos_sales')
+      .select('*')
+      .eq('business_id', bizId)
+      .eq('status', 'completed')
+      .order('created_at', { ascending: false })
+      .limit(2000);
+
+    if (from) salesQuery = salesQuery.gte('sale_date', from);
+    if (to) salesQuery = salesQuery.lte('sale_date', to);
+
+    let apptQuery = supabase
+      .from('appointments')
+      .select('id, worker_id, service_name, date, status')
+      .eq('business_id', bizId)
+      .neq('status', 'cancelled')
+      .limit(2000);
+    if (from) apptQuery = apptQuery.gte('date', from);
+    if (to) apptQuery = apptQuery.lte('date', to);
+
+    const [bizRes, salesRes, expRes, prodsRes, workersRes, apptsRes] = await Promise.all([
+      supabase.from('businesses').select('id, name, country, pos_config').eq('id', bizId).single(),
+      salesQuery,
+      supabase.from('pos_expenses').select('*').eq('business_id', bizId).order('expense_date', { ascending: false }).limit(1000),
+      supabase.from('products').select('id, name, price, cost_price, stock, min_stock, tax_rate, active').eq('business_id', bizId),
+      supabase.from('workers').select('id, name, phone, avatar, role, commission_services, commission_products, active').eq('business_id', bizId),
+      apptQuery
+    ]);
+
+    if (bizRes.error || !bizRes.data) {
+      return res.status(404).json({ error: 'Negocio no encontrado' });
+    }
+
+    return res.status(200).json({
+      country: bizRes.data.country || 'ES',
+      posConfig: mergePosConfig(bizRes.data.pos_config),
+      sales: salesRes.data || [],
+      expenses: expRes.data || [],
+      products: prodsRes.data || [],
+      appointments: apptsRes.data || [],
+      workers: (workersRes.data || []).map(w => ({
+        id: w.id,
+        name: w.name || '',
+        phone: w.phone || '',
+        photo: w.avatar || '',
+        role: w.role || '',
+        commission_services: parseFloat(w.commission_services) || 0,
+        commission_products: parseFloat(w.commission_products) || 0,
+        active: w.active !== false
+      }))
+    });
+  } catch (err) {
+    console.error('[POS] Error en /pos/finance-summary:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// POST /api/pos/expense — Registrar gasto del negocio
+// ═══════════════════════════════════════════════════
+router.post('/pos/expense', async (req, res) => {
+  try {
+    const { business_id, expense } = req.body || {};
+    if (!business_id || !expense || !expense.expense_date || !expense.category) {
+      return res.status(400).json({ success: false, error: 'Fecha, categoría e importe son obligatorios' });
+    }
+
+    const amount = Math.round((parseFloat(expense.amount) || 0) * 100) / 100;
+    if (amount <= 0) {
+      return res.status(400).json({ success: false, error: 'El importe debe ser mayor que 0' });
+    }
+
+    const payload = {
+      id: expense.id ? String(expense.id) : genId('exp'),
+      business_id,
+      expense_date: String(expense.expense_date).trim(),
+      concept: String(expense.concept || '').trim(),
+      category: String(expense.category).trim(),
+      amount,
+      is_recurring: Boolean(expense.is_recurring)
+    };
+
+    const { data, error } = await supabase
+      .from('pos_expenses')
+      .upsert(payload)
+      .select()
+      .single();
+
+    if (error) return res.status(400).json({ success: false, error: error.message });
+    return res.status(200).json({ success: true, expense: data });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// POST /api/pos/expense-delete — Eliminar gasto
+// ═══════════════════════════════════════════════════
+router.post('/pos/expense-delete', async (req, res) => {
+  try {
+    const { business_id, expense_id } = req.body || {};
+    if (!business_id || !expense_id) {
+      return res.status(400).json({ success: false, error: 'Faltan business_id o expense_id' });
+    }
+
+    const { error } = await supabase
+      .from('pos_expenses')
+      .delete()
+      .eq('id', String(expense_id))
+      .eq('business_id', business_id);
+
+    if (error) return res.status(400).json({ success: false, error: error.message });
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// GET /api/pos/clients — CRM de clientes del negocio con estadísticas
+// ═══════════════════════════════════════════════════
+router.get('/pos/clients', async (req, res) => {
+  try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    const bizId = String(req.query.business_id || '').trim();
+    if (!bizId) return res.status(400).json({ error: 'business_id requerido' });
+
+    const [bizRes, clRes, salesRes, apptsRes] = await Promise.all([
+      supabase.from('businesses').select('id, name, pos_config, loyalty').eq('id', bizId).single(),
+      supabase.from('clients').select('*').eq('business_id', bizId).order('name', { ascending: true }).limit(1000),
+      supabase.from('pos_sales').select('id, client_id, client_name, client_phone, total, sale_date, created_at, worker_name, items_services, items_products').eq('business_id', bizId).eq('status', 'completed').order('created_at', { ascending: false }).limit(2000),
+      supabase.from('appointments').select('id, client_name, client_phone, client_email, service_name, service_price, date, status').eq('business_id', bizId).neq('status', 'cancelled').order('date', { ascending: false }).limit(2000)
+    ]);
+
+    if (bizRes.error || !bizRes.data) {
+      return res.status(404).json({ error: 'Negocio no encontrado' });
+    }
+
+    const sales = salesRes.data || [];
+    const appts = apptsRes.data || [];
+    const rawClients = (clRes.data || []).slice();
+
+    // Índice rápido por id y teléfono normalizado
+    const byId = {};
+    const byPhone = {};
+    const enriched = rawClients.map(c => {
+      const item = {
+        id: c.id,
+        name: c.name || '',
+        phone: c.phone || '',
+        email: c.email || '',
+        birthday: c.birthday || '',
+        points: parseInt(c.points, 10) || 0,
+        last_visit_at: c.last_visit_at || null,
+        last_reminder_at: c.last_reminder_at || null,
+        created_at: c.created_at || null,
+        visits: 0,
+        total_spent: 0,
+        last_worker: '',
+        history: []
+      };
+      byId[item.id] = item;
+      const cleanPh = String(item.phone).replace(/\D/g, '');
+      if (cleanPh) byPhone[cleanPh] = item;
+      return item;
+    });
+
+    // Incorporar clientes de citas históricas que aún no estén en public.clients
+    appts.forEach((a, idx) => {
+      const name = String(a.client_name || '').trim();
+      const ph = String(a.client_phone || '').replace(/\D/g, '');
+      if (!name) return;
+      let target = ph ? byPhone[ph] : null;
+      if (!target) {
+        target = enriched.find(c => c.name.toLowerCase() === name.toLowerCase() && (!ph || !c.phone));
+      }
+      if (!target) {
+        target = {
+          id: 'appt_cl_' + idx,
+          name,
+          phone: a.client_phone || '',
+          email: a.client_email || '',
+          birthday: '',
+          points: 0,
+          last_visit_at: a.date ? (a.date + 'T12:00:00Z') : null,
+          last_reminder_at: null,
+          created_at: null,
+          visits: 0,
+          total_spent: 0,
+          last_worker: '',
+          history: [],
+          from_appointments: true
+        };
+        enriched.push(target);
+        if (ph) byPhone[ph] = target;
+      }
+      if (a.status === 'completed') {
+        target.visits += 1;
+        if (a.date && (!target.last_visit_at || a.date > String(target.last_visit_at).slice(0, 10))) {
+          target.last_visit_at = a.date + 'T12:00:00Z';
+        }
+      }
+    });
+
+    // Sumar cobros reales de Caja
+    sales.forEach(s => {
+      const ph = String(s.client_phone || '').replace(/\D/g, '');
+      const target = (s.client_id && byId[s.client_id]) || (ph && byPhone[ph]) || null;
+      if (!target) return;
+      target.visits += 1;
+      target.total_spent = Math.round((target.total_spent + (parseFloat(s.total) || 0)) * 100) / 100;
+      const dt = s.created_at || (s.sale_date ? s.sale_date + 'T12:00:00Z' : null);
+      if (dt && (!target.last_visit_at || dt > target.last_visit_at)) {
+        target.last_visit_at = dt;
+        if (s.worker_name) target.last_worker = s.worker_name;
+      }
+      if (target.history.length < 30) {
+        const svcNames = (s.items_services || []).map(x => x.name).join(', ');
+        const prodNames = (s.items_products || []).map(x => x.name + ' x' + x.qty).join(', ');
+        target.history.push({
+          date: s.sale_date || (s.created_at ? s.created_at.slice(0, 10) : ''),
+          desc: [svcNames, prodNames].filter(Boolean).join(' · ') || 'Compra',
+          worker: s.worker_name || '',
+          total: parseFloat(s.total) || 0
+        });
+      }
+    });
+
+    return res.status(200).json({
+      clients: enriched,
+      posConfig: mergePosConfig(bizRes.data.pos_config),
+      loyalty: normalizeLoyaltyConfig(bizRes.data.loyalty)
+    });
+  } catch (err) {
+    console.error('[POS] Error en /pos/clients:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// POST /api/pos/client — Crear o actualizar cliente CRM
+// ═══════════════════════════════════════════════════
+router.post('/pos/client', async (req, res) => {
+  try {
+    const { business_id, client } = req.body || {};
+    if (!business_id || !client || !client.name) {
+      return res.status(400).json({ success: false, error: 'Nombre del cliente y business_id requeridos' });
+    }
+
+    const rawId = client.id && !String(client.id).startsWith('appt_cl_') ? String(client.id) : genId('cl');
+    const payload = {
+      id: rawId,
+      business_id,
+      name: String(client.name).trim(),
+      phone: String(client.phone || '').trim(),
+      email: String(client.email || '').trim().toLowerCase(),
+      birthday: client.birthday ? String(client.birthday).trim() : null,
+      points: Math.max(0, parseInt(client.points, 10) || 0)
+    };
+    if (client.last_reminder_at !== undefined) {
+      payload.last_reminder_at = client.last_reminder_at;
+    }
+    if (client.last_visit_at !== undefined && client.last_visit_at) {
+      payload.last_visit_at = client.last_visit_at;
+    }
+
+    const { data, error } = await supabase
+      .from('clients')
+      .upsert(payload)
+      .select()
+      .single();
+
+    if (error) return res.status(400).json({ success: false, error: error.message });
+    return res.status(200).json({ success: true, client: data });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// POST /api/pos/client-delete — Eliminar cliente CRM
+// ═══════════════════════════════════════════════════
+router.post('/pos/client-delete', async (req, res) => {
+  try {
+    const { business_id, client_id } = req.body || {};
+    if (!business_id || !client_id) {
+      return res.status(400).json({ success: false, error: 'Faltan business_id o client_id' });
+    }
+    const { error } = await supabase
+      .from('clients')
+      .delete()
+      .eq('id', String(client_id))
+      .eq('business_id', business_id);
+
+    if (error) return res.status(400).json({ success: false, error: error.message });
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// POST /api/pos/loyalty — Guardar Programa de Fidelización unificado
+// ═══════════════════════════════════════════════════
+router.post('/pos/loyalty', async (req, res) => {
+  try {
+    const { business_id, loyalty } = req.body || {};
+    if (!business_id || !loyalty || typeof loyalty !== 'object') {
+      return res.status(400).json({ success: false, error: 'Faltan business_id o loyalty' });
+    }
+    const clean = normalizeLoyaltyConfig(loyalty);
+    const toStore = {
+      active: clean.active,
+      mode: clean.mode,
+      stamps: clean.stamps,
+      points_goal: clean.points_goal,
+      reward_type: clean.reward_type,
+      reward_pct: clean.reward_pct,
+      reward_product_id: clean.reward_product_id,
+      reward_product_name: clean.reward_product_name
+    };
+
+    const { error } = await supabase
+      .from('businesses')
+      .update({ loyalty: toStore })
+      .eq('id', business_id);
+
+    if (error) return res.status(400).json({ success: false, error: error.message });
+    return res.status(200).json({ success: true, loyalty: clean });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
   }

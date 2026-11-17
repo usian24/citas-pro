@@ -29,15 +29,22 @@ router.post('/save-worker', async (req, res) => {
       return res.status(200).json({ success: true });
     }
 
-    // 🛡️ ESCUDO: Buscar si el trabajador ya existe para rescatar su contraseña original
+    // 🛡️ ESCUDO: Buscar si el trabajador ya existe para rescatar su contraseña original y comisiones
     let existingPass = '';
     let existingHorario = [];
+    let existingCommSvc = 0;
+    let existingCommProd = 0;
     const { data: existingWorker } = await supabase
       .from('workers')
-      .select('password, horario')
+      .select('password, horario, commission_services, commission_products')
       .eq('id', worker.id)
       .single();
-    if (existingWorker) { existingPass = existingWorker.password; existingHorario = existingWorker.horario || []; }
+    if (existingWorker) {
+      existingPass = existingWorker.password;
+      existingHorario = existingWorker.horario || [];
+      existingCommSvc = parseFloat(existingWorker.commission_services) || 0;
+      existingCommProd = parseFloat(existingWorker.commission_products) || 0;
+    }
 
     const payload = {
       id: worker.id, business_id: worker.business_id || '',
@@ -46,7 +53,9 @@ router.post('/save-worker', async (req, res) => {
       phone: worker.phone || '',
       avatar: worker.avatar || '', cover: worker.cover || '',
       role: worker.role || 'worker',
-      horario: worker.horario !== undefined ? (Array.isArray(worker.horario) ? worker.horario : []) : (existingHorario.length ? existingHorario : [])
+      horario: worker.horario !== undefined ? (Array.isArray(worker.horario) ? worker.horario : []) : (existingHorario.length ? existingHorario : []),
+      commission_services: worker.commission_services !== undefined ? Math.min(100, Math.max(0, parseFloat(worker.commission_services) || 0)) : existingCommSvc,
+      commission_products: worker.commission_products !== undefined ? Math.min(100, Math.max(0, parseFloat(worker.commission_products) || 0)) : existingCommProd
     };
     const { error } = await supabase.from('workers').upsert(payload);
     if (error) return res.status(400).json({ success: false, error: error.message });

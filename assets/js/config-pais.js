@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 // config-pais.js — CitasPro v2
 // ══════════════════════════════════════════════════════════════
 // Solución de Pricing Dinámico con PPP y Moneda Local
@@ -10,20 +10,20 @@
 // 1. DICCIONARIO CENTRAL
 // ─────────────────────────────────────────
 const PAIS_CONFIG = {
-  ES: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Madrid',                    decimales:2, tasaUSD: 0.90 },
-  CO: { simbolo:'$',   nombre:'Peso colombiano',   posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Bogota',                   decimales:0, tasaUSD: 4150 },
-  MX: { simbolo:'$',   nombre:'Peso mexicano',     posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Mexico_City',               decimales:2, tasaUSD: 19.50 },
-  AR: { simbolo:'$',   nombre:'Peso argentino',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Argentina/Buenos_Aires',    decimales:2, tasaUSD: 980 },
-  PE: { simbolo:'S/',  nombre:'Sol peruano',       posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Lima',                      decimales:2, tasaUSD: 3.75 },
-  CL: { simbolo:'$',   nombre:'Peso chileno',      posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Santiago',                  decimales:0, tasaUSD: 920 },
-  VE: { simbolo:'Bs.', nombre:'Bolívar',           posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Caracas',                   decimales:2, tasaUSD: 36.80 },
-  EC: { simbolo:'$',   nombre:'Dólar (Ecuador)',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Guayaquil',                 decimales:2, tasaUSD: 1 },
-  DO: { simbolo:'RD$', nombre:'Peso dominicano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Santo_Domingo',             decimales:2, tasaUSD: 60 },
-  US: { simbolo:'$',   nombre:'Dólar americano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/New_York',                  decimales:2, tasaUSD: 1 },
-  BR: { simbolo:'R$',  nombre:'Real brasileño',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Sao_Paulo',                 decimales:2, tasaUSD: 5.50 },
-  DE: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Berlin',                     decimales:2, tasaUSD: 0.90 },
-  NL: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Amsterdam',                  decimales:2, tasaUSD: 0.90 },
-  FR: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Paris',                      decimales:2, tasaUSD: 0.90 }
+  ES: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Madrid',                    decimales:2, tasaUSD: 0.90, dial: '34'  },
+  CO: { simbolo:'$',   nombre:'Peso colombiano',   posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Bogota',                   decimales:0, tasaUSD: 4150, dial: '57'  },
+  MX: { simbolo:'$',   nombre:'Peso mexicano',     posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Mexico_City',               decimales:2, tasaUSD: 19.50, dial: '52' },
+  AR: { simbolo:'$',   nombre:'Peso argentino',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Argentina/Buenos_Aires',    decimales:2, tasaUSD: 980,  dial: '54'  },
+  PE: { simbolo:'S/',  nombre:'Sol peruano',       posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Lima',                      decimales:2, tasaUSD: 3.75, dial: '51'  },
+  CL: { simbolo:'$',   nombre:'Peso chileno',      posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Santiago',                  decimales:0, tasaUSD: 920,  dial: '56'  },
+  VE: { simbolo:'Bs.', nombre:'Bolívar',           posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Caracas',                   decimales:2, tasaUSD: 36.80, dial: '58' },
+  EC: { simbolo:'$',   nombre:'Dólar (Ecuador)',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Guayaquil',                 decimales:2, tasaUSD: 1,    dial: '593' },
+  DO: { simbolo:'RD$', nombre:'Peso dominicano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/Santo_Domingo',             decimales:2, tasaUSD: 60,   dial: '1'   },
+  US: { simbolo:'$',   nombre:'Dólar americano',   posicion:'izquierda', separadorDecimal:'.', separadorMiles:',', timezone:'America/New_York',                  decimales:2, tasaUSD: 1,    dial: '1'   },
+  BR: { simbolo:'R$',  nombre:'Real brasileño',    posicion:'izquierda', separadorDecimal:',', separadorMiles:'.', timezone:'America/Sao_Paulo',                 decimales:2, tasaUSD: 5.50, dial: '55'  },
+  DE: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Berlin',                     decimales:2, tasaUSD: 0.90, dial: '49'  },
+  NL: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Amsterdam',                  decimales:2, tasaUSD: 0.90, dial: '31'  },
+  FR: { simbolo:'€',   nombre:'Euro',              posicion:'derecha',   separadorDecimal:',', separadorMiles:'.', timezone:'Europe/Paris',                      decimales:2, tasaUSD: 0.90, dial: '33'  }
 };
 const PAIS_DEFAULT = PAIS_CONFIG['ES'];
 
@@ -209,6 +209,27 @@ function formatHora(horaStr, codigoPais) {
 function getSimboloMoneda(cod) { return getConfigPais(cod||getPaisActivo()).simbolo; }
 function getLabelPrecio(cod)   { const c = getConfigPais(cod||getPaisActivo()); return 'Precio ('+c.simbolo+')'; }
 function getNombreMoneda(cod)  { return getConfigPais(cod||getPaisActivo()).nombre; }
+function getDialCode(cod)      { return getConfigPais(cod||getPaisActivo()).dial || '34'; }
+
+function formatWhatsAppPhone(phone, cod) {
+  const raw = String(phone || '').trim();
+  if (!raw) return '';
+  let digits = raw.replace(/\D/g, '');
+  if (!digits) return '';
+  if (raw.startsWith('+')) return digits;
+  if (raw.startsWith('00')) return digits.slice(2);
+  const dial = getDialCode(cod);
+  if (digits.startsWith(dial) && digits.length >= dial.length + 8) return digits;
+  // Quitar 0 inicial local (ej. 09... en EC/AR/VE) antes de anteponer el código de país
+  if (digits.startsWith('0') && digits.length >= 9) digits = digits.slice(1);
+  return dial + digits;
+}
+
+function buildWhatsAppUrl(phone, text, cod) {
+  const clean = formatWhatsAppPhone(phone, cod);
+  if (!clean) return '#';
+  return 'https://wa.me/' + clean + (text ? '?text=' + encodeURIComponent(text) : '');
+}
 
 function actualizarLabelsPrecio() {
   const cfg = getConfigPais(getPaisActivo());
@@ -254,6 +275,9 @@ window.formatMoney             = formatMoney;
 window.getSimboloMoneda        = getSimboloMoneda;
 window.getLabelPrecio          = getLabelPrecio;
 window.getNombreMoneda         = getNombreMoneda;
+window.getDialCode             = getDialCode;
+window.formatWhatsAppPhone     = formatWhatsAppPhone;
+window.buildWhatsAppUrl        = buildWhatsAppUrl;
 window.getTimezone             = getTimezone;
 window.ahoraEnNegocio          = ahoraEnNegocio;
 window.hoyEnNegocio            = hoyEnNegocio;

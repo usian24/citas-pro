@@ -113,7 +113,7 @@ router.get('/get-biz', async (req, res) => {
     // Traer workers (¡MAGIA DE SEGURIDAD! Sin password)
     const { data: workers } = await supabase
       .from('workers')
-      .select('id, business_id, created_at, name, email, phone, avatar, cover, role, horario')
+      .select('id, business_id, created_at, name, email, phone, avatar, cover, role, horario, commission_services, commission_products, active')
       .eq('business_id', bizId);
 
     // Traer appointments (paginadas para superar el límite de 1.000)
@@ -124,6 +124,13 @@ router.get('/get-biz', async (req, res) => {
       .from('services')
       .select('*')
       .eq('business_id', bizId);
+
+    // Traer saldos de fidelización de clientes (para tarjeta unificada en portal y agenda)
+    const { data: loyaltyClients } = await supabase
+      .from('clients')
+      .select('id, email, phone, points, last_visit_at')
+      .eq('business_id', bizId)
+      .limit(1000);
 
     // Mapear workers con sus citas y servicios
     biz.workers = (workers || []).map(function (w) {
@@ -142,7 +149,9 @@ router.get('/get-biz', async (req, res) => {
         spec: w.role || '',
         photo: w.avatar || '',
         cover: w.cover || '',
-        active: true,
+        active: w.active !== false,
+        commission_services: parseFloat(w.commission_services) || 0,
+        commission_products: parseFloat(w.commission_products) || 0,
         services: wSvcs.map(function (s) {
           return {
             id: s.id,
@@ -151,7 +160,8 @@ router.get('/get-biz', async (req, res) => {
             dur: parseInt(s.duration) || 30,
             desc: s.description || '',
             color: s.color || '',
-            photo: s.image || ''
+            photo: s.image || '',
+            points: s.points != null ? parseInt(s.points, 10) : 10
           };
         }),
         horario: (w.horario && Array.isArray(w.horario) && w.horario.length > 0) ? w.horario : (biz.horario || []),
@@ -221,6 +231,16 @@ router.get('/get-biz', async (req, res) => {
 
     biz.photos = biz.photos || [];
     biz.horario = biz.horario || [];
+    biz.loyalty = biz.loyalty || { active: true, mode: 'stamps', stamps: 10, points_goal: 100, reward_type: 'free_service', reward_pct: 100 };
+    biz.clientLoyalty = (loyaltyClients || []).map(function (c) {
+      return {
+        id: c.id,
+        email: c.email || '',
+        phone: c.phone || '',
+        points: parseInt(c.points, 10) || 0,
+        last_visit_at: c.last_visit_at || null
+      };
+    });
 
     return res.status(200).json(biz);
 

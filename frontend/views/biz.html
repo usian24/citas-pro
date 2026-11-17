@@ -284,6 +284,7 @@
         <div class="bn" id="bn-agenda" onclick="bizTab('agenda')">Agenda</div>
         <div class="bn" id="bn-caja" onclick="bizTab('caja')">Caja</div>
         <div class="bn" id="bn-equipo" onclick="bizTab('equipo')">Equipo</div>
+        <div class="bn" id="bn-clientes" onclick="bizTab('clientes')">Clientes</div>
         <div class="bn" id="bn-tienda" onclick="bizTab('tienda')">Tienda</div>
         <div class="bn" id="bn-finanzas" onclick="bizTab('finanzas')">Finanzas</div>
         <div class="bn" id="bn-historial" onclick="bizTab('historial')">Historial</div>
@@ -397,6 +398,10 @@
       <div id="biz-workers-list"></div>
     </div>
 
+    <div class="pane" id="bp-clientes">
+      <div id="crm-root" class="pos-wrap"></div>
+    </div>
+
     <div class="pane" id="bp-tienda">
       <div class="pos-wrap">
         <div class="pos-header">
@@ -428,30 +433,7 @@
     </div>
 
     <div class="pane" id="bp-finanzas">
-      <div class="sec-hdr"><span class="sec-ttl">Finanzas (todo el equipo)</span></div>
-      <div class="stats2">
-        <div class="sbox">
-          <div class="slbl">Ingresos mes</div>
-          <div class="snum" style="color:var(--text)" id="fin-ing">0</div>
-        </div>
-        <div class="sbox">
-          <div class="slbl">Clientes únicos</div>
-          <div class="snum" style="color:var(--text)" id="fin-clients">0</div>
-        </div>
-        <div class="sbox">
-          <div class="slbl">Servicio top</div>
-          <div class="snum" style="font-size:14px;color:var(--text)" id="fin-top-svc">—</div>
-        </div>
-        <div class="sbox">
-          <div class="slbl">Ticket medio</div>
-          <div class="snum" style="font-size:18px;color:var(--text)" id="fin-ticket">0</div>
-        </div>
-      </div>
-      <div class="card" style="margin-bottom:14px">
-        <div class="sec-hdr"><span class="sec-ttl">Ingresos por mes</span></div>
-        <div class="chart" id="fin-chart" style="height:70px"></div>
-        <div style="display:flex;gap:4px;margin-top:6px" id="fin-months"></div>
-      </div>
+      <div id="fin-pro-root" class="pos-wrap"></div>
     </div>
     <div class="pane" id="bp-historial">
       <div class="sec-hdr"><span class="sec-ttl">Historial de Citas</span></div>
@@ -490,19 +472,51 @@
           <div class="field"><label>Descripción</label><textarea class="inp" id="pf-desc" rows="3"
               placeholder="Describe tu negocio..." maxlength="300" style="resize:vertical"></textarea></div>
 
-          <div class="card"
-            style="margin-bottom:20px; padding: 18px; border-color:var(--blue); background:rgba(74,127,212,.03)">
-            <div
-              style="font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px; text-align:center">
-              🎁 Programa de Fidelidad (Rachas)
+          <div style="margin:20px 0; padding-top:18px; border-top:1px solid var(--b)">
+            <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">
+              Programa de Fidelidad y Tarjeta
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-              <div style="font-size:14px;font-weight:700">Activar Cita Gratis</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div>
+                <div style="font-size:14px;font-weight:700">Activar fidelización</div>
+                <div style="font-size:12px;color:var(--t2)">Suma automáticamente al cobrar en Caja y se muestra en el portal del cliente</div>
+              </div>
               <div class="toggle" id="toggle-loyalty" onclick="this.classList.toggle('on')"></div>
             </div>
-            <div class="field" style="margin-bottom:0">
-              <label>Número de citas para el premio</label>
-              <input class="inp" id="pf-loyalty-stamps" type="number" min="2" max="20" placeholder="Ej: 10" />
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div class="field" style="flex:1;min-width:150px">
+                <label for="pf-loyalty-mode">Modalidad</label>
+                <select class="inp" id="pf-loyalty-mode" onchange="syncProfileLoyaltyFields()">
+                  <option value="stamps">Tarjeta de sellos (1 por visita)</option>
+                  <option value="points">Puntos por servicio</option>
+                </select>
+              </div>
+              <div class="field" style="flex:1;min-width:130px" id="pf-loyalty-stamps-wrap">
+                <label for="pf-loyalty-stamps">Sellos para premio</label>
+                <input class="inp pos-num" id="pf-loyalty-stamps" type="number" min="2" max="20" placeholder="10" />
+              </div>
+              <div class="field" style="flex:1;min-width:130px;display:none" id="pf-loyalty-pts-wrap">
+                <label for="pf-loyalty-pts">Puntos para premio</label>
+                <input class="inp pos-num" id="pf-loyalty-pts" type="number" min="10" max="10000" step="10" placeholder="100" />
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div class="field" style="flex:1;min-width:160px;margin-bottom:0">
+                <label for="pf-loyalty-reward">Tipo de premio</label>
+                <select class="inp" id="pf-loyalty-reward" onchange="syncProfileLoyaltyFields()">
+                  <option value="free_service">Servicio gratis (100% dto.)</option>
+                  <option value="discount_pct">Descuento % en el servicio</option>
+                  <option value="free_product">Producto gratis de la tienda</option>
+                </select>
+              </div>
+              <div class="field" style="width:120px;margin-bottom:0;display:none" id="pf-loyalty-pct-wrap">
+                <label for="pf-loyalty-pct">Descuento (%)</label>
+                <input class="inp pos-num" id="pf-loyalty-pct" type="number" min="5" max="100" step="5" placeholder="50" />
+              </div>
+              <div class="field" style="flex:1;min-width:160px;margin-bottom:0;display:none" id="pf-loyalty-prod-wrap">
+                <label for="pf-loyalty-prod">Producto de regalo</label>
+                <select class="inp" id="pf-loyalty-prod"></select>
+              </div>
             </div>
           </div>
 
