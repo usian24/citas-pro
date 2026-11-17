@@ -127,6 +127,12 @@
     .portal-search-box input {
       color: #ffffff;
     }
+    .portal-search-box input::placeholder {
+      color: rgba(255, 255, 255, 0.55);
+    }
+    .glass-panel .divider {
+      color: rgba(255, 255, 255, 0.65);
+    }
 
     /* THEME TOGGLES */
     .portal-top-btn {
@@ -149,57 +155,7 @@
       background: rgba(255, 255, 255, 0.1);
     }
     
-    /* === LIGHT MODE OVERRIDES === */
-    [data-theme="light"] .portal-bg {
-      background: linear-gradient(135deg, rgba(245, 245, 247, 0.88), rgba(236, 241, 250, 0.94)), url('assets/img/salon-bg.jpg') no-repeat center center !important;
-      background-size: cover !important;
-      background-attachment: fixed !important;
-    }
-    [data-theme="light"] .portal-top-btn {
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(15, 23, 42, 0.1);
-      color: #0F172A;
-    }
-    [data-theme="light"] .portal-top-btn:hover {
-      background: #FFFFFF;
-    }
-    [data-theme="light"] .glass-panel {
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
-    }
-    [data-theme="light"] .glass-panel h1 {
-      color: #0F172A;
-    }
-    [data-theme="light"] .glass-panel p,
-    [data-theme="light"] .divider {
-      color: #475569;
-    }
-    [data-theme="light"] .divider::before, 
-    [data-theme="light"] .divider::after {
-      border-bottom: 1px solid rgba(15, 23, 42, 0.1);
-    }
-    [data-theme="light"] .portal-search-label {
-      color: #2563EB;
-    }
-    [data-theme="light"] .portal-search-box {
-      border: 1px solid rgba(15, 23, 42, 0.12);
-      background: #FFFFFF;
-    }
-    [data-theme="light"] .portal-search-box svg {
-      stroke: #64748B;
-    }
-    [data-theme="light"] .portal-search-box input {
-      color: #0F172A;
-    }
-    [data-theme="light"] .btn-login-new {
-      background: #FFFFFF;
-      color: #0F172A;
-      border: 1px solid rgba(15, 23, 42, 0.12);
-    }
-    [data-theme="light"] .btn-login-new:hover {
-      background: #F1F5F9;
-    }
+    /* El login (#s-portal) y el loader (#s-global-loader) siempre conservan la imagen de fondo y el panel vidrio original */
     .portal-btn {
       width: 100%;
       padding: 16px;
