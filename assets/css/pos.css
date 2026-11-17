@@ -290,6 +290,47 @@
   font-variant-numeric: tabular-nums;
 }
 
+input.pos-num::-webkit-outer-spin-button,
+input.pos-num::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input.pos-num[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Chips rápidos para elegir responsable o escribir libremente */
+.pos-quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.pos-quick-chip {
+  padding: 5px 11px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--b);
+  background: var(--bg3);
+  color: var(--t2);
+  cursor: pointer;
+  transition: border-color .15s ease, color .15s ease, background .15s ease;
+}
+
+.pos-quick-chip:hover {
+  color: var(--text);
+  border-color: var(--blue);
+}
+
+.pos-quick-chip.active {
+  background: var(--bblue);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
 /* Grilla de selección (productos, servicios, profesionales, pagos) */
 .pos-grid {
   display: grid;

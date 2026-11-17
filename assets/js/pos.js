@@ -448,13 +448,18 @@ function _pRenderCobrar() {
     return '<div class="pos-sec-label">Apertura de caja</div>'
       + '<div class="pos-surface pos-surface-pad">'
       + '  <div style="font-size:15px;font-weight:700;margin-bottom:4px">Abre la caja para comenzar a cobrar</div>'
-      + '  <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Registra el efectivo inicial disponible para dar cambio.</div>'
+      + '  <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Registra quién abre la caja y el efectivo inicial disponible para dar cambio.</div>'
       + '  <div class="field"><label for="pos-open-by">Responsable de apertura</label>'
-      + '    <select class="inp" id="pos-open-by" onchange="POS_STATE.openingBy=this.value">'
+      + '    <input class="inp" id="pos-open-by" list="pos-open-staff-list" placeholder="Escribe un nombre o elige del equipo" maxlength="60" value="' + san(POS_STATE.openingBy) + '" oninput="POS_STATE.openingBy=this.value" autocomplete="off"/>'
+      + '    <datalist id="pos-open-staff-list">'
       + staff.map(function (s) {
-          return '<option value="' + san(s.name) + '"' + (POS_STATE.openingBy === s.name ? ' selected' : '') + '>' + san(s.name) + ' (' + san(s.role) + ')</option>';
+          return '<option value="' + san(s.name) + '"></option>';
         }).join('')
-      + '    </select>'
+      + '    </datalist>'
+      + (staff.length > 0 ? '<div class="pos-quick-chips">' + staff.map(function (s) {
+          var act = POS_STATE.openingBy === s.name;
+          return '<button type="button" class="pos-quick-chip' + (act ? ' active' : '') + '" onclick="POS_STATE.openingBy=\'' + san(s.name) + '\';var el=G(\'pos-open-by\');if(el)el.value=\'' + san(s.name) + '\';posRender()">' + san(s.name) + '</button>';
+        }).join('') + '</div>' : '')
       + '  </div>'
       + '  <div class="field"><label for="pos-open-cash">Efectivo inicial en caja (' + san(sym) + ')</label>'
       + '    <input class="inp pos-num" id="pos-open-cash" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0.00" value="' + san(POS_STATE.openingCash) + '" oninput="POS_STATE.openingCash=this.value"/>'
@@ -1077,11 +1082,16 @@ function _pRenderCierre() {
     html += '<div class="pos-sec-label">Cerrar caja del ' + san(_pFormatDate(targetDate)) + '</div>'
       + '<div class="pos-surface pos-surface-pad">'
       + '  <div class="field"><label for="pos-close-by">Responsable del cierre</label>'
-      + '    <select class="inp" id="pos-close-by" onchange="POS_STATE.closingBy=this.value">'
+      + '    <input class="inp" id="pos-close-by" list="pos-close-staff-list" placeholder="Escribe un nombre o elige del equipo" maxlength="60" value="' + san(POS_STATE.closingBy) + '" oninput="POS_STATE.closingBy=this.value" autocomplete="off"/>'
+      + '    <datalist id="pos-close-staff-list">'
       + staff.map(function (s) {
-          return '<option value="' + san(s.name) + '"' + (POS_STATE.closingBy === s.name ? ' selected' : '') + '>' + san(s.name) + '</option>';
+          return '<option value="' + san(s.name) + '"></option>';
         }).join('')
-      + '    </select>'
+      + '    </datalist>'
+      + (staff.length > 0 ? '<div class="pos-quick-chips">' + staff.map(function (s) {
+          var act = POS_STATE.closingBy === s.name;
+          return '<button type="button" class="pos-quick-chip' + (act ? ' active' : '') + '" onclick="POS_STATE.closingBy=\'' + san(s.name) + '\';var el=G(\'pos-close-by\');if(el)el.value=\'' + san(s.name) + '\';posRender()">' + san(s.name) + '</button>';
+        }).join('') + '</div>' : '')
       + '  </div>'
       + '  <div class="field"><label for="pos-close-cnt">Efectivo contado en caja (' + san(sym) + ')</label>'
       + '    <input class="inp pos-num" id="pos-close-cnt" type="number" inputmode="decimal" min="0" step="0.5" placeholder="Cuenta el efectivo físico" value="' + san(POS_STATE.closingCounted) + '" oninput="POS_STATE.closingCounted=this.value;posUpdateCloseDiff(' + expectedCash + ')"/>'
@@ -1162,6 +1172,11 @@ function posUpdateCloseDiff(expectedCash) {
 
 async function posSubmitOpenRegister() {
   if (!CUR || !CUR.id) return;
+  var openedBy = String(POS_STATE.openingBy || '').trim();
+  if (!openedBy) {
+    toast('Escribe el nombre de quien abre la caja', '#EF4444');
+    return;
+  }
   var btn = G('pos-btn-open-cash');
   var cash = parseFloat(POS_STATE.openingCash);
   if (isNaN(cash) || cash < 0) cash = 0;
@@ -1174,7 +1189,7 @@ async function posSubmitOpenRegister() {
       body: JSON.stringify({
         business_id: CUR.id,
         date: POS_STATE.date,
-        opened_by: POS_STATE.openingBy || (CUR.owner || 'Propietario'),
+        opened_by: openedBy,
         opening_cash: cash
       })
     });
@@ -1192,6 +1207,11 @@ async function posSubmitOpenRegister() {
 
 async function posSubmitCloseRegister(targetDate) {
   if (!CUR || !CUR.id) return;
+  var closedBy = String(POS_STATE.closingBy || '').trim();
+  if (!closedBy) {
+    toast('Escribe el nombre de quien cierra la caja', '#EF4444');
+    return;
+  }
   var v = parseFloat(POS_STATE.closingCounted);
   if (isNaN(v) || v < 0) {
     toast('Introduce el efectivo contado en caja', '#EF4444');
@@ -1206,7 +1226,7 @@ async function posSubmitCloseRegister(targetDate) {
       body: JSON.stringify({
         business_id: CUR.id,
         date: targetDate || POS_STATE.date,
-        closed_by: POS_STATE.closingBy || (CUR.owner || 'Propietario'),
+        closed_by: closedBy,
         counted_cash: v
       })
     });
