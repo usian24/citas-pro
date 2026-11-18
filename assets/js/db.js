@@ -16,6 +16,71 @@ window.AppEnv = (function () {
 })();
 
 /* ══════════════════════════
+   AUTH TOKEN + INTERCEPTOR GLOBAL DE /api/*
+══════════════════════════ */
+window.getAuthToken = function () {
+  try {
+    return localStorage.getItem('citaspro_auth_token') || localStorage.getItem('citaspro_admin_token') || '';
+  } catch (e) { return ''; }
+};
+
+window.setAuthToken = function (token) {
+  if (!token) return;
+  try { localStorage.setItem('citaspro_auth_token', token); } catch (e) {}
+};
+
+window.clearAuthToken = function () {
+  try {
+    localStorage.removeItem('citaspro_auth_token');
+    localStorage.removeItem('citaspro_admin_token');
+  } catch (e) {}
+};
+
+(function installApiAuthFetch() {
+  if (typeof window === 'undefined' || typeof window.fetch !== 'function' || window._cpAuthFetchInstalled) return;
+  window._cpAuthFetchInstalled = true;
+  var origFetch = window.fetch.bind(window);
+  var lastAuthPrompt = 0;
+
+  window.fetch = function (input, init) {
+    var url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+    var isLocalApi = url.indexOf('/api/') === 0 || (window.location && url.indexOf(window.location.origin + '/api/') === 0);
+
+    if (isLocalApi) {
+      var tok = window.getAuthToken();
+      if (tok) {
+        init = Object.assign({}, init || {});
+        if (init.headers instanceof Headers) {
+          if (!init.headers.has('Authorization')) init.headers.set('Authorization', 'Bearer ' + tok);
+        } else {
+          var hdrs = Object.assign({}, init.headers || {});
+          if (!hdrs['Authorization'] && !hdrs['authorization']) {
+            hdrs['Authorization'] = 'Bearer ' + tok;
+          }
+          init.headers = hdrs;
+        }
+      }
+    }
+
+    return origFetch(input, init).then(function (res) {
+      if (isLocalApi && res.status === 401 && url.indexOf('/api/login') < 0 && url.indexOf('/api/admin-login') < 0 && url.indexOf('/api/google-login') < 0) {
+        var now = Date.now();
+        if (now - lastAuthPrompt > 8000 && typeof DB !== 'undefined' && (DB.currentBiz || DB.currentWorker || (DB.admin && DB.admin.auth))) {
+          lastAuthPrompt = now;
+          res.clone().json().then(function (body) {
+            if (body && body.code === 'AUTH_REQUIRED') {
+              if (typeof toast === 'function') toast('Sesión expirada. Inicia sesión nuevamente para continuar.', '#F59E0B');
+              if (typeof openLoginModal === 'function') openLoginModal();
+            }
+          }).catch(function () {});
+        }
+      }
+      return res;
+    });
+  };
+})();
+
+/* ══════════════════════════
    SECURITY
 ══════════════════════════ */
 var loginAttempts = {};
@@ -148,17 +213,39 @@ function saveDB() {
         }
       }
 
-      localStorage.setItem(DBKEY, JSON.stringify(DB));
+      // Nunca persistir contraseñas en texto plano en localStorage
+      var safeDb = Object.assign({}, DB, {
+        businesses: (DB.businesses || []).map(function (b) {
+          var copy = Object.assign({}, b);
+          delete copy.password;
+          delete copy.pass;
+          return copy;
+        })
+      });
+      localStorage.setItem(DBKEY, JSON.stringify(safeDb));
 
-      if (CUR && CUR.id) {
+      var isWorkerSession = typeof CUR_WORKER !== 'undefined' && Boolean(CUR_WORKER);
+      if (CUR && CUR.id && !isWorkerSession) {
+        var bizPayload = Object.assign({}, CUR);
+        // Solo enviar pass durante un alta nueva; nunca re-enviar contraseñas en sincronizaciones rutinarias
+        delete bizPayload.password;
+        if (window.getAuthToken()) delete bizPayload.pass;
+
         fetch('/api/update-biz', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(CUR)
+          body: JSON.stringify(bizPayload)
         }).then(async function (res) {
-          if (!res.ok) { var err = await res.json(); console.error("ERROR SUPABASE (update-biz):", err.detalle || err.error); }
+          var data = await res.json().catch(function () { return {}; });
+          if (res.ok && data && data.token && typeof window.setAuthToken === 'function') {
+            window.setAuthToken(data.token);
+            if (CUR) { delete CUR.pass; delete CUR.password; }
+          } else if (!res.ok) {
+            console.error("ERROR SUPABASE (update-biz):", data.detalle || data.error);
+          }
         }).catch(function (e) { });
-
+      }
+      if (CUR && CUR.id) {
         syncAppointmentsToCloud(CUR);
         syncServicesToCloud(CUR);
       }
@@ -467,6 +554,7 @@ function getBizById(id) {
 
 function isBizExpired(biz) {
   if (!biz) return false;
+  if (biz.plan === 'lifetime') return false;
   if (biz.plan === 'expired' || biz.plan === 'suspended') return true;
   if (biz.expires_at) {
     try {

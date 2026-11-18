@@ -451,12 +451,11 @@ window.onload = async function () {
       if (!data.success) throw new Error(data.error || 'Error al actualizar contraseña.');
       
       toast('¡Contraseña actualizada exitosamente!', '#22C55E');
-      
-      // CRÍTICO: Actualizar el estado en memoria para que `saveDB()` u otros procesos
-      // (como cerrar sesión) no envíen por accidente la contraseña antigua.
+
+      // Nunca guardar contraseñas en texto plano en memoria ni en localStorage
       if (typeof CUR !== 'undefined' && CUR) {
-        CUR.password = p1;
-        CUR.pass = p1; 
+        delete CUR.password;
+        delete CUR.pass;
       }
       if (typeof saveDB === 'function') saveDB();
 
@@ -704,29 +703,36 @@ window.onload = async function () {
           // Limpiar hash rápido para que no quede feo en la URL
           window.location.hash = '';
 
-          // Llamar al backend para validar usuario
+          // Llamar al backend enviando el access_token real de Supabase Auth para verificación criptográfica
           const res = await fetch('/api/google-login', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, name })
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + (session.access_token || '')
+            },
+            body: JSON.stringify({ access_token: session.access_token || '', email, name })
           });
           
           if (res.ok) {
             const data = await res.json();
+            if (data.token && typeof setAuthToken === 'function') setAuthToken(data.token);
             if (data.type === 'business') {
               syncBizToLocal(data.biz);
               DB.currentWorker = null;
               saveDB();
             } else if (data.type === 'worker') {
-              DB.currentWorker = data.worker;
+              DB.currentWorker = { bizId: data.worker.business_id, workerId: data.worker.id };
+              DB.currentBiz = null;
               saveDB();
             } else if (data.type === 'new') {
               // Abrir el modal de registro directamente en la app
               window.location.hash = '';
               goTo('s-portal');
               
-              // Esperar a que los modales carguen si aún no lo han hecho
+              // Esperar a que los modales carguen si aún no lo han hecho (máx 10s)
+              let modalWaitAttempts = 0;
               const checkModal = setInterval(() => {
+                modalWaitAttempts++;
                 const em = document.getElementById('rm-email');
                 const modal = document.getElementById('ov-registro');
                 if (em && modal) {
@@ -750,6 +756,8 @@ window.onload = async function () {
 
                   window.isGoogleReg = true;
                   modal.classList.add('on');
+                } else if (modalWaitAttempts >= 100) {
+                  clearInterval(checkModal);
                 }
               }, 100);
               return;

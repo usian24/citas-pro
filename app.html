@@ -322,34 +322,23 @@
   <script src="assets/js/loader.js?v=1000"></script>
   <script src="assets/js/config-pais.js?v=1001"></script>
   <script src="assets/js/image-engine.js?v=1000"></script>
-  <script src="assets/js/db.js?v=1001"></script>
-  <script src="assets/js/auth.js?v=1000"></script>
-  <script src="assets/js/biz.js?v=1006"></script>
-  <script src="assets/js/workers.js?v=1000"></script>
+  <script src="assets/js/db.js?v=1003"></script>
+  <script src="assets/js/auth.js?v=1001"></script>
+  <script src="assets/js/biz.js?v=1008"></script>
+  <script src="assets/js/workers.js?v=1001"></script>
   <script src="assets/js/notifications.js?v=1000"></script>
   <script src="assets/js/finanzas-realdata.js?v=1000"></script>
   <script src="assets/js/realtime.js?v=1000"></script>
-  <script src="assets/js/client-portal.js?v=1001"></script>
+  <script src="assets/js/client-portal.js?v=1002"></script>
   <script src="assets/js/script-tienda.js?v=1002"></script>
   <script src="assets/js/pos.js?v=4"></script>
   <script src="assets/js/finances-pos.js?v=2"></script>
   <script src="assets/js/clients-crm.js?v=2"></script>
   <script src="assets/js/fcm.js?v=1000"></script>
-  <script src="assets/js/admin.js?v=1000"></script>
-  <script src="assets/js/app.js?v=1001"></script>
+  <script src="assets/js/admin.js?v=1002"></script>
+  <script src="assets/js/app.js?v=1003"></script>
   <script src="assets/js/search_eva.js?v=1000"></script>
 
-  <script>
-    // Destruir caché y Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function (registrations) {
-        for (var i = 0; i < registrations.length; i++) {
-          registrations[i].unregister();
-        }
-      });
-    }
-
-  </script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')

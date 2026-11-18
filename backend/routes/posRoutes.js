@@ -1,8 +1,19 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const supabase = require('../db');
+const { verifyToken, isBusinessOwnerOrAdmin } = require('../middlewares/auth');
 
 const router = express.Router();
+
+// Blindaje global de todas las rutas /api/pos/*: exige JWT válido de propietario del negocio o super_admin
+router.use('/pos', verifyToken, (req, res, next) => {
+  const bizId = String((req.body && req.body.business_id) || (req.query && req.query.business_id) || '').trim();
+  if (!bizId) return next();
+  if (!isBusinessOwnerOrAdmin(req.user, bizId)) {
+    return res.status(403).json({ success: false, error: 'No tienes permiso para acceder a este negocio' });
+  }
+  next();
+});
 
 const DEFAULT_PIN = '12345';
 const DEFAULT_POS_CONFIG = {

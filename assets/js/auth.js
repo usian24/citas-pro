@@ -49,6 +49,8 @@ async function doLogin() {
       let data = await res.json();
       resetRateLimit(key);
 
+      if (data.token && typeof setAuthToken === 'function') setAuthToken(data.token);
+
       if (data.type === 'business') {
         var biz = data.biz;
         DB.currentBiz    = biz.id;
@@ -85,7 +87,10 @@ async function doLogin() {
 
     if (adminRes.ok) {
        let data = await adminRes.json();
-       if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
+       if (data.token) {
+         localStorage.setItem('citaspro_admin_token', data.token);
+         if (typeof setAuthToken === 'function') setAuthToken(data.token);
+       }
        resetRateLimit(key); 
        DB.admin.auth = true; 
        saveDB(); 
@@ -134,6 +139,7 @@ function bizLogout() {
     'Cerrar sesión',
     '¿Estás seguro de que quieres cerrar sesión?',
     function() {
+      if (typeof clearAuthToken === 'function') clearAuthToken();
       DB.currentBiz = null;
       DB.currentWorker = null;
       saveDB();
@@ -149,6 +155,7 @@ function workerLogout() {
     'Cerrar sesión',
     '¿Estás seguro de que quieres cerrar sesión?',
     function() {
+      if (typeof clearAuthToken === 'function') clearAuthToken();
       DB.currentWorker = null;
       saveDB();
       CUR_WORKER = null;

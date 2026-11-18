@@ -233,6 +233,25 @@ function buildWorkerCards() {
   }
   if (loyaltyContainer) loyaltyContainer.innerHTML = loyaltyHtml;
 
+  // Consultar saldo real del cliente actual desde el endpoint público seguro (sin exponer otros clientes)
+  if (CSEL.bizId && (CSEL.clientEmail || CSEL.clientPhone) && typeof renderLoyaltyCardHtml === 'function') {
+    fetch('/api/public-client-loyalty?business_id=' + encodeURIComponent(CSEL.bizId)
+      + '&email=' + encodeURIComponent(CSEL.clientEmail || '')
+      + '&phone=' + encodeURIComponent(CSEL.clientPhone || ''), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.found) return;
+        var box = G('cl-loyalty-container');
+        if (!box) return;
+        var firstName = CSEL.clientName ? String(CSEL.clientName).trim().split(' ')[0] : 'Cliente';
+        box.innerHTML = renderLoyaltyCardHtml({
+          loyalty: biz.loyalty,
+          points: d.points || 0,
+          title: 'Hola, ' + firstName + ' · Tu Tarjeta'
+        });
+      }).catch(function () {});
+  }
+
   var workers = (biz.workers || []).filter(function (w) { return w.active; });
   var genSvcs = (biz.services || []).filter(function (s) { return s.active !== false; });
   var cardsHtml = '';

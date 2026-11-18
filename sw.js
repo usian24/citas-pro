@@ -1,20 +1,9 @@
 // sw.js — Service Worker Citas Pro
-const CACHE = 'citaspro-v2';
+const CACHE = 'citaspro-v3';
 
 const PRECACHE = [
   '/',
   '/index.html',
-  '/assets/css/styles.css',
-  '/assets/js/db.js',
-  '/assets/js/auth.js',
-  '/assets/js/biz.js',
-  '/assets/js/workers.js',
-  '/assets/js/notifications.js',
-  '/assets/js/finanzas-realdata.js',
-  '/assets/js/realtime.js',
-  '/assets/js/client-portal.js',
-  '/assets/js/fcm.js',
-  '/assets/js/app.js',
   '/assets/img/image.png',
   '/assets/img/apple-touch-icon.png'
 ];
@@ -22,7 +11,7 @@ const PRECACHE = [
 self.addEventListener('install', function (e) {
   e.waitUntil(
     caches.open(CACHE).then(function (cache) {
-      return cache.addAll(PRECACHE);
+      return cache.addAll(PRECACHE).catch(function () {});
     })
   );
   self.skipWaiting();
@@ -35,36 +24,31 @@ self.addEventListener('activate', function (e) {
         keys.filter(function (k) { return k !== CACHE; })
           .map(function (k) { return caches.delete(k); })
       );
+    }).then(function () {
+      return self.clients.claim();
     })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', function (e) {
   // No interceptar peticiones que no sean GET (POST, PUT, DELETE)
   if (e.request.method !== 'GET') return;
 
-  // Ignorar APIs externas, telemetría de Google y herramientas de Vercel
-  if (e.request.url.includes('supabase.co') ||
-    e.request.url.includes('api.imgbb.com') ||
-    e.request.url.includes('api.qrserver.com') ||
-    e.request.url.includes('gstatic.com') ||
-    e.request.url.includes('googleapis.com') ||
-    e.request.url.includes('country.is') ||
-    e.request.url.includes('google.com') ||
-    e.request.url.includes('translate') ||
-    e.request.url.includes('vercel.live') ||
-    e.request.url.includes('/api/')) {
+  // Solo cachear peticiones del mismo origen (ignorar APIs y terceros)
+  var url = e.request.url || '';
+  if (url.indexOf(self.location.origin) !== 0 || url.includes('/api/')) {
     return;
   }
 
   e.respondWith(
     fetch(e.request)
       .then(function (res) {
-        var resClone = res.clone();
-        caches.open(CACHE).then(function (cache) {
-          cache.put(e.request, resClone);
-        });
+        if (res && res.status === 200 && res.type === 'basic') {
+          var resClone = res.clone();
+          caches.open(CACHE).then(function (cache) {
+            cache.put(e.request, resClone).catch(function () {});
+          });
+        }
         return res;
       })
       .catch(function () {

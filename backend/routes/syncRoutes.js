@@ -1,6 +1,7 @@
 const express = require('express');
 const webpush = require('web-push');
 const supabase = require('../db');
+const { verifyToken, optionalAuth, canAccessBusiness, isBusinessOwnerOrAdmin } = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -43,13 +44,25 @@ async function enviarPushWorker(supabase, worker_id, title, body) {
 }
 
 // ═══════════════════════════════════════
-// GET — Cargar notificaciones de un worker
+// GET — Cargar notificaciones de un worker (Autenticado)
 // ═══════════════════════════════════════
-router.get('/sync', async (req, res) => {
+router.get('/sync', verifyToken, async (req, res) => {
   const worker_id = req.query.worker_id;
   if (!worker_id) return res.status(400).json({ error: 'worker_id requerido' });
 
   try {
+    const isSelfWorker = req.user.role === 'worker' && String(req.user.workerId) === String(worker_id);
+    if (!isSelfWorker && req.user.role !== 'super_admin') {
+      if (req.user.role === 'business') {
+        const { data: wRow } = await supabase.from('workers').select('business_id').eq('id', worker_id).single();
+        if (!wRow || String(wRow.business_id) !== String(req.user.bizId)) {
+          return res.status(403).json({ error: 'Sin permisos para leer notificaciones de este trabajador' });
+        }
+      } else {
+        return res.status(403).json({ error: 'Sin permisos' });
+      }
+    }
+
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
@@ -67,11 +80,25 @@ router.get('/sync', async (req, res) => {
 // ═══════════════════════════════════════
 // POST — Manejar sincronización general
 // ═══════════════════════════════════════
-router.post('/sync', async (req, res) => {
+router.post('/sync', optionalAuth, async (req, res) => {
   try {
-    const { type } = req.body;
+    const { type } = req.body || {};
     if (!type) {
       return res.status(400).json({ success: false, error: 'Falta el campo "type"' });
+    }
+
+    // Tipos estrictamente privados: exigen JWT y pertenencia al negocio/trabajador
+    const privateTypes = ['notification', 'clear_notifications', 'delete_notification', 'delete_appointments_bulk', 'services', 'delete_service', 'product'];
+    if (privateTypes.includes(type)) {
+      if (!req.user) {
+        return res.status(401).json({ success: false, error: 'Sesión requerida', code: 'AUTH_REQUIRED' });
+      }
+      if (req.body.business_id && !canAccessBusiness(req.user, req.body.business_id)) {
+        return res.status(403).json({ success: false, error: 'Acceso denegado a este negocio' });
+      }
+      if (type === 'clear_notifications' && req.user.role === 'worker' && String(req.user.workerId) !== String(req.body.worker_id)) {
+        return res.status(403).json({ success: false, error: 'Sin permisos' });
+      }
     }
 
     // ═══════════════════════════════════════
@@ -173,6 +200,11 @@ router.post('/sync', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Datos incompletos' });
       }
 
+      const isStaff = canAccessBusiness(req.user, business_id);
+      if (!isStaff && appointments.length > 2) {
+        return res.status(401).json({ success: false, error: 'Sesión requerida para sincronización masiva', code: 'AUTH_REQUIRED' });
+      }
+
       var apptErrors = [];
 
       for (const appt of appointments) {
@@ -191,9 +223,19 @@ router.post('/sync', async (req, res) => {
 
         const { data: enSupabase } = await supabase
           .from('appointments')
-          .select('status')
+          .select('status, token')
           .eq('id', String(appt.id))
           .single();
+
+        // Visitante público: no puede modificar citas ajenas ni marcar citas como completadas
+        if (!isStaff) {
+          if (appt.status === 'completed') {
+            return res.status(403).json({ success: false, error: 'Sin permisos para completar citas' });
+          }
+          if (enSupabase && (!appt.token || String(enSupabase.token || '') !== String(appt.token))) {
+            return res.status(403).json({ success: false, error: 'Sin permisos para modificar esta cita' });
+          }
+        }
 
         if (enSupabase && enSupabase.status === 'cancelled') {
           continue;
@@ -446,9 +488,9 @@ router.post('/sync', async (req, res) => {
 });
 
 // ═══════════════════════════════════════
-// NOTIFICACIONES FCM (MOBILE APP)
+// NOTIFICACIONES FCM (MOBILE APP — Solo autenticados)
 // ═══════════════════════════════════════
-router.post('/send-notification', async (req, res) => {
+router.post('/send-notification', verifyToken, async (req, res) => {
   try {
     const { token, title, body, data } = req.body;
 

@@ -26,7 +26,10 @@ async function dotsLogin() {
 
     if (res.ok) {
       const data = await res.json();
-      if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
+      if (data.token) {
+        localStorage.setItem('citaspro_admin_token', data.token);
+        if (typeof setAuthToken === 'function') setAuthToken(data.token);
+      }
       resetRateLimit(key);
       DB.admin.auth = true;
       saveDB();
@@ -71,7 +74,10 @@ async function doAdminLogin() {
 
     if (res.ok) {
       const data = await res.json();
-      if (data.token) localStorage.setItem('citaspro_admin_token', data.token);
+      if (data.token) {
+        localStorage.setItem('citaspro_admin_token', data.token);
+        if (typeof setAuthToken === 'function') setAuthToken(data.token);
+      }
       resetRateLimit(key);
       DB.admin.auth = true;
       saveDB();
@@ -89,6 +95,7 @@ async function doAdminLogin() {
 }
 
 function doAdminLogout() {
+  if (typeof clearAuthToken === 'function') clearAuthToken();
   DB.admin.auth = false; saveDB();
   const l = G('adm-login'), p = G('adm-panel');
   if (l) l.style.display = 'flex';
@@ -163,24 +170,55 @@ function filterClientBiz() { renderBizListAdmin(filterBiz()); }
 /* ══════════════════════════
    DASHBOARD
 ══════════════════════════ */
+function _admBizAllAppts(b) {
+  const all = [];
+  (b && b.workers || []).forEach(function (w) {
+    (w.appointments || []).forEach(function (a) { all.push(a); });
+  });
+  (b && b.appointments || []).forEach(function (a) { all.push(a); });
+  return all;
+}
+
+function _admBizIsActive(b) {
+  return Boolean(b && (b.plan === 'active' || b.plan === 'pro'));
+}
+
+function _admBizPlanPrice(b) {
+  const cod = (b && b.country) ? String(b.country).toUpperCase() : 'DEFAULT';
+  if (typeof PRECIO_SUSCRIPCION_USD !== 'undefined' && PRECIO_SUSCRIPCION_USD) {
+    return PRECIO_SUSCRIPCION_USD[cod] || PRECIO_SUSCRIPCION_USD.DEFAULT || 11.50;
+  }
+  const fallback = { US: 11.5, ES: 11.5, MX: 7, CL: 6.5, PE: 6, CO: 5, AR: 4, EC: 6, DO: 6, VE: 6, BR: 6 };
+  return fallback[cod] || 11.5;
+}
+
+function _admUsd(n) {
+  const v = Math.round((parseFloat(n) || 0) * 100) / 100;
+  return '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
+}
+
 function renderDash() {
   const bizs = DB.businesses;
-  let active = 0, trial = 0, appts = 0, ctry = {};
+  let active = 0, trial = 0, appts = 0, mrr = 0, ctry = {};
   for (let i = 0; i < bizs.length; i++) {
     const b = bizs[i];
-    if (b.plan === 'active') active++;
-    else if (b.plan === 'trial') trial++;
-    appts += (b.appointments || []).length;
+    if (_admBizIsActive(b)) {
+      active++;
+      mrr += _admBizPlanPrice(b);
+    } else if (b.plan === 'trial') {
+      trial++;
+    }
+    appts += _admBizAllAppts(b).length;
     if (b.country) ctry[b.country] = 1;
   }
-  const mrr = active * 10, now = new Date();
+  const now = new Date();
   T('adm-date', MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear());
   T('ds-total', bizs.length);
   T('ds-sub', active + ' activos · ' + trial + ' en prueba');
-  T('ds-mrr', money(mrr));
+  T('ds-mrr', _admUsd(mrr));
   T('ds-trial', trial);
   T('ds-appts', appts);
-  T('ds-arr', money(mrr * 12));
+  T('ds-arr', _admUsd(mrr * 12));
   const cl = Object.keys(ctry);
   T('ds-countries', cl.length);
   T('ds-flags', cl.map(function (c) { return FLAGS[c] || '🌍'; }).join(' '));
@@ -190,24 +228,33 @@ function renderDash() {
   const mns = ['Oct', 'Nov', 'Dic', 'Ene', 'Feb', MONTHS_SHORT[now.getMonth()]];
   const ch = G('ds-chart');
   if (ch) ch.innerHTML = vals.map(function (v, i) {
-    return '<div class="bar' + (i === vals.length - 1 ? ' hi' : '') + '" style="height:' + Math.max(4, Math.round(v / max * 100)) + '%" title="' + money(v) + '"></div>';
+    return '<div class="bar' + (i === vals.length - 1 ? ' hi' : '') + '" style="height:' + Math.max(4, Math.round(v / max * 100)) + '%" title="' + _admUsd(v) + '"></div>';
   }).join('');
   const ml = G('ds-months');
   if (ml) ml.innerHTML = mns.map(function (m, i) {
     return '<div style="flex:1;text-align:center;font-size:9px;color:' + (i === mns.length - 1 ? 'var(--blue)' : 'var(--muted)') + ';font-weight:700">' + m + '</div>';
   }).join('');
-  const recent = bizs.slice().sort(function (a, b) { return (b.joinDate || '').localeCompare(a.joinDate || ''); }).slice(0, 5);
+  const recent = bizs.slice().sort(function (a, b) { return (b.joinDate || b.join_date || '').localeCompare(a.joinDate || a.join_date || ''); }).slice(0, 5);
   H('ds-recent', recent.map(bizCardH).join(''));
 }
 
 function planTag(plan) { 
-  const m = { active: { c: '#22C55E', l: ' Activo' }, trial: { c: '#F59E0B', l: ' Prueba' }, expired: { c: '#EF4444', l: ' Vencido' } };
+  const m = {
+    active: { c: '#22C55E', l: 'Activo' },
+    pro: { c: '#22C55E', l: 'Activo' },
+    lifetime: { c: '#4A7FD4', l: 'Vitalicio' },
+    trial: { c: '#F59E0B', l: 'Prueba' },
+    expired: { c: '#EF4444', l: 'Vencido' },
+    suspended: { c: '#EF4444', l: 'Suspendido' }
+  };
   const x = m[plan] || { c: '#475569', l: '—' };
   return '<span style="background:' + x.c + '22;color:' + x.c + ';border:1px solid ' + x.c + '44;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">' + x.l + '</span>';
 }
 
 function bizCardH(b) {
-  const rev = (b.appointments || []).reduce(function (s, a) { return s + (a.price || 0); }, 0);
+  const allAppts = _admBizAllAppts(b);
+  const rev = allAppts.reduce(function (s, a) { return s + (parseFloat(a.price) || 0); }, 0);
+  const workersCount = (b.workers || []).length;
   const av = b.logo ? '<img src="' + sanitizeImageDataURL(b.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">' : '<span>' + san((b.name || '?').charAt(0)) + '</span>';
   return '<div style="border-bottom:1px solid var(--border);padding:14px 10px;margin-bottom:0;cursor:pointer;transition:opacity .15s" onclick="openBizProfile(\'' + sanitizeText(b.id) + '\')" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">'
     + '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'
@@ -215,8 +262,8 @@ function bizCardH(b) {
     + '<div style="flex:1"><div style="font-size:15px;font-weight:700">' + san(b.name) + '</div><div style="font-size:12px;color:var(--muted);margin-top:2px">' + san(b.owner) + ' · ' + (FLAGS[b.country] || '🌍') + ' ' + san(b.city || '') + '</div></div>'
     + planTag(b.plan) + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
-    + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + (b.barbers ? b.barbers.length : 0) + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Profesionales</div></div>'
-    + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + (b.appointments ? b.appointments.length : 0) + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Citas</div></div>'
+    + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + workersCount + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Profesionales</div></div>'
+    + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + allAppts.length + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Citas</div></div>'
     + '<div style="background:transparent;text-align:left"><div style="font-size:15px;font-weight:700;color:var(--text)">' + money(rev) + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Ganancia</div></div>'
     + '</div></div>';
 }
@@ -234,28 +281,29 @@ function renderAdminPaises() {
   (DB.businesses || []).forEach(function (b) {
     const c = b.country || 'ES';
     bizCount[c] = (bizCount[c] || 0) + 1;
-    if (b.plan === 'active') {
+    if (_admBizIsActive(b)) {
       activeCount[c] = (activeCount[c] || 0) + 1;
     }
   });
 
- // Diccionario nativo y robusto (Independiente de archivos externos)
-const countryData = {
-  'US': { name: 'Estados Unidos', currency: 'USD', symbol: '$', price: 11.50 },
-  'ES': { name: 'España', currency: 'USD', symbol: '$', price: 10.00 },
-  'MX': { name: 'México', currency: 'USD', symbol: '$', price: 7.00 },
-  'CL': { name: 'Chile', currency: 'USD', symbol: '$', price: 6.50 },
-  'PE': { name: 'Perú', currency: 'USD', symbol: '$', price: 6.00 },
-  'CO': { name: 'Colombia', currency: 'USD', symbol: '$', price: 5.00 },
-  'AR': { name: 'Argentina', currency: 'USD', symbol: '$', price: 4.00 },
-  'EC': { name: 'Ecuador', currency: 'USD', symbol: '$', price: 6.00 },
-  'DO': { name: 'Rep. Dominicana', currency: 'USD', symbol: '$', price: 6.00 },
-  'VE': { name: 'Venezuela', currency: 'USD', symbol: '$', price: 6.00 },
-  'BR': { name: 'Brasil', currency: 'USD', symbol: '$', price: 6.00 },
-  'DE': { name: 'Alemania', currency: 'USD', symbol: '$', price: 10.00 },
-  'NL': { name: 'Holanda', currency: 'USD', symbol: '$', price: 10.00 },
-  'FR': { name: 'Francia', currency: 'USD', symbol: '$', price: 10.00 }
-};
+ // Precios sincronizados con config-pais.js (PRECIO_SUSCRIPCION_USD)
+ const ppp = (typeof PRECIO_SUSCRIPCION_USD !== 'undefined' && PRECIO_SUSCRIPCION_USD) ? PRECIO_SUSCRIPCION_USD : {};
+ const countryData = {
+  'US': { name: 'Estados Unidos', currency: 'USD', symbol: '$', price: ppp.US || 11.50 },
+  'ES': { name: 'España', currency: 'USD', symbol: '$', price: ppp.ES || 11.50 },
+  'MX': { name: 'México', currency: 'USD', symbol: '$', price: ppp.MX || 7.00 },
+  'CL': { name: 'Chile', currency: 'USD', symbol: '$', price: ppp.CL || 6.50 },
+  'PE': { name: 'Perú', currency: 'USD', symbol: '$', price: ppp.PE || 6.00 },
+  'CO': { name: 'Colombia', currency: 'USD', symbol: '$', price: ppp.CO || 5.00 },
+  'AR': { name: 'Argentina', currency: 'USD', symbol: '$', price: ppp.AR || 4.00 },
+  'EC': { name: 'Ecuador', currency: 'USD', symbol: '$', price: ppp.EC || 6.00 },
+  'DO': { name: 'Rep. Dominicana', currency: 'USD', symbol: '$', price: ppp.DO || 6.00 },
+  'VE': { name: 'Venezuela', currency: 'USD', symbol: '$', price: ppp.VE || 6.00 },
+  'BR': { name: 'Brasil', currency: 'USD', symbol: '$', price: ppp.BR || 6.00 },
+  'DE': { name: 'Alemania', currency: 'USD', symbol: '$', price: ppp.DEFAULT || 11.50 },
+  'NL': { name: 'Holanda', currency: 'USD', symbol: '$', price: ppp.DEFAULT || 11.50 },
+  'FR': { name: 'Francia', currency: 'USD', symbol: '$', price: ppp.DEFAULT || 11.50 }
+ };
 
   const flags = {
     'ES': '🇪🇸', 'CO': '🇨🇴', 'MX': '🇲🇽', 'AR': '🇦🇷', 'DE': '🇩🇪',
@@ -405,16 +453,17 @@ function renderSubs() {
 }
 
 function renderRevenue() {
-  const active = DB.businesses.filter(function (b) { return b.plan === 'active'; }).length;
-  const m = active * 10;
-  T('rev-m', money(m)); T('rev-y', money(m * 12)); T('rev-p6', money(m * 1.8)); T('rev-p12', money(m * 2.5));
+  const activeBizs = DB.businesses.filter(_admBizIsActive);
+  const active = activeBizs.length;
+  const m = activeBizs.reduce(function (sum, b) { return sum + _admBizPlanPrice(b); }, 0);
+  T('rev-m', _admUsd(m)); T('rev-y', _admUsd(m * 12)); T('rev-p6', _admUsd(m * 1.8)); T('rev-p12', _admUsd(m * 2.5));
   H('adm-proj', [
     { l: 'Mes actual (' + active + ' activos)', v: m, c: 'var(--green)' },
     { l: 'En 3 meses (estimado)', v: m * 1.3, c: 'var(--blue)' },
     { l: 'En 6 meses (estimado)', v: m * 1.8, c: 'var(--gold)' },
-    { l: 'En 1 year (estimado)', v: m * 2.5, c: 'var(--green)' }
+    { l: 'En 1 año (estimado)', v: m * 2.5, c: 'var(--green)' }
   ].map(function (r) {
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">' + r.l + '</span><span style="font-weight:800;font-size:17px;color:' + r.c + '">' + money(r.v) + '</span></div>';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--b)"><span style="font-size:13px;color:var(--t2)">' + r.l + '</span><span style="font-weight:800;font-size:17px;color:' + r.c + '">' + _admUsd(r.v) + '</span></div>';
   }).join(''));
 }
 
@@ -632,10 +681,10 @@ async function renderAfiliadosAdmin() {
 
     let h = '';
     affiliates.forEach(af => {
-      // Contar negocios traídos
+      // Contar negocios traídos con MRR real por país
       const bizs = DB.businesses.filter(b => (b.referred_by_code || '').toUpperCase() === af.code.toUpperCase());
-      const activos = bizs.filter(b => b.plan === 'active').length;
-      const mrr = activos * 10; // Suponemos 10€/mes por activo
+      const activeBizs = bizs.filter(_admBizIsActive);
+      const mrr = activeBizs.reduce((sum, b) => sum + _admBizPlanPrice(b), 0);
 
       h += `
         <div style="padding:14px 10px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--border); cursor:pointer;" onclick="window.openAffiliateDetails('${san(af.code)}', '${san(af.name)}')">
@@ -647,7 +696,7 @@ async function renderAfiliadosAdmin() {
             <div style="font-size:12px; color:var(--muted); margin-top:3px;">Código: <span style="font-family:monospace; background:var(--bg2); padding:2px 6px; border-radius:4px; font-size:11px; color:var(--text);">${san(af.code)}</span></div>
           </div>
           <div style="text-align:right;">
-            <div style="font-weight:700; font-size:14px; color:var(--text);">${money(mrr)}/mes</div>
+            <div style="font-weight:700; font-size:14px; color:var(--text);">${_admUsd(mrr)}/mes</div>
             <div style="font-size:11px; color:var(--muted); margin-top:3px;">${bizs.length} negocios</div>
           </div>
         </div>
@@ -758,11 +807,11 @@ window.openAffiliateDetails = function(code, name) {
   } else {
     let lh = '';
     bizs.forEach(b => {
-      const planStr = b.plan === 'active' 
-        ? '<span style="color:#22C55E; font-weight:600">Activo</span>' 
+      const planStr = _admBizIsActive(b)
+        ? '<span style="color:#22C55E; font-weight:600">Activo</span>'
         : (b.plan === 'trial' ? '<span style="color:#F59E0B">Prueba</span>' : '<span style="color:var(--muted)">Vencido</span>');
-      
-      const dateStr = b.join_date ? b.join_date : 'Sin fecha';
+
+      const dateStr = b.join_date || b.joinDate || 'Sin fecha';
       lh += `
         <div style="padding:14px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
           <div>

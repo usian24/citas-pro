@@ -17,15 +17,19 @@ router.post('/webhook', async (req, res) => {
     // Si estás en local o sin variables configuradas aún, pasamos directo 
     // (solo mientras configuras Dodo). En prod, DODO_WEBHOOK_SECRET es obligatoria.
     const secret = process.env.DODO_WEBHOOK_SECRET;
+    const isProd = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production';
 
     if (!secret) {
-      console.warn('[WARNING] Falta DODO_WEBHOOK_SECRET. No se verificará la firma (solo test).');
+      if (isProd) {
+        console.error('[CRITICAL] DODO_WEBHOOK_SECRET faltante en producción. Webhook rechazado.');
+        return res.status(500).json({ error: 'Configuración de webhook incompleta' });
+      }
+      console.warn('[WARNING] Falta DODO_WEBHOOK_SECRET. Solo permitido en entorno local/dev.');
     } else {
       // Verificamos la firma usando el SDK de DodoPayments
       try {
         const client = new DodoPayments({ bearerToken: process.env.DODO_API_KEY || 'dummy' });
-        // unwrap() verifica el hash usando el rawBody, los headers y el secret.
-        client.webhooks.unwrap(req.rawBody.toString(), req.headers, secret);
+        client.webhooks.unwrap((req.rawBody || '').toString(), req.headers, secret);
       } catch (err) {
         console.error('[ERROR] Intento de pago rechazado: Firma de DodoPayments inválida.', err);
         return res.status(401).json({ error: 'Firma invalida' });

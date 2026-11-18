@@ -305,17 +305,29 @@ function hideGlobalLoader() {
 
 async function uploadToImgBB(file) {
   if (!file) return null;
-  const formData = new FormData();
-  formData.append('image', file);
   try {
+    const base64DataUrl = await new Promise(function (resolve, reject) {
+      const reader = new FileReader();
+      reader.onload = function () { resolve(reader.result); };
+      reader.onerror = function () { reject(new Error('No se pudo leer la imagen')); };
+      reader.readAsDataURL(file);
+    });
     const controller = new AbortController();
-    const timeoutId = setTimeout(function () { controller.abort(); }, 12000);
-    const res = await fetch('https://api.imgbb.com/1/upload?key=6d7ef48cb26db3e0279b772ff3efeed5', { method: 'POST', body: formData, signal: controller.signal });
+    const timeoutId = setTimeout(function () { controller.abort(); }, 18000);
+    const res = await fetch('/api/upload-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64DataUrl }),
+      signal: controller.signal
+    });
     clearTimeout(timeoutId);
     const data = await res.json();
-    if (data.success) return data.data.url;
-    throw new Error('Error ImgBB');
-  } catch (e) { toast('Error al subir la imagen', '#EF4444'); return null; }
+    if (res.ok && data.success && data.url) return data.url;
+    throw new Error(data.error || 'Error subiendo imagen');
+  } catch (e) {
+    toast(e.message || 'Error al subir la imagen', '#EF4444');
+    return null;
+  }
 }
 
 function setupPhotoUpload() {
@@ -1952,12 +1964,17 @@ function configurarBotonesDePago() {
       planBadge.style.color = 'var(--gold)';
     }
   }
+}
 
 /* ══════════════════════════
    INICIO DE SESIÓN CON GOOGLE (Registro)
 ══════════════════════════ */
 window.startGoogleRegistration = function(email, name) {
-  _rmData = { email: email, pass: 'GoogleOauth123!', phone: '', referred_by_code: null };
+  var randArr = new Uint32Array(2);
+  var randomPass = (typeof crypto !== 'undefined' && crypto.getRandomValues)
+    ? ('G' + Array.from(crypto.getRandomValues(randArr)).map(function (n) { return n.toString(36); }).join('') + '!9')
+    : ('G' + Math.random().toString(36).slice(2) + Date.now().toString(36) + '!9');
+  _rmData = { email: email, pass: randomPass, phone: '', referred_by_code: null };
   closeOv('ov-login');
   closeOv('ov-registro');
   if (typeof toast === 'function') toast('¡Bienvenido! Completa tu perfil para continuar', '#4A7FD4');
@@ -1968,7 +1985,7 @@ window.startGoogleRegistration = function(email, name) {
     const em = G('br-email'); if (em) em.value = email || '';
     const nm = G('br-name'); if (nm && name) nm.value = name;
   }, 400);
-};}
+};
 
 window.syncProfileLoyaltyFields = function () {
   var mode = G('pf-loyalty-mode') ? G('pf-loyalty-mode').value : 'stamps';

@@ -19,6 +19,7 @@ app.use(cors());
 // Le decimos a Vercel que lea todo como JSON, PERO que haga una copia exacta 
 // del texto crudo (rawBody) SOLO si la ruta es el webhook.
 app.use(express.json({
+  limit: '8mb',
   verify: (req, res, buf) => {
     if (req.originalUrl && req.originalUrl.includes('/webhook')) {
       req.rawBody = buf.toString('utf8');

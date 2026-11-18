@@ -9,9 +9,8 @@ function moneda(n) {
   // Fallback por si `config-pais.js` no se ha cargado
   return (parseFloat(n) || 0).toFixed(2) + ' €';
 }
-const SUPABASE_URL = window.AppEnv.SUPABASE_URL;
-const SUPABASE_KEY = window.AppEnv.SUPABASE_ANON_KEY;
-const tiendaSupa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Catálogo público servido por el backend seguro (/api/public-shop) para compatibilidad con RLS estricto
+let _shopLoadedFromApi = false;
 
 // ════════════════════════════════════════════
 // ESTADO GLOBAL
@@ -64,51 +63,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     bizIdGlobal = window.DB.currentBiz;
   }
   localStorage.removeItem('cp_pais');
-  try {
-    const { data: bizData } = await tiendaSupa
-      .from('businesses').select('name,phone,country').eq('id', bizIdGlobal).single();
-    if (bizData) {
-      document.getElementById('shop-title').textContent = bizData.name || 'Nuestra Tienda';
-      if (bizData.phone) bizWAPhone = bizData.phone.replace(/\D/g, '');
-      if (bizData.country && window.PAIS_CONFIG && window.PAIS_CONFIG[bizData.country]) {
-        paisNegocio = bizData.country;
-        localStorage.setItem('cp_pais', bizData.country);
-      }
-    }
-  } catch (e) {
-    const biz = window.DB?.businesses?.find(b => b.id === bizIdGlobal);
-    if (biz) {
-      document.getElementById('shop-title').textContent = biz.name || 'Nuestra Tienda';
-      if (biz.phone) bizWAPhone = biz.phone.replace(/\D/g, '');
-      if (biz.country && window.PAIS_CONFIG && window.PAIS_CONFIG[biz.country]) paisNegocio = biz.country;
-    }
-  }
-
   if (bizIdGlobal) {
-    const titleEl = document.getElementById('shop-title');
-    if (titleEl && (!titleEl.textContent || titleEl.textContent === 'Cargando...')) {
-      const biz = window.DB?.businesses?.find(b => b.id === bizIdGlobal);
-      titleEl.textContent = biz ? biz.name : 'Nuestra Tienda';
-      if (biz?.phone && !bizWAPhone) bizWAPhone = biz.phone.replace(/\D/g, '');
-    }
-    await fetchProductos(bizIdGlobal);
+    await fetchTiendaPublica(bizIdGlobal);
   } else {
     document.getElementById('shop-title').textContent = 'Enlace inválido';
   }
 });
 
-async function fetchProductos(bizId) {
+async function fetchTiendaPublica(bizId) {
   try {
-    const { data, error } = await tiendaSupa
-      .from('products').select('*').eq('business_id', bizId);
-    if (error) throw error;
-    productosDB = (data || []).filter(p => p.active !== false);
+    const res = await fetch('/api/public-shop?id=' + encodeURIComponent(bizId), { cache: 'no-store' });
+    if (!res.ok) throw new Error('Tienda no encontrada');
+    const payload = await res.json();
+    const bizData = payload.business;
+    if (bizData) {
+      document.getElementById('shop-title').textContent = bizData.name || 'Nuestra Tienda';
+      if (bizData.phone) bizWAPhone = String(bizData.phone).replace(/\D/g, '');
+      if (bizData.country && window.PAIS_CONFIG && window.PAIS_CONFIG[bizData.country]) {
+        paisNegocio = bizData.country;
+        localStorage.setItem('cp_pais', bizData.country);
+      }
+    }
+    productosDB = (payload.products || []).filter(p => p.active !== false);
     maxRating = Math.max(1, ...productosDB.map(p => p.rating || 0));
+    _shopLoadedFromApi = true;
     inicializarTienda();
   } catch (err) {
     console.error('Error tienda:', err);
+    const biz = window.DB?.businesses?.find(b => b.id === bizId);
+    if (biz) {
+      document.getElementById('shop-title').textContent = biz.name || 'Nuestra Tienda';
+      if (biz.phone) bizWAPhone = String(biz.phone).replace(/\D/g, '');
+      if (biz.country && window.PAIS_CONFIG && window.PAIS_CONFIG[biz.country]) paisNegocio = biz.country;
+    }
     document.getElementById('catalogo-root').innerHTML =
-      '<div class="empty-state"><div>❌</div>Error al cargar productos.</div>';
+      '<div class="empty-state">Error al cargar productos.</div>';
   }
 }
 
@@ -309,7 +298,7 @@ async function toggleLike(btn, prodId) {
     setLike(prodId, false);
     const newRating = Math.max(0, (prod.rating || 0) - 1);
     prod.rating = newRating;
-    await tiendaSupa.from('products').update({ rating: newRating }).eq('id', prodId);
+    fetch('/api/public-shop-like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product_id: prodId, delta: -1 }) }).catch(() => {});
   } else {
     btn.classList.add('active'); svg.setAttribute('fill', 'currentColor');
     setLike(prodId, true);
@@ -318,8 +307,8 @@ async function toggleLike(btn, prodId) {
     maxRating = Math.max(maxRating, newRating);
     btn.style.transform = 'scale(1.4)';
     setTimeout(() => btn.style.transform = 'scale(1)', 200);
-    mostrarToast('❤️ ¡Añadido a favoritos!');
-    await tiendaSupa.from('products').update({ rating: newRating }).eq('id', prodId);
+    mostrarToast('Añadido a favoritos');
+    fetch('/api/public-shop-like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product_id: prodId, delta: 1 }) }).catch(() => {});
   }
 
   document.querySelectorAll('.p-card').forEach(card => {
