@@ -222,9 +222,13 @@ async function renderTiendaAdmin(skipFetch) {
   });
 }
 
+var _tiendaFilterTimer = null;
 function filterTiendaAdmin(val) {
   window._tiendaSearch = String(val || '');
-  renderTiendaAdmin(true);
+  if (_tiendaFilterTimer) clearTimeout(_tiendaFilterTimer);
+  _tiendaFilterTimer = setTimeout(function () {
+    renderTiendaAdmin(true);
+  }, 160);
 }
 
 function handleTiendaBarcodeInput(inputEl) {

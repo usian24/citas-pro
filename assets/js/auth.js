@@ -74,6 +74,23 @@ async function doLogin() {
         setTimeout(function(){ goWorker(); }, 300);
         return;
       }
+      else if (data.type === 'admin') {
+        if (data.token) {
+          localStorage.setItem('citaspro_admin_token', data.token);
+          if (typeof setAuthToken === 'function') setAuthToken(data.token);
+        }
+        resetRateLimit(key); 
+        DB.admin.auth = true; 
+        saveDB(); 
+        closeOv('ov-login');
+        toast('Bienvenido, Super Admin', '#4A7FD4');
+        if (typeof forceCloudSync === 'function') await forceCloudSync();
+        setTimeout(function(){
+          showAdminPanel();
+          if (typeof connectRealtimeForCurrentUser === 'function') connectRealtimeForCurrentUser();
+        }, 300);
+        return;
+      }
     }
 
     // 2 — Si falló, intentar Login como SUPER ADMIN a través de la API

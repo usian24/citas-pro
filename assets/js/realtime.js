@@ -66,7 +66,13 @@ async function subscribeWorkerRealtime(workerId, bizId) {
     )
     .subscribe(function (status) {
       console.log('Worker Realtime Status:', status);
-      if (status === 'SUBSCRIBED') showRealtimeIndicator(true);
+      if (status === 'SUBSCRIBED') {
+        showRealtimeIndicator(true);
+        startSmartPolling(workerId, bizId, 60000);
+      } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+        showRealtimeIndicator(false);
+        startSmartPolling(workerId, bizId, 20000);
+      }
     });
 }
 
@@ -88,7 +94,13 @@ async function subscribeBizRealtime(bizId) {
     )
     .subscribe(function (status) {
       console.log('Biz Realtime Status:', status);
-      if (status === 'SUBSCRIBED') showRealtimeIndicator(true);
+      if (status === 'SUBSCRIBED') {
+        showRealtimeIndicator(true);
+        startSmartPolling(null, bizId, 60000);
+      } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+        showRealtimeIndicator(false);
+        startSmartPolling(null, bizId, 20000);
+      }
     });
 }
 
@@ -422,8 +434,9 @@ function showRealtimeIndicator(connected) {
   }
 }
 
-function startSmartPolling(workerId, bizId) {
+function startSmartPolling(workerId, bizId, intervalMs) {
   if (_smartPollTimer) clearInterval(_smartPollTimer);
+  var interval = intervalMs || 30000;
   _smartPollTimer = setInterval(function () {
     if (document.hidden) return; // Pausa si el usuario no está viendo la pantalla
     if (workerId && typeof CUR_WORKER !== 'undefined' && CUR_WORKER) {
@@ -431,12 +444,19 @@ function startSmartPolling(workerId, bizId) {
     } else if (bizId && typeof CUR !== 'undefined' && CUR) {
       safeRefreshBizUI(bizId);
     }
-  }, 4000); // Se actualiza solo y en silencio cada 4 segundos
+  }, interval);
 }
 
 /* ══════════════════════════
    REFRESH UI SEGURO
 ══════════════════════════ */
+function _calcAppointmentsHash(appts) {
+  if (!Array.isArray(appts)) return '';
+  return appts.map(function (a) {
+    return (a.id || '') + ':' + (a.status || '') + ':' + (a.date || '') + ':' + (a.time || '') + ':' + (a.price || '');
+  }).join('|');
+}
+
 async function safeRefreshWorkerUI(workerId, bizId) {
   if (typeof fetchBizFromCloud !== 'function') return;
   const freshData = await fetchBizFromCloud(bizId);
@@ -447,6 +467,17 @@ async function safeRefreshWorkerUI(workerId, bizId) {
       if (typeof syncAppointmentsToCloud === 'function') syncAppointmentsToCloud(freshData);
     }
   }
+
+  let freshWorker = (freshData.workers || []).find(function (w) { return w.id === workerId; });
+  if (!freshWorker) return;
+
+  // Comparar si hubo cambios reales antes de tocar el DOM
+  var oldHash = _calcAppointmentsHash(CUR_WORKER ? CUR_WORKER.appointments : []);
+  var newHash = _calcAppointmentsHash(freshWorker.appointments);
+  if (oldHash === newHash && CUR_WORKER && CUR_WORKER.name === freshWorker.name) {
+    return; // Sin cambios, no interrumpir la navegación ni redibujar la pantalla
+  }
+
   let index = DB.businesses.findIndex(function (b) { return b.id === bizId; });
   if (index >= 0) {
     let oldBiz = DB.businesses[index];
@@ -458,8 +489,7 @@ async function safeRefreshWorkerUI(workerId, bizId) {
     DB.businesses[index] = freshData;
   }
   CUR = freshData;
-  let freshWorker = CUR.workers.find(function (w) { return w.id === workerId; });
-  if (freshWorker) CUR_WORKER = freshWorker;
+  CUR_WORKER = freshWorker;
   try { localStorage.setItem(DBKEY, JSON.stringify(DB)); } catch (e) { }
   var activePane = document.querySelector('#s-worker .pane.on');
   if (activePane) {
@@ -480,6 +510,22 @@ async function safeRefreshBizUI(bizId) {
   if (typeof fetchBizFromCloud !== 'function') return;
   const freshData = await fetchBizFromCloud(bizId);
   if (!freshData) return;
+
+  // Comparar si hubo cambios reales antes de serializar o re-dibujar
+  var oldAppts = (CUR ? (CUR.appointments || []) : []).concat(
+    (CUR && CUR.workers ? CUR.workers : []).flatMap(function(w){ return w.appointments || []; })
+  );
+  var newAppts = (freshData.appointments || []).concat(
+    (freshData.workers || []).flatMap(function(w){ return w.appointments || []; })
+  );
+  var oldHash = _calcAppointmentsHash(oldAppts);
+  var newHash = _calcAppointmentsHash(newAppts);
+  var workersCountEqual = (CUR && CUR.workers ? CUR.workers.length : 0) === (freshData.workers ? freshData.workers.length : 0);
+
+  if (oldHash === newHash && workersCountEqual) {
+    return; // Sin cambios, no redibujar el DOM para evitar lag
+  }
+
   let index = DB.businesses.findIndex(function (b) { return b.id === bizId; });
   if (index >= 0) {
     let oldBiz = DB.businesses[index];

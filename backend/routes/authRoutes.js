@@ -70,69 +70,115 @@ router.post('/admin-login', async (req, res) => {
 });
 
 // ═══════════════════════════════════════
-// RUTA 2: LOGIN UNIFICADO (DUEÑOS Y TRABAJADORES)
+// RUTA 2: LOGIN UNIFICADO (DUEÑOS, TRABAJADORES Y SUPER ADMIN)
 // ═══════════════════════════════════════
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body || {};
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email y contraseña requeridos' });
+      return res.status(400).json({ error: 'Usuario / email y contraseña requeridos' });
     }
 
-    const inputEmail = String(email).trim().toLowerCase();
+    const rawInput = String(email).trim();
+    const inputLower = rawInput.toLowerCase();
+    const inputDigits = rawInput.replace(/\D/g, '');
 
     // 1. Buscar en dueños de negocio (businesses)
-    const { data: bizData, error: bizError } = await supabase
-      .from('businesses')
-      .select('id, name, email, password, owner')
-      .ilike('email', inputEmail)
-      .single();
+    // Permite loguearse con email, ID de negocio, nombre del dueño, nombre del negocio o teléfono
+    let bizMatches = [];
+    if (inputLower.includes('@')) {
+      const { data } = await supabase
+        .from('businesses')
+        .select('id, name, email, password, owner, phone')
+        .ilike('email', inputLower);
+      if (data && data.length) bizMatches = data;
+    }
 
-    if (bizData && !bizError && safeComparePassword(password, bizData.password)) {
-      const safeBiz = {
-        id: bizData.id,
-        name: bizData.name,
-        email: bizData.email,
-        owner: bizData.owner
-      };
-      const token = signSessionToken({
-        role: 'business',
-        bizId: bizData.id,
-        email: bizData.email
-      });
-      return res.status(200).json({ success: true, type: 'business', biz: safeBiz, token });
+    if (!bizMatches.length) {
+      const phoneFilter = inputDigits.length >= 7 ? `,phone.ilike.%${inputDigits}%` : '';
+      const { data } = await supabase
+        .from('businesses')
+        .select('id, name, email, password, owner, phone')
+        .or(`id.eq.${rawInput},owner.ilike.${rawInput},name.ilike.${rawInput}${phoneFilter}`);
+      if (data && data.length) bizMatches = data;
+    }
+
+    for (const bizData of bizMatches) {
+      if (safeComparePassword(password, bizData.password)) {
+        const safeBiz = {
+          id: bizData.id,
+          name: bizData.name,
+          email: bizData.email || '',
+          owner: bizData.owner || ''
+        };
+        const token = signSessionToken({
+          role: 'business',
+          bizId: bizData.id,
+          email: bizData.email || ''
+        });
+        return res.status(200).json({ success: true, type: 'business', biz: safeBiz, token });
+      }
     }
 
     // 2. Si no es dueño, buscar en trabajadores (workers)
-    const { data: workerData, error: workerError } = await supabase
-      .from('workers')
-      .select('id, business_id, name, email, password')
-      .ilike('email', inputEmail)
-      .single();
-
-    if (workerData && !workerError && safeComparePassword(password, workerData.password)) {
-      const safeWorker = {
-        id: workerData.id,
-        business_id: workerData.business_id,
-        name: workerData.name,
-        email: workerData.email
-      };
-      const token = signSessionToken({
-        role: 'worker',
-        bizId: workerData.business_id,
-        workerId: workerData.id,
-        email: workerData.email
-      });
-      return res.status(200).json({
-        success: true,
-        type: 'worker',
-        worker: safeWorker,
-        token
-      });
+    let workerMatches = [];
+    if (inputLower.includes('@')) {
+      const { data } = await supabase
+        .from('workers')
+        .select('id, business_id, name, email, password, phone')
+        .ilike('email', inputLower);
+      if (data && data.length) workerMatches = data;
     }
 
-    // 3. Si no se encontró en ningún lado
-    return res.status(401).json({ error: 'Email o contraseña incorrectos' });
+    if (!workerMatches.length) {
+      const phoneFilter = inputDigits.length >= 7 ? `,phone.ilike.%${inputDigits}%` : '';
+      const { data } = await supabase
+        .from('workers')
+        .select('id, business_id, name, email, password, phone')
+        .or(`name.ilike.${rawInput}${phoneFilter}`);
+      if (data && data.length) workerMatches = data;
+    }
+
+    for (const workerData of workerMatches) {
+      if (safeComparePassword(password, workerData.password)) {
+        const safeWorker = {
+          id: workerData.id,
+          business_id: workerData.business_id,
+          name: workerData.name,
+          email: workerData.email || ''
+        };
+        const token = signSessionToken({
+          role: 'worker',
+          bizId: workerData.business_id,
+          workerId: workerData.id,
+          email: workerData.email || ''
+        });
+        return res.status(200).json({
+          success: true,
+          type: 'worker',
+          worker: safeWorker,
+          token
+        });
+      }
+    }
+
+    // 3. Si no es dueño ni trabajador, verificar Super Admin (virche70021261@gmail.com o usuario admin)
+    const { data: saData } = await supabase
+      .from('super_admins')
+      .select('id, username, password')
+      .ilike('username', inputLower)
+      .limit(1);
+
+    if (saData && saData.length && safeComparePassword(password, saData[0].password)) {
+      const token = signSessionToken(
+        { role: 'super_admin', username: saData[0].username },
+        '24h'
+      );
+      return res.status(200).json({ success: true, type: 'admin', admin: saData[0].username, token });
+    }
+
+    // 4. Si no se encontró en ningún lado
+    return res.status(401).json({ error: 'Usuario / email o contraseña incorrectos' });
   } catch (err) {
     console.error('Login error:', err);
     return res.status(500).json({ error: 'Error del servidor: ' + err.message });
@@ -144,26 +190,64 @@ router.post('/login', async (req, res) => {
 // ═══════════════════════════════════════
 router.post('/request-password-reset', async (req, res) => {
   const { email } = req.body || {};
-  if (!email) return res.status(400).json({ error: 'Email requerido' });
+  if (!email) return res.status(400).json({ error: 'Introduce tu correo, usuario o teléfono' });
 
-  const inputEmail = String(email).trim().toLowerCase();
+  const rawInput = String(email).trim();
+  const inputLower = rawInput.toLowerCase();
+  const inputDigits = rawInput.replace(/\D/g, '');
   let user = null;
   let userType = null;
 
-  const { data: biz } = await supabase.from('businesses').select('id, email, name').ilike('email', inputEmail).single();
-  if (biz) {
-    user = { id: biz.id, email: biz.email, name: biz.name };
+  // 1. Buscar en businesses
+  let bizRows = [];
+  if (inputLower.includes('@')) {
+    const { data } = await supabase.from('businesses').select('id, email, name, owner').ilike('email', inputLower).limit(1);
+    if (data && data.length) bizRows = data;
+  }
+  if (!bizRows.length) {
+    const phoneFilter = inputDigits.length >= 7 ? `,phone.ilike.%${inputDigits}%` : '';
+    const { data } = await supabase.from('businesses').select('id, email, name, owner')
+      .or(`id.eq.${rawInput},owner.ilike.${rawInput},name.ilike.${rawInput}${phoneFilter}`)
+      .limit(1);
+    if (data && data.length) bizRows = data;
+  }
+
+  if (bizRows.length && bizRows[0].email) {
+    user = { id: bizRows[0].id, email: bizRows[0].email, name: bizRows[0].name || bizRows[0].owner || 'Dueño' };
     userType = 'business';
-  } else {
-    const { data: worker } = await supabase.from('workers').select('id, email, name, business_id').ilike('email', inputEmail).single();
-    if (worker) {
-      user = { id: worker.id, email: worker.email, name: worker.name, bizId: worker.business_id };
+  }
+
+  // 2. Si no, buscar en workers
+  if (!user) {
+    let workerRows = [];
+    if (inputLower.includes('@')) {
+      const { data } = await supabase.from('workers').select('id, email, name, business_id').ilike('email', inputLower).limit(1);
+      if (data && data.length) workerRows = data;
+    }
+    if (!workerRows.length) {
+      const phoneFilter = inputDigits.length >= 7 ? `,phone.ilike.%${inputDigits}%` : '';
+      const { data } = await supabase.from('workers').select('id, email, name, business_id')
+        .or(`name.ilike.${rawInput}${phoneFilter}`)
+        .limit(1);
+      if (data && data.length) workerRows = data;
+    }
+    if (workerRows.length && workerRows[0].email) {
+      user = { id: workerRows[0].id, email: workerRows[0].email, name: workerRows[0].name, bizId: workerRows[0].business_id };
       userType = 'worker';
     }
   }
 
+  // 3. Si no, buscar en super_admins
   if (!user) {
-    return res.status(200).json({ success: true });
+    const { data: saRows } = await supabase.from('super_admins').select('id, username').ilike('username', inputLower).limit(1);
+    if (saRows && saRows.length && saRows[0].username && saRows[0].username.includes('@')) {
+      user = { id: saRows[0].id, email: saRows[0].username, name: 'Super Admin' };
+      userType = 'super_admin';
+    }
+  }
+
+  if (!user || !user.email) {
+    return res.status(404).json({ error: 'No se encontró ninguna cuenta con correo válido asociada a ese usuario.' });
   }
 
   // Secreto y claim dedicados para evitar reuso con tokens de sesión
@@ -180,17 +264,38 @@ router.post('/request-password-reset', async (req, res) => {
     const { Resend } = require('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    await resend.emails.send({
+    const emailPayload = {
       from: 'Citas Pro <soporte@citasproonline.com>',
       to: [user.email],
       subject: 'Restablece tu contraseña de Citas Pro',
       html: `<p>Hola ${escapeHtml(user.name)}, haz clic en el siguiente enlace para restablecer tu contraseña. Este enlace es válido por 15 minutos:</p><p><a href="${resetLink}">Restablecer mi contraseña</a></p>`
-    });
+    };
 
-    res.status(200).json({ success: true });
+    let sendResult = await resend.emails.send(emailPayload);
+    if (sendResult.error) {
+      console.warn('[RESEND WARNING]', sendResult.error);
+      if (sendResult.error.statusCode === 403 || (sendResult.error.message && sendResult.error.message.includes('domain'))) {
+        emailPayload.from = 'onboarding@resend.dev';
+        sendResult = await resend.emails.send(emailPayload);
+      }
+    }
+
+    if (sendResult.error) {
+      if (sendResult.error.statusCode === 429 || sendResult.error.name === 'daily_quota_exceeded') {
+        console.warn('[RESEND 429] Cuota diaria alcanzada (100 correos). Enlace de recuperación de respaldo:', resetLink);
+        return res.status(429).json({
+          error: 'El servicio de correo ha alcanzado su límite diario gratuito (100 envíos/día). Por favor intenta de nuevo mañana o contacta con soporte.',
+          code: 'RESEND_QUOTA_EXCEEDED'
+        });
+      }
+      throw new Error(sendResult.error.message || 'Error en servicio de correo');
+    }
+
+    console.log('[RESEND SUCCESS] Reset email sent to:', user.email);
+    res.status(200).json({ success: true, emailSentTo: user.email });
   } catch (error) {
     console.error("Error enviando email de reseteo:", error);
-    res.status(500).json({ error: 'No se pudo enviar el correo.' });
+    res.status(500).json({ error: 'No se pudo enviar el correo: ' + error.message });
   }
 });
 
@@ -210,7 +315,7 @@ router.post('/reset-password', async (req, res) => {
       return res.status(401).json({ error: 'Enlace inválido o corrupto.' });
     }
     const { userId, type } = decoded;
-    const tableName = type === 'business' ? 'businesses' : 'workers';
+    const tableName = type === 'business' ? 'businesses' : (type === 'super_admin' ? 'super_admins' : 'workers');
 
     const { error } = await supabase
       .from(tableName)

@@ -659,7 +659,7 @@ function _pStep1Client() {
 
     html += '<div class="pos-input-bar"><div class="pos-input-wrap">'
       + _pSvg('search', 16)
-      + '<input class="inp" id="pos-cli-search" type="search" placeholder="Buscar cliente por nombre o teléfono..." value="' + san(c.clientSearch) + '" oninput="POS_STATE.cart.clientSearch=this.value;posRenderClientMatches()" autocomplete="off"/>'
+      + '<input class="inp" id="pos-cli-search" type="search" placeholder="Buscar cliente por nombre o teléfono..." value="' + san(c.clientSearch) + '" oninput="POS_STATE.cart.clientSearch=this.value;posDebouncedClientSearch()" autocomplete="off"/>'
       + '</div></div>';
 
     html += '<div id="pos-cli-matches">' + _pBuildClientMatchesHtml(matches) + '</div>';
@@ -700,6 +700,18 @@ function _pBuildClientMatchesHtml(matches) {
       + '</div>'
       + '</div>';
   }).join('') + '</div>';
+}
+
+var _posClientSearchTimer = null;
+function posDebouncedClientSearch() {
+  if (_posClientSearchTimer) clearTimeout(_posClientSearchTimer);
+  _posClientSearchTimer = setTimeout(posRenderClientMatches, 150);
+}
+
+var _posProdSearchTimer = null;
+function posDebouncedProdSearch() {
+  if (_posProdSearchTimer) clearTimeout(_posProdSearchTimer);
+  _posProdSearchTimer = setTimeout(posRenderProductGrid, 150);
 }
 
 function posRenderClientMatches() {
@@ -749,7 +761,7 @@ function _pStep2Products() {
 
   html += '<div class="pos-input-bar"><div class="pos-input-wrap">'
     + _pSvg('barcode', 16)
-    + '<input class="inp" id="pos-prod-scan" type="search" placeholder="Escanear código de barras o buscar producto..." value="' + san(c.prodSearch) + '" oninput="POS_STATE.cart.prodSearch=this.value;posRenderProductGrid()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();posManualBarcodeScan(this);}" autocomplete="off"/>'
+    + '<input class="inp" id="pos-prod-scan" type="search" placeholder="Escanear código de barras o buscar producto..." value="' + san(c.prodSearch) + '" oninput="POS_STATE.cart.prodSearch=this.value;posDebouncedProdSearch()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();posManualBarcodeScan(this);}" autocomplete="off"/>'
     + '</div></div>';
 
   html += '<div id="pos-prod-grid" class="pos-grid">' + _pBuildProductTilesHtml() + '</div>';

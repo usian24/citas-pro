@@ -196,6 +196,9 @@ function loadDB() {
   } catch (e) { return defDB(); }
 }
 
+var _saveDbUpdateTimer = null;
+var _saveDbSyncTimer = null;
+
 function saveDB() {
   try {
     if (DB && typeof DB === 'object') {
@@ -227,27 +230,35 @@ function saveDB() {
       var isWorkerSession = typeof CUR_WORKER !== 'undefined' && Boolean(CUR_WORKER);
       if (CUR && CUR.id && !isWorkerSession) {
         var bizPayload = Object.assign({}, CUR);
-        // Solo enviar pass durante un alta nueva; nunca re-enviar contraseñas en sincronizaciones rutinarias
         delete bizPayload.password;
         if (window.getAuthToken()) delete bizPayload.pass;
 
-        fetch('/api/update-biz', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bizPayload)
-        }).then(async function (res) {
-          var data = await res.json().catch(function () { return {}; });
-          if (res.ok && data && data.token && typeof window.setAuthToken === 'function') {
-            window.setAuthToken(data.token);
-            if (CUR) { delete CUR.pass; delete CUR.password; }
-          } else if (!res.ok) {
-            console.error("ERROR SUPABASE (update-biz):", data.detalle || data.error);
-          }
-        }).catch(function (e) { });
+        if (_saveDbUpdateTimer) clearTimeout(_saveDbUpdateTimer);
+        _saveDbUpdateTimer = setTimeout(function () {
+          fetch('/api/update-biz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bizPayload)
+          }).then(async function (res) {
+            var data = await res.json().catch(function () { return {}; });
+            if (res.ok && data && data.token && typeof window.setAuthToken === 'function') {
+              window.setAuthToken(data.token);
+              if (CUR) { delete CUR.pass; delete CUR.password; }
+            } else if (!res.ok) {
+              console.error("ERROR SUPABASE (update-biz):", data.detalle || data.error);
+            }
+          }).catch(function (e) { });
+        }, 400);
       }
+
       if (CUR && CUR.id) {
-        syncAppointmentsToCloud(CUR);
-        syncServicesToCloud(CUR);
+        if (_saveDbSyncTimer) clearTimeout(_saveDbSyncTimer);
+        _saveDbSyncTimer = setTimeout(function () {
+          if (CUR && CUR.id) {
+            syncAppointmentsToCloud(CUR);
+            syncServicesToCloud(CUR);
+          }
+        }, 600);
       }
     }
   } catch (e) {

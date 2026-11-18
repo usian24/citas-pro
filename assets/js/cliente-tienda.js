@@ -136,8 +136,16 @@ function filtrarProductos(catId) {
   renderCatalogo(catId);
 }
 
+let _shopSearchTimer = null;
 function buscarProductos(termino) {
-  const text = termino.toLowerCase().trim();
+  if (_shopSearchTimer) clearTimeout(_shopSearchTimer);
+  _shopSearchTimer = setTimeout(() => {
+    _doBuscarProductos(termino);
+  }, 180);
+}
+
+function _doBuscarProductos(termino) {
+  const text = (termino || '').toLowerCase().trim();
   if (!text) { currentCategory = 'all'; renderCategorias(); renderCatalogo('all'); return; }
   currentCategory = '';
   renderCategorias();
