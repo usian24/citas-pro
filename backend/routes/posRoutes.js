@@ -72,7 +72,7 @@ function normalizeLoyaltyConfig(raw) {
   const reward_product_id = String(cfg.reward_product_id || '').trim();
   const reward_product_name = String(cfg.reward_product_name || '').trim();
   return {
-    active: cfg.active !== undefined ? Boolean(cfg.active) : true,
+    active: cfg.active !== undefined ? Boolean(cfg.active) : false,
     mode,
     stamps,
     points_goal,
@@ -107,6 +107,50 @@ function verifyBusinessPin(pinInput, storedHash) {
     return false;
   }
 }
+
+// ═══════════════════════════════════════════════════
+// GET /api/pos/products — Catálogo ultrarrápido de productos (solo tabla products)
+// ═══════════════════════════════════════════════════
+router.get('/pos/products', async (req, res) => {
+  try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    const bizId = String(req.query.business_id || '').trim();
+    if (!bizId) return res.status(400).json({ success: false, error: 'business_id es requerido' });
+
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('business_id', bizId)
+      .order('name', { ascending: true });
+
+    if (error) return res.status(500).json({ success: false, error: error.message });
+
+    return res.status(200).json({
+      success: true,
+      products: (data || []).map(p => ({
+        id: p.id,
+        business_id: p.business_id,
+        name: p.name || '',
+        description: p.description || '',
+        price: parseFloat(p.price) || 0,
+        cost_price: parseFloat(p.cost_price) || 0,
+        internal_price: parseFloat(p.internal_price) || 0,
+        stock: parseInt(p.stock, 10) || 0,
+        min_stock: p.min_stock != null ? parseInt(p.min_stock, 10) : 5,
+        barcode: p.barcode || '',
+        supplier: p.supplier || '',
+        tax_rate: p.tax_rate != null ? parseFloat(p.tax_rate) : null,
+        category: p.category || 'General',
+        discount_percent: parseFloat(p.discount_percent) || 0,
+        rating: parseFloat(p.rating) || 5.0,
+        image: p.image || '',
+        active: p.active !== false
+      }))
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // ═══════════════════════════════════════════════════
 // GET /api/pos/state — Carga consolidada de Caja y Tienda

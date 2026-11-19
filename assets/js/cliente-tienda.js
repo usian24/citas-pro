@@ -627,7 +627,7 @@ function abrirModalProducto(id) {
       const scrollRatio = track.scrollLeft / track.clientWidth;
       const index = Math.round(scrollRatio);
       dots.forEach((d, i) => d.classList.toggle('active', i === index));
-    });
+    }, { passive: true });
   }
 }
 

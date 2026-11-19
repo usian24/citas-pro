@@ -69,7 +69,7 @@ window.normalizeLoyaltyConfig = function (raw) {
   var reward_product_id = String(cfg.reward_product_id || '').trim();
   var reward_product_name = String(cfg.reward_product_name || '').trim();
   return {
-    active: cfg.active !== undefined ? Boolean(cfg.active) : true,
+    active: cfg.active !== undefined ? Boolean(cfg.active) : false,
     mode: mode,
     stamps: stamps,
     points_goal: points_goal,

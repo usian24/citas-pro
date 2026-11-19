@@ -1,5 +1,6 @@
 const express = require('express');
 const { Resend } = require('resend');
+const supabase = require('../db');
 const { optionalAuth } = require('../middlewares/auth');
 const router = express.Router();
 
@@ -280,14 +281,10 @@ router.post('/send-email', optionalAuth, async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════
-// POST /api/upload-image — Proxy seguro a ImgBB (sin exponer IMGBB_API_KEY al navegador)
+// POST /api/upload-image — Almacenamiento seguro en Supabase Storage (con fallback a ImgBB)
 // ═══════════════════════════════════════════════════
 router.post('/upload-image', optionalAuth, async (req, res) => {
   try {
-    const apiKey = process.env.IMGBB_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ success: false, error: 'IMGBB_API_KEY no configurada en el servidor' });
-    }
     if (!checkIpLimit(req, 'upload', 30, 15 * 60 * 1000)) {
       return res.status(429).json({ success: false, error: 'Demasiadas subidas de imagen. Espera unos minutos.' });
     }
@@ -296,32 +293,66 @@ router.post('/upload-image', optionalAuth, async (req, res) => {
     if (!raw) {
       return res.status(400).json({ success: false, error: 'Falta imagen en base64' });
     }
-    const commaIdx = raw.indexOf(',');
-    if (raw.startsWith('data:') && commaIdx > 0) {
-      raw = raw.slice(commaIdx + 1);
+
+    let mimeType = 'image/jpeg';
+    let ext = 'jpg';
+    if (raw.startsWith('data:')) {
+      const match = raw.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,/);
+      if (match) {
+        mimeType = match[1];
+        if (mimeType.includes('png')) ext = 'png';
+        else if (mimeType.includes('webp')) ext = 'webp';
+        else if (mimeType.includes('gif')) ext = 'gif';
+      }
+      const commaIdx = raw.indexOf(',');
+      if (commaIdx > 0) raw = raw.slice(commaIdx + 1);
     }
-    if (raw.length > 7 * 1024 * 1024) {
+
+    if (raw.length > 8 * 1024 * 1024) {
       return res.status(413).json({ success: false, error: 'La imagen supera el límite permitido (5MB)' });
     }
 
-    const params = new URLSearchParams();
-    params.append('image', raw);
+    const buffer = Buffer.from(raw, 'base64');
+    const fileName = `uploads/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${ext}`;
 
-    const imgRes = await fetch('https://api.imgbb.com/1/upload?key=' + encodeURIComponent(apiKey), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString()
-    });
-    const imgData = await imgRes.json();
+    // 1. Subida nativa a Supabase Storage (rápido, seguro, permanente)
+    const { data: storageData, error: storageErr } = await supabase.storage
+      .from('citaspro-uploads')
+      .upload(fileName, buffer, {
+        contentType: mimeType,
+        upsert: true
+      });
 
-    if (!imgRes.ok || !imgData || !imgData.success || !imgData.data || !imgData.data.url) {
-      return res.status(502).json({ success: false, error: 'No se pudo subir la imagen a ImgBB' });
+    if (!storageErr && storageData) {
+      const { data: pubData } = supabase.storage
+        .from('citaspro-uploads')
+        .getPublicUrl(fileName);
+
+      if (pubData && pubData.publicUrl) {
+        return res.status(200).json({ success: true, url: pubData.publicUrl });
+      }
     }
 
-    return res.status(200).json({ success: true, url: imgData.data.url });
+    // 2. Fallback a ImgBB por si Supabase Storage no estuviera disponible
+    const apiKey = process.env.IMGBB_API_KEY;
+    if (apiKey) {
+      const params = new URLSearchParams();
+      params.append('image', raw);
+      const imgRes = await fetch('https://api.imgbb.com/1/upload?key=' + encodeURIComponent(apiKey), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+      });
+      const imgData = await imgRes.json().catch(() => null);
+      if (imgRes.ok && imgData && imgData.success && imgData.data && imgData.data.url) {
+        return res.status(200).json({ success: true, url: imgData.data.url });
+      }
+    }
+
+    throw new Error(storageErr ? storageErr.message : 'No se pudo almacenar la imagen');
   } catch (err) {
     console.error('[UPLOAD] Error en /api/upload-image:', err);
-    return res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: 'Error procesando la imagen: ' + err.message });
   }
 });
 

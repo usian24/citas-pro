@@ -72,16 +72,24 @@ function _tSyncSharedProducts(products) {
 async function fetchTiendaProducts() {
   if (!CUR || !CUR.id) return [];
   try {
+    var res = await fetch('/api/pos/products?business_id=' + encodeURIComponent(CUR.id), { cache: 'no-store' });
+    if (res.ok) {
+      var data = await res.json();
+      if (data && data.success && Array.isArray(data.products)) {
+        _tSyncSharedProducts(data.products);
+        return window._tiendaProducts;
+      }
+    }
     var today = typeof hoyEnNegocio === 'function' ? hoyEnNegocio(CUR.country || 'ES') : new Date().toISOString().split('T')[0];
-    var res = await fetch('/api/pos/state?business_id=' + encodeURIComponent(CUR.id) + '&date=' + encodeURIComponent(today), {
+    var stateRes = await fetch('/api/pos/state?business_id=' + encodeURIComponent(CUR.id) + '&date=' + encodeURIComponent(today), {
       cache: 'no-store'
     });
-    if (!res.ok) return window._tiendaProducts || [];
-    var data = await res.json();
-    _tSyncSharedProducts(data.products || []);
+    if (!stateRes.ok) return window._tiendaProducts || [];
+    var stateData = await stateRes.json();
+    _tSyncSharedProducts(stateData.products || []);
     if (window.POS_STATE) {
-      window.POS_STATE.posConfig = data.posConfig || window.POS_STATE.posConfig;
-      window.POS_STATE.generalServices = data.generalServices || [];
+      window.POS_STATE.posConfig = stateData.posConfig || window.POS_STATE.posConfig;
+      window.POS_STATE.generalServices = stateData.generalServices || [];
     }
     return window._tiendaProducts;
   } catch (e) {
@@ -438,7 +446,37 @@ async function saveProduct() {
 
     closeOv('ov-tienda-prod');
     toast(window._editingProdId ? 'Producto actualizado' : 'Producto guardado', '#22C55E');
-    await renderTiendaAdmin(false);
+
+    // Actualización inmediata en memoria para eliminar el lag por completo
+    if (data.product) {
+      var savedProd = {
+        id: data.product.id,
+        business_id: data.product.business_id,
+        name: data.product.name || '',
+        description: data.product.description || '',
+        price: parseFloat(data.product.price) || 0,
+        cost_price: parseFloat(data.product.cost_price) || 0,
+        internal_price: parseFloat(data.product.internal_price) || 0,
+        stock: parseInt(data.product.stock, 10) || 0,
+        min_stock: data.product.min_stock != null ? parseInt(data.product.min_stock, 10) : 5,
+        barcode: data.product.barcode || '',
+        supplier: data.product.supplier || '',
+        tax_rate: data.product.tax_rate != null ? parseFloat(data.product.tax_rate) : null,
+        category: data.product.category || 'General',
+        discount_percent: parseFloat(data.product.discount_percent) || 0,
+        rating: parseFloat(data.product.rating) || 5.0,
+        image: data.product.image || '',
+        active: data.product.active !== false
+      };
+      var idx = (window._tiendaProducts || []).findIndex(function (p) { return String(p.id) === String(savedProd.id); });
+      if (idx >= 0) {
+        window._tiendaProducts[idx] = savedProd;
+      } else {
+        window._tiendaProducts.push(savedProd);
+      }
+      _tSyncSharedProducts(window._tiendaProducts);
+    }
+    await renderTiendaAdmin(true);
     if (typeof window.posRender === 'function' && G('bp-caja') && G('bp-caja').classList.contains('on')) {
       window.posRender();
     }
@@ -463,7 +501,11 @@ function confirmDeleteCurrentProduct() {
       if (!res.ok || !data.success) throw new Error(data.error || 'Error eliminando');
       closeOv('ov-tienda-prod');
       toast('Producto eliminado', '#475569');
-      await renderTiendaAdmin(false);
+      window._tiendaProducts = (window._tiendaProducts || []).filter(function (p) {
+        return String(p.id) !== String(id);
+      });
+      _tSyncSharedProducts(window._tiendaProducts);
+      await renderTiendaAdmin(true);
       if (typeof window.posRender === 'function' && G('bp-caja') && G('bp-caja').classList.contains('on')) {
         window.posRender();
       }

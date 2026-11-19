@@ -368,7 +368,7 @@ router.get('/get-biz', optionalAuth, async (req, res) => {
 
     biz.photos = biz.photos || [];
     biz.horario = biz.horario || [];
-    biz.loyalty = biz.loyalty || { active: true, mode: 'stamps', stamps: 10, points_goal: 100, reward_type: 'free_service', reward_pct: 100 };
+    biz.loyalty = biz.loyalty || { active: false, mode: 'stamps', stamps: 10, points_goal: 100, reward_type: 'free_service', reward_pct: 100 };
     biz.clientLoyalty = isPriv ? loyaltyClients.map(function (c) {
       return {
         id: c.id,
@@ -485,7 +485,7 @@ router.get('/get-db', verifyToken, requireRole('super_admin'), async (req, res) 
       });
 
       biz.photos = biz.photos || []; biz.horario = biz.horario || [];
-      biz.loyalty = biz.loyalty || { active: true, stamps: 10 };
+      biz.loyalty = biz.loyalty || { active: false, stamps: 10 };
     }
 
     return res.status(200).json(businesses || []);

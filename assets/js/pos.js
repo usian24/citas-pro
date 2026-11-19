@@ -310,7 +310,7 @@ function posSwitchTab(tab) {
 function _pLoyaltyCfg() {
   var raw = POS_STATE.loyalty || (CUR && CUR.loyalty) || null;
   if (typeof normalizeLoyaltyConfig === 'function') return normalizeLoyaltyConfig(raw);
-  return { active: true, mode: 'stamps', stamps: 10, points_goal: 100, goal: 10, unit: 'sellos', reward_type: 'free_service', reward_pct: 100, reward_product_id: '', reward_product_name: '', reward_label: 'Servicio gratis' };
+  return { active: false, mode: 'stamps', stamps: 10, points_goal: 100, goal: 10, unit: 'sellos', reward_type: 'free_service', reward_pct: 100, reward_product_id: '', reward_product_name: '', reward_label: 'Servicio gratis' };
 }
 
 function _pGiftProduct() {

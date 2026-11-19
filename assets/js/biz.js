@@ -396,20 +396,38 @@ function setupPhotoUpload() {
       toast('Logo guardado', '#22C55E');
     }
   });
-  handleImg('biz-profile-cover-input', function (d, isPreview, file) {
-    var p = G('biz-profile-cover'); if (p) p.style.backgroundImage = 'url(' + d + ')'; 
+  handleImg('biz-profile-cover-input', function (d, isPreview) {
+    var p = G('biz-profile-cover');
     if (isPreview) {
-      window._pendingBizCover = file;
-      toast('Portada cargada. Pulsa Guardar cambios.', '#F59E0B');
+      if (p) p.style.backgroundImage = 'url(' + d + ')';
+      toast('Subiendo portada...', '#F59E0B');
+    } else {
+      if (p) p.style.backgroundImage = 'url(' + safeImg(d) + ')';
+      if (typeof CUR !== 'undefined' && CUR) {
+        CUR.cover = d;
+        saveDB();
+      }
+      toast('Portada guardada en la nube', '#22C55E');
     }
-  }, false);
-  handleImg('biz-profile-logo-input', function (d, isPreview, file) {
-    var p = G('biz-profile-logo'); if (p) p.innerHTML = '<img src="' + d + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">'; 
+  }, true);
+  handleImg('biz-profile-logo-input', function (d, isPreview) {
+    var p = G('biz-profile-logo');
+    var av = G('biz-hdr-av');
     if (isPreview) {
-      window._pendingBizLogo = file;
-      toast('Logo cargado. Pulsa Guardar cambios.', '#F59E0B');
+      if (p) p.innerHTML = '<img src="' + d + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
+      if (av) av.innerHTML = '<img src="' + d + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
+      toast('Subiendo logo...', '#F59E0B');
+    } else {
+      if (p) p.innerHTML = '<img src="' + safeImg(d) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
+      if (av) av.innerHTML = '<img src="' + safeImg(d) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
+      if (typeof CUR !== 'undefined' && CUR) {
+        CUR.logo = d;
+        saveDB();
+        if (typeof renderHeader === 'function') renderHeader();
+      }
+      toast('Logo guardado en la nube', '#22C55E');
     }
-  }, false);
+  }, true);
   handleImgs('svc-photo-input', function (d, isPreview) { if (isPreview) return; if (!REG || REG.photos.length >= 12) { toast('Máximo 12 fotos', '#EF4444'); return; } REG.photos.push(d); renderRegPhotos(); });
   handleImgs('gallery-input', function (d, isPreview) { if (isPreview) return; if (!CUR) return; if (!CUR.photos) CUR.photos = []; if (CUR.photos.length >= 20) { toast('Máximo 20 fotos', '#EF4444'); return; } CUR.photos.push(d); saveDB(); renderGallery(); toast('Foto añadida', '#22C55E'); });
   handleImg('bar-photo-input', function (d, isPreview) {
@@ -533,7 +551,21 @@ function initBizPanel() {
 
   if (typeof renderBizHomeStats === 'function') renderBizHomeStats();
 
-  const profileCover = G('biz-profile-cover'); if (profileCover && CUR.cover) profileCover.style.backgroundImage = 'url(' + safeImg(CUR.cover) + ')';
+  initProfile();
+
+  // 🚀 INYECTAMOS LA LÓGICA DE PAGOS AQUÍ (Justo antes de abrir el tab)
+  configurarBotonesDePago();
+
+  bizTab('home');
+}
+
+function initProfile() {
+  if (!CUR) return;
+  const profileCover = G('biz-profile-cover');
+  if (profileCover) {
+    if (CUR.cover) profileCover.style.backgroundImage = 'url(' + safeImg(CUR.cover) + ')';
+    else profileCover.style.backgroundImage = '';
+  }
   const profileLogo = G('biz-profile-logo');
   if (profileLogo) {
     if (CUR.logo) profileLogo.innerHTML = '<img src="' + safeImg(CUR.logo) + '" style="width:100%;height:100%;object-fit:cover" alt="Logo">';
@@ -552,7 +584,7 @@ function initBizPanel() {
 
   const loyCfg = typeof normalizeLoyaltyConfig === 'function'
     ? normalizeLoyaltyConfig(CUR.loyalty)
-    : Object.assign({ active: true, mode: 'stamps', stamps: 10, points_goal: 100, reward_type: 'free_service', reward_pct: 50, reward_product_id: '', reward_product_name: '' }, CUR.loyalty || {});
+    : Object.assign({ active: false, mode: 'stamps', stamps: 10, points_goal: 100, reward_type: 'free_service', reward_pct: 50, reward_product_id: '', reward_product_name: '' }, CUR.loyalty || {});
 
   const pfLoyaltyToggle = G('toggle-loyalty');
   if (pfLoyaltyToggle) {
@@ -571,11 +603,6 @@ function initBizPanel() {
 
   if (pfPs) pfPs.textContent = (CUR.plan === 'active' || CUR.plan === 'pro') ? 'Plan activo · Próxima factura el día 1' : CUR.plan === 'trial' ? 'En período de prueba gratuito' : 'Suscripción vencida — contacta soporte';
   const pfPb = G('pf-plan-badge'); if (pfPb) pfPb.innerHTML = planTag(CUR.plan);
-
-  // 🚀 INYECTAMOS LA LÓGICA DE PAGOS AQUÍ (Justo antes de abrir el tab)
-  configurarBotonesDePago();
-
-  bizTab('home');
 }
 
 /* ══════════════════════════
@@ -611,6 +638,9 @@ function navigateToBizState(state, replace = false) {
     else renderBizFinances();
   }
   if (state === 'historial') renderBizFinances();
+  if (state === 'perfil') {
+    initProfile();
+  }
   if (state === 'home') {
     DB = loadDB(); CUR = DB.currentBiz ? DB.businesses.filter(function (b) { return b.id === DB.currentBiz; })[0] : CUR;
     if (typeof renderBizHomeStats === 'function') renderBizHomeStats();
