@@ -4,6 +4,32 @@ const supabase = require('../db');
 const { optionalAuth } = require('../middlewares/auth');
 const router = express.Router();
 
+// ═══════════════════════════════════════════════════
+// GET /api/health — Diagnóstico seguro de entorno (sin secretos)
+// ═══════════════════════════════════════════════════
+router.get('/health', async (req, res) => {
+  try {
+    const isVercelProd = process.env.VERCEL_ENV === 'production';
+    const activeUrl = (isVercelProd && process.env.SUPABASE_PROD_URL) ? process.env.SUPABASE_PROD_URL : (process.env.SUPABASE_URL || '');
+    const projectRef = activeUrl.replace(/^https?:\/\//, '').split('.')[0].slice(0, 6);
+    const hasServiceKey = Boolean(
+      (isVercelProd && process.env.SUPABASE_PROD_SERVICE_ROLE_KEY) || process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+    const { count, error } = await supabase.from('businesses').select('id', { count: 'exact', head: true });
+    return res.status(200).json({
+      ok: !error && count !== null,
+      env: process.env.VERCEL_ENV || 'local',
+      projectPrefix: projectRef,
+      hasServiceKey,
+      hasJwtSecret: Boolean(process.env.JWT_SECRET),
+      businessesVisible: error ? 0 : (count || 0),
+      dbError: error ? error.message : null
+    });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 let resend = null;
 if (process.env.RESEND_API_KEY) {
   resend = new Resend(process.env.RESEND_API_KEY);
@@ -316,12 +342,26 @@ router.post('/upload-image', optionalAuth, async (req, res) => {
     const fileName = `uploads/${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${ext}`;
 
     // 1. Subida nativa a Supabase Storage (rápido, seguro, permanente)
-    const { data: storageData, error: storageErr } = await supabase.storage
+    let { data: storageData, error: storageErr } = await supabase.storage
       .from('citaspro-uploads')
       .upload(fileName, buffer, {
         contentType: mimeType,
         upsert: true
       });
+
+    // Si el bucket aún no existe en el entorno actual, crearlo automáticamente y reintentar
+    if (storageErr && /not found|bucket/i.test(storageErr.message || '')) {
+      await supabase.storage.createBucket('citaspro-uploads', {
+        public: true,
+        fileSizeLimit: 10485760,
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+      }).catch(() => {});
+      const retry = await supabase.storage
+        .from('citaspro-uploads')
+        .upload(fileName, buffer, { contentType: mimeType, upsert: true });
+      storageData = retry.data;
+      storageErr = retry.error;
+    }
 
     if (!storageErr && storageData) {
       const { data: pubData } = supabase.storage
